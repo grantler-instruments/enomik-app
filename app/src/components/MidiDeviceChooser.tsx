@@ -1,9 +1,8 @@
-// MidiDeviceChooser.tsx
 import React, { useEffect, useState } from 'react';
 import { WebMidi, Output } from 'webmidi';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
+import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -32,8 +31,8 @@ const MidiDeviceChooser: React.FC = () => {
     };
   }, []);
 
-  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setSelectedId(event.target.value as string);
+  const handleChange = (event: SelectChangeEvent<string>) => {
+    setSelectedId(event.target.value);
   };
 
   return (
@@ -54,7 +53,6 @@ const MidiDeviceChooser: React.FC = () => {
           ))}
         </Select>
       </FormControl>
-
       {error && (
         <Typography variant="body2" color="error" sx={{ mt: 1 }}>
           {error}
