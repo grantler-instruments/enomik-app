@@ -6,9 +6,13 @@ import Outputs from "./components/Outputs";
 
 function App() {
   return (
-    <Box width={"100vw"} height={"100vh"} display={"flex"} flexDirection={"column"}>
+    <Box
+      width={"100vw"}
+      height={"100vh"}
+      display={"flex"}
+      flexDirection={"column"}
+    >
       <Header></Header>
-
       <Inputs></Inputs>
       <Outputs></Outputs>
       <Box flexGrow={1}></Box>

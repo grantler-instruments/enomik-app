@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 import { useIOStore, type OutputPinConfig } from "../store/io";
 import {
@@ -67,54 +67,6 @@ const Output = ({ output }: OutputProps) => {
       alignItems="center"
     >
       {/* ---------------- INPUT SECTION ---------------- */}
-      <Box
-        display="flex"
-        flexDirection="row"
-        alignItems="center"
-        gap={1}
-        padding={1}
-        border="1px solid #ccc"
-        borderRadius={1}
-        flex={1}
-        minWidth={0}
-      >
-        <TextField
-          label="Pin"
-          type="number"
-          value={localOutput.pin}
-          onChange={(e) => handleChange("pin", Number(e.target.value))}
-          sx={{ width: 80 }}
-        />
-
-        <FormControl sx={{ width: 120 }}>
-          <InputLabel>Mode</InputLabel>
-          <Select
-            value={localOutput.mode}
-            label="Mode"
-            onChange={(e) =>
-              handleChange("mode", e.target.value as typeof localOutput.mode)
-            }
-          >
-            {OUTPUT_MODES.map((mode) => (
-              <MenuItem key={mode} value={mode}>
-                {mode}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-
-      {/* ---------------- CENTERED ARROW ---------------- */}
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        paddingX={1}
-      >
-        <ArrowBackIcon fontSize="small" sx={{ opacity: 0.7 }} />
-      </Box>
-
-      {/* ---------------- OUTPUT SECTION ---------------- */}
       <Box
         display="flex"
         flexDirection="row"
@@ -207,7 +159,56 @@ const Output = ({ output }: OutputProps) => {
           </>
         )}
       </Box>
+      
 
+      {/* ---------------- CENTERED ARROW ---------------- */}
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        paddingX={1}
+      >
+        <ArrowForwardIcon fontSize="small" sx={{ opacity: 0.7 }} />
+      </Box>
+
+      {/* ---------------- OUTPUT SECTION ---------------- */}
+      
+<Box
+        display="flex"
+        flexDirection="row"
+        alignItems="center"
+        gap={1}
+        padding={1}
+        border="1px solid #ccc"
+        borderRadius={1}
+        flex={1}
+        minWidth={0}
+      >
+        <TextField
+          label="Pin"
+          type="number"
+          value={localOutput.pin}
+          onChange={(e) => handleChange("pin", Number(e.target.value))}
+          sx={{ width: 80 }}
+        />
+
+        <FormControl sx={{ width: 120 }}>
+          <InputLabel>Mode</InputLabel>
+          <Select
+            value={localOutput.mode}
+            label="Mode"
+            onChange={(e) =>
+              handleChange("mode", e.target.value as typeof localOutput.mode)
+            }
+          >
+            {OUTPUT_MODES.map((mode) => (
+              <MenuItem key={mode} value={mode}>
+                {mode}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
       {/* DELETE BUTTON */}
       <IconButton
         onClick={() => removeOutput(localOutput.uuid)}

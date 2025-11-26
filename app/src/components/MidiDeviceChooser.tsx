@@ -54,7 +54,7 @@ const MidiDeviceChooser: React.FC = () => {
         </Select>
       </FormControl>
       {error && (
-        <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+        <Typography variant="body2" sx={{ mt: 1 }}>
           {error}
         </Typography>
       )}

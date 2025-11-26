@@ -1,16 +1,18 @@
 "use client";
 import { createTheme } from "@mui/material/styles";
+//https://coolors.co/palette/355070-6d597a-b56576-e56b6f-eaac8b
 
 const theme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#222222",
+      main: "#e56b6f",
     },
     secondary: {
-      main: "#93cc30",
+      main: "#6D597A",
     },
     background: {
+      default: "#efefef"
     }
   },
     typography: {
