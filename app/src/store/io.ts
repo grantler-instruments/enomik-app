@@ -1,14 +1,26 @@
-import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
-import { v4 as uuidv4 } from 'uuid';
+import { create } from "zustand";
+import { devtools, persist } from "zustand/middleware";
+import { v4 as uuidv4 } from "uuid";
+import {
+  sysexEnd,
+  sysexInput,
+  sysexManufacturerId,
+  sysexOutput,
+  sysexPinModeAnalogIn,
+  sysexPinModeDigitalIn,
+  sysexPinModeDigitalOut,
+  sysexPinModePWMOut,
+  sysexStart,
+} from "./midi.config";
 
-export type MidiType = 'cc' | 'noteon' | 'pitchbend' | 'aftertouch';
-export type PinMode = 'analog' | 'digital';
+export type MidiType = "cc" | "noteon" | "pitchbend" | "aftertouch";
+export type PinMode = "analog" | "digital";
 
 export interface InputPinConfig {
   uuid: string;
   pin: number;
   mode: PinMode;
+  channel?: number;
   midiType: MidiType;
   inputMin?: number;
   inputMax?: number;
@@ -18,7 +30,7 @@ export interface InputPinConfig {
   note?: number;
 }
 
-export type OutputPinMode = 'digital' | 'pwm';
+export type OutputPinMode = "digital" | "pwm";
 
 export interface OutputPinConfig {
   uuid: string;
@@ -37,22 +49,27 @@ interface IOState {
   inputs: InputPinConfig[];
   outputs: OutputPinConfig[];
 
-  addInput: (input: Omit<InputPinConfig, 'uuid'>) => void;
+  addInput: (input: Omit<InputPinConfig, "uuid">) => void;
   updateInput: (uuid: string, patch: Partial<InputPinConfig>) => void;
   removeInput: (uuid: string) => void;
 
-  addOutput: (output: Omit<OutputPinConfig, 'uuid'>) => void;
+  addOutput: (output: Omit<OutputPinConfig, "uuid">) => void;
   updateOutput: (uuid: string, patch: Partial<OutputPinConfig>) => void;
   removeOutput: (uuid: string) => void;
 
   saveToFile: () => void;
-  loadFromFile: (json: { inputs?: InputPinConfig[]; outputs?: OutputPinConfig[] }) => void;
+  loadFromFile: (json: {
+    inputs?: InputPinConfig[];
+    outputs?: OutputPinConfig[];
+  }) => void;
+
+  deploy: () => void;
 }
 
 export const useIOStore = create<IOState>()(
   devtools(
     persist(
-      (set) => ({
+      (set, get) => ({
         inputs: [],
         outputs: [],
 
@@ -97,12 +114,12 @@ export const useIOStore = create<IOState>()(
             const data = { inputs: state.inputs, outputs: state.outputs };
             const dataStr = JSON.stringify(data, null, 2);
 
-            const blob = new Blob([dataStr], { type: 'application/json' });
+            const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = document.createElement("a");
 
             a.href = url;
-            a.download = 'io-config.json';
+            a.download = "io-config.json";
             a.click();
 
             URL.revokeObjectURL(url);
@@ -123,8 +140,38 @@ export const useIOStore = create<IOState>()(
 
           set(() => ({ inputs, outputs }));
         },
+
+        deploy: () => {
+          console.log("Deploying configuration...");
+          get().inputs.forEach((input) => {
+            const sysexMessage = [
+              sysexStart,
+              sysexManufacturerId,
+              sysexInput,
+              input.pin,
+              input.mode === "digital"
+                ? sysexPinModeDigitalIn
+                : sysexPinModeAnalogIn,
+              sysexEnd,
+            ];
+            console.log("Input:", input, sysexMessage);
+          });
+          get().outputs.forEach((output) => {
+            const sysexMessage = [
+              sysexStart,
+              sysexManufacturerId,
+              sysexOutput,
+              output.pin,
+              output.mode === "digital"
+                ? sysexPinModeDigitalOut
+                : sysexPinModePWMOut,
+              sysexEnd,
+            ];
+            console.log("Output:", output, sysexMessage);
+          });
+        },
       }),
-      { name: 'IOStore' }
+      { name: "IOStore" }
     )
   )
 );

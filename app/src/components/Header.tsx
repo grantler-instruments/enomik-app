@@ -17,6 +17,7 @@ import { useIOStore } from '../store/io';
 const Header: React.FC = () => {
   const saveToFile = useIOStore((state) => state.saveToFile);
   const loadFromFile = useIOStore((state) => state.loadFromFile);
+  const deploy = useIOStore((state) => state.deploy);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -76,7 +77,7 @@ const Header: React.FC = () => {
           </IconButton>
 
           {/* Upload (explicit import) */}
-          <IconButton color="inherit" onClick={handleUploadClick}>
+          <IconButton color="inherit" onClick={() => deploy()}>
             <UploadFileIcon />
           </IconButton>
 
