@@ -8,7 +8,7 @@ const Outputs = () => {
   const addOutput = useIOStore((state) => state.addOutput);
   return (
     <Box display={"flex"} flexDirection={"column"} padding={2}>
-      <Typography variant="h2">MIDI Outputs</Typography>
+      <Typography variant="h2">MIDI to Output</Typography>
       <Alert severity="info" sx={{ mb: 2 }}>
         Output pins on the microcontroller can be controlled via MIDI messages. Configure the output pin mode and MIDI message type here.
       </Alert>

@@ -9,7 +9,7 @@ import Box from '@mui/material/Box';
 
 import DownloadIcon from '@mui/icons-material/Download';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
+import ArrowRightIcon from '@mui/icons-material/FileUpload';
 
 import MidiDeviceChooser from './MidiDeviceChooser';
 import { useIOStore } from '../store/io';
@@ -47,7 +47,7 @@ const Header: React.FC = () => {
   return (
     <AppBar position="static" color="primary" elevation={2}>
       <Toolbar>
-        <IconButton
+        {/* <IconButton
           size="large"
           edge="start"
           color="inherit"
@@ -55,12 +55,13 @@ const Header: React.FC = () => {
           sx={{ mr: 2 }}
         >
           <MenuIcon />
-        </IconButton>
+        </IconButton> */}
 
         <Typography
           variant="h6"
           component="div"
           sx={{ flexGrow: 1, fontWeight: 600 }}
+          textTransform="uppercase"
         >
           enomik 3000
         </Typography>
@@ -76,10 +77,6 @@ const Header: React.FC = () => {
             <FolderOpenIcon />
           </IconButton>
 
-          {/* Upload (explicit import) */}
-          <IconButton color="inherit" onClick={() => deploy()}>
-            <UploadFileIcon />
-          </IconButton>
 
           {/* Hidden file input */}
           <input
@@ -91,6 +88,10 @@ const Header: React.FC = () => {
           />
 
           <MidiDeviceChooser />
+          {/* Upload (explicit import) */}
+          <IconButton color="inherit" onClick={() => deploy()}>
+            <ArrowRightIcon />
+          </IconButton>
         </Box>
       </Toolbar>
     </AppBar>

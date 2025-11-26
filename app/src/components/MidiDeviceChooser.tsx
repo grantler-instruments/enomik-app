@@ -45,6 +45,7 @@ const MidiDeviceChooser: React.FC = () => {
           label="MIDI Output"
           onChange={handleChange}
           disabled={outputs.length === 0 || !!error}
+          size='small'
         >
           {outputs.map((output) => (
             <MenuItem key={output.id} value={output.id}>

@@ -6,16 +6,19 @@ i18n.use(initReactI18next).init({
     en: {
       translation: {
         "test": "This is a test string",
+        "made_with_love": "Made with ♡️ by",
       },
     },
     de: {
       translation: {
         "test": "Das ist ein Teststring",
+        "made_with_love": "Entwickelt mit ♡️ von",
       },
     },
     es: {
       translation: {
         "test": "Esta es una cadena de prueba",
+        "made_with_love": "Desarrollado con ♡️ por",
       },
     },
   },
