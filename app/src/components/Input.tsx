@@ -11,9 +11,23 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useIOStore, type InputPinConfig } from "../store/io";
+import {
+  MIDI_CONTROL_CHANGE,
+  MIDI_NOTE_ON,
+  MIDI_PITCH_BEND,
+  MIDI_POLY_AFTERTOUCH,
+  MIDI_PROGRAM_CHANGE,
+  MIDI_TYPE_LABELS,
+} from "../store/midi.config";
 
 const PIN_MODES = ["analog", "digital"] as const;
-const MIDI_TYPES = ["cc", "noteon", "pitchbend", "aftertouch"] as const;
+const MIDI_TYPES = [
+  MIDI_CONTROL_CHANGE,
+  MIDI_NOTE_ON,
+  MIDI_PITCH_BEND,
+  MIDI_PROGRAM_CHANGE,
+  MIDI_POLY_AFTERTOUCH,
+] as const;
 
 interface InputProps {
   input: InputPinConfig;
@@ -50,7 +64,6 @@ const Input = ({ input }: InputProps) => {
       gap={2}
       alignItems="center"
     >
-
       {/* ---------------- INPUT SECTION ---------------- */}
       <Box
         display="flex"
@@ -86,6 +99,24 @@ const Input = ({ input }: InputProps) => {
             ))}
           </Select>
         </FormControl>
+         {localInput.mode === "analog" && (
+          <>
+            <TextField
+              label="Min"
+              type="number"
+              value={localInput.inputMin ?? ""}
+              onChange={(e) => handleChange("inputMin", Number(e.target.value))}
+              sx={{ width: 100 }}
+            />
+            <TextField
+              label="Max"
+              type="number"
+              value={localInput.inputMax ?? ""}
+              onChange={(e) => handleChange("inputMax", Number(e.target.value))}
+              sx={{ width: 100 }}
+            />
+          </>
+        )}
       </Box>
 
       {/* ---------------- CENTERED ARROW ---------------- */}
@@ -123,25 +154,23 @@ const Input = ({ input }: InputProps) => {
           >
             {MIDI_TYPES.map((type) => (
               <MenuItem key={type} value={type}>
-                {type}
+                {MIDI_TYPE_LABELS[type]}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
-        {localInput.midiType === "cc" && (
+        {localInput.midiType === MIDI_CONTROL_CHANGE && (
           <TextField
             label="Controller"
             type="number"
             value={localInput.controller ?? ""}
-            onChange={(e) =>
-              handleChange("controller", Number(e.target.value))
-            }
+            onChange={(e) => handleChange("controller", Number(e.target.value))}
             sx={{ width: 100 }}
           />
         )}
 
-        {localInput.midiType === "noteon" && (
+        {localInput.midiType === MIDI_NOTE_ON && (
           <TextField
             label="Note"
             type="number"
@@ -153,24 +182,6 @@ const Input = ({ input }: InputProps) => {
 
         {localInput.mode === "analog" && (
           <>
-            <TextField
-              label="Input Min"
-              type="number"
-              value={localInput.inputMin ?? ""}
-              onChange={(e) =>
-                handleChange("inputMin", Number(e.target.value))
-              }
-              sx={{ width: 100 }}
-            />
-            <TextField
-              label="Input Max"
-              type="number"
-              value={localInput.inputMax ?? ""}
-              onChange={(e) =>
-                handleChange("inputMax", Number(e.target.value))
-              }
-              sx={{ width: 100 }}
-            />
             <TextField
               label="Output Min"
               type="number"

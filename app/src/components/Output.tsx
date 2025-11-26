@@ -13,9 +13,23 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import { useIOStore, type OutputPinConfig } from "../store/io";
+import {
+  MIDI_CONTROL_CHANGE,
+  MIDI_NOTE_ON,
+  MIDI_PITCH_BEND,
+  MIDI_POLY_AFTERTOUCH,
+  MIDI_PROGRAM_CHANGE,
+  MIDI_TYPE_LABELS,
+} from "../store/midi.config";
 
 const OUTPUT_MODES = ["digital", "pwm"] as const;
-const MIDI_TYPES = ["cc", "noteon", "pitchbend", "aftertouch"] as const;
+const MIDI_TYPES = [
+  MIDI_CONTROL_CHANGE,
+  MIDI_NOTE_ON,
+  MIDI_PITCH_BEND,
+  MIDI_PROGRAM_CHANGE,
+  MIDI_POLY_AFTERTOUCH,
+] as const;
 
 interface OutputProps {
   output: OutputPinConfig;
@@ -52,7 +66,6 @@ const Output = ({ output }: OutputProps) => {
       gap={2}
       alignItems="center"
     >
-
       {/* ---------------- INPUT SECTION ---------------- */}
       <Box
         display="flex"
@@ -127,14 +140,14 @@ const Output = ({ output }: OutputProps) => {
           >
             {MIDI_TYPES.map((type) => (
               <MenuItem key={type} value={type}>
-                {type}
+                {MIDI_TYPE_LABELS[type]}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
         {/* cc */}
-        {localOutput.midiType === "cc" && (
+        {localOutput.midiType === MIDI_CONTROL_CHANGE && (
           <TextField
             label="Controller"
             type="number"
@@ -145,7 +158,7 @@ const Output = ({ output }: OutputProps) => {
         )}
 
         {/* noteon */}
-        {localOutput.midiType === "noteon" && (
+        {localOutput.midiType === MIDI_NOTE_ON && (
           <>
             <TextField
               label="Note"
@@ -177,14 +190,18 @@ const Output = ({ output }: OutputProps) => {
               label="Output Min"
               type="number"
               value={localOutput.outputMin ?? ""}
-              onChange={(e) => handleChange("outputMin", Number(e.target.value))}
+              onChange={(e) =>
+                handleChange("outputMin", Number(e.target.value))
+              }
               sx={{ width: 100 }}
             />
             <TextField
               label="Output Max"
               type="number"
               value={localOutput.outputMax ?? ""}
-              onChange={(e) => handleChange("outputMax", Number(e.target.value))}
+              onChange={(e) =>
+                handleChange("outputMax", Number(e.target.value))
+              }
               sx={{ width: 100 }}
             />
           </>

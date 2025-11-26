@@ -2,6 +2,12 @@ import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 import {
+  MIDI_NOTE_ON,
+  MIDI_NOTE_OFF,
+  MIDI_CONTROL_CHANGE,
+  MIDI_PROGRAM_CHANGE,
+  MIDI_PITCH_BEND,
+  MIDI_POLY_AFTERTOUCH,
   sysexEnd,
   sysexInput,
   sysexManufacturerId,
@@ -13,7 +19,13 @@ import {
   sysexStart,
 } from "./midi.config";
 
-export type MidiType = "cc" | "noteon" | "pitchbend" | "aftertouch";
+export type MidiType =
+  | typeof MIDI_NOTE_ON
+  | typeof MIDI_NOTE_OFF
+  | typeof MIDI_CONTROL_CHANGE
+  | typeof MIDI_PROGRAM_CHANGE
+  | typeof MIDI_PITCH_BEND
+  | typeof MIDI_POLY_AFTERTOUCH;
 export type PinMode = "analog" | "digital";
 
 export interface InputPinConfig {
@@ -152,6 +164,7 @@ export const useIOStore = create<IOState>()(
               input.mode === "digital"
                 ? sysexPinModeDigitalIn
                 : sysexPinModeAnalogIn,
+              input.midiType,
               sysexEnd,
             ];
             console.log("Input:", input, sysexMessage);
@@ -165,6 +178,7 @@ export const useIOStore = create<IOState>()(
               output.mode === "digital"
                 ? sysexPinModeDigitalOut
                 : sysexPinModePWMOut,
+              output.midiType,
               sysexEnd,
             ];
             console.log("Output:", output, sysexMessage);

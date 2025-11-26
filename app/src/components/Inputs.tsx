@@ -1,6 +1,7 @@
 import { Box, Button } from "@mui/material";
 import { useIOStore } from "../store/io";
 import Input from "./Input";
+import { MIDI_CONTROL_CHANGE } from "../store/midi.config";
 
 const Inputs = () => {
   const inputs = useIOStore((state) => state.inputs);
@@ -17,7 +18,7 @@ const Inputs = () => {
             addInput({
               pin: inputs.length,
               mode: "analog",
-              midiType: "cc",
+              midiType: MIDI_CONTROL_CHANGE,
               inputMin: 0,
               inputMax: 1023,
               outputMin: 0,
