@@ -168,23 +168,23 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
               </Select>
             </FormControl>
 
-            {localConfig.mode === "analog" && hasProperty("inputMin") && (
+            {localConfig.mode === "analog" && hasProperty("midiMin") && (
               <>
                 <TextField
                   label="Min"
                   type="number"
-                  value={(localConfig as InputPinConfig).inputMin ?? ""}
+                  value={(localConfig as InputPinConfig).midiMin ?? ""}
                   onChange={(e) =>
-                    handleChange("inputMin" as any, Number(e.target.value))
+                    handleChange("midiMin" as any, Number(e.target.value))
                   }
                   sx={{ width: 100 }}
                 />
                 <TextField
                   label="Max"
                   type="number"
-                  value={(localConfig as InputPinConfig).inputMax ?? ""}
+                  value={(localConfig as InputPinConfig).midiMax ?? ""}
                   onChange={(e) =>
-                    handleChange("inputMax" as any, Number(e.target.value))
+                    handleChange("midiMax" as any, Number(e.target.value))
                   }
                   sx={{ width: 100 }}
                 />

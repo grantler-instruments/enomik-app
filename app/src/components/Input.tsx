@@ -130,14 +130,14 @@ const Input = ({ input }: InputProps) => {
             <TextField
               label="Min"
               type="number"
-              value={localInput.inputMin ?? ""}
+              value={localInput.midiMin ?? ""}
               onChange={(e) => handleChange("inputMin", Number(e.target.value))}
               sx={{ width: 100 }}
             />
             <TextField
               label="Max"
               type="number"
-              value={localInput.inputMax ?? ""}
+              value={localInput.midiMax ?? ""}
               onChange={(e) => handleChange("inputMax", Number(e.target.value))}
               sx={{ width: 100 }}
             />

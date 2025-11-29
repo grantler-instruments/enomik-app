@@ -29,16 +29,20 @@ export type MidiType =
   | typeof MIDI_POLY_AFTERTOUCH;
 export type PinMode = "analog" | "digital";
 
+const ENOMIK_COMMAND_SET_PIN_CONFIG = 0x01;
+const ENOMIK_COMMAND_GET_PIN_CONFIG = 0x02;
+const ENOMIK_COMMAND_RESET = 0x09;
+
 export interface InputPinConfig {
   uuid: string;
   pin: number;
   mode: PinMode;
   channel?: number;
   midiType: MidiType;
-  inputMin?: number;
-  inputMax?: number;
-  outputMin?: number;
-  outputMax?: number;
+  midiMin?: number;
+  midiMax?: number;
+  pinMin?: number;
+  pinMax?: number;
   controller?: number;
   note?: number;
 }
@@ -50,12 +54,14 @@ export interface OutputPinConfig {
   pin: number;
   mode: OutputPinMode;
   midiType: MidiType;
+  midiMin?: number;
+  midiMax?: number;
+  pinMin?: number;
+  pinMax?: number;
   channel?: number;
   controller?: number;
   note?: number;
   velocitySensitive?: boolean;
-  outputMin?: number;
-  outputMax?: number;
 }
 
 interface IOState {
@@ -182,12 +188,14 @@ export const useIOStore = create<IOState>()(
             const sysexMessage = [
               sysexStart,
               sysexManufacturerId,
-              sysexInput,
+              ENOMIK_COMMAND_SET_PIN_CONFIG,
               input.pin,
               input.mode === "digital"
                 ? sysexPinModeDigitalInPullup
                 : sysexPinModeAnalogIn,
               input.midiType,
+              input.midiMin,
+              input.midiMax,
               sysexEnd,
             ];
             console.log("Input:", input, sysexMessage);
@@ -196,12 +204,14 @@ export const useIOStore = create<IOState>()(
             const sysexMessage = [
               sysexStart,
               sysexManufacturerId,
-              sysexOutput,
+              ENOMIK_COMMAND_SET_PIN_CONFIG,
               output.pin,
               output.mode === "digital"
                 ? sysexPinModeDigitalOut
                 : sysexPinModePWMOut,
               output.midiType,
+              output.midiMin,
+              output.midiMax,
               sysexEnd,
             ];
             console.log("Output:", output, sysexMessage);
