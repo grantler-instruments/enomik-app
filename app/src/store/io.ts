@@ -17,6 +17,7 @@ import {
   sysexPinModeDigitalOut,
   sysexPinModePWMOut,
   sysexStart,
+  sysexPinModeDigitalInPullup,
 } from "./midi.config";
 
 export type MidiType =
@@ -64,10 +65,12 @@ interface IOState {
   addInput: (input: Omit<InputPinConfig, "uuid">) => void;
   updateInput: (uuid: string, patch: Partial<InputPinConfig>) => void;
   removeInput: (uuid: string) => void;
+  duplicateInput: (uuid: string) => void;
 
   addOutput: (output: Omit<OutputPinConfig, "uuid">) => void;
   updateOutput: (uuid: string, patch: Partial<OutputPinConfig>) => void;
   removeOutput: (uuid: string) => void;
+  duplicateOutput: (uuid: string) => void;
 
   saveToFile: () => void;
   loadFromFile: (json: {
@@ -101,6 +104,16 @@ export const useIOStore = create<IOState>()(
           set((state) => ({
             inputs: state.inputs.filter((i) => i.uuid !== uuid),
           })),
+        duplicateInput: (uuid) =>
+          set((state) => {
+            const input = state.inputs.find((i) => i.uuid === uuid);
+            if (!input) return state;
+
+            const newInput = { ...input, uuid: uuidv4() };
+            return {
+              inputs: [...state.inputs, newInput],
+            };
+          }),
 
         // ---------- OUTPUTS ----------
         addOutput: (output) =>
@@ -119,6 +132,16 @@ export const useIOStore = create<IOState>()(
           set((state) => ({
             outputs: state.outputs.filter((o) => o.uuid !== uuid),
           })),
+        duplicateOutput: (uuid) =>
+          set((state) => {
+            const output = state.outputs.find((o) => o.uuid === uuid);
+            if (!output) return state;
+
+            const newOutput = { ...output, uuid: uuidv4() };
+            return {
+              outputs: [...state.outputs, newOutput],
+            };
+          }),
 
         // ---------- FILE SAVE ----------
         saveToFile: () =>
@@ -162,7 +185,7 @@ export const useIOStore = create<IOState>()(
               sysexInput,
               input.pin,
               input.mode === "digital"
-                ? sysexPinModeDigitalIn
+                ? sysexPinModeDigitalInPullup
                 : sysexPinModeAnalogIn,
               input.midiType,
               sysexEnd,

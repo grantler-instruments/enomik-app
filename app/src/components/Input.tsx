@@ -7,8 +7,13 @@ import {
   InputLabel,
   FormControl,
   IconButton,
+  Menu,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useIOStore, type InputPinConfig } from "../store/io";
 import {
@@ -36,8 +41,11 @@ interface InputProps {
 const Input = ({ input }: InputProps) => {
   const updateInput = useIOStore((state) => state.updateInput);
   const removeInput = useIOStore((state) => state.removeInput);
+  const duplicateInput = useIOStore((state) => state.duplicateInput);
 
   const [localInput, setLocalInput] = useState<InputPinConfig>(input);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
 
   useEffect(() => {
     setLocalInput(input);
@@ -50,6 +58,24 @@ const Input = ({ input }: InputProps) => {
     const updated = { ...localInput, [key]: value };
     setLocalInput(updated);
     updateInput(localInput.uuid, updated);
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDuplicate = () => {
+    duplicateInput(localInput.uuid);
+    handleMenuClose();
+  };
+
+  const handleDelete = () => {
+    removeInput(localInput.uuid);
+    handleMenuClose();
   };
 
   return (
@@ -204,13 +230,42 @@ const Input = ({ input }: InputProps) => {
         )}
       </Box>
 
-      {/* DELETE BUTTON */}
+      {/* THREE-DOT MENU BUTTON */}
       <IconButton
-        onClick={() => removeInput(localInput.uuid)}
+        onClick={handleMenuOpen}
         sx={{ marginLeft: "auto" }}
+        aria-label="more options"
       >
-        <DeleteIcon />
+        <MoreVertIcon />
       </IconButton>
+
+      {/* MENU */}
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <MenuItem onClick={handleDuplicate}>
+          <ListItemIcon>
+            <ContentCopyIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Duplicate</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleDelete}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Delete</ListItemText>
+        </MenuItem>
+      </Menu>
     </Box>
   );
 };

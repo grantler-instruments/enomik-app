@@ -3,8 +3,11 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Inputs from "./components/Inputs";
 import Outputs from "./components/Outputs";
+import { useAppStore } from "./store/app";
+import Sidebar from "./components/Sidebar";
 
 function App() {
+  const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
   return (
     <Box
       width={"100vw"}
@@ -13,6 +16,7 @@ function App() {
       flexDirection={"column"}
     >
       <Header></Header>
+      {isSidebarOpen && <Sidebar />}
       <Inputs></Inputs>
       <Outputs></Outputs>
       <Box flexGrow={1}></Box>

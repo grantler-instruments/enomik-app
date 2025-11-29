@@ -13,7 +13,6 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       themeMode: 'light',
       isSidebarOpen: false,
-
       setThemeMode: (mode) => set({ themeMode: mode }),
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
     }),

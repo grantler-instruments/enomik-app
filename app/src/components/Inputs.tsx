@@ -1,21 +1,23 @@
 import { Alert, Box, Button, Typography } from "@mui/material";
 import { useIOStore } from "../store/io";
-import Input from "./Input";
+// import Input from "./Input";
 import { MIDI_CONTROL_CHANGE } from "../store/midi.config";
+import PinMapping from "./PinMapping";
 
 const Inputs = () => {
   const inputs = useIOStore((state) => state.inputs);
   const addInput = useIOStore((state) => state.addInput);
   return (
     <Box display={"flex"} flexDirection={"column"} padding={2}>
-      <Typography variant="h2">PIN to MIDI</Typography>
+      <Typography variant="h2">Input PIN to MIDI</Typography>
       <Alert severity="info" sx={{ mb: 2 }}>
         Inputs read data from input pins on the microcontroller and map them to
         MIDI messages. Configure the input pin mode, MIDI message type, and value
         mapping here.
       </Alert>
       {inputs.map((input, index) => (
-        <Input key={index} input={input} />
+        <PinMapping key={index} config={input} type="input" />
+        // <Input key={index} input={input} />
       ))}
       <Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>
         <Button

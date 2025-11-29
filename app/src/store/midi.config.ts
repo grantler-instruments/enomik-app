@@ -23,8 +23,12 @@ const sysexStart = 0xf0;
 const sysexEnd = 0xf7;
 const sysexInput = 0x01;
 const sysexOutput = 0x02;
-const sysexPinModeDigitalIn = 0x01;
-const sysexPinModeDigitalOut = 0x02;
+const sysexPinModeDigitalIn = 0x00;
+const sysexPinModeDigitalOut = 0x01;
+const sysexPinModeDigitalInPullup = 0x02;
+// #define INPUT 0x0
+// #define OUTPUT 0x1
+// #define INPUT_PULLUP 0x2
 const sysexPinModeAnalogIn = 0x03;
 const sysexPinModePWMOut = 0x04;
 
@@ -55,6 +59,7 @@ export {
   sysexOutput,
   sysexPinModeDigitalIn,
   sysexPinModeDigitalOut,
+  sysexPinModeDigitalInPullup,
   sysexPinModeAnalogIn,
   sysexPinModePWMOut,
 };

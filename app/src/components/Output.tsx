@@ -7,9 +7,14 @@ import {
   InputLabel,
   FormControl,
   IconButton,
+  Menu,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 import { useIOStore, type OutputPinConfig } from "../store/io";
@@ -38,8 +43,11 @@ interface OutputProps {
 const Output = ({ output }: OutputProps) => {
   const updateOutput = useIOStore((state) => state.updateOutput);
   const removeOutput = useIOStore((state) => state.removeOutput);
+  const duplicateOutput = useIOStore((state) => state.duplicateOutput);
 
   const [localOutput, setLocalOutput] = useState<OutputPinConfig>(output);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
 
   useEffect(() => {
     setLocalOutput(output);
@@ -52,6 +60,24 @@ const Output = ({ output }: OutputProps) => {
     const updated = { ...localOutput, [key]: value };
     setLocalOutput(updated);
     updateOutput(localOutput.uuid, updated);
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDuplicate = () => {
+    duplicateOutput(localOutput.uuid);
+    handleMenuClose();
+  };
+
+  const handleDelete = () => {
+    removeOutput(localOutput.uuid);
+    handleMenuClose();
   };
 
   return (
@@ -173,7 +199,7 @@ const Output = ({ output }: OutputProps) => {
 
       {/* ---------------- OUTPUT SECTION ---------------- */}
       
-<Box
+      <Box
         display="flex"
         flexDirection="row"
         alignItems="center"
@@ -209,13 +235,43 @@ const Output = ({ output }: OutputProps) => {
           </Select>
         </FormControl>
       </Box>
-      {/* DELETE BUTTON */}
+
+      {/* THREE-DOT MENU BUTTON */}
       <IconButton
-        onClick={() => removeOutput(localOutput.uuid)}
+        onClick={handleMenuOpen}
         sx={{ marginLeft: "auto" }}
+        aria-label="more options"
       >
-        <DeleteIcon />
+        <MoreVertIcon />
       </IconButton>
+
+      {/* MENU */}
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <MenuItem onClick={handleDuplicate}>
+          <ListItemIcon>
+            <ContentCopyIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Duplicate</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleDelete}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Delete</ListItemText>
+        </MenuItem>
+      </Menu>
     </Box>
   );
 };
