@@ -8,6 +8,7 @@ import {
   Button,
 } from "@mui/material";
 import { useMonitorStore } from "../store/monitor";
+import Composer from "./Composer";
 
 function Messages() {
   const messages = useMonitorStore((state) => state.messages);
@@ -100,6 +101,7 @@ function MidiComponent() {
 const Monitor = () => {
   return (
     <Box>
+      <Composer></Composer>
       <MidiComponent></MidiComponent>
       <Messages />
     </Box>
