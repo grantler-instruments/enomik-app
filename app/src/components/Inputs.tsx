@@ -1,7 +1,7 @@
 import { Alert, Box, Button, Typography } from "@mui/material";
 import { useIOStore } from "../store/io";
 // import Input from "./Input";
-import { MIDI_CONTROL_CHANGE } from "../store/midi.config";
+import { MIDI_CONTROL_CHANGE, sysexPinModeAnalogIn } from "../store/midi.config";
 import PinMapping from "./PinMapping";
 
 const Inputs = () => {
@@ -26,12 +26,12 @@ const Inputs = () => {
           onClick={() => {
             addInput({
               pin: inputs.length,
-              mode: "analog",
+              mode: sysexPinModeAnalogIn,
               midiType: MIDI_CONTROL_CHANGE,
               midiMin: 0,
-              midiMax: 1023,
-              outputMin: 0,
-              outputMax: 127,
+              midiMax: 127,
+              pinMin: 0,
+              pinMax: 1023,
               controller: 20,
             });
           }}

@@ -30,16 +30,27 @@ import {
   MIDI_POLY_AFTERTOUCH,
   MIDI_PROGRAM_CHANGE,
   MIDI_TYPE_LABELS,
+  sysexPinModeDigitalIn,
+  sysexPinModeAnalogIn,
+  sysexPinModeDigitalInPullup,
+  sysexPinModeDigitalOut,
+  sysexPinModePWMOut,
 } from "../store/midi.config";
+import MinMax from "./MinMax";
 
-const INPUT_MODES = ["analog", "digital"] as const;
-const OUTPUT_MODES = ["digital", "pwm"] as const;
+const INPUT_MODES = [
+  { label: "ANALOG", value: sysexPinModeAnalogIn },
+  { label: "INPUT (digital)", value: sysexPinModeDigitalIn },
+  { label: "INPUT_PULLUP (digital)", value: sysexPinModeDigitalInPullup },
+];
+const OUTPUT_MODES = [
+  { label: "OUTPUT (digital)", value: sysexPinModeDigitalOut },
+  { label: "PWM (analog)", value: sysexPinModePWMOut },
+];
 const MIDI_TYPES = [
   MIDI_CONTROL_CHANGE,
   MIDI_NOTE_ON,
   MIDI_PITCH_BEND,
-  MIDI_PROGRAM_CHANGE,
-  MIDI_POLY_AFTERTOUCH,
 ] as const;
 
 type PinConfig = InputPinConfig | OutputPinConfig;
@@ -74,6 +85,29 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
     value: PinConfig[K]
   ) => {
     const updated = { ...localConfig, [key]: value };
+    if (key === "mode") {
+      if (value === sysexPinModeAnalogIn || value === sysexPinModePWMOut) {
+        // Set default pinMin/pinMax for analog/PWM modes
+        updated.pinMin = 0;
+        updated.pinMax = 1023;
+      } else {
+        updated.pinMin = 0;
+        updated.pinMax = 1;
+      }
+    }
+    if (key === "midiType") {
+      // Reset controller/note when changing midiType
+      if (value === MIDI_CONTROL_CHANGE) {
+        updated.midiMin = 0;
+        updated.midiMax = 127;
+      } else if (value === MIDI_NOTE_ON) {
+        updated.midiMin = 0;
+        updated.midiMax = 127;
+      } else if (value === MIDI_PITCH_BEND) {
+        updated.midiMin = -8192;
+        updated.midiMax = 8191;
+      }
+    }
     setLocalConfig(updated);
 
     if (isInput) {
@@ -148,7 +182,7 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
               sx={{ width: 80 }}
             />
 
-            <FormControl sx={{ width: 120 }}>
+            <FormControl>
               <InputLabel>Mode</InputLabel>
               <Select
                 value={localConfig.mode}
@@ -159,42 +193,29 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                     e.target.value as typeof localConfig.mode
                   )
                 }
+                sx={{ width: 160 }}
               >
                 {availableModes.map((mode) => (
-                  <MenuItem key={mode} value={mode}>
-                    {mode}
+                  <MenuItem key={mode.value} value={mode.value}>
+                    {mode.label}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
 
-            {localConfig.mode === "analog" && hasProperty("midiMin") && (
-              <>
-                <TextField
-                  label="Min"
-                  type="number"
-                  value={(localConfig as InputPinConfig).midiMin ?? ""}
-                  onChange={(e) =>
-                    handleChange("midiMin" as any, Number(e.target.value))
-                  }
-                  sx={{ width: 100 }}
-                />
-                <TextField
-                  label="Max"
-                  type="number"
-                  value={(localConfig as InputPinConfig).midiMax ?? ""}
-                  onChange={(e) =>
-                    handleChange("midiMax" as any, Number(e.target.value))
-                  }
-                  sx={{ width: 100 }}
-                />
-              </>
+            {localConfig.mode === sysexPinModeAnalogIn && (
+              <MinMax
+                min={(localConfig as OutputPinConfig).pinMin ?? 0}
+                max={(localConfig as OutputPinConfig).pinMax ?? 1024}
+                onChangeMin={(value) => handleChange("pinMin" as any, value)}
+                onChangeMax={(value) => handleChange("pinMax" as any, value)}
+              />
             )}
           </>
         ) : (
           // OUTPUT: MIDI config first
           <>
-            <FormControl sx={{ width: 140 }}>
+            <FormControl sx={{ width: 160 }}>
               <InputLabel>MIDI Type</InputLabel>
               <Select
                 value={localConfig.midiType}
@@ -223,68 +244,29 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                   onChange={(e) =>
                     handleChange("controller" as any, Number(e.target.value))
                   }
-                  sx={{ width: 100 }}
+                  sx={{ width: 80 }}
                 />
               )}
 
             {localConfig.midiType === MIDI_NOTE_ON && hasProperty("note") && (
-              <>
-                <TextField
-                  label="Note"
-                  type="number"
-                  value={(localConfig as OutputPinConfig).note ?? ""}
-                  onChange={(e) =>
-                    handleChange("note" as any, Number(e.target.value))
-                  }
-                  sx={{ width: 100 }}
-                />
-
-                {hasProperty("velocitySensitive") && (
-                  <TextField
-                    label="Velocity Sensitive"
-                    value={
-                      (localConfig as OutputPinConfig).velocitySensitive
-                        ? "yes"
-                        : "no"
-                    }
-                    select
-                    sx={{ width: 130 }}
-                    onChange={(e) =>
-                      handleChange(
-                        "velocitySensitive" as any,
-                        e.target.value === "yes"
-                      )
-                    }
-                  >
-                    <MenuItem value="yes">yes</MenuItem>
-                    <MenuItem value="no">no</MenuItem>
-                  </TextField>
-                )}
-              </>
+              <TextField
+                label="Note"
+                type="number"
+                value={(localConfig as OutputPinConfig).note ?? ""}
+                onChange={(e) =>
+                  handleChange("note" as any, Number(e.target.value))
+                }
+              />
             )}
 
-            {localConfig.mode === "pwm" && hasProperty("outputMin") && (
-              <>
-                <TextField
-                  label="Min"
-                  type="number"
-                  value={(localConfig as OutputPinConfig).outputMin ?? ""}
-                  onChange={(e) =>
-                    handleChange("outputMin" as any, Number(e.target.value))
-                  }
-                  sx={{ width: 100 }}
-                />
-                <TextField
-                  label="Max"
-                  type="number"
-                  value={(localConfig as OutputPinConfig).outputMax ?? ""}
-                  onChange={(e) =>
-                    handleChange("outputMax" as any, Number(e.target.value))
-                  }
-                  sx={{ width: 100 }}
-                />
-              </>
-            )}
+            {
+              <MinMax
+                min={(localConfig as OutputPinConfig).midiMin ?? 0}
+                max={(localConfig as OutputPinConfig).midiMax ?? 127}
+                onChangeMin={(value) => handleChange("midiMin" as any, value)}
+                onChangeMax={(value) => handleChange("midiMax" as any, value)}
+              />
+            }
           </>
         )}
       </Paper>
@@ -315,7 +297,7 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
           {isInput ? (
             // INPUT: MIDI config on right
             <>
-              <FormControl sx={{ width: 140 }}>
+              <FormControl sx={{ width: 160 }}>
                 <InputLabel>MIDI Type</InputLabel>
                 <Select
                   value={localConfig.midiType}
@@ -335,53 +317,34 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                 </Select>
               </FormControl>
 
-              {localConfig.midiType === MIDI_CONTROL_CHANGE &&
-                hasProperty("controller") && (
-                  <TextField
-                    label="Controller"
-                    type="number"
-                    value={(localConfig as InputPinConfig).controller ?? ""}
-                    onChange={(e) =>
-                      handleChange("controller" as any, Number(e.target.value))
-                    }
-                    sx={{ width: 100 }}
-                  />
-                )}
-
-              {localConfig.midiType === MIDI_NOTE_ON && hasProperty("note") && (
+              {localConfig.midiType === MIDI_CONTROL_CHANGE && (
                 <TextField
-                  label="Note"
+                  label="Controller"
                   type="number"
-                  value={(localConfig as InputPinConfig).note ?? ""}
+                  value={(localConfig as InputPinConfig).controller ?? ""}
                   onChange={(e) =>
-                    handleChange("note" as any, Number(e.target.value))
+                    handleChange("controller" as any, Number(e.target.value))
                   }
-                  sx={{ width: 100 }}
+                  sx={{ width: 80 }}
                 />
               )}
 
-              {localConfig.mode === "analog" && hasProperty("outputMin") && (
-                <>
-                  <TextField
-                    label="Min"
-                    type="number"
-                    value={(localConfig as InputPinConfig).outputMin ?? ""}
-                    onChange={(e) =>
-                      handleChange("outputMin" as any, Number(e.target.value))
-                    }
-                    sx={{ width: 100 }}
-                  />
-                  <TextField
-                    label="Max"
-                    type="number"
-                    value={(localConfig as InputPinConfig).outputMax ?? ""}
-                    onChange={(e) =>
-                      handleChange("outputMax" as any, Number(e.target.value))
-                    }
-                    sx={{ width: 100 }}
-                  />
-                </>
+              {localConfig.midiType === MIDI_NOTE_ON && (
+                <TextField
+                  label="Note"
+                  type="number"
+                  value={(localConfig as InputPinConfig).note ?? 60}
+                  onChange={(e) =>
+                    handleChange("note" as any, Number(e.target.value))
+                  }
+                />
               )}
+              <MinMax
+                min={(localConfig as InputPinConfig).midiMin ?? 0}
+                max={(localConfig as InputPinConfig).midiMax ?? 127}
+                onChangeMin={(value) => handleChange("midiMin" as any, value)}
+                onChangeMax={(value) => handleChange("midiMax" as any, value)}
+              />
             </>
           ) : (
             // OUTPUT: Pin config on right
@@ -394,7 +357,7 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                 sx={{ width: 80 }}
               />
 
-              <FormControl sx={{ width: 120 }}>
+              <FormControl>
                 <InputLabel>Mode</InputLabel>
                 <Select
                   value={localConfig.mode}
@@ -405,14 +368,24 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                       e.target.value as typeof localConfig.mode
                     )
                   }
+                  sx={{ width: 160 }}
                 >
                   {availableModes.map((mode) => (
-                    <MenuItem key={mode} value={mode}>
-                      {mode}
+                    <MenuItem key={mode.value} value={mode.value}>
+                      {mode.label}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
+
+              {localConfig.mode === sysexPinModePWMOut && (
+                <MinMax
+                  min={(localConfig as InputPinConfig).pinMin ?? 0}
+                  max={(localConfig as InputPinConfig).pinMax ?? 1024}
+                  onChangeMin={(value) => handleChange("pinMin" as any, value)}
+                  onChangeMax={(value) => handleChange("pinMax" as any, value)}
+                />
+              )}
             </>
           )}
         </>

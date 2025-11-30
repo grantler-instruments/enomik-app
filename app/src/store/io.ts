@@ -19,6 +19,7 @@ import {
   sysexStart,
   sysexPinModeDigitalInPullup,
 } from "./midi.config";
+import { useMIDIStore, type MidiMessage } from "./midi";
 
 export type MidiType =
   | typeof MIDI_NOTE_ON
@@ -27,7 +28,16 @@ export type MidiType =
   | typeof MIDI_PROGRAM_CHANGE
   | typeof MIDI_PITCH_BEND
   | typeof MIDI_POLY_AFTERTOUCH;
-export type PinMode = "analog" | "digital";
+
+export type PinMode =
+  | typeof sysexPinModeDigitalIn
+  | typeof sysexPinModeAnalogIn
+  | typeof sysexPinModeAnalogIn
+  | typeof sysexPinModeDigitalInPullup
+  | typeof sysexPinModePWMOut;
+export type OutputPinMode =
+  | typeof sysexPinModeDigitalOut
+  | typeof sysexPinModePWMOut;
 
 const ENOMIK_COMMAND_SET_PIN_CONFIG = 0x01;
 const ENOMIK_COMMAND_GET_PIN_CONFIG = 0x02;
@@ -37,28 +47,26 @@ export interface InputPinConfig {
   uuid: string;
   pin: number;
   mode: PinMode;
-  channel?: number;
+  channel: number;
   midiType: MidiType;
-  midiMin?: number;
-  midiMax?: number;
-  pinMin?: number;
-  pinMax?: number;
+  midiMin: number;
+  midiMax: number;
+  pinMin9: number;
+  pinMax: number;
   controller?: number;
   note?: number;
 }
-
-export type OutputPinMode = "digital" | "pwm";
 
 export interface OutputPinConfig {
   uuid: string;
   pin: number;
   mode: OutputPinMode;
   midiType: MidiType;
-  midiMin?: number;
-  midiMax?: number;
-  pinMin?: number;
-  pinMax?: number;
-  channel?: number;
+  midiMin: number;
+  midiMax: number;
+  pinMin: number;
+  pinMax: number;
+  channel: number;
   controller?: number;
   note?: number;
   velocitySensitive?: boolean;
@@ -190,15 +198,24 @@ export const useIOStore = create<IOState>()(
               sysexManufacturerId,
               ENOMIK_COMMAND_SET_PIN_CONFIG,
               input.pin,
-              input.mode === "digital"
-                ? sysexPinModeDigitalInPullup
-                : sysexPinModeAnalogIn,
-              input.midiType,
+              input.mode,
+              input.channel || 1,
+              input.midiType / 2,
+              input.midiType === MIDI_CONTROL_CHANGE
+                ? input.controller ?? 0
+                : input.note ?? 0,
               input.midiMin,
               input.midiMax,
               sysexEnd,
             ];
-            console.log("Input:", input, sysexMessage);
+            const msg: MidiMessage = {
+              id: uuidv4(),
+              timestamp: Date.now(),
+              type: "sysex",
+              data: sysexMessage,
+            };
+            console.log("Input:", input, msg);
+            useMIDIStore.getState().sendMessage(msg);
           });
           get().outputs.forEach((output) => {
             const sysexMessage = [
@@ -206,9 +223,7 @@ export const useIOStore = create<IOState>()(
               sysexManufacturerId,
               ENOMIK_COMMAND_SET_PIN_CONFIG,
               output.pin,
-              output.mode === "digital"
-                ? sysexPinModeDigitalOut
-                : sysexPinModePWMOut,
+              output.mode,
               output.midiType,
               output.midiMin,
               output.midiMax,

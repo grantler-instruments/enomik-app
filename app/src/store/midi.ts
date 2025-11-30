@@ -3,7 +3,7 @@ import { devtools, persist } from "zustand/middleware";
 import { WebMidi, Input, Output } from "webmidi";
 import { v4 as uuidv4 } from "uuid";
 
-interface MidiMessage {
+export interface MidiMessage {
   id: string;
   timestamp: number;
   type: string;
@@ -25,9 +25,10 @@ interface MonitorState {
   toggleInput: (inputId: string) => void;
   addMessage: (message: MidiMessage) => void;
   clear: () => void;
+  sendMessage: (message: MidiMessage) => void;
 }
 
-export const useMonitorStore = create<MonitorState>()(
+export const useMIDIStore = create<MonitorState>()(
   devtools(
     persist(
       (set, get) => ({
@@ -126,6 +127,80 @@ export const useMonitorStore = create<MonitorState>()(
 
         clear: () => {
           set({ messages: [] });
+        },
+
+        sendMessage: async (message: MidiMessage) => {
+          // Handle SysEx separately using native Web MIDI API
+          if (message.type === "sysex" && message.data !== undefined) {
+            // Ensure message has proper SysEx framing (0xF0...0xF7)
+            let data = [...message.data];
+            if (data[0] !== 0xf0) {
+              data.unshift(0xf0);
+            }
+            if (data[data.length - 1] !== 0xf7) {
+              data.push(0xf7);
+            }
+
+            console.log("Sending sysex - Raw data:", data);
+
+            // Bypass WebMIDI.js and use native Web MIDI API directly
+            if (navigator.requestMIDIAccess) {
+              try {
+                const midiAccess = await navigator.requestMIDIAccess({
+                  sysex: true,
+                });
+                midiAccess.outputs.forEach((midiOutput) => {
+                  console.log("Sending to:", midiOutput.name);
+                  midiOutput.send(data);
+                });
+              } catch (err) {
+                console.error("Native MIDI send failed:", err);
+              }
+            }
+            return;
+          }
+
+          // Handle all other message types with WebMIDI.js
+          WebMidi.outputs.forEach((output) => {
+            if (
+              message.type === "noteon" &&
+              message.note !== undefined &&
+              message.velocity !== undefined &&
+              message.channel !== undefined
+            ) {
+              output.sendNoteOn(message.note, {
+                attack: message.velocity / 127,
+                channels: [message.channel],
+              });
+            } else if (
+              message.type === "noteoff" &&
+              message.note !== undefined &&
+              message.velocity !== undefined &&
+              message.channel !== undefined
+            ) {
+              output.sendNoteOff(message.note, {
+                release: message.velocity / 127,
+                channels: [message.channel],
+              });
+            } else if (
+              message.type === "controlchange" &&
+              message.controller !== undefined &&
+              message.value !== undefined &&
+              message.channel !== undefined
+            ) {
+              output.sendControlChange(message.controller, message.value, {
+                channels: [message.channel],
+              });
+            } else if (
+              message.type === "pitchbend" &&
+              message.value !== undefined &&
+              message.channel !== undefined
+            ) {
+              output.sendPitchBend(message.value, {
+                channels: [message.channel],
+              });
+            }
+          });
         },
       }),
       {

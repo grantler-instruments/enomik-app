@@ -13,11 +13,14 @@ import ArrowRightIcon from '@mui/icons-material/FileUpload';
 
 import MidiDeviceChooser from './MidiDeviceChooser';
 import { useIOStore } from '../store/io';
+import { Button } from '@mui/material';
+import { useMIDIStore } from '../store/midi';
 
 const Header: React.FC = () => {
   const saveToFile = useIOStore((state) => state.saveToFile);
   const loadFromFile = useIOStore((state) => state.loadFromFile);
   const deploy = useIOStore((state) => state.deploy);
+  const init = useMIDIStore((state) => state.init);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -66,7 +69,9 @@ const Header: React.FC = () => {
           enomik 3000
         </Typography>
 
+
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Button onClick={() => init()} variant='outlined' color='secondary'>start MIDI</Button>
           {/* Download */}
           <IconButton color="inherit" onClick={saveToFile}>
             <DownloadIcon />

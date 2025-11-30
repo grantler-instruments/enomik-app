@@ -7,12 +7,12 @@ import {
   Checkbox,
   Button,
 } from "@mui/material";
-import { useMonitorStore } from "../store/monitor";
+import { useMIDIStore } from "../store/midi";
 import Composer from "./Composer";
 
 function Messages() {
-  const messages = useMonitorStore((state) => state.messages);
-  const clear = useMonitorStore((state) => state.clear);
+  const messages = useMIDIStore((state) => state.messages);
+  const clear = useMIDIStore((state) => state.clear);
 
   return (
     <Box p={2}>
@@ -58,14 +58,14 @@ function MidiComponent() {
   const [selectedOutputId, setSelectedOutputId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  const init = useMonitorStore((state) => state.init);
-  const inputs = useMonitorStore((state) => state.inputs);
-  const outputs = useMonitorStore((state) => state.outputs);
-  const activeInputs = useMonitorStore((state) => state.activeInputs);
-  const toggleInput = useMonitorStore((state) => state.toggleInput);
+  const init = useMIDIStore((state) => state.init);
+  const inputs = useMIDIStore((state) => state.inputs);
+  const outputs = useMIDIStore((state) => state.outputs);
+  const activeInputs = useMIDIStore((state) => state.activeInputs);
+  const toggleInput = useMIDIStore((state) => state.toggleInput);
 
   useEffect(() => {
-    init();
+    // init();
   }, []);
 
   return (
