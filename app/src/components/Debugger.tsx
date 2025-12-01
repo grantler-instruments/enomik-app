@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
-import { WebMidi, Input, Output } from "webmidi";
+import { Input } from "webmidi";
 import {
   Box,
   Typography,
   FormControlLabel,
   Checkbox,
-  Button,
 } from "@mui/material";
 import { useMIDIStore } from "../store/midi";
 import Composer from "./Composer";
 import MessageList from "./MessageList";
+import InitMidi from "./InitMidi";
 
 function MidiComponent() {
   const [selectedOutputId, setSelectedOutputId] = useState<string>("");
@@ -19,10 +19,6 @@ function MidiComponent() {
   const outputs = useMIDIStore((state) => state.outputs);
   const activeInputs = useMIDIStore((state) => state.activeInputs);
   const toggleInput = useMIDIStore((state) => state.toggleInput);
-
-  useEffect(() => {
-    // init();
-  }, []);
 
   return (
     <Box>
@@ -49,7 +45,6 @@ function MidiComponent() {
 }
 
 const Debugger = () => {
-  const init = useMIDIStore((state) => state.init);
   const initialized = useMIDIStore((state) => state.initialized);
   return (
     <Box display={"flex"} flexDirection={"column"} padding={2}>
@@ -58,9 +53,7 @@ const Debugger = () => {
           <Typography variant="body1" gutterBottom>
             To use the MIDI features, please initialize the MIDI system.
           </Typography>
-          <Button onClick={init} variant="contained" color="primary">
-            Initialize MIDI
-          </Button>
+          <InitMidi></InitMidi>
         </Box>
       )}
       {initialized && (

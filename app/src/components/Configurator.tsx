@@ -17,6 +17,7 @@ import MidiDeviceChooser from "./MidiDeviceChooser";
 import { useRef, useState } from "react";
 import { ArrowDropDown } from "@mui/icons-material";
 import Peers from "./Peers";
+import InitMidi from "./InitMidi";
 
 const Configurator = () => {
   const deployConfiguration = useIOStore((state) => state.deploy);
@@ -103,12 +104,7 @@ const Configurator = () => {
           <FolderOpenIcon />
         </IconButton>
         <Box flex={1} />
-        {!initialized && (
-          <Button onClick={() => init()} variant="outlined">
-            initialize MIDI
-          </Button>
-        )}
-
+        <InitMidi></InitMidi>
         <MidiDeviceChooser
           value={selectedOutputId}
           onChange={setSelectedOutputId}

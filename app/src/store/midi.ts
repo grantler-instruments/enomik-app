@@ -50,6 +50,8 @@ export const useMIDIStore = create<MonitorState>()(
             const inputs = Array.from(midiAccess.inputs.values());
             const outputs = Array.from(midiAccess.outputs.values());
 
+            console.log("outputs", outputs)
+
             set({
               inputs,
               outputs,
