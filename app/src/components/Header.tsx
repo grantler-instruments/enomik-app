@@ -9,7 +9,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  
+
   return (
     <AppBar position="static" color="primary" elevation={2}>
       <Toolbar>
@@ -49,6 +49,32 @@ const Header: React.FC = () => {
             }}
           >
             Debugger
+          </Button>
+          <Button
+            component={NavLink}
+            to="/inspector"
+            color="inherit"
+            sx={{
+              "&.active": {
+                backgroundColor: "secondary.main",
+                fontWeight: 600,
+              },
+            }}
+          >
+            Inspector
+          </Button>
+          <Button
+            component={NavLink}
+            to="/uploader"
+            color="inherit"
+            sx={{
+              "&.active": {
+                backgroundColor: "secondary.main",
+                fontWeight: 600,
+              },
+            }}
+          >
+            Uploader
           </Button>
         </Box>
       </Toolbar>
