@@ -9,7 +9,7 @@ const Inputs = () => {
   const addInput = useIOStore((state) => state.addInput);
   return (
     <Box display={"flex"} flexDirection={"column"} padding={2}>
-      <Typography variant="h2">Input PIN to MIDI</Typography>
+      {/* <Typography variant="h2">Input PIN to MIDI</Typography> */}
       <Alert severity="info" sx={{ mb: 2 }}>
         Inputs read data from input pins on the microcontroller and map them to
         MIDI messages. Configure the input pin mode, MIDI message type, and value
@@ -22,11 +22,12 @@ const Inputs = () => {
       <Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>
         <Button
           variant="outlined"
-          color="secondary"
+          color="primary"
           onClick={() => {
             addInput({
               pin: inputs.length,
               mode: sysexPinModeAnalogIn,
+              channel: 1,
               midiType: MIDI_CONTROL_CHANGE,
               midiMin: 0,
               midiMax: 127,
@@ -35,6 +36,7 @@ const Inputs = () => {
               controller: 20,
             });
           }}
+          fullWidth
         >
           Add Input
         </Button>

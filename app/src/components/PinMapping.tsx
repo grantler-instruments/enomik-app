@@ -75,6 +75,7 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
 
   const isInput = type === "input";
   const availableModes = isInput ? INPUT_MODES : OUTPUT_MODES;
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     setLocalConfig(config);
@@ -150,14 +151,16 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
 
   return (
     <Box
-      padding={2}
-      margin={1}
       borderRadius={1}
       display="flex"
       flexDirection="row"
       flexWrap="wrap"
       gap={4}
       alignItems="center"
+      marginTop={1}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      padding={1}
     >
       {/* ---------------- LEFT SECTION (MIDI for outputs, Pin for inputs) ---------------- */}
       <Paper
@@ -394,7 +397,7 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
       {/* THREE-DOT MENU BUTTON */}
       <IconButton
         onClick={handleMenuOpen}
-        sx={{ marginLeft: "auto" }}
+        sx={{ marginLeft: "auto", opacity: hovered ? 1 : 0 }}
         aria-label="more options"
       >
         <MoreVertIcon />

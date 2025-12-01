@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 export interface MidiMessage {
   id: string;
   timestamp: number;
-  type: string;
+  type: number;
   note?: number;
   controller?: number;
   value?: number;
@@ -25,8 +25,10 @@ interface MonitorState {
   toggleInput: (inputId: string) => void;
   addMessage: (message: MidiMessage) => void;
   clear: () => void;
-  sendMessage: (message: MidiMessage) => void;
+  sendMessage: (message: MidiMessage, outputId?: string) => void;
 }
+
+let midiAccess: MIDIAccess | null = null;
 
 export const useMIDIStore = create<MonitorState>()(
   devtools(
@@ -39,75 +41,116 @@ export const useMIDIStore = create<MonitorState>()(
         activeInputs: [],
         init: async () => {
           if (get().initialized) return;
-          await WebMidi.enable({ sysex: true });
-          const inputs = WebMidi.inputs;
-          const outputs = WebMidi.outputs;
-          set({
-            inputs: inputs.map((input) => ({ id: input.id, name: input.name })),
-            outputs: outputs.map((output) => ({
-              id: output.id,
-              name: output.name,
-            })),
-          });
 
-          // Log available MIDI inputs for debugging
-          WebMidi.inputs.forEach((input) => {
-            console.log(`MIDI Input: ${input.name} (ID: ${input.id})`);
-            input.addListener("controlchange", (e) => {
-              console.log("control change", e);
-              if (get().activeInputs.includes(input.id)) {
-                get().addMessage({
-                  id: uuidv4(),
-                  timestamp: e.timestamp,
-                  type: "controlchange",
-                  controller: e.controller.number,
-                  value: e.rawValue,
-                  channel: e.message.channel,
-                });
-              }
+          try {
+            midiAccess = await navigator.requestMIDIAccess({ sysex: true });
+            console.log("MIDI access granted");
+
+            // Convert inputs to array
+            const inputs = Array.from(midiAccess.inputs.values());
+            const outputs = Array.from(midiAccess.outputs.values());
+
+            set({
+              inputs,
+              outputs,
             });
-            input.addListener("noteon", (e) => {
-              if (get().activeInputs.includes(input.id)) {
-                get().addMessage({
-                  id: uuidv4(),
-                  timestamp: e.timestamp,
-                  type: "noteon",
-                  note: e.note.number,
-                  velocity: e.message.dataBytes[2], //TODO
-                  channel: e.message.channel,
-                });
-              }
+
+            // Set up MIDI input listeners
+            inputs.forEach((input) => {
+              console.log(`MIDI Input: ${input.name} (ID: ${input.id})`);
+
+              input.onmidimessage = (event) => {
+                if (!get().activeInputs.includes(input.id)) return;
+                if (!event.data || event.data.length === 0) return;
+
+                const [status, data1, data2] = event.data;
+                const channel = (status & 0x0f) + 1; // Convert to 1-indexed
+                const messageType = status & 0xf0;
+
+                switch (messageType) {
+                  case 0xb0: // Control Change
+                    get().addMessage({
+                      id: uuidv4(),
+                      timestamp: event.timeStamp,
+                      type: messageType,
+                      controller: data1,
+                      value: data2,
+                      channel: channel,
+                    });
+                    break;
+
+                  case 0x90: // Note On
+                    if (data2 > 0) {
+                      // Velocity > 0 means note on
+                      get().addMessage({
+                        id: uuidv4(),
+                        timestamp: event.timeStamp,
+                        type: messageType,
+                        note: data1,
+                        velocity: data2,
+                        channel: channel,
+                      });
+                    } else {
+                      // Velocity = 0 is sometimes used as note off
+                      get().addMessage({
+                        id: uuidv4(),
+                        timestamp: event.timeStamp,
+                        type: messageType,
+                        note: data1,
+                        velocity: data2,
+                        channel: channel,
+                      });
+                    }
+                    break;
+
+                  case 0x80: // Note Off
+                    get().addMessage({
+                      id: uuidv4(),
+                      timestamp: event.timeStamp,
+                      type: messageType,
+                      note: data1,
+                      velocity: data2,
+                      channel: channel,
+                    });
+                    break;
+
+                  case 0xe0: // Pitch Bend
+                    // Combine LSB and MSB into 14-bit value (0-16383)
+                    const rawValue = data1 | (data2 << 7);
+                    get().addMessage({
+                      id: uuidv4(),
+                      timestamp: event.timeStamp,
+                      type: messageType,
+                      value: rawValue - 8192, // Center at 0
+                      channel: channel,
+                    });
+                    break;
+                  case 0xf0: // SysEx
+                    get().addMessage({
+                      id: uuidv4(),
+                      timestamp: event.timeStamp,
+                      type: messageType,
+                      data: Array.from(event.data),
+                    });
+                    break;
+                  default:
+                    // Handle other message types if needed
+                    break;
+                }
+              };
             });
-            input.addListener("noteoff", (e) => {
-              if (get().activeInputs.includes(input.id)) {
-                get().addMessage({
-                  id: uuidv4(),
-                  timestamp: e.timestamp,
-                  type: "noteoff",
-                  note: e.note.number,
-                  velocity: e.message.dataBytes[2], //TODO
-                  channel: e.message.channel,
-                });
-              }
-            });
-            input.addListener("pitchbend", (e) => {
-              if (get().activeInputs.includes(input.id)) {
-                get().addMessage({
-                  id: uuidv4(),
-                  timestamp: e.timestamp,
-                  type: "pitchbend",
-                  value: e.rawValue ? e.rawValue - 8192 : 0,
-                  channel: e.message.channel,
-                });
-              }
-            });
-          });
-          console.log("Initializing MIDI Monitor");
-          set({ initialized: true });
+
+            console.log("Initializing MIDI Monitor");
+            set({ initialized: true });
+          } catch (err) {
+            console.error("Failed to get MIDI access:", err);
+          }
         },
+
         toggleInput: (inputId: string) => {
           const activeInputs = get().activeInputs;
-          const inputs = WebMidi.inputs;
+          const inputs = get().inputs;
+          console.log("Toggling input:", inputId, inputs);
           const input = inputs.find((inp) => inp.id === inputId);
           if (!input) return;
 
@@ -129,76 +172,62 @@ export const useMIDIStore = create<MonitorState>()(
           set({ messages: [] });
         },
 
-        sendMessage: async (message: MidiMessage) => {
-          // Handle SysEx separately using native Web MIDI API
-          if (message.type === "sysex" && message.data !== undefined) {
-            // Ensure message has proper SysEx framing (0xF0...0xF7)
-            let data = [...message.data];
-            if (data[0] !== 0xf0) {
-              data.unshift(0xf0);
-            }
-            if (data[data.length - 1] !== 0xf7) {
-              data.push(0xf7);
-            }
-
-            console.log("Sending sysex - Raw data:", data);
-
-            // Bypass WebMIDI.js and use native Web MIDI API directly
-            if (navigator.requestMIDIAccess) {
-              try {
-                const midiAccess = await navigator.requestMIDIAccess({
-                  sysex: true,
-                });
-                midiAccess.outputs.forEach((midiOutput) => {
-                  console.log("Sending to:", midiOutput.name);
-                  midiOutput.send(data);
-                });
-              } catch (err) {
-                console.error("Native MIDI send failed:", err);
-              }
-            }
+        sendMessage: async (message: MidiMessage, outputId = "") => {
+          if (!midiAccess) {
+            console.error("MIDI not initialized");
             return;
           }
+          console.log("Sending MIDI message", message);
 
-          // Handle all other message types with WebMIDI.js
-          WebMidi.outputs.forEach((output) => {
-            if (
-              message.type === "noteon" &&
+          midiAccess.outputs.forEach((output) => {
+            if (output.id !== outputId && outputId !== "") return;
+            if (message.type === 240 && message.data !== undefined) {
+              let data = [...message.data];
+              if (data[0] !== 0xf0) data.unshift(0xf0);
+              if (data[data.length - 1] !== 0xf7) data.push(0xf7);
+              console.log("Sending sysex - Raw data:", data);
+              output.send(data);
+            } else if (
+              message.type === 144 &&
               message.note !== undefined &&
               message.velocity !== undefined &&
               message.channel !== undefined
             ) {
-              output.sendNoteOn(message.note, {
-                attack: message.velocity / 127,
-                channels: [message.channel],
-              });
+              output.send([
+                0x90 | (message.channel - 1),
+                message.note,
+                message.velocity,
+              ]);
             } else if (
-              message.type === "noteoff" &&
+              message.type === 128 &&
               message.note !== undefined &&
               message.velocity !== undefined &&
               message.channel !== undefined
             ) {
-              output.sendNoteOff(message.note, {
-                release: message.velocity / 127,
-                channels: [message.channel],
-              });
+              output.send([
+                0x80 | (message.channel - 1),
+                message.note,
+                message.velocity,
+              ]);
             } else if (
-              message.type === "controlchange" &&
+              message.type === 176 &&
               message.controller !== undefined &&
               message.value !== undefined &&
               message.channel !== undefined
             ) {
-              output.sendControlChange(message.controller, message.value, {
-                channels: [message.channel],
-              });
+              output.send([
+                0xb0 | (message.channel - 1),
+                message.controller,
+                message.value,
+              ]);
             } else if (
-              message.type === "pitchbend" &&
+              message.type === 224 &&
               message.value !== undefined &&
               message.channel !== undefined
             ) {
-              output.sendPitchBend(message.value, {
-                channels: [message.channel],
-              });
+              const lsb = message.value & 0x7f;
+              const msb = (message.value >> 7) & 0x7f;
+              output.send([0xe0 | (message.channel - 1), lsb, msb]);
             }
           });
         },

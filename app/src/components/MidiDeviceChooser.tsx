@@ -1,57 +1,46 @@
-import React, { useEffect, useState } from 'react';
-import { WebMidi, Output } from 'webmidi';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select, { type SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
+import { useEffect, useState } from "react";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import { useMIDIStore } from "../store/midi";
 
-const MidiDeviceChooser: React.FC = () => {
-  const [outputs, setOutputs] = useState<Output[]>([]);
-  const [selectedId, setSelectedId] = useState<string>('');
+const MidiDeviceChooser = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) => {
+  const init = useMIDIStore((state) => state.init);
+  const outputs = useMIDIStore((state) => state.outputs);
+  const initialized = useMIDIStore((state) => state.initialized);
+  const [selectedId, setSelectedId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const enableWebMIDI = async () => {
-      try {
-        await WebMidi.enable();
-        setOutputs(WebMidi.outputs);
-      } catch (err) {
-        console.error('Error enabling WebMIDI:', err);
-        setError('WebMIDI is not supported or permission was denied.');
-      }
-    };
-
-    enableWebMIDI();
-
-    // Cleanup on unmount
-    return () => {
-      if (WebMidi.enabled) WebMidi.disable();
-    };
-  }, []);
-
-  const handleChange = (event: SelectChangeEvent<string>) => {
-    setSelectedId(event.target.value);
-  };
+  useEffect(() => {}, []);
 
   return (
-    <Box sx={{ minWidth: 250, my: 2 }}>
+    <Box>
       <FormControl fullWidth>
         <InputLabel id="midi-device-select-label">MIDI Output</InputLabel>
         <Select
           labelId="midi-device-select-label"
-          value={selectedId}
+          value={value}
           label="MIDI Output"
-          onChange={handleChange}
+          onChange={(e) => onChange(e.target.value)}
           disabled={outputs.length === 0 || !!error}
-          size='small'
+          size="small"
         >
-          {outputs.map((output) => (
-            <MenuItem key={output.id} value={output.id}>
-              {output.name || `Device ${output.id}`}
-            </MenuItem>
-          ))}
+          {outputs.map((output, index) => {
+            return (
+              <MenuItem key={`midi-output-${index}`} value={index}>
+                {output.name}
+              </MenuItem>
+            );
+          })}
         </Select>
       </FormControl>
       {error && (

@@ -9,56 +9,12 @@ import {
 } from "@mui/material";
 import { useMIDIStore } from "../store/midi";
 import Composer from "./Composer";
-
-function Messages() {
-  const messages = useMIDIStore((state) => state.messages);
-  const clear = useMIDIStore((state) => state.clear);
-
-  return (
-    <Box p={2}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
-        <Typography variant="h6">Messages</Typography>
-        <Button variant="outlined" onClick={clear}>
-          Clear
-        </Button>
-      </Box>
-
-      <Box
-        sx={{
-          maxHeight: "400px",
-          overflowY: "auto",
-          fontFamily: "monospace",
-          fontSize: "12px",
-        }}
-      >
-        {messages.map((msg) => (
-          <Box key={msg.id} mb={0.5}>
-            <Typography variant="body2" component="span">
-              [{new Date(msg.timestamp).toLocaleTimeString()}]{msg.type}
-              {msg.note !== undefined && ` Note: ${msg.note}`}
-              {msg.controller !== undefined && ` Controller: ${msg.controller}`}
-              {msg.value !== undefined && ` Value: ${msg.value}`}
-              {msg.velocity !== undefined && ` Vel: ${msg.velocity}`}
-              {msg.channel !== undefined && ` Ch: ${msg.channel}`}
-              {msg.data && ` Data: ${msg.data.join(", ")}`}
-            </Typography>
-          </Box>
-        ))}
-      </Box>
-    </Box>
-  );
-}
+import MessageList from "./MessageList";
 
 function MidiComponent() {
   const [selectedOutputId, setSelectedOutputId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  const init = useMIDIStore((state) => state.init);
   const inputs = useMIDIStore((state) => state.inputs);
   const outputs = useMIDIStore((state) => state.outputs);
   const activeInputs = useMIDIStore((state) => state.activeInputs);
@@ -98,14 +54,30 @@ function MidiComponent() {
   );
 }
 
-const Monitor = () => {
+const Debugger = () => {
+  const init = useMIDIStore((state) => state.init);
+  const initialized = useMIDIStore((state) => state.initialized);
   return (
-    <Box>
-      <Composer></Composer>
-      <MidiComponent></MidiComponent>
-      <Messages />
+    <Box display={"flex"} flexDirection={"column"} padding={2}>
+      {!initialized && (
+        <Box marginTop={"64px"} textAlign={"center"} display={"flex"} flexDirection={"column"} alignItems={"center"} gap={2}>
+          <Typography variant="body1" gutterBottom>
+            To use the MIDI features, please initialize the MIDI system.
+          </Typography>
+          <Button onClick={init} variant="contained" color="primary">
+            Initialize MIDI
+          </Button>
+        </Box>
+      )}
+      {initialized && (
+        <>
+          <Composer />
+          <MidiComponent />
+          <MessageList />
+        </>
+      )}
     </Box>
   );
 };
 
-export default Monitor;
+export default Debugger;

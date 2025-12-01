@@ -6,10 +6,10 @@ const theme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#e56b6f",
+      main: "#ff7d00",
     },
     secondary: {
-      main: "#6D597A",
+      main: "#ffecd1",
     },
     background: {
       default: "#efefef"
@@ -17,15 +17,14 @@ const theme = createTheme({
   },
     typography: {
     h1: {
-      fontSize: "3em"
     },
     h2: {
-      letterSpacing: '0.15em', // 👈 this adds spacing between letters
-      marginBottom: "24px",
-      fontSize: "2.5em"
+      fontSize: "1.5rem",
+      marginBottom: "1rem"
     },
     h3: {
-      fontSize: "2em"
+      fontSize: "1.2rem",
+      marginBottom: "1rem"
     },
   },
 });

@@ -1,102 +1,55 @@
+import React from "react";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
-import React, { useRef } from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import Box from '@mui/material/Box';
-
-import DownloadIcon from '@mui/icons-material/Download';
-import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import ArrowRightIcon from '@mui/icons-material/FileUpload';
-
-import MidiDeviceChooser from './MidiDeviceChooser';
-import { useIOStore } from '../store/io';
-import { Button } from '@mui/material';
-import { useMIDIStore } from '../store/midi';
+import { Button } from "@mui/material";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const Header: React.FC = () => {
-  const saveToFile = useIOStore((state) => state.saveToFile);
-  const loadFromFile = useIOStore((state) => state.loadFromFile);
-  const deploy = useIOStore((state) => state.deploy);
-  const init = useMIDIStore((state) => state.init);
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target?.result as string);
-        loadFromFile(json);
-      } catch (err) {
-        console.error('Failed to load JSON', err);
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const handleOpenClick = () => {
-    handleUploadClick();
-  };
-
+  const navigate = useNavigate();
+  
   return (
     <AppBar position="static" color="primary" elevation={2}>
       <Toolbar>
-        {/* <IconButton
-          size="large"
-          edge="start"
-          color="inherit"
-          aria-label="menu"
-          sx={{ mr: 2 }}
-        >
-          <MenuIcon />
-        </IconButton> */}
-
         <Typography
           variant="h6"
           component="div"
-          sx={{ flexGrow: 1, fontWeight: 600 }}
+          sx={{ flexGrow: 1, fontWeight: 600, cursor: "pointer" }}
           textTransform="uppercase"
+          onClick={() => navigate("/")}
         >
           enomik 3000
         </Typography>
 
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Button onClick={() => init()} variant='outlined' color='secondary'>start MIDI</Button>
-          {/* Download */}
-          <IconButton color="inherit" onClick={saveToFile}>
-            <DownloadIcon />
-          </IconButton>
-
-          {/* Open (load file) */}
-          <IconButton color="inherit" onClick={handleOpenClick}>
-            <FolderOpenIcon />
-          </IconButton>
-
-
-          {/* Hidden file input */}
-          <input
-            type="file"
-            accept="application/json"
-            style={{ display: 'none' }}
-            ref={fileInputRef}
-            onChange={handleFileChange}
-          />
-
-          <MidiDeviceChooser />
-          {/* Upload (explicit import) */}
-          <IconButton color="inherit" onClick={() => deploy()}>
-            <ArrowRightIcon />
-          </IconButton>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Button
+            component={NavLink}
+            to="/"
+            color="inherit"
+            sx={{
+              "&.active": {
+                backgroundColor: "secondary.main",
+                fontWeight: 600,
+              },
+            }}
+          >
+            Configurator
+          </Button>
+          <Button
+            component={NavLink}
+            to="/debugger"
+            color="inherit"
+            sx={{
+              "&.active": {
+                backgroundColor: "secondary.main",
+                fontWeight: 600,
+              },
+            }}
+          >
+            Debugger
+          </Button>
         </Box>
       </Toolbar>
     </AppBar>

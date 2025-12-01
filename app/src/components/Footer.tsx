@@ -26,7 +26,7 @@ const Footer: React.FC = () => {
       <Divider sx={{ mb: 4, mt: 4 }} />
       <Typography variant="body2" color="text.secondary">
         {t('made_with_love')}{" "}
-        <Link color="secondary" href="https://grantler-instruments.com" target="_blank" rel="noopener">
+        <Link color="primary" href="https://grantler-instruments.com" target="_blank" rel="noopener">
           grantler instruments
         </Link>{" "}
         {new Date().getFullYear()}
