@@ -4,7 +4,7 @@ import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
   palette: {
-    mode: "light",
+    mode: "dark",
     primary: {
       main: "#ff7d00",
     },
@@ -12,7 +12,7 @@ const theme = createTheme({
       main: "#ffecd1",
     },
     background: {
-      default: "#efefef"
+      default: "#242424"
     }
   },
     typography: {

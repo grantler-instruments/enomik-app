@@ -2,12 +2,10 @@ import { Box, Button, IconButton, Typography } from "@mui/material";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import ArrowRightIcon from "@mui/icons-material/FileUpload";
 
 import Inputs from "./Inputs";
 import Outputs from "./Outputs";
@@ -22,7 +20,6 @@ import InitMidi from "./InitMidi";
 const Configurator = () => {
   const deployConfiguration = useIOStore((state) => state.deploy);
   const initialized = useMIDIStore((state) => state.initialized);
-  const init = useMIDIStore((state) => state.init);
   const [selectedOutputId, setSelectedOutputId] = useState<string>("");
 
   const saveToFile = useIOStore((state) => state.saveToFile);
@@ -50,7 +47,7 @@ const Configurator = () => {
   };
 
   return (
-    <Box display={"flex"} flexDirection={"column"} gap={4}>
+    <Box display={"flex"} flexDirection={"column"} gap={4} marginBottom={2}>
       <Box marginTop={2}>
         <Accordion defaultExpanded>
           <AccordionSummary

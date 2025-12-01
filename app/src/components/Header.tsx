@@ -30,7 +30,7 @@ const Header: React.FC = () => {
             color="inherit"
             sx={{
               "&.active": {
-                backgroundColor: "secondary.main",
+                backgroundColor: "primary.main",
                 fontWeight: 600,
               },
             }}
@@ -43,7 +43,7 @@ const Header: React.FC = () => {
             color="inherit"
             sx={{
               "&.active": {
-                backgroundColor: "secondary.main",
+                backgroundColor: "primary.main",
                 fontWeight: 600,
               },
             }}
@@ -56,7 +56,7 @@ const Header: React.FC = () => {
             color="inherit"
             sx={{
               "&.active": {
-                backgroundColor: "secondary.main",
+                backgroundColor: "primary.main",
                 fontWeight: 600,
               },
             }}
@@ -69,7 +69,7 @@ const Header: React.FC = () => {
             color="inherit"
             sx={{
               "&.active": {
-                backgroundColor: "secondary.main",
+                backgroundColor: "primary.main",
                 fontWeight: 600,
               },
             }}
