@@ -26,14 +26,8 @@ function MidiComponent() {
 
   return (
     <Box>
-      {/* Outputs section */}
-      <Box mb={2}>
-        <Typography variant="h6">MIDI Outputs</Typography>
-        {/* Your existing output selection */}
-      </Box>
-
       {/* Inputs section with checkboxes */}
-      <Box>
+      <Box marginTop={2}>
         <Typography variant="h6">MIDI Inputs</Typography>
         {inputs.map((input: Input) => (
           <FormControlLabel
