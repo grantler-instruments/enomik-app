@@ -128,7 +128,7 @@ const Composer = () => {
             label="MIDI Output"
           >
             <MenuItem value={""}>All outputs</MenuItem>
-            {outputs.map((out, index) => (
+            {outputs.map((out) => (
               <MenuItem key={out.id} value={out.id}>
                 {out.name}
               </MenuItem>

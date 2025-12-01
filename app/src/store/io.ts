@@ -40,7 +40,7 @@ export type OutputPinMode =
   | typeof sysexPinModePWMOut;
 
 const ENOMIK_COMMAND_SET_PIN_CONFIG = 0x01;
-const ENOMIK_COMMAND_GET_PIN_CONFIG = 0x02;
+// const ENOMIK_COMMAND_GET_PIN_CONFIG = 0x02;
 const ENOMIK_COMMAND_ADD_PEER = 0x07;
 const ENOMIK_COMMAND_RESET = 0x09;
 

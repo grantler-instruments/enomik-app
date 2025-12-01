@@ -15,7 +15,7 @@ const MidiDeviceChooser = ({
   onChange: (value: string) => void;
 }) => {
   const outputs = useMIDIStore((state) => state.outputs);
-  const [error, setError] = useState<string | null>(null);
+  const [error, _] = useState<string | null>(null);
 
   useEffect(() => {}, []);
 

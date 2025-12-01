@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input } from "webmidi";
 import {
   Box,
@@ -12,11 +12,9 @@ import MessageList from "./MessageList";
 import InitMidi from "./InitMidi";
 
 function MidiComponent() {
-  const [selectedOutputId, setSelectedOutputId] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, _] = useState<string | null>(null);
 
   const inputs = useMIDIStore((state) => state.inputs);
-  const outputs = useMIDIStore((state) => state.outputs);
   const activeInputs = useMIDIStore((state) => state.activeInputs);
   const toggleInput = useMIDIStore((state) => state.toggleInput);
 

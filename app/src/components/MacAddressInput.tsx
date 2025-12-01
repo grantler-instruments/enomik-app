@@ -34,7 +34,7 @@ const MacAddressInput = ({
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (index: number, e: any) => {
     // Move to previous field on backspace if current field is empty
     if (e.key === "Backspace" && macParts[index] === "" && index > 0) {
       inputRefs.current[index - 1]?.focus();
