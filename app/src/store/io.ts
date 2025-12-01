@@ -9,9 +9,9 @@ import {
   MIDI_PITCH_BEND,
   MIDI_POLY_AFTERTOUCH,
   sysexEnd,
-  sysexInput,
+  // sysexInput,
   sysexManufacturerId,
-  sysexOutput,
+  // sysexOutput,
   sysexPinModeAnalogIn,
   sysexPinModeDigitalIn,
   sysexPinModeDigitalOut,
@@ -208,7 +208,7 @@ export const useIOStore = create<IOState>()(
           uuid: p.uuid || uuidv4(),
         }));
 
-        set(() => ({ inputs, outputs }));
+        set(() => ({ inputs, outputs, peers }));
       },
 
       addPeer: (peer) =>

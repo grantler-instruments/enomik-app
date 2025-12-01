@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
-import Select, { type SelectChangeEvent } from "@mui/material/Select";
+import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -14,10 +14,7 @@ const MidiDeviceChooser = ({
   value: string;
   onChange: (value: string) => void;
 }) => {
-  const init = useMIDIStore((state) => state.init);
   const outputs = useMIDIStore((state) => state.outputs);
-  const initialized = useMIDIStore((state) => state.initialized);
-  const [selectedId, setSelectedId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {}, []);

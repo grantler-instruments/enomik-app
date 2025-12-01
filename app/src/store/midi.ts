@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { WebMidi, Input, Output } from "webmidi";
 import { v4 as uuidv4 } from "uuid";
 
 export interface MidiMessage {

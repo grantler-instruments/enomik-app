@@ -1,6 +1,5 @@
-import { Alert, Box, Button, Typography } from "@mui/material";
+import { Alert, Box, Button } from "@mui/material";
 import { useIOStore } from "../store/io";
-// import Input from "./Input";
 import { MIDI_CONTROL_CHANGE, sysexPinModeAnalogIn } from "../store/midi.config";
 import PinMapping from "./PinMapping";
 

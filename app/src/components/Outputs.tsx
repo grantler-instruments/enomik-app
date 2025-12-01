@@ -1,7 +1,7 @@
-import { Alert, Box, Button, Typography } from "@mui/material";
+import { Alert, Box, Button } from "@mui/material";
 import { useIOStore } from "../store/io";
 // import Output from "./Output";
-import { MIDI_CONTROL_CHANGE, sysexPinModeDigitalInPullup, sysexPinModePWMOut } from "../store/midi.config";
+import { MIDI_CONTROL_CHANGE, sysexPinModePWMOut } from "../store/midi.config";
 import PinMapping from "./PinMapping";
 
 const Outputs = () => {
