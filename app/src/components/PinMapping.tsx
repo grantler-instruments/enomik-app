@@ -218,6 +218,22 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
         ) : (
           // OUTPUT: MIDI config first
           <>
+            <FormControl sx={{ width: 80 }}>
+              <InputLabel>Channel</InputLabel>
+              <Select
+                value={localConfig.channel}
+                label="Channel"
+                onChange={(e) =>
+                  handleChange("channel", Number(e.target.value))
+                }
+              >
+                {[...Array(16)].map((_, i) => (
+                  <MenuItem key={i + 1} value={i + 1}>
+                    {i + 1}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <FormControl sx={{ width: 160 }}>
               <InputLabel>MIDI Type</InputLabel>
               <Select
@@ -300,6 +316,22 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
           {isInput ? (
             // INPUT: MIDI config on right
             <>
+              <FormControl sx={{ width: 80 }}>
+                <InputLabel>Channel</InputLabel>
+                <Select
+                  value={localConfig.channel}
+                  label="Channel"
+                  onChange={(e) =>
+                    handleChange("channel", Number(e.target.value))
+                  }
+                >
+                  {[...Array(16)].map((_, i) => (
+                    <MenuItem key={i + 1} value={i + 1}>
+                      {i + 1}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <FormControl sx={{ width: 160 }}>
                 <InputLabel>MIDI Type</InputLabel>
                 <Select
