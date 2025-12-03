@@ -195,12 +195,12 @@ export const useMIDIStore = create<MonitorState>()(
           set({ messages: [] });
         },
 
-        sendMessage: async (message: MidiMessage, outputId = "") => {
+        sendMessage: async (message: MidiMessage, outputId = "-1") => {
           if (!midiAccess) {
             console.error("MIDI not initialized");
             return;
           }
-          if (outputId === "") {
+          if (outputId === "-1") {
             midiAccess.outputs.forEach((output) => {
               get().addOutgoingMessage(message, output.id);
             });
@@ -209,7 +209,7 @@ export const useMIDIStore = create<MonitorState>()(
           }
 
           midiAccess.outputs.forEach((output) => {
-            if (output.id !== outputId && outputId !== "") return;
+            if (output.id !== outputId && outputId !== "-1") return;
             if (message.type === 240 && message.data !== undefined) {
               let data = [...message.data];
               if (data[0] !== 0xf0) data.unshift(0xf0);

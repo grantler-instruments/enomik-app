@@ -13,7 +13,12 @@ import AllNone from "./AllNone";
 const midiTypes = [128, 144, 176, 192, 224, 240];
 export { midiTypes };
 
-const Filter = ({onActiveInputsChange, onActiveOutputsChange, onActiveChannelsChange, onActiveTypesChange}:{
+const Filter = ({
+  onActiveInputsChange,
+  onActiveOutputsChange,
+  onActiveChannelsChange,
+  onActiveTypesChange,
+}: {
   onActiveInputsChange: (inputs: string[]) => void;
   onActiveOutputsChange: (outputs: string[]) => void;
   onActiveChannelsChange: (channels: number[]) => void;
@@ -29,38 +34,44 @@ const Filter = ({onActiveInputsChange, onActiveOutputsChange, onActiveChannelsCh
   );
 
   useEffect(() => {
-    setActiveInputs(
-      inputs.filter((input) => input.active).map((input) => input.id)
-    );
-    setActiveOutputs(
-      outputs.filter((output) => output.active).map((output) => output.id)
-    );
-  }, [inputs, outputs]);
+    const newActiveInputs = inputs.map((input) => input.id);
+    setActiveInputs(newActiveInputs);
+    onActiveInputsChange(newActiveInputs);
+  }, [inputs]);
+  useEffect(() => {
+    const newActiveOutputs = outputs.map((output) => output.id);
+    setActiveOutputs(newActiveOutputs);
+    onActiveOutputsChange(newActiveOutputs);
+  }, [outputs]);
 
   const toggleInput = (id: string) => {
-    const newInputs = activeInputs.includes(id) ? activeInputs.filter((inputId) => inputId !== id) : [...activeInputs, id];
+    const newInputs = activeInputs.includes(id)
+      ? activeInputs.filter((inputId) => inputId !== id)
+      : [...activeInputs, id];
     setActiveInputs(newInputs);
-    onActiveInputsChange(newInputs)
+    onActiveInputsChange(newInputs);
   };
   const toggleOutput = (id: string) => {
-    const newOutputs = activeOutputs.includes(id) ? activeOutputs.filter((outputId) => outputId !== id) : [...activeOutputs, id];
-      setActiveOutputs(newOutputs);
-      onActiveOutputsChange(newOutputs)
+    const newOutputs = activeOutputs.includes(id)
+      ? activeOutputs.filter((outputId) => outputId !== id)
+      : [...activeOutputs, id];
+    setActiveOutputs(newOutputs);
+    onActiveOutputsChange(newOutputs);
   };
   const toggleType = (type: number) => {
-    if (activeTypes.includes(type)) {
-      setActiveTypes(activeTypes.filter((t) => t !== type));
-    } else {
-      setActiveTypes([...activeTypes, type]);
-    }
+    const newActiveTypes = activeTypes.includes(type)
+      ? activeTypes.filter((t) => t !== type)
+      : [...activeTypes, type];
+    setActiveTypes(newActiveTypes);
+    onActiveTypesChange(newActiveTypes);
   };
 
   const toggleChannel = (channel: number) => {
-    if (activeChannels.includes(channel)) {
-      setActiveChannels(activeChannels.filter((c) => c !== channel));
-    } else {
-      setActiveChannels([...activeChannels, channel]);
-    }
+    const newActiveChannels = activeChannels.includes(channel)
+      ? activeChannels.filter((c) => c !== channel)
+      : [...activeChannels, channel];
+    setActiveChannels(newActiveChannels);
+    onActiveChannelsChange(newActiveChannels);
   };
 
   return (
@@ -71,8 +82,14 @@ const Filter = ({onActiveInputsChange, onActiveOutputsChange, onActiveChannelsCh
           <Box display={"flex"} flexDirection={"row"} gap={2}>
             <Typography variant="h4">Inputs</Typography>
             <AllNone
-              onAll={() => setActiveInputs(inputs.map((input) => input.id))}
-              onNone={() => setActiveInputs([])}
+              onAll={() => {
+                setActiveInputs(inputs.map((input) => input.id));
+                onActiveInputsChange(inputs.map((input) => input.id));
+              }}
+              onNone={() => {
+                setActiveInputs([])
+                onActiveInputsChange([]);
+              }}
             />
           </Box>
           {inputs.map((input) => (
@@ -93,8 +110,14 @@ const Filter = ({onActiveInputsChange, onActiveOutputsChange, onActiveChannelsCh
           <Box display={"flex"} flexDirection={"row"} gap={2}>
             <Typography variant="h4">Outputs</Typography>
             <AllNone
-              onAll={() => setActiveOutputs(outputs.map((output) => output.id))}
-              onNone={() => setActiveOutputs([])}
+              onAll={() => {
+                setActiveOutputs(outputs.map((output) => output.id));
+                onActiveOutputsChange(outputs.map((output) => output.id));
+              }}
+              onNone={() => {
+                setActiveOutputs([]);
+                onActiveOutputsChange([]);
+              }}
             />
           </Box>
           {outputs.map((output) => (
@@ -115,10 +138,15 @@ const Filter = ({onActiveInputsChange, onActiveOutputsChange, onActiveChannelsCh
         <Box display={"flex"} gap={2}>
           <Typography variant="h4">Channels</Typography>
           <AllNone
-            onAll={() =>
-              setActiveChannels(Array.from({ length: 16 }, (_, i) => i))
-            }
-            onNone={() => setActiveChannels([])}
+            onAll={() =>{
+              const newActiveChannels = Array.from({ length: 16 }, (_, i) => i + 1);
+              setActiveChannels(newActiveChannels);
+              onActiveChannelsChange(newActiveChannels);
+            }}
+            onNone={() => {
+              setActiveChannels([]);
+              onActiveChannelsChange([]);
+            }}
           />
         </Box>
         <Box display={"flex"} flexDirection={"row"} gap={2}>
@@ -127,8 +155,8 @@ const Filter = ({onActiveInputsChange, onActiveOutputsChange, onActiveChannelsCh
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={activeChannels.includes(i)}
-                    onChange={() => toggleChannel(i)}
+                    checked={activeChannels.includes(i+1)}
+                    onChange={() => toggleChannel(i+1)}
                   />
                 }
                 label={`${i + 1}`}

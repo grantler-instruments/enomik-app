@@ -14,7 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 const Composer = () => {
   const sendMessage = useMIDIStore((state) => state.sendMessage);
   const outputs = useMIDIStore((state) => state.outputs);
-  const [output, setOutput] = useState("");
+  const [output, setOutput] = useState("-1");
   const [channel, setChannel] = useState(1);
   const [type, setType] = useState(144);
   const [noteOrCc, setNoteOrCc] = useState(60);
@@ -125,7 +125,7 @@ const Composer = () => {
             onChange={(e) => setOutput(e.target.value)}
             label="MIDI Output"
           >
-            <MenuItem value={""}>All outputs</MenuItem>
+            <MenuItem value={"-1"}>All outputs</MenuItem>
             {outputs.map((out) => (
               <MenuItem key={out.id} value={out.id}>
                 {out.name}

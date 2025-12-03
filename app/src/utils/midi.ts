@@ -6,6 +6,8 @@ const typeToLabel = (type: number) => {
       return "Note On";
     case 176:
       return "Control Change";
+    case 192:
+      return "Program Change";
     case 224:
       return "Pitch Bend";
     case 240:
