@@ -14,15 +14,21 @@ export interface MidiMessage {
   data?: number[];
 }
 
+export interface MidiMessageWithDirectionAndDevice extends MidiMessage {
+  incoming: boolean;
+  deviceId: string;
+}
+
 interface MonitorState {
   initialized: boolean;
-  messages: MidiMessage[];
+  messages: MidiMessageWithDirectionAndDevice[];
   inputs: any[];
   outputs: any[];
   activeInputs: string[];
   init: () => void;
   toggleInput: (inputId: string) => void;
-  addMessage: (message: MidiMessage) => void;
+  addIncomingMessage: (message: MidiMessage, deviceId: string) => void;
+  addOutgoingMessage: (message: MidiMessage, deviceId: string) => void;
   clear: () => void;
   sendMessage: (message: MidiMessage, outputId?: string) => void;
 }
@@ -49,8 +55,6 @@ export const useMIDIStore = create<MonitorState>()(
             const inputs = Array.from(midiAccess.inputs.values());
             const outputs = Array.from(midiAccess.outputs.values());
 
-            console.log("outputs", outputs)
-
             set({
               inputs,
               outputs,
@@ -61,78 +65,86 @@ export const useMIDIStore = create<MonitorState>()(
               console.log(`MIDI Input: ${input.name} (ID: ${input.id})`);
 
               input.onmidimessage = (event) => {
-                if (!get().activeInputs.includes(input.id)) return;
                 if (!event.data || event.data.length === 0) return;
 
                 const [status, data1, data2] = event.data;
                 const channel = (status & 0x0f) + 1; // Convert to 1-indexed
                 const messageType = status & 0xf0;
 
+                const message = {
+                  id: uuidv4(),
+                  timestamp: event.timeStamp,
+                  type: messageType,
+                  channel,
+                };
+
                 switch (messageType) {
                   case 0xb0: // Control Change
-                    get().addMessage({
-                      id: uuidv4(),
-                      timestamp: event.timeStamp,
-                      type: messageType,
-                      controller: data1,
-                      value: data2,
-                      channel: channel,
-                    });
+                    get().addIncomingMessage(
+                      {
+                        ...message,
+                        controller: data1,
+                        value: data2,
+                      },
+                      input.id
+                    );
                     break;
 
                   case 0x90: // Note On
                     if (data2 > 0) {
                       // Velocity > 0 means note on
-                      get().addMessage({
-                        id: uuidv4(),
-                        timestamp: event.timeStamp,
-                        type: messageType,
-                        note: data1,
-                        velocity: data2,
-                        channel: channel,
-                      });
+                      get().addIncomingMessage(
+                        {
+                          ...message,
+                          note: data1,
+                          velocity: data2,
+                        },
+                        input.id
+                      );
                     } else {
                       // Velocity = 0 is sometimes used as note off
-                      get().addMessage({
-                        id: uuidv4(),
-                        timestamp: event.timeStamp,
-                        type: messageType,
-                        note: data1,
-                        velocity: data2,
-                        channel: channel,
-                      });
+                      get().addIncomingMessage(
+                        {
+                          ...message,
+                          note: data1,
+                          velocity: data2,
+                        },
+                        input.id
+                      );
                     }
                     break;
 
                   case 0x80: // Note Off
-                    get().addMessage({
-                      id: uuidv4(),
-                      timestamp: event.timeStamp,
-                      type: messageType,
-                      note: data1,
-                      velocity: data2,
-                      channel: channel,
-                    });
+                    get().addIncomingMessage(
+                      {
+                        ...message,
+                        note: data1,
+                        velocity: data2,
+                      },
+                      input.id
+                    );
                     break;
 
                   case 0xe0: // Pitch Bend
                     // Combine LSB and MSB into 14-bit value (0-16383)
                     const rawValue = data1 | (data2 << 7);
-                    get().addMessage({
-                      id: uuidv4(),
-                      timestamp: event.timeStamp,
-                      type: messageType,
-                      value: rawValue - 8192, // Center at 0
-                      channel: channel,
-                    });
+                    get().addIncomingMessage(
+                      {
+                        ...message,
+                        value: rawValue - 8192, // Center at 0
+                      },
+                      input.id
+                    );
                     break;
                   case 0xf0: // SysEx
-                    get().addMessage({
-                      id: uuidv4(),
-                      timestamp: event.timeStamp,
-                      type: messageType,
-                      data: Array.from(event.data),
-                    });
+                  console.log("Received SysEx message:", event.data);
+                    get().addIncomingMessage(
+                      {
+                        ...message,
+                        data: Array.from(event.data),
+                      },
+                      input.id
+                    );
                     break;
                   default:
                     // Handle other message types if needed
@@ -163,12 +175,22 @@ export const useMIDIStore = create<MonitorState>()(
             set({ activeInputs: [...activeInputs, inputId] });
           }
         },
-        addMessage: (message: MidiMessage) => {
+        addIncomingMessage: (message: MidiMessage, deviceId: string) => {
           set((state) => ({
-            messages: [...state.messages, message],
+            messages: [
+              { ...message, incoming: true, deviceId },
+              ...state.messages,
+            ],
           }));
         },
-
+        addOutgoingMessage: (message: MidiMessage, deviceId: string) => {
+          set((state) => ({
+            messages: [
+              { ...message, incoming: false, deviceId },
+              ...state.messages,
+            ],
+          }));
+        },
         clear: () => {
           set({ messages: [] });
         },
@@ -178,7 +200,13 @@ export const useMIDIStore = create<MonitorState>()(
             console.error("MIDI not initialized");
             return;
           }
-          console.log("Sending MIDI message", message);
+          if (outputId === "") {
+            midiAccess.outputs.forEach((output) => {
+              get().addOutgoingMessage(message, output.id);
+            });
+          } else {
+            get().addOutgoingMessage(message, outputId);
+          }
 
           midiAccess.outputs.forEach((output) => {
             if (output.id !== outputId && outputId !== "") return;

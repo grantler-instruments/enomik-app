@@ -19,6 +19,7 @@ const Header: React.FC = () => {
           sx={{ flexGrow: 1, fontWeight: 600, cursor: "pointer" }}
           textTransform="uppercase"
           onClick={() => navigate("/")}
+          color="primary"
         >
           enomik 3000
         </Typography>

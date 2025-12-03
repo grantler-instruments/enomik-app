@@ -77,7 +77,6 @@ const Composer = () => {
               value={manufacturerId}
               onChange={(e) => setManufacturerId(e.target.value)}
               placeholder="FD"
-              helperText="hex"
               sx={{ width: 120 }}
               size="small"
             />
@@ -86,7 +85,6 @@ const Composer = () => {
               value={sysexData.toUpperCase()}
               onChange={(e) => setSysexData(e.target.value)}
               placeholder="43 12 00"
-              helperText="hex"
               sx={{ minWidth: 200 }}
               size="small"
             />
