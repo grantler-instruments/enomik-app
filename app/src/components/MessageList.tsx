@@ -173,7 +173,7 @@ function MessageList() {
                   {msg.type === 176 && msg.controller && (
                     <>, {msg.controller}</>
                   )}
-                  {msg.type === 176 && msg.value && <>, {msg.value}</>}
+                  {msg.type === 176 && <>, {msg.value}</>}
                   {msg.type === 240 && <>{msg.data?.join(", ")}</>}
                 </Grid>
               </Grid>
