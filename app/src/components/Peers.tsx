@@ -1,4 +1,5 @@
-import { Alert, Box, Button } from "@mui/material";
+import { Alert, Box, Button, IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useIOStore } from "../store/io";
 import MacAddressInput from "./MacAddressInput";
 
@@ -6,6 +7,8 @@ const Peers = () => {
   const peers = useIOStore((state) => state.peers);
   const addPeer = useIOStore((state) => state.addPeer);
   const updatePeer = useIOStore((state) => state.updatePeer);
+  const removePeer = useIOStore((state) => state.removePeer);
+
   return (
     <Box display={"flex"} flexDirection={"column"} padding={2}>
       <Alert severity="info" sx={{ mb: 2 }}>
@@ -13,13 +16,39 @@ const Peers = () => {
         Configure the peer settings here.
       </Alert>
       {peers.map((peer, index) => (
-        <MacAddressInput
+        <Box
           key={index}
-          macAddress={peer.macAddress}
-          onMacAddressChange={(newMac) => {
-            updatePeer(peer.uuid, { macAddress: newMac });
+          display="flex"
+          alignItems="center"
+          gap={1}
+          sx={{
+            "&:hover .delete-button": {
+              opacity: 1,
+            },
+            "& .delete-button": {
+              opacity: { xs: 1, sm: 0 },
+            },
           }}
-        ></MacAddressInput>
+        >
+          <Box flex={1}>
+            <MacAddressInput
+              macAddress={peer.macAddress}
+              onMacAddressChange={(newMac) => {
+                updatePeer(peer.uuid, { macAddress: newMac });
+              }}
+            />
+          </Box>
+          <IconButton
+            className="delete-button"
+            onClick={() => removePeer(peer.uuid)}
+            size="small"
+            sx={{
+              transition: "opacity 0.2s",
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
       ))}
       <Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>
         <Button
