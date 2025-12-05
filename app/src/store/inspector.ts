@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+import type { InputPinConfig, OutputPinConfig } from "./io";
 
 interface InspectorState {
   peers: string[];
-  inputPinConfigs: any[];
-  outputPinConfigs: any[];
+  inputPinConfigs: InputPinConfig[];
+  outputPinConfigs: OutputPinConfig[];
   clear: () => void;
   setPeers: (newPeers: string[]) => void;
   addInputPinConfig: (config: any) => void;

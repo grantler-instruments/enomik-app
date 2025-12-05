@@ -61,9 +61,10 @@ type PinConfig = InputPinConfig | OutputPinConfig;
 interface PinMappingProps {
   config: PinConfig;
   type: "input" | "output";
+  disabled?: boolean;
 }
 
-const PinMapping = ({ config, type }: PinMappingProps) => {
+const PinMapping = ({ config, type, disabled = false }: PinMappingProps) => {
   const updateInput = useIOStore((state) => state.updateInput);
   const removeInput = useIOStore((state) => state.removeInput);
   const duplicateInput = useIOStore((state) => state.duplicateInput);

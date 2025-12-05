@@ -26,6 +26,8 @@ interface MonitorState {
   inputs: any[];
   outputs: any[];
   activeInputs: string[];
+  selectedConfiguratorOutputDevice?: string;
+  selectedInspectorOutputDevice?: string;
   init: () => void;
   toggleInput: (inputId: string) => void;
   addIncomingMessage: (message: MidiMessage, deviceId: string) => void;

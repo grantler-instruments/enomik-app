@@ -5,6 +5,7 @@ import { useMIDIStore, type MidiMessage } from "../store/midi";
 import InitMidi from "./InitMidi";
 import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "../store/inspector";
+import PinMapping from "./PinMapping";
 
 const Inspector = () => {
   const [device, setDevice] = useState("");
@@ -31,8 +32,8 @@ const Inspector = () => {
           color="primary"
           disabled={!initialized}
           onClick={() => {
-            clear()
-            const sysexMessage = [0xf0, 0x7d, 0x08, 0xf7];//0x08=get_peers
+            clear();
+            const sysexMessage = [0xf0, 0x7d, 0x08, 0xf7]; //0x08=get_peers
             const msg: MidiMessage = {
               id: uuidv4(),
               type: 240,
@@ -47,17 +48,29 @@ const Inspector = () => {
         </Button>
       </Box>
       <Box>
-        <Typography variant="h6">Input Pins:</Typography>
+        <Typography variant="h2">Input PIN to MIDI</Typography>
         {inputPinConfigs.map((config, index) => (
-          <Box key={index}>- Pin {config.pin}: {JSON.stringify(config)}</Box>
+          <PinMapping
+            key={`input-${index}`}
+            config={config}
+            type={"input"}
+            disabled={true}
+          ></PinMapping>
         ))}
       </Box>
       <Box>
-        <Typography variant="h6">Output Pins:</Typography>
+        <Typography variant="h2">MIDI to Output PIN</Typography>
         {outputPinConfigs.map((config, index) => (
-          <Box key={index}>- Pin {config.pin}: {JSON.stringify(config)}</Box>
+          <PinMapping
+            key={`output-${index}`}
+            config={config}
+            type={"output"}
+            disabled={true}
+          ></PinMapping>
         ))}
-        <Typography variant="h6">Peers:</Typography>
+      </Box>
+      <Box>
+        <Typography variant="h2">ESP-NOW MIDI</Typography>
         {peers.map((peer) => (
           <Box key={peer}>- {peer}</Box>
         ))}
