@@ -38,6 +38,7 @@ import {
   sysexPinModeTouch,
 } from "../store/midi.config";
 import MinMax from "./MinMax";
+import InfoWithTooltip from "./InfoWithTooltip";
 
 const INPUT_MODES = [
   { label: "ANALOG", value: sysexPinModeAnalogIn },
@@ -212,7 +213,7 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
               </Select>
             </FormControl>
 
-            {(localConfig.mode === sysexPinModeAnalogIn ||
+            {/* {(localConfig.mode === sysexPinModeAnalogIn ||
               localConfig.mode === sysexPinModeTouch) && (
               <MinMax
                 min={(localConfig as OutputPinConfig).pinMin ?? 0}
@@ -221,9 +222,15 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                 onChangeMax={(value) => handleChange("pinMax" as any, value)}
                 disabled={true}
               />
-            )}
+            )} */}
             {localConfig.mode === sysexPinModeTouch && (
-              <TextField value={localConfig.threshold} onChange={(e) => handleChange("threshold", Number(e.target.value))} label="Threshold" />
+              <TextField
+                value={localConfig.threshold}
+                onChange={(e) =>
+                  handleChange("threshold", Number(e.target.value))
+                }
+                label="Threshold"
+              />
             )}
           </>
         ) : (
@@ -390,7 +397,14 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                 max={(localConfig as InputPinConfig).midiMax ?? 127}
                 onChangeMin={(value) => handleChange("midiMin" as any, value)}
                 onChangeMax={(value) => handleChange("midiMax" as any, value)}
+                bitResolution={
+                  localConfig.midiType === MIDI_PITCH_BEND ? 14 : 7
+                }
               />
+
+              {localConfig.midiType === MIDI_PITCH_BEND && (
+                <InfoWithTooltip text="min/max values are transmitted as 7 bit values, you might lose precision. the underlying config api needs some adjustments. the actual pitchbend values are sent as 14bit values, no worries. " />
+              )}
             </>
           ) : (
             // OUTPUT: Pin config on right
