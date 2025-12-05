@@ -31,6 +31,7 @@ const sysexPinModeDigitalInPullup = 0x02;
 // #define INPUT_PULLUP 0x2
 const sysexPinModeAnalogIn = 0x03;
 const sysexPinModePWMOut = 0x04;
+const sysexPinModeTouch = 0x05;
 
 export {
   MIDI_NOTE_OFF,
@@ -62,6 +63,7 @@ export {
   sysexPinModeDigitalInPullup,
   sysexPinModeAnalogIn,
   sysexPinModePWMOut,
+  sysexPinModeTouch
 };
 
 

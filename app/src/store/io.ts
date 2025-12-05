@@ -18,6 +18,7 @@ import {
   sysexPinModePWMOut,
   sysexStart,
   sysexPinModeDigitalInPullup,
+  sysexPinModeTouch
 } from "./midi.config";
 import { useMIDIStore, type MidiMessage } from "./midi";
 
@@ -34,7 +35,8 @@ export type PinMode =
   | typeof sysexPinModeAnalogIn
   | typeof sysexPinModeAnalogIn
   | typeof sysexPinModeDigitalInPullup
-  | typeof sysexPinModePWMOut;
+  | typeof sysexPinModePWMOut
+  | typeof sysexPinModeTouch;
 export type OutputPinMode =
   | typeof sysexPinModeDigitalOut
   | typeof sysexPinModePWMOut;
@@ -56,6 +58,7 @@ export interface InputPinConfig {
   pinMax: number;
   controller?: number;
   note?: number;
+  threshold?: number;
 }
 
 export interface OutputPinConfig {
@@ -71,6 +74,7 @@ export interface OutputPinConfig {
   controller?: number;
   note?: number;
   velocitySensitive?: boolean;
+  threshold?: number;
 }
 
 export interface PeerConfig {
@@ -254,6 +258,7 @@ export const useIOStore = create<IOState>()(
               ENOMIK_COMMAND_SET_PIN_CONFIG,
               input.pin,
               input.mode,
+              input.threshold || 0,
               input.channel || 1,
               input.midiType / 2,
               input.midiType === MIDI_CONTROL_CHANGE

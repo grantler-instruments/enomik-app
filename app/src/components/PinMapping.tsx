@@ -35,6 +35,7 @@ import {
   sysexPinModeDigitalInPullup,
   sysexPinModeDigitalOut,
   sysexPinModePWMOut,
+  sysexPinModeTouch,
 } from "../store/midi.config";
 import MinMax from "./MinMax";
 
@@ -42,6 +43,7 @@ const INPUT_MODES = [
   { label: "ANALOG", value: sysexPinModeAnalogIn },
   { label: "INPUT (digital)", value: sysexPinModeDigitalIn },
   { label: "INPUT_PULLUP (digital)", value: sysexPinModeDigitalInPullup },
+  { label: "INPUT_TOUCH", value: sysexPinModeTouch },
 ];
 const OUTPUT_MODES = [
   { label: "OUTPUT (digital)", value: sysexPinModeDigitalOut },
@@ -91,6 +93,10 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
         // Set default pinMin/pinMax for analog/PWM modes
         updated.pinMin = 0;
         updated.pinMax = 1023;
+      } else if (value === sysexPinModeTouch) {
+        updated.pinMin = 0;
+        updated.pinMax = 100;
+        updated.threshold = 40;
       } else {
         updated.pinMin = 0;
         updated.pinMax = 1;
@@ -206,13 +212,18 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
               </Select>
             </FormControl>
 
-            {localConfig.mode === sysexPinModeAnalogIn && (
+            {(localConfig.mode === sysexPinModeAnalogIn ||
+              localConfig.mode === sysexPinModeTouch) && (
               <MinMax
                 min={(localConfig as OutputPinConfig).pinMin ?? 0}
                 max={(localConfig as OutputPinConfig).pinMax ?? 1024}
                 onChangeMin={(value) => handleChange("pinMin" as any, value)}
                 onChangeMax={(value) => handleChange("pinMax" as any, value)}
+                disabled={true}
               />
+            )}
+            {localConfig.mode === sysexPinModeTouch && (
+              <TextField value={localConfig.threshold} onChange={(e) => handleChange("threshold", Number(e.target.value))} label="Threshold" />
             )}
           </>
         ) : (
