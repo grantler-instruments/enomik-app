@@ -4,9 +4,11 @@ import { useRef } from "react";
 const MacAddressInput = ({
   macAddress,
   onMacAddressChange,
+  disabled = false,
 }: {
   macAddress: string;
   onMacAddressChange: (newMac: string) => void;
+  disabled?: boolean;
 }) => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -73,6 +75,7 @@ const MacAddressInput = ({
             onChange={(e) => handleChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             onPaste={(e) => handlePaste(index, e)}
+            disabled={disabled}
             inputProps={{
               maxLength: 2,
               style: { 

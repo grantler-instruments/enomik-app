@@ -5,6 +5,7 @@ import { useMIDIStore, type MidiMessage } from "../store/midi";
 import InitMidi from "./InitMidi";
 import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "../store/inspector";
+import MacAddressInput from "./MacAddressInput";
 
 const Inspector = () => {
   const [device, setDevice] = useState("");
@@ -59,7 +60,7 @@ const Inspector = () => {
         ))}
         <Typography variant="h6">Peers:</Typography>
         {peers.map((peer) => (
-          <Box key={peer}>- {peer}</Box>
+          <MacAddressInput key={peer} macAddress={peer} disabled={true} onMacAddressChange={() => {}}></MacAddressInput>
         ))}
       </Box>
     </Box>
