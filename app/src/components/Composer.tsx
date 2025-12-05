@@ -29,6 +29,20 @@ const Composer = () => {
     { value: 224, label: "Pitch Bend" },
     { value: 240, label: "SysEx" },
   ];
+
+  //TODO: move to utils
+  const hexStringToArray = (hex: string): number[] => {
+  // Remove all whitespace
+  const clean = hex.replace(/\s+/g, '').toUpperCase();
+  const result: number[] = [];
+
+  // Parse every two characters as a hex byte
+  for (let i = 0; i < clean.length; i += 2) {
+    result.push(parseInt(clean.slice(i, i + 2), 16));
+  }
+
+  return result;
+};
   return (
     <Box display={"flex"} flexDirection={"column"} gap={2}>
       <Typography variant="h2">MIDI Composer</Typography>
@@ -82,7 +96,7 @@ const Composer = () => {
             />
             <TextField
               label="Data (hex)"
-              value={sysexData.toUpperCase()}
+              value={sysexData.replace(/\s+/g, '').toUpperCase()}
               onChange={(e) => setSysexData(e.target.value)}
               placeholder="43 12 00"
               sx={{ minWidth: 200 }}
@@ -150,10 +164,7 @@ const Composer = () => {
                   ? [
                       0xf0,
                       ...(manufacturerId ? [parseInt(manufacturerId, 16)] : []),
-                      ...sysexData
-                        .split(" ")
-                        .filter((s) => s.length > 0)
-                        .map((s) => parseInt(s, 16)),
+                      ...hexStringToArray(sysexData),
                       0xf7,
                     ]
                   : undefined,

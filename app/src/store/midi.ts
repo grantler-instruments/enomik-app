@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
+import { useInspectorStore } from "./inspector";
 
 export interface MidiMessage {
   id: string;
@@ -137,7 +138,45 @@ export const useMIDIStore = create<MonitorState>()(
                     );
                     break;
                   case 0xf0: // SysEx
-                  console.log("Received SysEx message:", event.data);
+                    console.log("Received SysEx message:", event.data);
+
+                    if (event.data[1] === 125) {
+                      if (event.data[2] === 64 + 8) {
+                        const nibbleData = event.data.slice(
+                          3,
+                          event.data.length - 1
+                        );
+
+                        const numberOfPeers = (event.data.length - 4) / 12;
+                        console.log(
+                          "Received get_peers response",
+                          numberOfPeers
+                        );
+                        const peers: string[] = [];
+
+                        for (let i = 0; i < numberOfPeers; i++) {
+                          const start = i * 12;
+                          const macNibbles = nibbleData.slice(
+                            start,
+                            start + 12
+                          );
+                          const macBytes: number[] = [];
+
+                          for (let j = 0; j < macNibbles.length; j += 2) {
+                            macBytes.push(
+                              (macNibbles[j] << 4) | macNibbles[j + 1]
+                            );
+                          }
+
+                          // Convert to MAC string
+                          const macStr = macBytes
+                            .map((b) => b.toString(16).padStart(2, "0"))
+                            .join(":");
+                          peers.push(macStr.toUpperCase());
+                          useInspectorStore.getState().setPeers(peers);
+                        }
+                      }
+                    }
                     get().addIncomingMessage(
                       {
                         ...message,

@@ -1,14 +1,19 @@
-import { Alert, Box, Button } from "@mui/material";
+import { Alert, Box, Button, Typography } from "@mui/material";
 import { useState } from "react";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import { useMIDIStore, type MidiMessage } from "../store/midi";
 import InitMidi from "./InitMidi";
 import { v4 as uuidv4 } from "uuid";
+import { useInspectorStore } from "../store/inspector";
 
 const Inspector = () => {
   const [device, setDevice] = useState("");
   const initialized = useMIDIStore((state) => state.initialized);
   const sendMessage = useMIDIStore((state) => state.sendMessage);
+  const peers = useInspectorStore((state) => state.peers);
+  const inputPinConfigs = useInspectorStore((state) => state.inputPinConfigs);
+  const outputPinConfigs = useInspectorStore((state) => state.outputPinConfigs);
+  const clear = useInspectorStore((state) => state.clear);
   return (
     <Box display={"flex"} flexDirection="column" gap={2} padding={2}>
       <Alert severity="info" sx={{ mb: 2 }}>
@@ -26,7 +31,8 @@ const Inspector = () => {
           color="primary"
           disabled={!initialized}
           onClick={() => {
-            const sysexMessage = [0xf0, 0x7d, 0x06, 0xf7];
+            clear()
+            const sysexMessage = [0xf0, 0x7d, 0x08, 0xf7];//0x08=get_peers
             const msg: MidiMessage = {
               id: uuidv4(),
               type: 240,
@@ -39,6 +45,14 @@ const Inspector = () => {
         >
           sync
         </Button>
+      </Box>
+      <Box>
+        <Typography variant="h6">Input Pins:</Typography>
+        <Typography variant="h6">Ouput Pins:</Typography>
+        <Typography variant="h6">Peers:</Typography>
+        {peers.map((peer) => (
+          <Box key={peer}>- {peer}</Box>
+        ))}
       </Box>
     </Box>
   );
