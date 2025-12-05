@@ -48,7 +48,15 @@ const Inspector = () => {
       </Box>
       <Box>
         <Typography variant="h6">Input Pins:</Typography>
-        <Typography variant="h6">Ouput Pins:</Typography>
+        {inputPinConfigs.map((config, index) => (
+          <Box key={index}>- Pin {config.pin}: {JSON.stringify(config)}</Box>
+        ))}
+      </Box>
+      <Box>
+        <Typography variant="h6">Output Pins:</Typography>
+        {outputPinConfigs.map((config, index) => (
+          <Box key={index}>- Pin {config.pin}: {JSON.stringify(config)}</Box>
+        ))}
         <Typography variant="h6">Peers:</Typography>
         {peers.map((peer) => (
           <Box key={peer}>- {peer}</Box>

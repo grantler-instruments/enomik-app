@@ -14,7 +14,7 @@ interface InspectorState {
 export const useInspectorStore = create<InspectorState>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         peers: [],
         inputPinConfigs: [],
         outputPinConfigs: [],
@@ -36,7 +36,6 @@ export const useInspectorStore = create<InspectorState>()(
       }),
       {
         name: "InspectorStore",
-        partialize: (state) => ({}),
       }
     )
   )
