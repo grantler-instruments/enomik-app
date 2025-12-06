@@ -91,6 +91,7 @@ const MacAddressInput = ({
                 padding: "10px",
               },
             }}
+            size="small"
             placeholder="00"
           />
           {index < 5 && (

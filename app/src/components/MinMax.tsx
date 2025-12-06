@@ -63,6 +63,7 @@ const MidiMinMax = ({
           inputMode: "numeric",
           pattern: "-?[0-9]*",
         }}
+                  size="small"
       />
 
       <TextField
@@ -76,6 +77,7 @@ const MidiMinMax = ({
           inputMode: "numeric",
           pattern: "-?[0-9]*",
         }}
+                  size="small"
       />
     </Box>
   );

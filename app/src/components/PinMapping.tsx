@@ -61,9 +61,10 @@ type PinConfig = InputPinConfig | OutputPinConfig;
 interface PinMappingProps {
   config: PinConfig;
   type: "input" | "output";
+  disabled?: boolean;
 }
 
-const PinMapping = ({ config, type }: PinMappingProps) => {
+const PinMapping = ({ config, type, disabled = false }: PinMappingProps) => {
   const updateInput = useIOStore((state) => state.updateInput);
   const removeInput = useIOStore((state) => state.removeInput);
   const duplicateInput = useIOStore((state) => state.duplicateInput);
@@ -190,6 +191,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
               value={localConfig.pin}
               onChange={(e) => handleChange("pin", Number(e.target.value))}
               sx={{ width: 80 }}
+              size="small"
+              disabled={disabled}
             />
 
             <FormControl>
@@ -204,6 +207,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                   )
                 }
                 sx={{ width: 160 }}
+                size="small"
+                disabled={disabled}
               >
                 {availableModes.map((mode) => (
                   <MenuItem key={mode.value} value={mode.value}>
@@ -230,6 +235,7 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                   handleChange("threshold", Number(e.target.value))
                 }
                 label="Threshold"
+                disabled={disabled}
               />
             )}
           </>
@@ -244,6 +250,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                 onChange={(e) =>
                   handleChange("channel", Number(e.target.value))
                 }
+                size="small"
+                disabled={disabled}
               >
                 {[...Array(16)].map((_, i) => (
                   <MenuItem key={i + 1} value={i + 1}>
@@ -263,6 +271,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                     e.target.value as typeof localConfig.midiType
                   )
                 }
+                disabled={disabled}
+                size="small"
               >
                 {MIDI_TYPES.map((type) => (
                   <MenuItem key={type} value={type}>
@@ -282,6 +292,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                     handleChange("controller" as any, Number(e.target.value))
                   }
                   sx={{ width: 80 }}
+                  disabled={disabled}
+                  size="small"
                 />
               )}
 
@@ -293,6 +305,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                 onChange={(e) =>
                   handleChange("note" as any, Number(e.target.value))
                 }
+                disabled={disabled}
+                size="small"
               />
             )}
 
@@ -302,6 +316,7 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                 max={(localConfig as OutputPinConfig).midiMax ?? 127}
                 onChangeMin={(value) => handleChange("midiMin" as any, value)}
                 onChangeMax={(value) => handleChange("midiMax" as any, value)}
+                disabled={disabled}
               />
             }
           </>
@@ -342,6 +357,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                   onChange={(e) =>
                     handleChange("channel", Number(e.target.value))
                   }
+                  size="small"
+                  disabled={disabled}
                 >
                   {[...Array(16)].map((_, i) => (
                     <MenuItem key={i + 1} value={i + 1}>
@@ -361,6 +378,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                       e.target.value as typeof localConfig.midiType
                     )
                   }
+                  size="small"
+                  disabled={disabled}
                 >
                   {MIDI_TYPES.map((type) => (
                     <MenuItem key={type} value={type}>
@@ -378,6 +397,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                   onChange={(e) =>
                     handleChange("controller" as any, Number(e.target.value))
                   }
+                  size="small"
+                  disabled={disabled}
                   sx={{ width: 80 }}
                 />
               )}
@@ -390,6 +411,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                   onChange={(e) =>
                     handleChange("note" as any, Number(e.target.value))
                   }
+                  size="small"
+                  disabled={disabled}
                 />
               )}
               <MinMax
@@ -415,6 +438,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                 value={localConfig.pin}
                 onChange={(e) => handleChange("pin", Number(e.target.value))}
                 sx={{ width: 80 }}
+                size="small"
+                disabled={disabled}
               />
 
               <FormControl>
@@ -429,6 +454,8 @@ const PinMapping = ({ config, type }: PinMappingProps) => {
                     )
                   }
                   sx={{ width: 160 }}
+                  size="small"
+                  disabled={disabled}
                 >
                   {availableModes.map((mode) => (
                     <MenuItem key={mode.value} value={mode.value}>

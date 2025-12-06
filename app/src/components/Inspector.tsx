@@ -6,9 +6,11 @@ import InitMidi from "./InitMidi";
 import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "../store/inspector";
 import MacAddressInput from "./MacAddressInput";
+import PinMapping from "./PinMapping";
 
 const Inspector = () => {
-  const [device, setDevice] = useState("");
+  const device = useMIDIStore((state) => state.selectedInspectorOutputDevice);
+  const setDevice = useMIDIStore((state) => state.setSelectedInspectorOutputDevice);
   const initialized = useMIDIStore((state) => state.initialized);
   const sendMessage = useMIDIStore((state) => state.sendMessage);
   const peers = useInspectorStore((state) => state.peers);
@@ -24,7 +26,7 @@ const Inspector = () => {
       <Box display={"flex"} flex={1} gap={2}>
         <InitMidi></InitMidi>
         <MidiDeviceChooser
-          value={device}
+          value={device || ""}
           onChange={(e) => setDevice(e)}
         ></MidiDeviceChooser>
         <Button
@@ -32,8 +34,8 @@ const Inspector = () => {
           color="primary"
           disabled={!initialized}
           onClick={() => {
-            clear()
-            const sysexMessage = [0xf0, 0x7d, 0x08, 0xf7];//0x08=get_peers
+            clear();
+            const sysexMessage = [0xf0, 0x7d, 0x08, 0xf7]; //0x08=get_peers
             const msg: MidiMessage = {
               id: uuidv4(),
               type: 240,
@@ -42,23 +44,45 @@ const Inspector = () => {
               timestamp: Date.now(),
             };
             sendMessage(msg);
+
+            const sysexGetAllPinConfigsMessage = [0xf0, 0x7d, 0x04, 0xf7]; //0x04=get_pin_configs
+            const allPinConfigsmsg: MidiMessage = {
+              id: uuidv4(),
+              type: 240,
+              channel: 1,
+              data: sysexGetAllPinConfigsMessage,
+              timestamp: Date.now(),
+            };
+            sendMessage(allPinConfigsmsg);
           }}
         >
           sync
         </Button>
       </Box>
       <Box>
-        <Typography variant="h6">Input Pins:</Typography>
+        <Typography variant="h2">Input PIN to MIDI</Typography>
         {inputPinConfigs.map((config, index) => (
-          <Box key={index}>- Pin {config.pin}: {JSON.stringify(config)}</Box>
+          <PinMapping
+            key={`input-${index}`}
+            config={config}
+            type={"input"}
+            disabled={true}
+          ></PinMapping>
         ))}
       </Box>
       <Box>
-        <Typography variant="h6">Output Pins:</Typography>
+        <Typography variant="h2">MIDI to Output PIN</Typography>
         {outputPinConfigs.map((config, index) => (
-          <Box key={index}>- Pin {config.pin}: {JSON.stringify(config)}</Box>
+          <PinMapping
+            key={`output-${index}`}
+            config={config}
+            type={"output"}
+            disabled={true}
+          ></PinMapping>
         ))}
-        <Typography variant="h6">Peers:</Typography>
+      </Box>
+      <Box>
+        <Typography variant="h2">ESP-NOW MIDI</Typography>
         {peers.map((peer) => (
           <MacAddressInput key={peer} macAddress={peer} disabled={true} onMacAddressChange={() => {}}></MacAddressInput>
         ))}

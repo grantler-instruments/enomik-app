@@ -1,7 +1,9 @@
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "./inspector";
+import Inspector from "../components/Inspector";
+import { use } from "react";
 
 export interface MidiMessage {
   id: string;
@@ -26,12 +28,18 @@ interface MonitorState {
   inputs: any[];
   outputs: any[];
   activeInputs: string[];
+  selectedConfiguratorOutputDevice?: string;
+  selectedInspectorOutputDevice?: string;
+  selectedComposerOutputDevice?: string;
   init: () => void;
   toggleInput: (inputId: string) => void;
   addIncomingMessage: (message: MidiMessage, deviceId: string) => void;
   addOutgoingMessage: (message: MidiMessage, deviceId: string) => void;
   clear: () => void;
   sendMessage: (message: MidiMessage, outputId?: string) => void;
+  setSelectedConfiguratorOutputDevice: (deviceId: string) => void;
+  setSelectedInspectorOutputDevice: (deviceId: string) => void;
+  setSelectedComposerOutputDevice: (deviceId: string) => void;
 }
 
 let midiAccess: MIDIAccess | null = null;
@@ -141,17 +149,13 @@ export const useMIDIStore = create<MonitorState>()(
                     console.log("Received SysEx message:", event.data);
 
                     if (event.data[1] === 125) {
-                      if (event.data[2] === 64 + 8) {
+                      if (event.data[2] === 64 + 8) {// get peers response
                         const nibbleData = event.data.slice(
                           3,
                           event.data.length - 1
                         );
 
                         const numberOfPeers = (event.data.length - 4) / 12;
-                        console.log(
-                          "Received get_peers response",
-                          numberOfPeers
-                        );
                         const peers: string[] = [];
 
                         for (let i = 0; i < numberOfPeers; i++) {
@@ -175,6 +179,44 @@ export const useMIDIStore = create<MonitorState>()(
                           peers.push(macStr.toUpperCase());
                           useInspectorStore.getState().setPeers(peers);
                         }
+                      }
+                      if( event.data[2] === 64 + 2){ // get pin config response
+                        console.log("Received get_pin_config response", event.data);
+                //             c.pin,
+                // c.mode,
+                // c.threshold,
+                // c.midi_channel,
+                // static_cast<uint8_t>(c.midi_type) / 2,
+                // c.midi_type == MidiStatus::MIDI_CONTROL_CHANGE ? c.midi_cc : c.midi_note,
+                // c.min_midi_value,
+                // c.max_midi_value,
+
+                const pin = event.data[3];
+                const mode = event.data[4];
+                const threshold = event.data[5];
+                const midi_channel = event.data[6];
+                const midi_type = event.data[7] * 2;
+                const midi_cc_or_note = event.data[8];
+                const min_midi_value = event.data[9];
+                const max_midi_value = event.data[10];
+
+                const isInput =
+                  mode === 1 || mode === 2 || mode === 3 || mode === 4;
+
+                const config = {
+                  pin,
+                  mode,
+                  threshold,
+                  channel: midi_channel,
+                  midiType: midi_type,
+                  controller:
+                    midi_type === 176 ? midi_cc_or_note : undefined,
+                  note: midi_type === 144 || midi_type === 128 ? midi_cc_or_note : undefined,
+                  midiMin: min_midi_value,
+                  midiMax: max_midi_value,
+                };
+                useInspectorStore.getState().addInputPinConfig(config);
+
                       }
                     }
                     get().addIncomingMessage(
@@ -299,10 +341,24 @@ export const useMIDIStore = create<MonitorState>()(
             }
           });
         },
+        setSelectedConfiguratorOutputDevice: (deviceId: string) => {
+          set({ selectedConfiguratorOutputDevice: deviceId });
+        },
+        setSelectedInspectorOutputDevice: (deviceId: string) => {
+          set({ selectedInspectorOutputDevice: deviceId });
+        },
+        setSelectedComposerOutputDevice: (deviceId: string) => {
+          set({ selectedComposerOutputDevice: deviceId });
+        },
       }),
       {
         name: "MonitorStore",
+        storage: createJSONStorage(() => sessionStorage),
         partialize: (state) => ({
+          selectedComposerOutputDevice: state.selectedComposerOutputDevice,
+          selectedConfiguratorOutputDevice:
+            state.selectedConfiguratorOutputDevice,
+          selectedInspectorOutputDevice: state.selectedInspectorOutputDevice,
           messages: state.messages,
         }),
       }

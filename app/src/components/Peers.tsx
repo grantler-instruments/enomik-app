@@ -53,7 +53,7 @@ const Peers = () => {
       <Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>
         <Button
           variant="outlined"
-          color="primary"
+          color="secondary"
           onClick={() => {
             addPeer({
               macAddress: "FF:FF:FF:FF:FF:FF",
