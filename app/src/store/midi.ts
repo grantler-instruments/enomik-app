@@ -2,8 +2,6 @@ import { create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "./inspector";
-import Inspector from "../components/Inspector";
-import { use } from "react";
 
 export interface MidiMessage {
   id: string;
@@ -199,9 +197,6 @@ export const useMIDIStore = create<MonitorState>()(
                 const midi_cc_or_note = event.data[8];
                 const min_midi_value = event.data[9];
                 const max_midi_value = event.data[10];
-
-                const isInput =
-                  mode === 1 || mode === 2 || mode === 3 || mode === 4;
 
                 const config = {
                   pin,

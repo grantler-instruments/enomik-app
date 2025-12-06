@@ -16,7 +16,6 @@ import {
   IconButton,
 } from "@mui/material";
 import {
-  Bolt as BoltIcon,
   Upload as UploadIcon,
   UsbOff as UsbOffIcon,
   Usb as UsbIcon,
@@ -30,6 +29,18 @@ interface Status {
   message: string;
   type: StatusType;
 }
+const terminal = {
+  clean: () => {
+    // Clear terminal if needed
+    console.clear();
+  },
+  writeLine: (text: string) => {
+    console.log(text);
+  },
+  write: (text: string) => {
+    console.log(text);
+  }
+};
 
 const FirmwareUploader: React.FC = () => {
   const [connected, setConnected] = useState<boolean>(false);
@@ -58,12 +69,10 @@ const FirmwareUploader: React.FC = () => {
 
       const loader = new ESPLoader({
         transport,
-        baudrate: 115200,
-        terminal: {
-          clean: () => {},
-          writeLine: (text: string) => console.log(text),
-          write: (text: string) => console.log(text),
-        },
+        romBaudrate: 115200,
+        // baudrate: 115200,
+        baudrate: 921600,
+        terminal
       });
       
       espLoaderRef.current = loader;
@@ -71,8 +80,8 @@ const FirmwareUploader: React.FC = () => {
       updateStatus("Connecting to chip...", "info");
       await loader.main();
       
-      const chipName = await loader.chipName();
-      const macAddr = await loader.macAddr();
+      const chipName = await loader.chip.CHIP_NAME
+      const macAddr = "TODO: mac"//await loader.chip.readMac()
       
       setChipInfo(`${chipName} (MAC: ${macAddr})`);
       setConnected(true);
@@ -143,6 +152,7 @@ const FirmwareUploader: React.FC = () => {
         reportProgress: (fileIndex: number, written: number, total: number) => {
           const percent = (written / total) * 100;
           setProgress(percent);
+          console.log(fileIndex, written, total);
         },
       });
 

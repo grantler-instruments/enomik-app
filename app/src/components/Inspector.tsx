@@ -1,5 +1,4 @@
 import { Alert, Box, Button, Typography } from "@mui/material";
-import { useState } from "react";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import { useMIDIStore, type MidiMessage } from "../store/midi";
 import InitMidi from "./InitMidi";

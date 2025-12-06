@@ -111,7 +111,7 @@ const Configurator = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={deployConfiguration}
+          onClick={() => deployConfiguration(selectedOutputId || "")}
           disabled={!initialized}
         >
           Deploy Configuration to Device

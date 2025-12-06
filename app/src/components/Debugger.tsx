@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Paper, Typography } from "@mui/material";
+import { Box, Card, CardContent, Typography } from "@mui/material";
 import { useMIDIStore } from "../store/midi";
 import Composer from "./Composer";
 import MessageList from "./MessageList";

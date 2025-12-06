@@ -108,7 +108,7 @@ interface IOState {
     peers?: PeerConfig[];
   }) => void;
 
-  deploy: () => void;
+  deploy: (deviceId: string) => void;
 }
 
 export const useIOStore = create<IOState>()(
@@ -233,8 +233,8 @@ export const useIOStore = create<IOState>()(
             peers: state.peers.filter((p) => p.uuid !== uuid),
           })),
 
-        deploy: () => {
-          console.log("Deploying configuration...");
+        deploy: (deviceId: string) => {
+          console.log("Deploying configuration to " + deviceId + "...");
 
           // first reset
           const resetMessage: MidiMessage = {
@@ -248,7 +248,7 @@ export const useIOStore = create<IOState>()(
               sysexEnd,
             ],
           };
-          useMIDIStore.getState().sendMessage(resetMessage);
+          useMIDIStore.getState().sendMessage(resetMessage, deviceId);
 
           const mapPitchBendTo7Bit = (value: number) => {
   // Clamp value to valid pitch bend range
