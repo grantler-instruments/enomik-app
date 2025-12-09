@@ -398,6 +398,8 @@ const PinMapping = ({ config, type, disabled = false }: PinMappingProps) => {
                   onChange={(e) =>
                     handleChange("controller" as any, Number(e.target.value))
                   }
+                  size="small"
+                  disabled={disabled}
                   sx={{ width: 80 }}
                   size="small"
                   disabled={disabled}

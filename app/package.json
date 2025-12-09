@@ -14,6 +14,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "esptool-js": "^0.5.7",
     "i18next": "^25.6.3",
     "lottie-react": "^2.4.1",
     "react": "^19.1.1",

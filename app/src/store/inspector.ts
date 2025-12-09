@@ -23,13 +23,21 @@ export const useInspectorStore = create<InspectorState>()(
           set(() => ({
             peers: newPeers,
           })),
-          addInputPinConfig: (config: any) =>
+
+        addInputPinConfig: (config: InputPinConfig) =>
           set((state) => ({
-            inputPinConfigs: [...state.inputPinConfigs, config],
+            inputPinConfigs: [
+              ...state.inputPinConfigs.filter((c) => c.pin !== config.pin),
+              config,
+            ],
           })),
-          addOutputPinConfig: (config: any) =>
+
+        addOutputPinConfig: (config: OutputPinConfig) =>
           set((state) => ({
-            outputPinConfigs: [...state.outputPinConfigs, config],
+            outputPinConfigs: [
+              ...state.outputPinConfigs.filter((c) => c.pin !== config.pin),
+              config,
+            ],
           })),
         clear: () => {
           set({ peers: [], inputPinConfigs: [], outputPinConfigs: [] });

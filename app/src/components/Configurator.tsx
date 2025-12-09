@@ -12,7 +12,7 @@ import Outputs from "./Outputs";
 import { useIOStore } from "../store/io";
 import { useMIDIStore } from "../store/midi";
 import MidiDeviceChooser from "./MidiDeviceChooser";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { ArrowDropDown } from "@mui/icons-material";
 import Peers from "./Peers";
 import InitMidi from "./InitMidi";
@@ -20,7 +20,8 @@ import InitMidi from "./InitMidi";
 const Configurator = () => {
   const deployConfiguration = useIOStore((state) => state.deploy);
   const initialized = useMIDIStore((state) => state.initialized);
-  const [selectedOutputId, setSelectedOutputId] = useState<string>("");
+  const selectedOutputId = useMIDIStore((state) => state.selectedConfiguratorOutputDevice);
+  const setSelectedOutputId = useMIDIStore((state) => state.setSelectedConfiguratorOutputDevice);
 
   const saveToFile = useIOStore((state) => state.saveToFile);
   const loadFromFile = useIOStore((state) => state.loadFromFile);
@@ -103,14 +104,14 @@ const Configurator = () => {
         <Box flex={1} />
         <InitMidi></InitMidi>
         <MidiDeviceChooser
-          value={selectedOutputId}
+          value={selectedOutputId || ""}
           onChange={setSelectedOutputId}
         />
 
         <Button
           variant="contained"
           color="primary"
-          onClick={deployConfiguration}
+          onClick={() => deployConfiguration(selectedOutputId || "")}
           disabled={!initialized}
         >
           Deploy Configuration to Device

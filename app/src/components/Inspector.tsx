@@ -1,14 +1,15 @@
 import { Alert, Box, Button, Typography } from "@mui/material";
-import { useState } from "react";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import { useMIDIStore, type MidiMessage } from "../store/midi";
 import InitMidi from "./InitMidi";
 import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "../store/inspector";
+import MacAddressInput from "./MacAddressInput";
 import PinMapping from "./PinMapping";
 
 const Inspector = () => {
-  const [device, setDevice] = useState("");
+  const device = useMIDIStore((state) => state.selectedInspectorOutputDevice);
+  const setDevice = useMIDIStore((state) => state.setSelectedInspectorOutputDevice);
   const initialized = useMIDIStore((state) => state.initialized);
   const sendMessage = useMIDIStore((state) => state.sendMessage);
   const peers = useInspectorStore((state) => state.peers);
@@ -24,7 +25,7 @@ const Inspector = () => {
       <Box display={"flex"} flex={1} gap={2}>
         <InitMidi></InitMidi>
         <MidiDeviceChooser
-          value={device}
+          value={device || ""}
           onChange={(e) => setDevice(e)}
         ></MidiDeviceChooser>
         <Button
@@ -42,6 +43,16 @@ const Inspector = () => {
               timestamp: Date.now(),
             };
             sendMessage(msg);
+
+            const sysexGetAllPinConfigsMessage = [0xf0, 0x7d, 0x04, 0xf7]; //0x04=get_pin_configs
+            const allPinConfigsmsg: MidiMessage = {
+              id: uuidv4(),
+              type: 240,
+              channel: 1,
+              data: sysexGetAllPinConfigsMessage,
+              timestamp: Date.now(),
+            };
+            sendMessage(allPinConfigsmsg);
           }}
         >
           sync
@@ -72,7 +83,7 @@ const Inspector = () => {
       <Box>
         <Typography variant="h2">ESP-NOW MIDI</Typography>
         {peers.map((peer) => (
-          <Box key={peer}>- {peer}</Box>
+          <MacAddressInput key={peer} macAddress={peer} disabled={true} onMacAddressChange={() => {}}></MacAddressInput>
         ))}
       </Box>
     </Box>

@@ -21,7 +21,7 @@ const Inputs = () => {
       <Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>
         <Button
           variant="outlined"
-          color="primary"
+          color="secondary"
           onClick={() => {
             addInput({
               pin: inputs.length,
