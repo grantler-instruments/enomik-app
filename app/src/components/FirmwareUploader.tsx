@@ -22,6 +22,7 @@ import {
   Close as CloseIcon,
 } from "@mui/icons-material";
 import { ESPLoader, Transport } from "esptool-js";
+import { useAppStore } from "../store/app";
 
 type StatusType = "error" | "warning" | "info" | "success";
 
@@ -39,10 +40,11 @@ const terminal = {
   },
   write: (text: string) => {
     console.log(text);
-  }
+  },
 };
 
 const FirmwareUploader: React.FC = () => {
+  const showHints = useAppStore((state) => state.showHints);
   const [connected, setConnected] = useState<boolean>(false);
   const [status, setStatus] = useState<Status>({ message: "", type: "info" });
   const [progress, setProgress] = useState<number>(0);
@@ -50,7 +52,7 @@ const FirmwareUploader: React.FC = () => {
   const [flashAddress, setFlashAddress] = useState<string>("0x10000");
   const [isFlashing, setIsFlashing] = useState<boolean>(false);
   const [chipInfo, setChipInfo] = useState<string>("");
-  
+
   const espLoaderRef = useRef<any>(null);
   const transportRef = useRef<any>(null);
 
@@ -62,7 +64,7 @@ const FirmwareUploader: React.FC = () => {
     try {
       updateStatus("Requesting serial port...", "info");
       const port = await (navigator as any).serial.requestPort();
-      
+
       updateStatus("Connecting...", "info");
       const transport = new Transport(port, true);
       transportRef.current = transport;
@@ -72,17 +74,17 @@ const FirmwareUploader: React.FC = () => {
         romBaudrate: 115200,
         // baudrate: 115200,
         baudrate: 921600,
-        terminal
+        terminal,
       });
-      
+
       espLoaderRef.current = loader;
 
       updateStatus("Connecting to chip...", "info");
       await loader.main();
-      
-      const chipName = await loader.chip.CHIP_NAME
-      const macAddr = "TODO: mac"//await loader.chip.readMac()
-      
+
+      const chipName = await loader.chip.CHIP_NAME;
+      const macAddr = "TODO: mac"; //await loader.chip.readMac()
+
       setChipInfo(`${chipName} (MAC: ${macAddr})`);
       setConnected(true);
       updateStatus(`Connected to ${chipName}! Ready to flash.`, "success");
@@ -128,7 +130,7 @@ const FirmwareUploader: React.FC = () => {
       updateStatus("Starting flash process...", "info");
 
       const loader = espLoaderRef.current;
-      
+
       const arrayBuffer = await file.arrayBuffer();
       const fileArray = new Uint8Array(arrayBuffer);
 
@@ -137,12 +139,17 @@ const FirmwareUploader: React.FC = () => {
         throw new Error("Invalid flash address");
       }
 
-      updateStatus(`Flashing ${file.name} to 0x${address.toString(16)}...`, "info");
+      updateStatus(
+        `Flashing ${file.name} to 0x${address.toString(16)}...`,
+        "info"
+      );
 
-      const fileData = [{
-        data: fileArray,
-        address: address,
-      }];
+      const fileData = [
+        {
+          data: fileArray,
+          address: address,
+        },
+      ];
 
       await loader.writeFlash({
         fileArray: fileData,
@@ -158,9 +165,9 @@ const FirmwareUploader: React.FC = () => {
 
       setProgress(100);
       updateStatus("Flash complete! Resetting device...", "success");
-      
+
       await loader.hardReset();
-      
+
       updateStatus("Flash complete! Device has been reset.", "success");
     } catch (err) {
       const error = err as Error;
@@ -191,12 +198,13 @@ const FirmwareUploader: React.FC = () => {
 
   return (
     <Box p={2}>
-      <Alert severity="info" sx={{ mb: 2 }}>
-        Professional ESP firmware flasher using esptool-js. Supports ESP32, ESP32-S2, 
-        ESP32-S3, ESP32-C3, and ESP8266. Automatically detects chip type and handles 
-        bootloader mode - no manual button pressing required!
-      </Alert>
-      
+      {showHints && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Upload firmware to ESP32, without needing to use arduino IDE or
+          platform.io
+        </Alert>
+      )}
+
       <Card variant="outlined" sx={{ mb: 3 }}>
         <CardContent>
           <Typography
@@ -215,13 +223,13 @@ const FirmwareUploader: React.FC = () => {
               />
             )}
           </Typography>
-          
+
           {chipInfo && (
             <Alert severity="info" sx={{ mb: 2 }}>
               <Typography variant="body2">{chipInfo}</Typography>
             </Alert>
           )}
-          
+
           <Button
             variant="contained"
             fullWidth
@@ -372,11 +380,11 @@ const FirmwareUploader: React.FC = () => {
               <ListItemText primary="6. Click 'Flash Firmware'" />
             </ListItem>
           </List>
-          
+
           <Alert severity="warning" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              <strong>Note:</strong> If auto-connect fails, manually enter bootloader: 
-              Hold BOOT, press RESET, release BOOT.
+              <strong>Note:</strong> If auto-connect fails, manually enter
+              bootloader: Hold BOOT, press RESET, release BOOT.
             </Typography>
           </Alert>
         </CardContent>

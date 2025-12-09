@@ -144,6 +144,7 @@ export const useMIDIStore = create<MonitorState>()(
                   case MIDI_STATUS.START:
                   case MIDI_STATUS.STOP:
                   case MIDI_STATUS.CONTINUE:
+                  case MIDI_STATUS.TIMING_CLOCK:
                     get().addIncomingMessage(
                       {
                         ...message,

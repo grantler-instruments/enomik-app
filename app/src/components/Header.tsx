@@ -3,12 +3,21 @@ import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import { Settings as SettingsIcon } from "@mui/icons-material";
 
-import { Button } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useAppStore } from "../store/app";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
+  const setShowSettingsModal = useAppStore((state) => state.setShowSettingsModal);
+  const menu = [
+    { label: "Configurator", path: "/" },
+    { label: "Debugger", path: "/debugger" },
+    { label: "Inspector", path: "/inspector" },
+    { label: "Uploader", path: "/uploader" },
+  ]
 
   return (
     <AppBar position="static" color="primary" elevation={2}>
@@ -25,59 +34,26 @@ const Header: React.FC = () => {
         </Typography>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Button
-            component={NavLink}
-            to="/"
-            color="inherit"
-            sx={{
+          {menu.map((item) => (
+            <Button
+              key={item.path}
+              component={NavLink}
+              to={item.path}
+              color="inherit"
+              sx={{
               "&.active": {
                 backgroundColor: "primary.main",
                 fontWeight: 600,
               },
             }}
           >
-            Configurator
+            {item.label}
           </Button>
-          <Button
-            component={NavLink}
-            to="/debugger"
-            color="inherit"
-            sx={{
-              "&.active": {
-                backgroundColor: "primary.main",
-                fontWeight: 600,
-              },
-            }}
-          >
-            Debugger
-          </Button>
-          <Button
-            component={NavLink}
-            to="/inspector"
-            color="inherit"
-            sx={{
-              "&.active": {
-                backgroundColor: "primary.main",
-                fontWeight: 600,
-              },
-            }}
-          >
-            Inspector
-          </Button>
-          <Button
-            component={NavLink}
-            to="/uploader"
-            color="inherit"
-            sx={{
-              "&.active": {
-                backgroundColor: "primary.main",
-                fontWeight: 600,
-              },
-            }}
-          >
-            Uploader
-          </Button>
+          ))}
         </Box>
+        <IconButton onClick={() => setShowSettingsModal(true)} color="inherit">
+          <SettingsIcon />
+        </IconButton>
       </Toolbar>
     </AppBar>
   );

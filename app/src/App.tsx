@@ -9,6 +9,7 @@ import Debugger from "./components/Debugger";
 import { Routes, Route } from "react-router-dom";
 import NotFound from "./components/NotFound";
 import FirmwareUploader from "./components/FirmwareUploader";
+import Modals from "./components/Modals";
 
 function App() {
   const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
@@ -32,6 +33,7 @@ function App() {
         </Routes>
       </Box>
       <Footer></Footer>
+      <Modals></Modals>
     </Box>
   );
 }

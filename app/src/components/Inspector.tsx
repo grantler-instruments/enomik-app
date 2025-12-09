@@ -6,22 +6,28 @@ import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "../store/inspector";
 import MacAddressInput from "./MacAddressInput";
 import PinMapping from "./PinMapping";
+import { useAppStore } from "../store/app";
 
 const Inspector = () => {
   const device = useMIDIStore((state) => state.selectedInspectorOutputDevice);
-  const setDevice = useMIDIStore((state) => state.setSelectedInspectorOutputDevice);
+  const setDevice = useMIDIStore(
+    (state) => state.setSelectedInspectorOutputDevice
+  );
   const initialized = useMIDIStore((state) => state.initialized);
   const sendMessage = useMIDIStore((state) => state.sendMessage);
   const peers = useInspectorStore((state) => state.peers);
   const inputPinConfigs = useInspectorStore((state) => state.inputPinConfigs);
   const outputPinConfigs = useInspectorStore((state) => state.outputPinConfigs);
   const clear = useInspectorStore((state) => state.clear);
+  const showHints = useAppStore((state) => state.showHints);
   return (
     <Box display={"flex"} flexDirection="column" gap={2} padding={2}>
-      <Alert severity="info" sx={{ mb: 2 }}>
-        The Inspector allows you to select MIDI devices and synchronize
-        settings. Because who knows what one did months ago.
-      </Alert>
+      {showHints && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          The Inspector allows you to select MIDI devices and synchronize
+          settings. Because who knows what one did months ago.
+        </Alert>
+      )}
       <Box display={"flex"} flex={1} gap={2}>
         <InitMidi></InitMidi>
         <MidiDeviceChooser
@@ -83,7 +89,12 @@ const Inspector = () => {
       <Box>
         <Typography variant="h2">ESP-NOW MIDI</Typography>
         {peers.map((peer) => (
-          <MacAddressInput key={peer} macAddress={peer} disabled={true} onMacAddressChange={() => {}}></MacAddressInput>
+          <MacAddressInput
+            key={peer}
+            macAddress={peer}
+            disabled={true}
+            onMacAddressChange={() => {}}
+          ></MacAddressInput>
         ))}
       </Box>
     </Box>

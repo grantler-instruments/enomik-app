@@ -2,19 +2,23 @@ import { Alert, Box, Button, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useIOStore } from "../store/io";
 import MacAddressInput from "./MacAddressInput";
+import { useAppStore } from "../store/app";
 
 const Peers = () => {
   const peers = useIOStore((state) => state.peers);
   const addPeer = useIOStore((state) => state.addPeer);
   const updatePeer = useIOStore((state) => state.updatePeer);
   const removePeer = useIOStore((state) => state.removePeer);
+  const showHints = useAppStore((state) => state.showHints);
 
   return (
     <Box display={"flex"} flexDirection={"column"} padding={2}>
-      <Alert severity="info" sx={{ mb: 2 }}>
-        Peer connections can be established with other devices via ESP-NOW.
-        Configure the peer settings here.
-      </Alert>
+      {showHints && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Peer connections can be established with other devices via ESP-NOW.
+          Configure the peer settings here.
+        </Alert>
+      )}
       {peers.map((peer, index) => (
         <Box
           key={index}

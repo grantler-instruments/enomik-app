@@ -3,16 +3,20 @@ import { useIOStore } from "../store/io";
 // import Output from "./Output";
 import { MIDI_CONTROL_CHANGE, sysexPinModePWMOut } from "../store/midi.config";
 import PinMapping from "./PinMapping";
+import { useAppStore } from "../store/app";
 
 const Outputs = () => {
   const outputs = useIOStore((state) => state.outputs);
   const addOutput = useIOStore((state) => state.addOutput);
+  const showHints = useAppStore((state) => state.showHints);
   return (
     <Box display={"flex"} flexDirection={"column"} padding={2}>
       {/* <Typography variant="h2">MIDI to Output Pin</Typography> */}
-      <Alert severity="info" sx={{ mb: 2 }}>
-        Output pins on the microcontroller can be controlled via MIDI messages. Configure the output pin mode and MIDI message type here.
-      </Alert>
+      {showHints && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Output pins on the microcontroller can be controlled via MIDI messages. Configure the output pin mode and MIDI message type here.
+        </Alert>
+      )}
       {outputs.map((output, index) => (
         <PinMapping key={index} config={output} type="output" />
         // <Output key={index} output={output} />
