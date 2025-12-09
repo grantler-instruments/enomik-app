@@ -5,7 +5,7 @@ import InitMidi from "./InitMidi";
 import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "../store/inspector";
 import MacAddressInput from "./MacAddressInput";
-import PinMapping from "./PinMapping";
+import PinMapping from "./pinmapping/PinMapping";
 import { useAppStore } from "../store/app";
 
 const Inspector = () => {

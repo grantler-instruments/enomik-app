@@ -14,16 +14,21 @@ interface AppState {
 
 export const useAppStore = create<AppState>()(
   devtools(
-    (set) => ({
-      themeMode: 'light',
-      isSidebarOpen: false,
-      showHints: true,
-      showSettingsModal: false,
-      setThemeMode: (mode) => set({ themeMode: mode }),
-      setShowHints: (show) => set({ showHints: show }),
-      setShowSettingsModal: (show) => set({ showSettingsModal: show }),
-      toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
-    }),
-    { name: 'AppStore' } // Label for Zustand DevTools
+    persist(
+      (set) => ({
+        themeMode: 'light',
+        isSidebarOpen: false,
+        showHints: true,
+        showSettingsModal: false,
+        setThemeMode: (mode) => set({ themeMode: mode }),
+        setShowHints: (show) => set({ showHints: show }),
+        setShowSettingsModal: (show) => set({ showSettingsModal: show }),
+        toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+      }),
+      {
+        name: 'app-storage', // localStorage key
+      }
+    ),
+    { name: 'AppStore' }
   )
 );

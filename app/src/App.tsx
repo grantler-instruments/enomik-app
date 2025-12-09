@@ -22,7 +22,7 @@ function App() {
     >
       <Header></Header>
       {isSidebarOpen && <Sidebar />}
-      <Box marginLeft={1} marginRight={1}>
+      <Box paddingLeft={1} paddingRight={1}>
         <Routes>
           <Route path="/" element={<Configurator />} />
           <Route path="/debugger" element={<Debugger />} />
