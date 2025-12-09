@@ -13,9 +13,21 @@ import CallReceivedIcon from "@mui/icons-material/CallReceived";
 import { v4 as uuidv4 } from "uuid";
 
 import { useMIDIStore } from "../store/midi";
-import { typeToLabel } from "../utils/midi";
+import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 import { useState } from "react";
 import Filter, { midiTypes } from "./Filter";
+
+// Grid layout configuration
+const gridColumns = {
+  direction: 1,
+  timestamp: 2,
+  device: 2,
+  channel: 1,
+  type: 2,
+  noteCC: 1,
+  velocity: 1,
+  data: 2,
+};
 
 function MessageList() {
   const messages = useMIDIStore((state) => state.messages);
@@ -23,36 +35,97 @@ function MessageList() {
   const inputs = useMIDIStore((state) => state.inputs);
   const outputs = useMIDIStore((state) => state.outputs);
   const clear = useMIDIStore((state) => state.clear);
+  
   const [activeInputs, setActiveInputs] = useState<string[]>([]);
   const [activeOutputs, setActiveOutputs] = useState<string[]>([]);
   const [activeTypes, setActiveTypes] = useState<number[]>([...midiTypes]);
   const [activeChannels, setActiveChannels] = useState(
     Array.from({ length: 16 }).map((_, i) => i)
   );
-  let activeFilters = 0;
-  if (activeInputs.length > 0) activeFilters++;
-  if (activeOutputs.length > 0) activeFilters++;
-  if (activeTypes.length < midiTypes.length) activeFilters++;
-  if (activeChannels.length < 16) activeFilters++;
+
+  // Calculate active filters count
+  const activeFilters = [
+    activeInputs.length > 0,
+    activeOutputs.length > 0,
+    activeTypes.length < midiTypes.length,
+    activeChannels.length < 16,
+  ].filter(Boolean).length;
+
+  // Filter messages
+  const filteredMessages = messages.filter((msg) => {
+    const channelMatch = msg.channel ? activeChannels.includes(msg.channel) : true;
+    const deviceMatch = activeInputs.includes(msg.deviceId) || activeOutputs.includes(msg.deviceId);
+    const typeMatch = activeTypes.includes(msg.type);
+    return channelMatch && deviceMatch && typeMatch;
+  });
+
+  // Helper to get device name
+  const getDeviceName = (msg: any) => {
+    if (msg.incoming) {
+      return inputs.find((input) => input.id === msg.deviceId)?.name || "";
+    }
+    return outputs.find((output) => output.id === msg.deviceId)?.name || "";
+  };
+
+  // Helper to get note/CC/PRG value
+  const getNoteOrController = (msg: any) => {
+    if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON) {
+      return msg.note;
+    }
+    if (msg.type === MIDI_STATUS.CONTROL_CHANGE || msg.type === MIDI_STATUS.PROGRAM_CHANGE) {
+      return msg.controller;
+    }
+    return "";
+  };
+
+  // Helper to get velocity/value
+  const getVelocityOrValue = (msg: any) => {
+    if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON) {
+      return msg.velocity;
+    }
+    if (msg.type === MIDI_STATUS.CONTROL_CHANGE) {
+      return msg.value;
+    }
+    return "";
+  };
+
+  // Helper to format data column
+  const formatData = (msg: any) => {
+    if (msg.type === MIDI_STATUS.SYSEX_START) {
+      return msg.data?.join(", ") || "";
+    }
+    
+    const parts = [msg.type];
+    
+    if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON) {
+      if (msg.note) parts.push(msg.note);
+      if (msg.velocity) parts.push(msg.velocity);
+    }
+    
+    if (msg.type === MIDI_STATUS.CONTROL_CHANGE) {
+      if (msg.controller) parts.push(msg.controller);
+      parts.push(msg.value);
+    }
+    
+    return parts.join(", ");
+  };
+
   return (
     <Box mt={4}>
-      <Box display="flex" flexDirection={"column"} mb={2}>
+      <Box display="flex" flexDirection="column" mb={2}>
         <Typography variant="h2">MIDI Monitor</Typography>
         <Accordion>
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}
             aria-controls="inputs-content"
           >
-            <Box
-              display={"flex"}
-              gap={1}
-              justifyItems={"flex-start"}
-              alignItems={"flex-start"}
-            >
-              <Typography variant="h3">Filter</Typography>{" "}
-              <Typography variant="body2" fontSize={"10px"}>
-                {activeFilters > 0 && <> ({activeFilters + 1}) active</>}
-              </Typography>
+            <Box display="flex" gap={1} alignItems="center">
+              <Typography variant="h3">Filter</Typography>
+              {activeFilters > 0 && (
+                <Typography variant="body2" fontSize="10px">
+                  ({activeFilters} active)
+                </Typography>
+              )}
             </Box>
           </AccordionSummary>
           <AccordionDetails>
@@ -66,15 +139,14 @@ function MessageList() {
         </Accordion>
       </Box>
 
-      <Box display={"flex"} flexDirection={"column"} gap={2}>
-        <Box display={"flex"}>
+      <Box display="flex" flexDirection="column" gap={2}>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h3">History</Typography>
-          <Box flex={1}></Box>
-
           <Button variant="outlined" onClick={clear}>
             Clear
           </Button>
         </Box>
+
         <Box
           sx={{
             maxHeight: "400px",
@@ -82,102 +154,82 @@ function MessageList() {
             fontFamily: "monospace",
             fontSize: "12px",
           }}
-          display={"flex"}
-          flexDirection={"column"}
         >
-          <Grid container>
-            <Grid size={{ xs: 1 }}>Direction</Grid>
-            <Grid size={{ xs: 2 }}>Timestamp</Grid>
-            <Grid size={{ xs: 2 }}>Device</Grid>
-            <Grid size={{ xs: 1 }}>Channel</Grid>
-            <Grid size={{ xs: 2 }}>Type</Grid>
-            <Grid size={{ xs: 1 }}>Note/CC</Grid>
-            <Grid size={{ xs: 1 }}>Vel/Value</Grid>
-            <Grid size={{ xs: 2 }}>Data</Grid>
+          {/* Header */}
+          <Grid container sx={{ fontWeight: "bold", pb: 1, borderBottom: "1px solid #333" }}>
+            <Grid size={{ xs: gridColumns.direction }}>
+              <Box>Direction</Box>
+            </Grid>
+            <Grid size={{ xs: gridColumns.timestamp }}>
+              <Box>Timestamp</Box>
+            </Grid>
+            <Grid size={{ xs: gridColumns.device }}>
+              <Box>Device</Box>
+            </Grid>
+            <Grid size={{ xs: gridColumns.channel }}>
+              <Box>Channel</Box>
+            </Grid>
+            <Grid size={{ xs: gridColumns.type }}>
+              <Box>Type</Box>
+            </Grid>
+            <Grid size={{ xs: gridColumns.noteCC }}>
+              <Box>Note/CC/PRG</Box>
+            </Grid>
+            <Grid size={{ xs: gridColumns.velocity }}>
+              <Box>Vel/Value</Box>
+            </Grid>
+            <Grid size={{ xs: gridColumns.data }}>
+              <Box>Data</Box>
+            </Grid>
           </Grid>
-          {messages
-            .filter((msg) => {
-              const channelMatch = msg.channel
-                ? activeChannels.includes(msg.channel)
-                : true;
-              const inputMatch = activeInputs.includes(msg.deviceId);
-              const outputMatch = activeOutputs.includes(msg.deviceId);
-              const typeMatch = activeTypes.includes(msg.type);
-              return channelMatch && (inputMatch || outputMatch) && typeMatch;
-            })
-            .map((msg, index) => (
-              <Grid
-                container
-                key={index}
-                sx={{
-                  backgroundColor:
-                    index % 2 === 0 ? "inherit" : "rgb(24,24,24)",
-                }}
-                p={1}
-              >
-                <Grid size={{ xs: 1 }}>
-                  {msg.incoming && <CallReceivedIcon />}
-                  {!msg.incoming && (
+
+          {/* Data Rows */}
+          {filteredMessages.map((msg, index) => (
+            <Grid
+              container
+              key={index}
+              sx={{
+                backgroundColor: index % 2 === 0 ? "inherit" : "rgb(24,24,24)",
+                p: 1,
+              }}
+            >
+              <Grid size={{ xs: gridColumns.direction }}>
+                <Box>
+                  {msg.incoming ? (
+                    <CallReceivedIcon />
+                  ) : (
                     <SendIcon
                       sx={{ cursor: "pointer" }}
-                      onClick={() =>
-                        sendMessage({ ...msg, id: uuidv4() }, msg.deviceId)
-                      }
+                      onClick={() => sendMessage({ ...msg, id: uuidv4() }, msg.deviceId)}
                     />
                   )}
-                </Grid>
-                <Grid size={{ xs: 2 }}>
-                  {new Date(msg.timestamp).toLocaleTimeString()}
-                </Grid>
-                {msg.incoming && (
-                  <Grid size={{ xs: 2 }}>
-                    {inputs.find((input) => input.id === msg.deviceId)?.name}
-                  </Grid>
-                )}
-                {!msg.incoming && (
-                  <Grid size={{ xs: 2 }}>
-                    {outputs.find((output) => output.id === msg.deviceId)?.name}
-                  </Grid>
-                )}
-                <Grid size={{ xs: 1 }}>{msg.channel}</Grid>
-                <Grid size={{ xs: 2 }}>
-                  {typeToLabel(msg.type)} ({msg.type})
-                </Grid>
-
-                {(msg.type === 128 || msg.type === 144) && (
-                  <Grid size={{ xs: 1 }}>{msg.note}</Grid>
-                )}
-                {msg.type === 176 && (
-                  <Grid size={{ xs: 1 }}>{msg.controller}</Grid>
-                )}
-                {msg.type === 240 && ( //sysex
-                  <Grid size={{ xs: 1 }}></Grid>
-                )}
-
-                {(msg.type === 128 || msg.type === 144) && (
-                  <Grid size={{ xs: 1 }}>{msg.velocity}</Grid>
-                )}
-                {msg.type === 176 && <Grid size={{ xs: 1 }}>{msg.value}</Grid>}
-                {msg.type === 240 && ( //sysex
-                  <Grid size={{ xs: 1 }}></Grid>
-                )}
-
-                <Grid size={{ xs: 2 }}>
-                  {msg.type !== 240 && <>{msg.type}</>}
-                  {(msg.type === 128 || msg.type === 144) && msg.note && (
-                    <>, {msg.note}</>
-                  )}
-                  {(msg.type === 128 || msg.type === 144) && msg.velocity && (
-                    <>, {msg.velocity}</>
-                  )}
-                  {msg.type === 176 && msg.controller && (
-                    <>, {msg.controller}</>
-                  )}
-                  {msg.type === 176 && <>, {msg.value}</>}
-                  {msg.type === 240 && <>{msg.data?.join(", ")}</>}
-                </Grid>
+                </Box>
               </Grid>
-            ))}
+              <Grid size={{ xs: gridColumns.timestamp }}>
+                <Box>{new Date(msg.timestamp).toLocaleTimeString()}</Box>
+              </Grid>
+              <Grid size={{ xs: gridColumns.device }}>
+                <Box>{getDeviceName(msg)}</Box>
+              </Grid>
+              <Grid size={{ xs: gridColumns.channel }}>
+                <Box>{msg.channel}</Box>
+              </Grid>
+              <Grid size={{ xs: gridColumns.type }}>
+                <Box>
+                  {typeToLabel(msg.type)} ({msg.type})
+                </Box>
+              </Grid>
+              <Grid size={{ xs: gridColumns.noteCC }}>
+                <Box>{getNoteOrController(msg)}</Box>
+              </Grid>
+              <Grid size={{ xs: gridColumns.velocity }}>
+                <Box>{getVelocityOrValue(msg)}</Box>
+              </Grid>
+              <Grid size={{ xs: gridColumns.data }}>
+                <Box>{formatData(msg)}</Box>
+              </Grid>
+            </Grid>
+          ))}
         </Box>
       </Box>
     </Box>

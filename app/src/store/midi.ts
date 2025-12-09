@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "./inspector";
+import { MIDI_STATUS } from "../utils/midi";
 
 export interface MidiMessage {
   id: string;
@@ -82,7 +83,7 @@ export const useMIDIStore = create<MonitorState>()(
                 };
 
                 switch (messageType) {
-                  case 0xb0: // Control Change
+                  case MIDI_STATUS.CONTROL_CHANGE:
                     get().addIncomingMessage(
                       {
                         ...message,
@@ -93,7 +94,7 @@ export const useMIDIStore = create<MonitorState>()(
                     );
                     break;
 
-                  case 0x90: // Note On
+                  case MIDI_STATUS.NOTE_ON:
                     if (data2 > 0) {
                       // Velocity > 0 means note on
                       get().addIncomingMessage(
@@ -117,7 +118,7 @@ export const useMIDIStore = create<MonitorState>()(
                     }
                     break;
 
-                  case 0x80: // Note Off
+                  case MIDI_STATUS.NOTE_OFF:
                     get().addIncomingMessage(
                       {
                         ...message,
@@ -127,8 +128,27 @@ export const useMIDIStore = create<MonitorState>()(
                       input.id
                     );
                     break;
+                  case MIDI_STATUS.PROGRAM_CHANGE:
+                    get().addIncomingMessage(
+                      {
+                        ...message,
+                        controller: data1,
+                      },
+                      input.id
+                    );
+                    break;
+                  case MIDI_STATUS.START:
+                  case MIDI_STATUS.STOP:
+                  case MIDI_STATUS.CONTINUE:
+                    get().addIncomingMessage(
+                      {
+                        ...message,
+                      },
+                      input.id
+                    );
+                    break;
 
-                  case 0xe0: // Pitch Bend
+                  case MIDI_STATUS.PITCH_BEND:
                     // Combine LSB and MSB into 14-bit value (0-16383)
                     const rawValue = data1 | (data2 << 7);
                     get().addIncomingMessage(
@@ -139,7 +159,7 @@ export const useMIDIStore = create<MonitorState>()(
                       input.id
                     );
                     break;
-                  case 0xf0: // SysEx
+                  case MIDI_STATUS.SYSEX_START:
                     console.log("Received SysEx message:", event.data);
 
                     if (event.data[1] === 125) {
@@ -251,14 +271,17 @@ export const useMIDIStore = create<MonitorState>()(
 
           midiAccess.outputs.forEach((output) => {
             if (output.id !== outputId && outputId !== "-1") return;
-            if (message.type === 240 && message.data !== undefined) {
+            if (
+              message.type === MIDI_STATUS.SYSEX_START &&
+              message.data !== undefined
+            ) {
               let data = [...message.data];
               if (data[0] !== 0xf0) data.unshift(0xf0);
               if (data[data.length - 1] !== 0xf7) data.push(0xf7);
               console.log("Sending sysex - Raw data:", data);
               output.send(data);
             } else if (
-              message.type === 144 &&
+              message.type === MIDI_STATUS.NOTE_ON &&
               message.note !== undefined &&
               message.velocity !== undefined &&
               message.channel !== undefined
@@ -269,7 +292,7 @@ export const useMIDIStore = create<MonitorState>()(
                 message.velocity,
               ]);
             } else if (
-              message.type === 128 &&
+              message.type === MIDI_STATUS.NOTE_OFF &&
               message.note !== undefined &&
               message.velocity !== undefined &&
               message.channel !== undefined
@@ -280,7 +303,7 @@ export const useMIDIStore = create<MonitorState>()(
                 message.velocity,
               ]);
             } else if (
-              message.type === 176 &&
+              message.type === MIDI_STATUS.CONTROL_CHANGE &&
               message.controller !== undefined &&
               message.value !== undefined &&
               message.channel !== undefined
@@ -291,13 +314,25 @@ export const useMIDIStore = create<MonitorState>()(
                 message.value,
               ]);
             } else if (
-              message.type === 224 &&
+              message.type === MIDI_STATUS.PITCH_BEND &&
               message.value !== undefined &&
               message.channel !== undefined
             ) {
               const lsb = message.value & 0x7f;
               const msb = (message.value >> 7) & 0x7f;
               output.send([0xe0 | (message.channel - 1), lsb, msb]);
+            } else if (
+              message.type === MIDI_STATUS.PROGRAM_CHANGE &&
+              message.controller !== undefined &&
+              message.channel !== undefined
+            ) {
+              output.send([0xc0 | (message.channel - 1), message.controller]);
+            } else if (
+              message.type === MIDI_STATUS.START ||
+              message.type === MIDI_STATUS.STOP ||
+              message.type === MIDI_STATUS.CONTINUE
+            ) {
+              output.send([message.type]);
             }
           });
         },

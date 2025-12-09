@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import { useMIDIStore, type MidiMessage } from "../store/midi";
 import { v4 as uuidv4 } from "uuid";
+import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 const Composer = () => {
   const sendMessage = useMIDIStore((state) => state.sendMessage);
   const outputs = useMIDIStore((state) => state.outputs);
@@ -22,27 +23,30 @@ const Composer = () => {
   const [sysexData, setSysexData] = useState("");
   const [manufacturerId, setManufacturerId] = useState("");
   const types = [
-    { value: 144, label: "Note On" },
-    { value: 128, label: "Note Off" },
-    { value: 176, label: "Control Change" },
-    { value: 192, label: "Program Change" },
-    { value: 224, label: "Pitch Bend" },
-    { value: 240, label: "SysEx" },
+    { value: MIDI_STATUS.NOTE_ON, label: typeToLabel(MIDI_STATUS.NOTE_ON) },
+    { value: MIDI_STATUS.NOTE_OFF, label: typeToLabel(MIDI_STATUS.NOTE_OFF) },
+    { value: MIDI_STATUS.CONTROL_CHANGE, label: typeToLabel(MIDI_STATUS.CONTROL_CHANGE) },
+    { value: MIDI_STATUS.PROGRAM_CHANGE, label: typeToLabel(MIDI_STATUS.PROGRAM_CHANGE) },
+    { value: MIDI_STATUS.PITCH_BEND, label: typeToLabel(MIDI_STATUS.PITCH_BEND) },
+    { value: MIDI_STATUS.SYSEX_START, label: typeToLabel(MIDI_STATUS.SYSEX_START) },
+    { value: MIDI_STATUS.START, label: typeToLabel(MIDI_STATUS.START) },
+    { value: MIDI_STATUS.STOP, label: typeToLabel(MIDI_STATUS.STOP) },
+    { value: MIDI_STATUS.CONTINUE, label: typeToLabel(MIDI_STATUS.CONTINUE) },
   ];
 
   //TODO: move to utils
   const hexStringToArray = (hex: string): number[] => {
-  // Remove all whitespace
-  const clean = hex.replace(/\s+/g, '').toUpperCase();
-  const result: number[] = [];
+    // Remove all whitespace
+    const clean = hex.replace(/\s+/g, "").toUpperCase();
+    const result: number[] = [];
 
-  // Parse every two characters as a hex byte
-  for (let i = 0; i < clean.length; i += 2) {
-    result.push(parseInt(clean.slice(i, i + 2), 16));
-  }
+    // Parse every two characters as a hex byte
+    for (let i = 0; i < clean.length; i += 2) {
+      result.push(parseInt(clean.slice(i, i + 2), 16));
+    }
 
-  return result;
-};
+    return result;
+  };
   return (
     <Box display={"flex"} flexDirection={"column"} gap={2}>
       <Typography variant="h2">MIDI Composer</Typography>
@@ -77,7 +81,7 @@ const Composer = () => {
             ))}
           </Select>
         </FormControl>
-        {type === 240 ? (
+        {type === MIDI_STATUS.SYSEX_START && (
           <>
             <TextField
               label="Start Byte"
@@ -96,7 +100,7 @@ const Composer = () => {
             />
             <TextField
               label="Data (hex)"
-              value={sysexData.replace(/\s+/g, '').toUpperCase()}
+              value={sysexData.replace(/\s+/g, "").toUpperCase()}
               onChange={(e) => setSysexData(e.target.value)}
               placeholder="43 12 00"
               sx={{ minWidth: 200 }}
@@ -110,24 +114,36 @@ const Composer = () => {
               size="small"
             />
           </>
-        ) : (
+        )}
+        {(type === MIDI_STATUS.NOTE_ON ||
+          type === MIDI_STATUS.NOTE_OFF ||
+          type === MIDI_STATUS.CONTROL_CHANGE ||
+          type === MIDI_STATUS.PROGRAM_CHANGE) && (
           <>
             <TextField
-              label={type === 144 || type === 128 ? "Note" : "CC"}
+              label={
+                type === MIDI_STATUS.NOTE_ON || type === MIDI_STATUS.NOTE_OFF
+                  ? "Note"
+                  : type === MIDI_STATUS.PROGRAM_CHANGE
+                  ? "Program"
+                  : "Controller"
+              }
               type="number"
               value={noteOrCc}
               onChange={(e) => setNoteOrCc(Number(e.target.value))}
               sx={{ width: 100 }}
               size="small"
             />
-            <TextField
-              label={type === 144 || type === 128 ? "Velocity" : "Value"}
-              type="number"
-              value={velocityOrValue}
-              onChange={(e) => setVelocityOrValue(Number(e.target.value))}
-              sx={{ width: 100 }}
-              size="small"
-            />
+            {type !== 192 && (
+              <TextField
+                label={type === 144 || type === 128 ? "Velocity" : "Value"}
+                type="number"
+                value={velocityOrValue}
+                onChange={(e) => setVelocityOrValue(Number(e.target.value))}
+                sx={{ width: 100 }}
+                size="small"
+              />
+            )}
           </>
         )}
         <Box flex={1}></Box>
