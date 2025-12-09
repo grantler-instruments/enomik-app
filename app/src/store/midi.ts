@@ -31,7 +31,6 @@ interface MonitorState {
   selectedInspectorOutputDevice?: string;
   selectedComposerOutputDevice?: string;
   init: () => void;
-  toggleInput: (inputId: string) => void;
   addIncomingMessage: (message: MidiMessage, deviceId: string) => void;
   addOutgoingMessage: (message: MidiMessage, deviceId: string) => void;
   clear: () => void;
@@ -43,6 +42,178 @@ interface MonitorState {
 
 let midiAccess: MIDIAccess | null = null;
 
+const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
+  console.log(`Setting up handler for: ${input.name} (ID: ${input.id})`);
+
+  input.onmidimessage = (event) => {
+    if (!event.data || event.data.length === 0) return;
+
+    const [status, data1, data2] = event.data;
+    const channel = (status & 0x0f) + 1; // Convert to 1-indexed
+    const messageType = status & 0xf0;
+
+    const message = {
+      id: uuidv4(),
+      timestamp: event.timeStamp,
+      type: messageType,
+      channel,
+    };
+
+    switch (messageType) {
+      case MIDI_STATUS.CONTROL_CHANGE:
+        get().addIncomingMessage(
+          {
+            ...message,
+            controller: data1,
+            value: data2,
+          },
+          input.id
+        );
+        break;
+
+      case MIDI_STATUS.NOTE_ON:
+        if (data2 > 0) {
+          // Velocity > 0 means note on
+          get().addIncomingMessage(
+            {
+              ...message,
+              note: data1,
+              velocity: data2,
+            },
+            input.id
+          );
+        } else {
+          // Velocity = 0 is sometimes used as note off
+          get().addIncomingMessage(
+            {
+              ...message,
+              note: data1,
+              velocity: data2,
+            },
+            input.id
+          );
+        }
+        break;
+
+      case MIDI_STATUS.NOTE_OFF:
+        get().addIncomingMessage(
+          {
+            ...message,
+            note: data1,
+            velocity: data2,
+          },
+          input.id
+        );
+        break;
+
+      case MIDI_STATUS.PROGRAM_CHANGE:
+        get().addIncomingMessage(
+          {
+            ...message,
+            controller: data1,
+          },
+          input.id
+        );
+        break;
+
+      case MIDI_STATUS.START:
+      case MIDI_STATUS.STOP:
+      case MIDI_STATUS.CONTINUE:
+      case MIDI_STATUS.TIMING_CLOCK:
+        get().addIncomingMessage(
+          {
+            ...message,
+          },
+          input.id
+        );
+        break;
+
+      case MIDI_STATUS.PITCH_BEND:
+        // Combine LSB and MSB into 14-bit value (0-16383)
+        const rawValue = data1 | (data2 << 7);
+        get().addIncomingMessage(
+          {
+            ...message,
+            value: rawValue - 8192, // Center at 0
+          },
+          input.id
+        );
+        break;
+
+      case MIDI_STATUS.SYSEX_START:
+        console.log("Received SysEx message:", event.data);
+
+        if (event.data[1] === 125) {
+          if (event.data[2] === 64 + 8) {
+            // get peers response
+            const nibbleData = event.data.slice(3, event.data.length - 1);
+            const numberOfPeers = (event.data.length - 4) / 12;
+            const peers: string[] = [];
+
+            for (let i = 0; i < numberOfPeers; i++) {
+              const start = i * 12;
+              const macNibbles = nibbleData.slice(start, start + 12);
+              const macBytes: number[] = [];
+
+              for (let j = 0; j < macNibbles.length; j += 2) {
+                macBytes.push((macNibbles[j] << 4) | macNibbles[j + 1]);
+              }
+
+              // Convert to MAC string
+              const macStr = macBytes
+                .map((b) => b.toString(16).padStart(2, "0"))
+                .join(":");
+              peers.push(macStr.toUpperCase());
+              useInspectorStore.getState().setPeers(peers);
+            }
+          }
+
+          if (event.data[2] === 64 + 2) {
+            // get pin config response
+            console.log("Received get_pin_config response", event.data);
+
+            const pin = event.data[3];
+            const mode = event.data[4];
+            const threshold = event.data[5];
+            const midi_channel = event.data[6];
+            const midi_type = event.data[7] * 2;
+            const midi_cc_or_note = event.data[8];
+            const min_midi_value = event.data[9];
+            const max_midi_value = event.data[10];
+
+            const config = {
+              pin,
+              mode,
+              threshold,
+              channel: midi_channel,
+              midiType: midi_type,
+              controller: midi_type === 176 ? midi_cc_or_note : undefined,
+              note:
+                midi_type === 144 || midi_type === 128
+                  ? midi_cc_or_note
+                  : undefined,
+              midiMin: min_midi_value,
+              midiMax: max_midi_value,
+            };
+            useInspectorStore.getState().addInputPinConfig(config);
+          }
+        }
+
+        get().addIncomingMessage(
+          {
+            ...message,
+            data: Array.from(event.data),
+          },
+          input.id
+        );
+        break;
+
+      default:
+        // Handle other message types if needed
+        break;
+    }
+  };
+};
 export const useMIDIStore = create<MonitorState>()(
   devtools(
     persist(
@@ -68,187 +239,48 @@ export const useMIDIStore = create<MonitorState>()(
               outputs,
             });
 
-            // Set up MIDI input listeners
+            // Set up MIDI input listeners for initial devices
             inputs.forEach((input) => {
-              console.log(`MIDI Input: ${input.name} (ID: ${input.id})`);
-
-              input.onmidimessage = (event) => {
-                if (!event.data || event.data.length === 0) return;
-
-                const [status, data1, data2] = event.data;
-                const channel = (status & 0x0f) + 1; // Convert to 1-indexed
-                const messageType = status & 0xf0;
-
-                const message = {
-                  id: uuidv4(),
-                  timestamp: event.timeStamp,
-                  type: messageType,
-                  channel,
-                };
-
-                switch (messageType) {
-                  case MIDI_STATUS.CONTROL_CHANGE:
-                    get().addIncomingMessage(
-                      {
-                        ...message,
-                        controller: data1,
-                        value: data2,
-                      },
-                      input.id
-                    );
-                    break;
-
-                  case MIDI_STATUS.NOTE_ON:
-                    if (data2 > 0) {
-                      // Velocity > 0 means note on
-                      get().addIncomingMessage(
-                        {
-                          ...message,
-                          note: data1,
-                          velocity: data2,
-                        },
-                        input.id
-                      );
-                    } else {
-                      // Velocity = 0 is sometimes used as note off
-                      get().addIncomingMessage(
-                        {
-                          ...message,
-                          note: data1,
-                          velocity: data2,
-                        },
-                        input.id
-                      );
-                    }
-                    break;
-
-                  case MIDI_STATUS.NOTE_OFF:
-                    get().addIncomingMessage(
-                      {
-                        ...message,
-                        note: data1,
-                        velocity: data2,
-                      },
-                      input.id
-                    );
-                    break;
-                  case MIDI_STATUS.PROGRAM_CHANGE:
-                    get().addIncomingMessage(
-                      {
-                        ...message,
-                        controller: data1,
-                      },
-                      input.id
-                    );
-                    break;
-                  case MIDI_STATUS.START:
-                  case MIDI_STATUS.STOP:
-                  case MIDI_STATUS.CONTINUE:
-                  case MIDI_STATUS.TIMING_CLOCK:
-                    get().addIncomingMessage(
-                      {
-                        ...message,
-                      },
-                      input.id
-                    );
-                    break;
-
-                  case MIDI_STATUS.PITCH_BEND:
-                    // Combine LSB and MSB into 14-bit value (0-16383)
-                    const rawValue = data1 | (data2 << 7);
-                    get().addIncomingMessage(
-                      {
-                        ...message,
-                        value: rawValue - 8192, // Center at 0
-                      },
-                      input.id
-                    );
-                    break;
-                  case MIDI_STATUS.SYSEX_START:
-                    console.log("Received SysEx message:", event.data);
-
-                    if (event.data[1] === 125) {
-                      if (event.data[2] === 64 + 8) {// get peers response
-                        const nibbleData = event.data.slice(
-                          3,
-                          event.data.length - 1
-                        );
-
-                        const numberOfPeers = (event.data.length - 4) / 12;
-                        const peers: string[] = [];
-
-                        for (let i = 0; i < numberOfPeers; i++) {
-                          const start = i * 12;
-                          const macNibbles = nibbleData.slice(
-                            start,
-                            start + 12
-                          );
-                          const macBytes: number[] = [];
-
-                          for (let j = 0; j < macNibbles.length; j += 2) {
-                            macBytes.push(
-                              (macNibbles[j] << 4) | macNibbles[j + 1]
-                            );
-                          }
-
-                          // Convert to MAC string
-                          const macStr = macBytes
-                            .map((b) => b.toString(16).padStart(2, "0"))
-                            .join(":");
-                          peers.push(macStr.toUpperCase());
-                          useInspectorStore.getState().setPeers(peers);
-                        }
-                      }
-                      if( event.data[2] === 64 + 2){ // get pin config response
-                        console.log("Received get_pin_config response", event.data);
-                //             c.pin,
-                // c.mode,
-                // c.threshold,
-                // c.midi_channel,
-                // static_cast<uint8_t>(c.midi_type) / 2,
-                // c.midi_type == MidiStatus::MIDI_CONTROL_CHANGE ? c.midi_cc : c.midi_note,
-                // c.min_midi_value,
-                // c.max_midi_value,
-
-                const pin = event.data[3];
-                const mode = event.data[4];
-                const threshold = event.data[5];
-                const midi_channel = event.data[6];
-                const midi_type = event.data[7] * 2;
-                const midi_cc_or_note = event.data[8];
-                const min_midi_value = event.data[9];
-                const max_midi_value = event.data[10];
-
-                const config = {
-                  pin,
-                  mode,
-                  threshold,
-                  channel: midi_channel,
-                  midiType: midi_type,
-                  controller:
-                    midi_type === 176 ? midi_cc_or_note : undefined,
-                  note: midi_type === 144 || midi_type === 128 ? midi_cc_or_note : undefined,
-                  midiMin: min_midi_value,
-                  midiMax: max_midi_value,
-                };
-                useInspectorStore.getState().addInputPinConfig(config);
-
-                      }
-                    }
-                    get().addIncomingMessage(
-                      {
-                        ...message,
-                        data: Array.from(event.data),
-                      },
-                      input.id
-                    );
-                    break;
-                  default:
-                    // Handle other message types if needed
-                    break;
-                }
-              };
+              setupInputHandler(input, get);
             });
+
+            // Listen for device connection/disconnection events
+            midiAccess.onstatechange = (event) => {
+              console.log("MIDI device state changed:", event);
+              if (!midiAccess) {
+                return;
+              }
+
+              // Update the device lists
+              const inputs = Array.from(midiAccess.inputs.values());
+              const outputs = Array.from(midiAccess.outputs.values());
+
+              set({ inputs, outputs });
+
+              // Set up handler for newly connected input
+              if (
+                event.port?.type === "input" &&
+                event.port.state === "connected"
+              ) {
+                const input = event.port as MIDIInput;
+                console.log(
+                  `New MIDI Input connected: ${input.name} (ID: ${input.id})`
+                );
+                setupInputHandler(input, get);
+              }
+
+              // Clean up disconnected devices from active inputs
+              if (event.port?.state === "disconnected") {
+                console.log(
+                  `MIDI device disconnected: ${event.port.name} (ID: ${event.port.id})`
+                );
+                set({
+                  activeInputs: get().activeInputs.filter(
+                    (id) => id !== event.port?.id
+                  ),
+                });
+              }
+            };
 
             console.log("Initializing MIDI Monitor");
             set({ initialized: true });
@@ -257,21 +289,6 @@ export const useMIDIStore = create<MonitorState>()(
           }
         },
 
-        toggleInput: (inputId: string) => {
-          const activeInputs = get().activeInputs;
-          const inputs = get().inputs;
-          console.log("Toggling input:", inputId, inputs);
-          const input = inputs.find((inp) => inp.id === inputId);
-          if (!input) return;
-
-          if (activeInputs.includes(inputId)) {
-            set({
-              activeInputs: activeInputs.filter((id) => id !== inputId),
-            });
-          } else {
-            set({ activeInputs: [...activeInputs, inputId] });
-          }
-        },
         addIncomingMessage: (message: MidiMessage, deviceId: string) => {
           set((state) => ({
             messages: [
