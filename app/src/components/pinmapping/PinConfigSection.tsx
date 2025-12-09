@@ -89,7 +89,7 @@ export default function PinConfigSection({
         )}
       </Grid>
 
-      {/* <Grid size={{ xs: 6, sm: 2 }}>
+      <Grid size={{ xs: 6, sm: 2 }}>
         {config.mode === sysexPinModePWMOut && type === "output" && (
           <MinMax
             min={config.pinMin ?? 0}
@@ -99,7 +99,7 @@ export default function PinConfigSection({
             disabled={disabled}
           />
         )}
-      </Grid> */}
+      </Grid>
     </Grid>
   );
 }
