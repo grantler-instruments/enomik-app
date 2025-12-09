@@ -10,41 +10,32 @@ import { useMIDIStore } from "../store/midi";
 const MidiDeviceChooser = ({
   value,
   onChange,
+  sx
 }: {
   value: string;
   onChange: (value: string) => void;
+  sx?: object;
 }) => {
   const outputs = useMIDIStore((state) => state.outputs);
-  const [error, _] = useState<string | null>(null);
-
-  useEffect(() => {}, []);
 
   return (
-    <Box>
-      <FormControl fullWidth>
-        <InputLabel id="midi-device-select-label">MIDI Output</InputLabel>
-        <Select
-          labelId="midi-device-select-label"
-          value={value}
-          label="MIDI Output"
-          onChange={(e) => onChange(e.target.value)}
-          disabled={outputs.length === 0 || !!error}
-          size="small"
-        >
-          {outputs.map((output, index) => {
-            return (
-              <MenuItem key={`midi-output-${index}`} value={index}>
-                {output.name}
+    <Box sx={sx}>
+        <FormControl>
+          <InputLabel>MIDI Output</InputLabel>
+          <Select
+            size="small"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            label="MIDI Output"
+          >
+            <MenuItem value={"-1"}>All outputs</MenuItem>
+            {outputs.map((out) => (
+              <MenuItem key={out.id} value={out.id}>
+                {out.name}
               </MenuItem>
-            );
-          })}
-        </Select>
-      </FormControl>
-      {error && (
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          {error}
-        </Typography>
-      )}
+            ))}
+          </Select>
+        </FormControl>
     </Box>
   );
 };

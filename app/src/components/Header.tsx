@@ -11,13 +11,15 @@ import { useAppStore } from "../store/app";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const setShowSettingsModal = useAppStore((state) => state.setShowSettingsModal);
+  const setShowSettingsModal = useAppStore(
+    (state) => state.setShowSettingsModal
+  );
   const menu = [
     { label: "Configurator", path: "/" },
     { label: "Debugger", path: "/debugger" },
     { label: "Inspector", path: "/inspector" },
     { label: "Uploader", path: "/uploader" },
-  ]
+  ];
 
   return (
     <AppBar position="static" color="primary" elevation={2}>
@@ -41,19 +43,23 @@ const Header: React.FC = () => {
               to={item.path}
               color="inherit"
               sx={{
-              "&.active": {
-                backgroundColor: "primary.main",
-                fontWeight: 600,
-              },
-            }}
-          >
-            {item.label}
-          </Button>
+                "&.active": {
+                  backgroundColor: "primary.main",
+                  color: "primary.contrastText",
+                  fontWeight: 600,
+                },
+              }}
+            >
+              {item.label}
+            </Button>
           ))}
+          <IconButton
+            onClick={() => setShowSettingsModal(true)}
+            color="inherit"
+          >
+            <SettingsIcon />
+          </IconButton>
         </Box>
-        <IconButton onClick={() => setShowSettingsModal(true)} color="inherit">
-          <SettingsIcon />
-        </IconButton>
       </Toolbar>
     </AppBar>
   );

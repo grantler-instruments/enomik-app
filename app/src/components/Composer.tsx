@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useMIDIStore, type MidiMessage } from "../store/midi";
 import { v4 as uuidv4 } from "uuid";
 import { MIDI_STATUS, typeToLabel } from "../utils/midi";
+import MidiDeviceChooser from "./MidiDeviceChooser";
 const Composer = () => {
   const sendMessage = useMIDIStore((state) => state.sendMessage);
   const outputs = useMIDIStore((state) => state.outputs);
@@ -148,22 +149,10 @@ const Composer = () => {
           </>
         )}
         <Box flex={1}></Box>
-        <FormControl>
-          <InputLabel>MIDI Output</InputLabel>
-          <Select
-            size="small"
-            value={selectedOutputId || ""}
-            onChange={(e) => setSelectedOutputId(e.target.value)}
-            label="MIDI Output"
-          >
-            <MenuItem value={"-1"}>All outputs</MenuItem>
-            {outputs.map((out) => (
-              <MenuItem key={out.id} value={out.id}>
-                {out.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <MidiDeviceChooser
+          value={selectedOutputId || ""}
+          onChange={setSelectedOutputId}
+        />
         <Button
           variant="contained"
           onClick={() => {
