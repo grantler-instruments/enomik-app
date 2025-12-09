@@ -89,7 +89,7 @@ export default function PinConfigSection({
         )}
       </Grid>
 
-      <Grid size={{ xs: 6, sm: 2 }}>
+      <Grid size={{ xs: 6, sm: 4 }} display={"flex"}>
         {config.mode === sysexPinModePWMOut && type === "output" && (
           <MinMax
             min={config.pinMin ?? 0}
@@ -97,6 +97,7 @@ export default function PinConfigSection({
             onChangeMin={(value) => onChange("pinMin", value)}
             onChangeMax={(value) => onChange("pinMax", value)}
             disabled={disabled}
+            sx={{flex: 1}}
           />
         )}
       </Grid>

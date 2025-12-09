@@ -8,6 +8,7 @@ const MidiMinMax = ({
   onChangeMax,
   disabled,
   bitResolution = 7,
+  sx,
 }: {
   min: number;
   max: number;
@@ -15,6 +16,7 @@ const MidiMinMax = ({
   onChangeMax: (value: number) => void;
   disabled?: boolean;
   bitResolution?: 7 | 14;
+  sx?: any;
 }) => {
   const minRange = bitResolution === 7 ? 0 : -8192;
   const maxRange = bitResolution === 7 ? 127 : 8191;
@@ -51,7 +53,13 @@ const MidiMinMax = ({
   };
 
   return (
-    <Box display="flex" flexDirection="row" alignItems="center" gap={1}>
+    <Box
+      display="flex"
+      flexDirection="row"
+      alignItems="center"
+      gap={1}
+      sx={{ ...sx }}
+    >
       <TextField
         label="Min"
         value={minText}
