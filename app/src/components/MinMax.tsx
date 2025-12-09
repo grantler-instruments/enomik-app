@@ -59,6 +59,7 @@ const MidiMinMax = ({
         onBlur={handleMinBlur}
         sx={{ width: 100 }}
         disabled={disabled}
+        size="small"
         inputProps={{
           inputMode: "numeric",
           pattern: "-?[0-9]*",
@@ -72,6 +73,7 @@ const MidiMinMax = ({
         onBlur={handleMaxBlur}
         sx={{ width: 100 }}
         disabled={disabled}
+        size="small"
         inputProps={{
           inputMode: "numeric",
           pattern: "-?[0-9]*",
