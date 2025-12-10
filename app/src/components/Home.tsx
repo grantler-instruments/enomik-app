@@ -47,7 +47,6 @@ const Home = () => {
         </Typography>
       </Box>
 
-      {/* Bidirectional Section */}
       <Box mt={8}>
         <Typography variant="h6" fontWeight={600} gutterBottom>
           Fully Bidirectional - <Box component={"span"} sx={{ color: "secondary.main" }}>
@@ -62,7 +61,6 @@ const Home = () => {
         </Typography>
       </Box>
 
-      {/* Hardware Kits Section */}
       <Box mt={8}>
         <Typography variant="h6" fontWeight={600} gutterBottom>
           Available as a Kit - <Box component={"span"} sx={{ color: "secondary.main" }}>Dongles & Client Boards</Box>

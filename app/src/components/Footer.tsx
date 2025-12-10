@@ -1,4 +1,3 @@
-// Footer.tsx
 import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -19,7 +18,7 @@ const Footer: React.FC = () => {
         textAlign: "center",
       }}
     >
-      <Divider sx={{ mb: 4, mt: 4 }} />
+      <Divider sx={{ my: 2 }} />
       <Typography variant="body2" color="text.secondary">
         {t('made_with_love')}{" "}
         <Link color="primary" href="https://grantler-instruments.com" target="_blank" rel="noopener">

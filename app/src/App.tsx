@@ -23,14 +23,19 @@ function App() {
     >
       <Header></Header>
       {isSidebarOpen && <Sidebar />}
-      <Box paddingLeft={1} paddingRight={1}>
+      <Box
+        paddingLeft={1}
+        paddingRight={1}
+        flex={1}
+        overflow="auto"
+        minHeight={0}
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/configurator" element={<Configurator />} />
           <Route path="/debugger" element={<Debugger />} />
           <Route path="/inspector" element={<Inspector />} />
           <Route path="/uploader" element={<FirmwareUploader />} />
-          {/* 404 Not Found route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Box>
