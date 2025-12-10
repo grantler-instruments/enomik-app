@@ -15,10 +15,10 @@ const Header: React.FC = () => {
     (state) => state.setShowSettingsModal
   );
   const menu = [
-    { label: "Configurator", path: "/" },
+    { label: "Configurator", path: "/configurator" },
     { label: "Debugger", path: "/debugger" },
     { label: "Inspector", path: "/inspector" },
-    { label: "Uploader", path: "/uploader" },
+    { label: "Firmware Uploader", path: "/uploader" },
   ];
 
   return (

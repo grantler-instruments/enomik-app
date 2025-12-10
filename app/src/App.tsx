@@ -10,6 +10,7 @@ import { Routes, Route } from "react-router-dom";
 import NotFound from "./components/NotFound";
 import FirmwareUploader from "./components/FirmwareUploader";
 import Modals from "./components/Modals";
+import Home from "./components/Home";
 
 function App() {
   const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
@@ -24,7 +25,8 @@ function App() {
       {isSidebarOpen && <Sidebar />}
       <Box paddingLeft={1} paddingRight={1}>
         <Routes>
-          <Route path="/" element={<Configurator />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/configurator" element={<Configurator />} />
           <Route path="/debugger" element={<Debugger />} />
           <Route path="/inspector" element={<Inspector />} />
           <Route path="/uploader" element={<FirmwareUploader />} />

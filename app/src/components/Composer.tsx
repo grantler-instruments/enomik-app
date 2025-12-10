@@ -15,7 +15,6 @@ import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 const Composer = () => {
   const sendMessage = useMIDIStore((state) => state.sendMessage);
-  const outputs = useMIDIStore((state) => state.outputs);
   const selectedOutputId = useMIDIStore((state) => state.selectedComposerOutputDevice);
   const setSelectedOutputId = useMIDIStore((state) => state.setSelectedComposerOutputDevice);
   const [channel, setChannel] = useState(1);

@@ -1,5 +1,4 @@
-import { Alert, Box, Button, IconButton } from "@mui/material";
-import { Add } from "@mui/icons-material";
+import { Alert, Box } from "@mui/material";
 import { useIOStore } from "../store/io";
 import {
   MIDI_CONTROL_CHANGE,
