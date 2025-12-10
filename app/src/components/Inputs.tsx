@@ -1,29 +1,40 @@
-import { Alert, Box, Button } from "@mui/material";
+import { Alert, Box, Button, IconButton } from "@mui/material";
+import { Add } from "@mui/icons-material";
 import { useIOStore } from "../store/io";
-import { MIDI_CONTROL_CHANGE, sysexPinModeAnalogIn } from "../store/midi.config";
+import {
+  MIDI_CONTROL_CHANGE,
+  sysexPinModeAnalogIn,
+} from "../store/midi.config";
 import PinMapping from "./pinmapping/PinMapping";
 import { useAppStore } from "../store/app";
+import { useState } from "react";
+import AddRowButton from "./AddRowButton";
 
 const Inputs = () => {
   const inputs = useIOStore((state) => state.inputs);
   const addInput = useIOStore((state) => state.addInput);
   const showHints = useAppStore((state) => state.showHints);
+  const [hovered, setHovered] = useState(false);
   return (
-    <Box display={"flex"} flexDirection={"column"}>
+    <Box
+      display={"flex"}
+      flexDirection={"column"}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       {showHints && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Inputs read data from input pins on the microcontroller and map them to
-          MIDI messages. Configure the input pin mode, MIDI message type, and value
-          mapping here.
+          Inputs read data from input pins on the microcontroller and map them
+          to MIDI messages. Configure the input pin mode, MIDI message type, and
+          value mapping here.
         </Alert>
       )}
       {inputs.map((input, index) => (
         <PinMapping key={index} config={input} type="input" />
       ))}
       <Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>
-        <Button
-          variant="outlined"
-          color="secondary"
+        <AddRowButton
+          visible={inputs.length === 0 || hovered}
           onClick={() => {
             addInput({
               pin: inputs.length,
@@ -37,10 +48,7 @@ const Inputs = () => {
               controller: 20,
             });
           }}
-          fullWidth
-        >
-          Add Input
-        </Button>
+        ></AddRowButton>
       </Box>
     </Box>
   );

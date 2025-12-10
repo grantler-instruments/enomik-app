@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Box, Button, IconButton, Tooltip, Typography } from "@mui/material";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -12,16 +12,46 @@ import Outputs from "./Outputs";
 import { useIOStore } from "../store/io";
 import { useMIDIStore } from "../store/midi";
 import MidiDeviceChooser from "./MidiDeviceChooser";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ArrowDropDown } from "@mui/icons-material";
 import Peers from "./Peers";
-import InitMidi from "./InitMidi";
+import InfoWithTooltip from "./InfoWithTooltip";
+import { useTranslation } from "react-i18next";
+
+const SectionHeader = ({
+  title,
+  tooltipKey,
+}: {
+  title: string;
+  tooltipKey: string;
+}) => {
+  const { t } = useTranslation();
+  const [hovered, setHovered] = useState(false);
+  return (
+    <Typography
+      variant="h2"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {title}
+      {hovered && <InfoWithTooltip text={t(tooltipKey)} />}
+    </Typography>
+  );
+};
 
 const Configurator = () => {
+  const { t } = useTranslation();
   const deployConfiguration = useIOStore((state) => state.deploy);
+  const inputs = useIOStore((state) => state.inputs);
+  const outputs = useIOStore((state) => state.outputs);
+  const peers = useIOStore((state) => state.peers);
   const initialized = useMIDIStore((state) => state.initialized);
-  const selectedOutputId = useMIDIStore((state) => state.selectedConfiguratorOutputDevice);
-  const setSelectedOutputId = useMIDIStore((state) => state.setSelectedConfiguratorOutputDevice);
+  const selectedOutputId = useMIDIStore(
+    (state) => state.selectedConfiguratorOutputDevice
+  );
+  const setSelectedOutputId = useMIDIStore(
+    (state) => state.setSelectedConfiguratorOutputDevice
+  );
 
   const saveToFile = useIOStore((state) => state.saveToFile);
   const loadFromFile = useIOStore((state) => state.loadFromFile);
@@ -48,44 +78,8 @@ const Configurator = () => {
   };
 
   return (
-    <Box display={"flex"} flexDirection={"column"} gap={4} marginBottom={2}>
-      <Box marginTop={2}>
-        <Accordion defaultExpanded>
-          <AccordionSummary
-            expandIcon={<ArrowDropDownIcon />}
-            aria-controls="inputs-content"
-          >
-            <Typography variant="h2">Input PIN to MIDI</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Inputs></Inputs>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion defaultExpanded>
-          <AccordionSummary
-            expandIcon={<ArrowDropDown />}
-            aria-controls="outputs-content"
-          >
-            <Typography variant="h2">MIDI to Output PIN</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Outputs></Outputs>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion defaultExpanded>
-          <AccordionSummary
-            expandIcon={<ArrowDropDown />}
-            aria-controls="outputs-content"
-          >
-            <Typography variant="h2">ESP-NOW MIDI</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Peers></Peers>
-          </AccordionDetails>
-        </Accordion>
-      </Box>
-      <Box flex={1}></Box>
-      <Box display={"flex"} gap={2}>
+    <Box display={"flex"} flexDirection={"column"} gap={1} marginBottom={2}>
+      <Box display={"flex"} gap={2} mt={2} mb={2} pl={2} pr={2}>
         {/* Hidden file input */}
         <input
           type="file"
@@ -94,15 +88,18 @@ const Configurator = () => {
           ref={fileInputRef}
           onChange={handleFileChange}
         />
-        <IconButton color="inherit" onClick={saveToFile}>
-          <DownloadIcon />
-        </IconButton>
+        <Tooltip title={t("tooltip_save_configuration_to_file") || ""}>
+          <IconButton color="inherit" onClick={saveToFile}>
+            <DownloadIcon />
+          </IconButton>
+        </Tooltip>
 
-        <IconButton color="inherit" onClick={handleUploadClick}>
-          <FolderOpenIcon />
-        </IconButton>
+        <Tooltip title={t("tooltip_load_configuration_from_file") || ""}>
+          <IconButton color="inherit" onClick={handleUploadClick}>
+            <FolderOpenIcon />
+          </IconButton>
+        </Tooltip>
         <Box flex={1} />
-        <InitMidi></InitMidi>
         <MidiDeviceChooser
           value={selectedOutputId || ""}
           onChange={setSelectedOutputId}
@@ -114,9 +111,54 @@ const Configurator = () => {
           onClick={() => deployConfiguration(selectedOutputId || "")}
           disabled={!initialized}
         >
-          Deploy Configuration to Device
+          Deploy
         </Button>
       </Box>
+      <Box>
+        <Accordion defaultExpanded={inputs.length > 0}>
+          <AccordionSummary
+            expandIcon={<ArrowDropDownIcon />}
+            aria-controls="inputs-content"
+          >
+            <SectionHeader
+              title={"Input Pin to MIDI Mapping"}
+              tooltipKey="tooltip_pin_to_midi"
+            />
+          </AccordionSummary>
+          <AccordionDetails>
+            <Inputs></Inputs>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion defaultExpanded={outputs.length > 0}>
+          <AccordionSummary
+            expandIcon={<ArrowDropDown />}
+            aria-controls="outputs-content"
+          >
+            <SectionHeader
+              title={"MIDI to Output Pin Mapping"}
+              tooltipKey="tooltip_midi_to_pin"
+            />
+          </AccordionSummary>
+          <AccordionDetails>
+            <Outputs></Outputs>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion defaultExpanded={peers.length > 0}>
+          <AccordionSummary
+            expandIcon={<ArrowDropDown />}
+            aria-controls="wireless-midi-content"
+          >
+            <SectionHeader
+              title={"Wireless MIDI Configuration"}
+              tooltipKey="tooltip_wireless_midi"
+            />
+          </AccordionSummary>
+          <AccordionDetails>
+            <Peers></Peers>
+          </AccordionDetails>
+        </Accordion>
+      </Box>
+      <Box flex={1}></Box>
     </Box>
   );
 };

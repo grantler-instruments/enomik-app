@@ -1,25 +1,27 @@
-import { useEffect, useState } from "react";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useMIDIStore } from "../store/midi";
+import InitMidi from "./InitMidi";
 
 const MidiDeviceChooser = ({
   value,
   onChange,
-  sx
+  sx,
 }: {
   value: string;
   onChange: (value: string) => void;
   sx?: object;
 }) => {
   const outputs = useMIDIStore((state) => state.outputs);
+  const initialized = useMIDIStore((state) => state.initialized);
 
   return (
     <Box sx={sx}>
+      <InitMidi></InitMidi>
+      {initialized && (
         <FormControl>
           <InputLabel>MIDI Output</InputLabel>
           <Select
@@ -36,6 +38,7 @@ const MidiDeviceChooser = ({
             ))}
           </Select>
         </FormControl>
+      )}
     </Box>
   );
 };

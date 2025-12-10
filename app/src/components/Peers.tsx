@@ -1,8 +1,10 @@
-import { Alert, Box, Button, IconButton } from "@mui/material";
+import { Alert, Box, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useIOStore } from "../store/io";
 import MacAddressInput from "./MacAddressInput";
 import { useAppStore } from "../store/app";
+import { useState } from "react";
+import AddRowButton from "./AddRowButton";
 
 const Peers = () => {
   const peers = useIOStore((state) => state.peers);
@@ -10,9 +12,15 @@ const Peers = () => {
   const updatePeer = useIOStore((state) => state.updatePeer);
   const removePeer = useIOStore((state) => state.removePeer);
   const showHints = useAppStore((state) => state.showHints);
+  const [hovered, setHovered] = useState(false);
 
   return (
-    <Box display={"flex"} flexDirection={"column"} padding={2}>
+    <Box
+      display={"flex"}
+      flexDirection={"column"}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       {showHints && (
         <Alert severity="info" sx={{ mb: 2 }}>
           Peer connections can be established with other devices via ESP-NOW.
@@ -55,18 +63,15 @@ const Peers = () => {
         </Box>
       ))}
       <Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>
-        <Button
-          variant="outlined"
-          color="secondary"
+        <AddRowButton
           onClick={() => {
             addPeer({
               macAddress: "FF:FF:FF:FF:FF:FF",
             });
           }}
-          fullWidth
+          visible={peers.length === 0 || hovered}
         >
-          Add Peer
-        </Button>
+        </AddRowButton>
       </Box>
     </Box>
   );

@@ -39,7 +39,7 @@ export default function MidiConfigSection({
   type,
 }: MidiConfigSectionProps) {
   return (
-    <Grid container gap={2}>
+    <Grid container gap={2} flex={1}>
       <Grid size={{ xs: 6, sm: 2 }}>
         <FormControl fullWidth>
           <InputLabel>Channel</InputLabel>
@@ -88,6 +88,7 @@ export default function MidiConfigSection({
               onChange={(e) => onChange("controller", Number(e.target.value))}
               size="small"
               disabled={disabled}
+              fullWidth
             />
           </FormControl>
         </Grid>
@@ -101,15 +102,15 @@ export default function MidiConfigSection({
               type="number"
               value={config.note ?? 60}
               onChange={(e) => onChange("note", Number(e.target.value))}
-              sx={{ width: 80 }}
               size="small"
               disabled={disabled}
+              fullWidth
             />
           </FormControl>
         </Grid>
       )}
 
-      <Grid size={{ xs: 6, sm: 2 }}>
+      <Grid size={{ xs: 6, sm: 4 }}>
         <FormControl fullWidth>
           <MinMax
             min={config.midiMin ?? 0}

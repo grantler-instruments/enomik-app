@@ -45,21 +45,21 @@ export default function PinConfigSection({
   const modes = type === "input" ? INPUT_MODES : OUTPUT_MODES;
 
   return (
-    <Grid container gap={2}>
-      <Grid size={{ xs: 6, sm: 4 }}>
+    <Grid container gap={2} flex={1}>
+      <Grid size={{ xs: 6, sm: 2 }}>
         <TextField
           label="Pin"
           type="number"
           value={config.pin}
           onChange={(e) => onChange("pin", Number(e.target.value))}
-          sx={{ width: 80 }}
           size="small"
           disabled={disabled}
+          fullWidth
         />
       </Grid>
 
       <Grid size={{ xs: 6, sm: 4 }}>
-        <FormControl>
+        <FormControl fullWidth>
           <InputLabel>Mode</InputLabel>
           <Select
             value={config.mode}
@@ -67,6 +67,7 @@ export default function PinConfigSection({
             onChange={(e) => onChange("mode", e.target.value)}
             size="small"
             disabled={disabled}
+            fullWidth
           >
             {modes.map((mode) => (
               <MenuItem key={mode.value} value={mode.value}>
@@ -77,16 +78,16 @@ export default function PinConfigSection({
         </FormControl>
       </Grid>
 
-      <Grid size={{ xs: 6, sm: 4 }}>
-        {config.mode === sysexPinModeTouch && type === "input" && (
-          <TextField
-            value={config.threshold}
-            onChange={(e) => onChange("threshold", Number(e.target.value))}
-            label="Threshold"
-            size="small"
-            disabled={disabled}
-          />
-        )}
+      <Grid size={{ xs: 6, sm: 2 }}>
+          {config.mode === sysexPinModeTouch && type === "input" && (
+            <TextField
+              value={config.threshold}
+              onChange={(e) => onChange("threshold", Number(e.target.value))}
+              label="Threshold"
+              size="small"
+              disabled={disabled}
+            />
+          )}
       </Grid>
 
       <Grid size={{ xs: 6, sm: 4 }} display={"flex"}>
@@ -97,7 +98,7 @@ export default function PinConfigSection({
             onChangeMin={(value) => onChange("pinMin", value)}
             onChangeMax={(value) => onChange("pinMax", value)}
             disabled={disabled}
-            sx={{flex: 1}}
+            sx={{ flex: 1 }}
           />
         )}
       </Grid>
