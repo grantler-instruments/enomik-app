@@ -56,7 +56,7 @@ const theme = createTheme({
     borderRadius: 14,
   },
 
-  shadows: Array(25).fill("0 4px 14px rgba(0, 0, 0, 0.32)"),
+  // shadows: Array(25).fill("0 4px 14px rgba(0, 0, 0, 0.32)"),
 
   components: {
     MuiCssBaseline: {
