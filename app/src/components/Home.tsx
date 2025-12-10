@@ -31,25 +31,30 @@ const Home = () => {
       {/* Feature Section */}
       <Box mt={8}>
         <Typography variant="h6" fontWeight={600} gutterBottom>
-          Reliable Wireless MIDI  - <Box component={"span"} sx={{color: "secondary.main" }}>Without Bluetooth.</Box>
+          Reliable Wireless MIDI -{" "}
+          <Box component={"span"} sx={{ color: "secondary.main" }}>
+            Without Bluetooth.
+          </Box>
         </Typography>
 
         <Typography variant="h6" sx={{ opacity: 0.9 }}>
-          Dont trust Bluetooth MIDI? <Link
+          Dont trust Bluetooth MIDI?{" "}
+          <Link
             href="https://github.com/thomasgeissl/esp-now-midi"
             target="_blank"
             rel="noopener"
           >
             ESP-NOW MIDI
           </Link>{" "}
-          to the rescue! It delivers fast, stable, low-latency wireless MIDI, ideal for live
-          performances, instruments, and embedded systems.
+          to the rescue! It delivers fast, stable, low-latency wireless MIDI,
+          ideal for live performances, instruments, and embedded systems.
         </Typography>
       </Box>
 
       <Box mt={8}>
         <Typography variant="h6" fontWeight={600} gutterBottom>
-          Fully Bidirectional - <Box component={"span"} sx={{ color: "secondary.main" }}>
+          Fully Bidirectional -{" "}
+          <Box component={"span"} sx={{ color: "secondary.main" }}>
             MIDI Controller or Instrument
           </Box>
         </Typography>
@@ -63,13 +68,47 @@ const Home = () => {
 
       <Box mt={8}>
         <Typography variant="h6" fontWeight={600} gutterBottom>
-          Available as a Kit - <Box component={"span"} sx={{ color: "secondary.main" }}>Dongles & Client Boards</Box>
+          Available as a Kit -{" "}
+          <Box component={"span"} sx={{ color: "secondary.main" }}>
+            Dongles & Client Boards
+          </Box>
         </Typography>
 
         <Typography variant="h6" sx={{ opacity: 0.9 }}>
           Get started quickly with our custom hardware kits, including a compact
           wireless MIDI dongle and versatile client boards—everything you need
           to build your own MIDI devices with ease.
+        </Typography>
+      </Box>
+
+      <Box mt={8}>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          Utilities -{" "}
+          <Box component={"span"} sx={{ color: "secondary.main" }}>
+            MIDI Monitor and Firmware Uploader
+          </Box>
+        </Typography>
+
+        <Typography variant="h6" sx={{ opacity: 0.9 }}>
+          The app includes a built-in{" "}
+          <Button
+            variant="outlined"
+            size="large"
+            component={NavLink}
+            to={"/debugger"}
+          >
+            MIDI Monitor
+          </Button>{" "}
+          for real-time message tracking and a{" "}
+          <Button
+            variant="outlined"
+            size="large"
+            component={NavLink}
+            to={"/uploader"}
+          >
+            Firmware Uploader
+          </Button>{" "}
+          to easily flash your ESP32 devices.
         </Typography>
       </Box>
     </Container>
