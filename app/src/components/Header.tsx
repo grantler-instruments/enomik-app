@@ -22,7 +22,7 @@ const Header: React.FC = () => {
   ];
 
   return (
-    <AppBar position="static" color="primary" elevation={2}>
+    <AppBar position="static" color="transparent" elevation={2}>
       <Toolbar>
         <Typography
           variant="h6"
