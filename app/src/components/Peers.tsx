@@ -5,6 +5,7 @@ import MacAddressInput from "./MacAddressInput";
 import { useAppStore } from "../store/app";
 import { useState } from "react";
 import AddRowButton from "./AddRowButton";
+import { useTranslation } from "react-i18next";
 
 const Peers = () => {
   const peers = useIOStore((state) => state.peers);
@@ -13,6 +14,7 @@ const Peers = () => {
   const removePeer = useIOStore((state) => state.removePeer);
   const showHints = useAppStore((state) => state.showHints);
   const [hovered, setHovered] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <Box
@@ -23,8 +25,7 @@ const Peers = () => {
     >
       {showHints && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Peer connections can be established with other devices via ESP-NOW.
-          Configure the peer settings here.
+          {t("tooltip_wireless_midi")}
         </Alert>
       )}
       {peers.map((peer, index) => (

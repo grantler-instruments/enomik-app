@@ -8,12 +8,14 @@ import PinMapping from "./pinmapping/PinMapping";
 import { useAppStore } from "../store/app";
 import { useState } from "react";
 import AddRowButton from "./AddRowButton";
+import { useTranslation } from "react-i18next";
 
 const Inputs = () => {
   const inputs = useIOStore((state) => state.inputs);
   const addInput = useIOStore((state) => state.addInput);
   const showHints = useAppStore((state) => state.showHints);
   const [hovered, setHovered] = useState(false);
+  const {t} = useTranslation();
   return (
     <Box
       display={"flex"}
@@ -23,9 +25,7 @@ const Inputs = () => {
     >
       {showHints && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Inputs read data from input pins on the microcontroller and map them
-          to MIDI messages. Configure the input pin mode, MIDI message type, and
-          value mapping here.
+          {t("tooltip_pin_to_midi")}
         </Alert>
       )}
       {inputs.map((input, index) => (

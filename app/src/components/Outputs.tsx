@@ -5,17 +5,24 @@ import PinMapping from "./pinmapping/PinMapping";
 import { useAppStore } from "../store/app";
 import { useState } from "react";
 import AddRowButton from "./AddRowButton";
+import { useTranslation } from "react-i18next";
 
 const Outputs = () => {
   const outputs = useIOStore((state) => state.outputs);
   const addOutput = useIOStore((state) => state.addOutput);
   const showHints = useAppStore((state) => state.showHints);
-  const [hovered, setHovered] = useState(false)
+  const [hovered, setHovered] = useState(false);
+  const { t } = useTranslation();
   return (
-    <Box display={"flex"} flexDirection={"column"} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+    <Box
+      display={"flex"}
+      flexDirection={"column"}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       {showHints && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Output pins on the microcontroller can be controlled via MIDI messages. Configure the output pin mode and MIDI message type here.
+          {t("tooltip_midi_to_pin")}
         </Alert>
       )}
       {outputs.map((output, index) => (
@@ -38,8 +45,7 @@ const Outputs = () => {
             });
           }}
           visible={outputs.length === 0 || hovered}
-        >
-        </AddRowButton>
+        ></AddRowButton>
       </Box>
     </Box>
   );
