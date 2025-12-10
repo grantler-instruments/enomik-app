@@ -12,6 +12,7 @@ i18n.use(initReactI18next).init({
         "tooltip_wireless_midi": "Set up ESP-NOW MIDI connections to other devices",
         "tooltip_save_configuration_to_file": "Save current configuration to a file",
         "tooltip_load_configuration_from_file": "Load configuration from a file",
+        "tooltip_load_configuration_from_device": "Load configuration from a device",
       },
     },
     de: {
@@ -23,6 +24,7 @@ i18n.use(initReactI18next).init({
         "tooltip_wireless_midi": "Richte ESP-NOW MIDI-Verbindungen zu anderen Geräten ein",
         "tooltip_save_configuration_to_file": "Aktuelle Konfiguration in einer Datei speichern",
         "tooltip_load_configuration_from_file": "Konfiguration aus einer Datei laden",
+        "tooltip_load_configuration_from_device": "Konfiguration von einem Gerät laden",
       },
     },
     es: {
@@ -34,6 +36,7 @@ i18n.use(initReactI18next).init({
         "tooltip_wireless_midi": "Configurar conexiones MIDI ESP-NOW a otros dispositivos",
         "tooltip_save_configuration_to_file": "Guardar la configuración actual en un archivo",
         "tooltip_load_configuration_from_file": "Cargar configuración desde un archivo",
+        "tooltip_load_configuration_from_device": "Cargar configuración desde un dispositivo",
       },
     },
   },

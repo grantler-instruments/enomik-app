@@ -11,6 +11,7 @@ import NotFound from "./components/NotFound";
 import FirmwareUploader from "./components/FirmwareUploader";
 import Modals from "./components/Modals";
 import Home from "./components/Home";
+import WIPBanner from "./components/WorkInProgress";
 
 function App() {
   const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
@@ -41,6 +42,7 @@ function App() {
       </Box>
       <Footer></Footer>
       <Modals></Modals>
+      <WIPBanner />
     </Box>
   );
 }

@@ -12,7 +12,7 @@ const Home = () => {
       </Typography>
 
       <Typography variant="h6" sx={{ opacity: 0.9 }} gutterBottom>
-        Tired of reconfiguring your MIDI setup over and over? Use our intuitive
+        Tired of the same code over and over? Use the intuitive
         <strong> no-code configurator</strong> to assign MIDI messages to pins
         and vice versa, and set up wireless MIDI connections effortlessly.
       </Typography>
@@ -31,7 +31,7 @@ const Home = () => {
       {/* Feature Section */}
       <Box mt={8}>
         <Typography variant="h6" fontWeight={600} gutterBottom>
-          Reliable Wireless MIDI  - <Box component={"span"} sx={{colo: "secondary.main" }}>Without Bluetooth.</Box>
+          Reliable Wireless MIDI  - <Box component={"span"} sx={{color: "secondary.main" }}>Without Bluetooth.</Box>
         </Typography>
 
         <Typography variant="h6" sx={{ opacity: 0.9 }}>

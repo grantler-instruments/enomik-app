@@ -1,4 +1,11 @@
-import { Box, Button, IconButton, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  IconButton,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -6,7 +13,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-
+import DevicesOtherIcon from '@mui/icons-material/DevicesOther';
 import Inputs from "./Inputs";
 import Outputs from "./Outputs";
 import { useIOStore } from "../store/io";
@@ -99,6 +106,13 @@ const Configurator = () => {
             <FolderOpenIcon />
           </IconButton>
         </Tooltip>
+
+        <Tooltip title={t("tooltip_load_configuration_from_device") || ""}>
+          <IconButton color="inherit" onClick={handleUploadClick}>
+            <DevicesOtherIcon />
+          </IconButton>
+        </Tooltip>
+
         <Box flex={1} />
         <MidiDeviceChooser
           value={selectedOutputId || ""}
@@ -114,7 +128,7 @@ const Configurator = () => {
           Deploy
         </Button>
       </Box>
-      <Box>
+      <Container maxWidth="xl">
         <Accordion defaultExpanded={inputs.length > 0}>
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}
@@ -157,7 +171,7 @@ const Configurator = () => {
             <Peers></Peers>
           </AccordionDetails>
         </Accordion>
-      </Box>
+      </Container>
       <Box flex={1}></Box>
     </Box>
   );
