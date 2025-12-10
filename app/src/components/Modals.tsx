@@ -6,10 +6,16 @@ import {
   DialogTitle,
   FormControlLabel,
   Switch,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/app";
 
 const Modals = () => {
+  const { i18n } = useTranslation();
   const showSettingsModal = useAppStore((state) => state.showSettingsModal);
   const setShowSettingsModal = useAppStore(
     (state) => state.setShowSettingsModal
@@ -25,7 +31,6 @@ const Modals = () => {
       maxWidth="xs"
     >
       <DialogTitle>Settings</DialogTitle>
-
       <DialogContent dividers>
         <FormControlLabel
           control={
@@ -36,8 +41,19 @@ const Modals = () => {
           }
           label="Show Hints"
         />
+        <FormControl fullWidth sx={{ mt: 2 }}>
+          <InputLabel>Language</InputLabel>
+          <Select
+            value={i18n.language}
+            label="Language"
+            onChange={(e) => i18n.changeLanguage(e.target.value)}
+          >
+            <MenuItem value="en">English</MenuItem>
+            <MenuItem value="de">Deutsch</MenuItem>
+            <MenuItem value="es">Español</MenuItem>
+          </Select>
+        </FormControl>
       </DialogContent>
-
       <DialogActions>
         <Button onClick={() => setShowSettingsModal(false)}>Close</Button>
       </DialogActions>
