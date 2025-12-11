@@ -17,7 +17,7 @@ const Header: React.FC = () => {
   const menu = [
     { label: "Configurator", path: "/configurator" },
     { label: "Debugger", path: "/debugger" },
-    { label: "Inspector", path: "/inspector" },
+    // { label: "Inspector", path: "/inspector" },
     { label: "Firmware Uploader", path: "/uploader" },
   ];
 
