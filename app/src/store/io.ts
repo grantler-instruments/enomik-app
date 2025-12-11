@@ -18,7 +18,7 @@ import {
   sysexPinModePWMOut,
   sysexStart,
   sysexPinModeDigitalInPullup,
-  sysexPinModeTouch
+  sysexPinModeTouch,
 } from "./midi.config";
 import { useMIDIStore, type MidiMessage } from "./midi";
 
@@ -234,8 +234,6 @@ export const useIOStore = create<IOState>()(
           })),
 
         deploy: (deviceId: string) => {
-          console.log("Deploying configuration to " + deviceId + "...");
-
           // first reset
           const resetMessage: MidiMessage = {
             id: uuidv4(),
@@ -251,11 +249,11 @@ export const useIOStore = create<IOState>()(
           useMIDIStore.getState().sendMessage(resetMessage, deviceId);
 
           const mapPitchBendTo7Bit = (value: number) => {
-  // Clamp value to valid pitch bend range
-  const clamped = Math.max(-8192, Math.min(8191, value));
-  // Map -8192 to +8191 → 0 to 127
-  return Math.round(((clamped + 8192) / 16383) * 127);
-};
+            // Clamp value to valid pitch bend range
+            const clamped = Math.max(-8192, Math.min(8191, value));
+            // Map -8192 to +8191 → 0 to 127
+            return Math.round(((clamped + 8192) / 16383) * 127);
+          };
 
           // set inputs
           get().inputs.forEach((input) => {
@@ -271,8 +269,12 @@ export const useIOStore = create<IOState>()(
               input.midiType === MIDI_CONTROL_CHANGE
                 ? input.controller ?? 0
                 : input.note ?? 0,
-              input.midiType === MIDI_PITCH_BEND ? mapPitchBendTo7Bit(input.midiMin) : input.midiMin,
-              input.midiType === MIDI_PITCH_BEND ? mapPitchBendTo7Bit(input.midiMax) : input.midiMax,
+              input.midiType === MIDI_PITCH_BEND
+                ? mapPitchBendTo7Bit(input.midiMin)
+                : input.midiMin,
+              input.midiType === MIDI_PITCH_BEND
+                ? mapPitchBendTo7Bit(input.midiMax)
+                : input.midiMax,
               sysexEnd,
             ];
             const msg: MidiMessage = {
@@ -281,7 +283,7 @@ export const useIOStore = create<IOState>()(
               type: 240,
               data: sysexMessage,
             };
-            useMIDIStore.getState().sendMessage(msg);
+            useMIDIStore.getState().sendMessage(msg, deviceId);
           });
 
           // set inputs
@@ -292,7 +294,7 @@ export const useIOStore = create<IOState>()(
               ENOMIK_COMMAND_SET_PIN_CONFIG,
               output.pin,
               output.mode,
-              output.midiType,
+              output.midiType/2,
               output.midiMin,
               output.midiMax,
               sysexEnd,
@@ -303,7 +305,7 @@ export const useIOStore = create<IOState>()(
               type: 240,
               data: sysexMessage,
             };
-            useMIDIStore.getState().sendMessage(msg);
+            useMIDIStore.getState().sendMessage(msg, deviceId);
           });
 
           // set peers
@@ -326,7 +328,7 @@ export const useIOStore = create<IOState>()(
               type: 240,
               data: sysexMessage,
             };
-            useMIDIStore.getState().sendMessage(msg);
+            useMIDIStore.getState().sendMessage(msg, deviceId);
           });
         },
       }),

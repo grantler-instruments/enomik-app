@@ -141,8 +141,6 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
         break;
 
       case MIDI_STATUS.SYSEX_START:
-        console.log("Received SysEx message:", event.data);
-
         if (event.data[1] === 125) {
           if (event.data[2] === 64 + 8) {
             // get peers response
@@ -322,8 +320,7 @@ export const useMIDIStore = create<MonitorState>()(
             get().addOutgoingMessage(message, outputId);
           }
 
-          midiAccess.outputs.forEach((output) => {
-            if (output.id !== outputId && outputId !== "-1") return;
+          const send = (message: MidiMessage, output: any) => {
             if (
               message.type === MIDI_STATUS.SYSEX_START &&
               message.data !== undefined
@@ -331,7 +328,6 @@ export const useMIDIStore = create<MonitorState>()(
               let data = [...message.data];
               if (data[0] !== 0xf0) data.unshift(0xf0);
               if (data[data.length - 1] !== 0xf7) data.push(0xf7);
-              console.log("Sending sysex - Raw data:", data);
               output.send(data);
             } else if (
               message.type === MIDI_STATUS.NOTE_ON &&
@@ -387,7 +383,18 @@ export const useMIDIStore = create<MonitorState>()(
             ) {
               output.send([message.type]);
             }
-          });
+          };
+          if (outputId != "-1") {
+            midiAccess.outputs.forEach((output) => {
+              if (output.id == outputId) {
+                send(message, output);
+              }
+            });
+          } else {
+            midiAccess.outputs.forEach((output)=>{
+              send(message, output)
+            })
+          }
         },
         setSelectedConfiguratorOutputDevice: (deviceId: string) => {
           set({ selectedConfiguratorOutputDevice: deviceId });
