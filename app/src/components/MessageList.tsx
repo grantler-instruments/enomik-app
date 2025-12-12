@@ -98,8 +98,8 @@ function MessageList() {
     const parts = [msg.type];
     
     if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON) {
-      if (msg.note) parts.push(msg.note);
-      if (msg.velocity) parts.push(msg.velocity);
+      if (msg.note !== undefined) parts.push(msg.note);
+      if (msg.velocity !== undefined) parts.push(msg.velocity);
     }
     
     if (msg.type === MIDI_STATUS.CONTROL_CHANGE) {

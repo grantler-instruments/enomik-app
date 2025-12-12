@@ -1,7 +1,6 @@
 import { Alert, Box, Button, Typography } from "@mui/material";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import { useMIDIStore, type MidiMessage } from "../store/midi";
-import InitMidi from "./InitMidi";
 import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "../store/inspector";
 import MacAddressInput from "./MacAddressInput";
@@ -29,7 +28,6 @@ const Inspector = () => {
         </Alert>
       )}
       <Box display={"flex"} flex={1} gap={2}>
-        <InitMidi></InitMidi>
         <MidiDeviceChooser
           value={device || ""}
           onChange={(e) => setDevice(e)}

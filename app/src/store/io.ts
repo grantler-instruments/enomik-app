@@ -152,12 +152,13 @@ export const useIOStore = create<IOState>()(
             outputs: [...state.outputs, { ...output, uuid: uuidv4() }],
           })),
 
-        updateOutput: (uuid, patch) =>
+        updateOutput: (uuid, patch) => {
           set((state) => ({
             outputs: state.outputs.map((o) =>
               o.uuid === uuid ? { ...o, ...patch } : o
             ),
-          })),
+          }));
+        },
 
         removeOutput: (uuid) =>
           set((state) => ({
@@ -286,17 +287,29 @@ export const useIOStore = create<IOState>()(
             useMIDIStore.getState().sendMessage(msg, deviceId);
           });
 
-          // set inputs
+          // set outputs
           get().outputs.forEach((output) => {
+            const noteOrCC =
+              output.midiType === MIDI_CONTROL_CHANGE
+                ? output.controller ?? 0
+                : output.note ?? 0;
+
             const sysexMessage = [
               sysexStart,
               sysexManufacturerId,
               ENOMIK_COMMAND_SET_PIN_CONFIG,
               output.pin,
               output.mode,
-              output.midiType/2,
-              output.midiMin,
-              output.midiMax,
+              output.threshold || 0,
+              output.channel || 1,
+              output.midiType / 2,
+              noteOrCC,
+              output.midiType === MIDI_PITCH_BEND
+                ? mapPitchBendTo7Bit(output.midiMin)
+                : output.midiMin,
+              output.midiType === MIDI_PITCH_BEND
+                ? mapPitchBendTo7Bit(output.midiMax)
+                : output.midiMax,
               sysexEnd,
             ];
             const msg: MidiMessage = {

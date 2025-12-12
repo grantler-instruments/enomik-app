@@ -22,8 +22,6 @@ const MacAddressInput = ({
     // Only allow hex characters and limit to 2 characters
     const hexValue = value.replace(/[^0-9A-Fa-f]/g, "").slice(0, 2).toUpperCase();
 
-    console.log("Hex Value:", hexValue);
-    
     const newMacParts = [...macParts];
     newMacParts[index] = hexValue;
     
