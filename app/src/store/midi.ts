@@ -3,6 +3,7 @@ import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "./inspector";
 import { MIDI_STATUS } from "../utils/midi";
+import { ESP_NOW_VERSION_MAJOR } from "./io";
 
 export interface MidiMessage {
   id: string;
@@ -142,10 +143,26 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 
       case MIDI_STATUS.SYSEX_START:
         if (event.data[1] === 125) {
-          if (event.data[2] === 64 + 8) {
-            // get peers response
-            const nibbleData = event.data.slice(3, event.data.length - 1);
-            const numberOfPeers = (event.data.length - 4) / 12;
+          // MANUFACTURER_ID
+          // Extract version from packet
+          const packetMajor = event.data[2];
+          const packetMinor = event.data[3];
+          const command = event.data[4];
+
+          // Check version compatibility (same major version)
+          if (packetMajor !== ESP_NOW_VERSION_MAJOR) {
+            console.warn(
+              `Incompatible protocol version: received ${packetMajor}.${packetMinor}, ` +
+                `expected ${ESP_NOW_VERSION_MAJOR}.x`
+            );
+            break;
+          }
+
+          // GET_PEERS_RESPONSE (0x48 = 72 = 64 + 8)
+          if (command === 72) {
+            // Payload starts at index 5 (after header)
+            const nibbleData = event.data.slice(5, event.data.length - 1);
+            const numberOfPeers = (event.data.length - 6) / 12; // Adjusted for new header size
             const peers: string[] = [];
 
             for (let i = 0; i < numberOfPeers; i++) {
@@ -162,22 +179,24 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
                 .map((b) => b.toString(16).padStart(2, "0"))
                 .join(":");
               peers.push(macStr.toUpperCase());
-              useInspectorStore.getState().setPeers(peers);
             }
+
+            useInspectorStore.getState().setPeers(peers);
           }
 
-          if (event.data[2] === 64 + 2) {
-            // get pin config response
+          // GET_PIN_CONFIG_RESPONSE (0x42 = 66 = 64 + 2)
+          if (command === 66) {
             console.log("Received get_pin_config response", event.data);
 
-            const pin = event.data[3];
-            const mode = event.data[4];
-            const threshold = event.data[5];
-            const midi_channel = event.data[6];
-            const midi_type = event.data[7] * 2;
-            const midi_cc_or_note = event.data[8];
-            const min_midi_value = event.data[9];
-            const max_midi_value = event.data[10];
+            // Payload starts at index 5 (after header with version)
+            const pin = event.data[5];
+            const mode = event.data[6];
+            const threshold = event.data[7];
+            const midi_channel = event.data[8];
+            const midi_type = event.data[9] * 2;
+            const midi_cc_or_note = event.data[10];
+            const min_midi_value = event.data[11];
+            const max_midi_value = event.data[12];
 
             const config = {
               pin,
@@ -193,17 +212,18 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
               midiMin: min_midi_value,
               midiMax: max_midi_value,
             };
+
             useInspectorStore.getState().addInputPinConfig(config);
           }
-        }
 
-        get().addIncomingMessage(
-          {
-            ...message,
-            data: Array.from(event.data),
-          },
-          input.id
-        );
+          // GET_VERSION_RESPONSE (0x4A = 74 = 64 + 10)
+          if (command === 74) {
+            const deviceMajor = event.data[5];
+            const deviceMinor = event.data[6];
+            console.log(`Device version: ${deviceMajor}.${deviceMinor}`);
+            // Store or use device version as needed
+          }
+        }
         break;
 
       default:
@@ -391,9 +411,9 @@ export const useMIDIStore = create<MonitorState>()(
               }
             });
           } else {
-            midiAccess.outputs.forEach((output)=>{
-              send(message, output)
-            })
+            midiAccess.outputs.forEach((output) => {
+              send(message, output);
+            });
           }
         },
         setSelectedConfiguratorOutputDevice: (deviceId: string) => {

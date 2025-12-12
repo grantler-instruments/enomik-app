@@ -20,7 +20,8 @@ import {
   sysexPinModeDigitalInPullup,
   sysexPinModeTouch,
 } from "./midi.config";
-import { useMIDIStore, type MidiMessage } from "./midi";
+import { useMIDIStore, type MidiMessage} from "./midi";
+
 
 export type MidiType =
   | typeof MIDI_NOTE_ON
@@ -45,6 +46,11 @@ const ENOMIK_COMMAND_SET_PIN_CONFIG = 0x01;
 // const ENOMIK_COMMAND_GET_PIN_CONFIG = 0x02;
 const ENOMIK_COMMAND_ADD_PEER = 0x07;
 const ENOMIK_COMMAND_RESET = 0x09;
+
+
+const ESP_NOW_VERSION_MAJOR = 0
+const ESP_NOW_VERSION_MINOR = 7
+export {ESP_NOW_VERSION_MAJOR, ESP_NOW_VERSION_MINOR}
 
 export interface InputPinConfig {
   uuid: string;
@@ -243,6 +249,8 @@ export const useIOStore = create<IOState>()(
             data: [
               sysexStart,
               sysexManufacturerId,
+              ESP_NOW_VERSION_MAJOR,
+              ESP_NOW_VERSION_MINOR,
               ENOMIK_COMMAND_RESET,
               sysexEnd,
             ],
@@ -261,6 +269,8 @@ export const useIOStore = create<IOState>()(
             const sysexMessage = [
               sysexStart,
               sysexManufacturerId,
+              ESP_NOW_VERSION_MAJOR,
+              ESP_NOW_VERSION_MINOR,
               ENOMIK_COMMAND_SET_PIN_CONFIG,
               input.pin,
               input.mode,
@@ -297,6 +307,8 @@ export const useIOStore = create<IOState>()(
             const sysexMessage = [
               sysexStart,
               sysexManufacturerId,
+              ESP_NOW_VERSION_MAJOR,
+              ESP_NOW_VERSION_MINOR,
               ENOMIK_COMMAND_SET_PIN_CONFIG,
               output.pin,
               output.mode,
@@ -331,6 +343,8 @@ export const useIOStore = create<IOState>()(
             const sysexMessage = [
               sysexStart,
               sysexManufacturerId,
+              ESP_NOW_VERSION_MAJOR,
+              ESP_NOW_VERSION_MINOR,
               ENOMIK_COMMAND_ADD_PEER,
               ...macParts,
               sysexEnd,
