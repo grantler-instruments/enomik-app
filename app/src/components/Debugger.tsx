@@ -1,8 +1,16 @@
-import { Box, Card, CardContent, Typography } from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Typography,
+} from "@mui/material";
 import { useMIDIStore } from "../store/midi";
 import Composer from "./Composer";
 import MessageList from "./MessageList";
 import InitMidi from "./InitMidi";
+import WebSerialMonitor from "./SerialMonitor";
+import { ExpandMore } from "@mui/icons-material";
 
 const Debugger = () => {
   const initialized = useMIDIStore((state) => state.initialized);
@@ -25,16 +33,30 @@ const Debugger = () => {
       )}
       {initialized && (
         <>
-          <Card variant="outlined">
-            <CardContent>
+          <Accordion defaultExpanded sx={{ mb: 2 }}>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography variant="h2">MIDI Composer</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
               <Composer />
-            </CardContent>
-          </Card>
-          <Card variant="outlined">
-            <CardContent>
+            </AccordionDetails>
+          </Accordion>
+          <Accordion defaultExpanded sx={{ mb: 2 }}>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography variant="h2">MIDI Monitor</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
               <MessageList />
-            </CardContent>
-          </Card>
+            </AccordionDetails>
+          </Accordion>
+          <Accordion defaultExpanded sx={{ mb: 2 }}>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography variant="h2">Serial Monitor</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <WebSerialMonitor />
+            </AccordionDetails>
+          </Accordion>
         </>
       )}
     </Box>

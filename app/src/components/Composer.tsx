@@ -6,7 +6,6 @@ import {
   MenuItem,
   Select,
   TextField,
-  Typography,
 } from "@mui/material";
 import { useState } from "react";
 import { useMIDIStore, type MidiMessage } from "../store/midi";
@@ -50,7 +49,6 @@ const Composer = () => {
   };
   return (
     <Box display={"flex"} flexDirection={"column"} gap={2}>
-      <Typography variant="h2">MIDI Composer</Typography>
       <Box display="flex" flexDirection="row" gap={2}>
         <FormControl sx={{ width: 120 }}>
           <InputLabel>Channel</InputLabel>

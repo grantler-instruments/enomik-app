@@ -113,7 +113,6 @@ function MessageList() {
   return (
     <Box mt={4}>
       <Box display="flex" flexDirection="column" mb={2}>
-        <Typography variant="h2">MIDI Monitor</Typography>
         <Accordion>
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}
