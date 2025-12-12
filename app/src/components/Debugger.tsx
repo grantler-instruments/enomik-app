@@ -49,7 +49,7 @@ const Debugger = () => {
               <MessageList />
             </AccordionDetails>
           </Accordion>
-          <Accordion defaultExpanded sx={{ mb: 2 }}>
+          <Accordion sx={{ mb: 2 }}>
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Typography variant="h2">Serial Monitor</Typography>
             </AccordionSummary>
