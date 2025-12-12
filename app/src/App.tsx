@@ -6,7 +6,7 @@ import Sidebar from "./components/Sidebar";
 import Configurator from "./components/Configurator";
 import Inspector from "./components/Inspector";
 import Debugger from "./components/Debugger";
-import { Routes, Route, HashRouter } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import NotFound from "./components/NotFound";
 import FirmwareUploader from "./components/FirmwareUploader";
 import Modals from "./components/Modals";
