@@ -16,6 +16,7 @@ import { useMIDIStore } from "../store/midi";
 import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 import { useState } from "react";
 import Filter, { midiTypes } from "./Filter";
+import { useTranslation } from "react-i18next";
 
 // Grid layout configuration
 const gridColumns = {
@@ -35,6 +36,8 @@ function MessageList() {
   const inputs = useMIDIStore((state) => state.inputs);
   const outputs = useMIDIStore((state) => state.outputs);
   const clear = useMIDIStore((state) => state.clear);
+
+  const { t } = useTranslation();
   
   const [activeInputs, setActiveInputs] = useState<string[]>([]);
   const [activeOutputs, setActiveOutputs] = useState<string[]>([]);
@@ -142,7 +145,7 @@ function MessageList() {
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h3">History</Typography>
           <Button variant="outlined" onClick={clear}>
-            Clear
+            {t("clear")}
           </Button>
         </Box>
 

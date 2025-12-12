@@ -6,6 +6,9 @@ i18n.use(initReactI18next).init({
     en: {
       translation: {
         "test": "This is a test string",
+        "connect": "Connect",
+        "disconnect": "Disconnect",
+        "clear": "Clear",
         "made_with_love": "Made with ♡️ by",
         "tooltip_pin_to_midi": "Configure how input pins on the microcontroller map to MIDI messages.",
         "tooltip_midi_to_pin": "Set pins values from MIDI messages",
@@ -20,6 +23,9 @@ i18n.use(initReactI18next).init({
     },
     de: {
       translation: {
+        "connect": "Verbinden",
+        "disconnect": "Trennen",
+        "clear": "Löschen",
         "test": "Das ist ein Teststring",
         "made_with_love": "Entwickelt mit ♡️ von",
         "tooltip_pin_to_midi": "Konfiguriere, wie Eingangs-Pins auf dem Mikrocontroller MIDI-Nachrichten zugeordnet werden.",
@@ -35,6 +41,9 @@ i18n.use(initReactI18next).init({
     },
     es: {
       translation: {
+        "connect": "Conectar",
+        "disconnect": "Desconectar",
+        "clear": "Limpiar",
         "test": "Esta es una cadena de prueba",
         "made_with_love": "Desarrollado con ♡️ por",
         "tooltip_pin_to_midi": "Configurar cómo los pines de entrada en el microcontrolador se asignan a los mensajes MIDI.",

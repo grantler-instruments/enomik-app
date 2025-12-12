@@ -8,7 +8,8 @@ import {
   IconButton,
   Stack,
 } from "@mui/material";
-import { Delete, Send } from "@mui/icons-material";
+import { Send } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 
 type LogType = "send" | "receive" | "error" | "system";
 
@@ -28,6 +29,7 @@ export default function WebSerialMonitor() {
   const [log, setLog] = useState<LogEntry[]>([]);
   const [input, setInput] = useState("");
   const logEndRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -147,16 +149,17 @@ export default function WebSerialMonitor() {
         <Box sx={{ display: "flex", gap: 1 }}>
           {!isConnected ? (
             <Button variant="contained" onClick={connect}>
-              Connect
+                {t("connect")}
             </Button>
           ) : (
             <Button variant="contained" color="error" onClick={disconnect}>
-              Disconnect
+              {t("disconnect")}
             </Button>
           )}
-          <IconButton onClick={clearLog} disabled={log.length === 0}>
-            <Delete />
-          </IconButton>
+          <Box flex={1} />
+          <Button variant="contained" color="error" onClick={clearLog}>
+            {t("clear")}
+          </Button>
         </Box>
 
         <Paper sx={{ p: 2, height: 400, overflow: "auto" }}>
