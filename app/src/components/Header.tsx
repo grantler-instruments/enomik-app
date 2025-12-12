@@ -8,6 +8,7 @@ import { Settings as SettingsIcon } from "@mui/icons-material";
 import { Button, IconButton } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAppStore } from "../store/app";
+import { ESP_NOW_VERSION_MAJOR, ESP_NOW_VERSION_MINOR } from "../store/io";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -23,17 +24,23 @@ const Header: React.FC = () => {
 
   return (
     <AppBar position="static" color="transparent" elevation={2}>
-      <Toolbar>
-        <Typography
-          variant="h6"
-          component="div"
-          sx={{ flexGrow: 1, fontWeight: 600, cursor: "pointer" }}
-          textTransform="uppercase"
-          onClick={() => navigate("/")}
-          color="primary"
-        >
-          enomik 3000
-        </Typography>
+      <Toolbar sx={{ display: "flex", gap: 2 }}>
+        <Box display={"flex"} alignItems="center" gap={1}>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ flexGrow: 1, fontWeight: 600, cursor: "pointer" }}
+            textTransform="uppercase"
+            onClick={() => navigate("/")}
+            color="primary"
+          >
+            enomik 3000
+          </Typography>
+          <Typography variant="body2" color="textSecondary" sx={{ mr: 2 }}>
+            v{ESP_NOW_VERSION_MAJOR}.{ESP_NOW_VERSION_MINOR}
+          </Typography>
+        </Box>
+        <Box flex={1} />
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           {menu.map((item) => (
