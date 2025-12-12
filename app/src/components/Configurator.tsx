@@ -4,7 +4,6 @@ import {
   Container,
   IconButton,
   Tooltip,
-  Typography,
 } from "@mui/material";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -19,32 +18,13 @@ import Outputs from "./Outputs";
 import { useIOStore } from "../store/io";
 import { useMIDIStore } from "../store/midi";
 import MidiDeviceChooser from "./MidiDeviceChooser";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { ArrowDropDown } from "@mui/icons-material";
 import Peers from "./Peers";
-import InfoWithTooltip from "./InfoWithTooltip";
 import { useTranslation } from "react-i18next";
+import SectionHeader from "./SectionHeader";
 
-const SectionHeader = ({
-  title,
-  tooltipKey,
-}: {
-  title: string;
-  tooltipKey: string;
-}) => {
-  const { t } = useTranslation();
-  const [hovered, setHovered] = useState(false);
-  return (
-    <Typography
-      variant="h2"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {title}
-      {hovered && <InfoWithTooltip text={t(tooltipKey)} />}
-    </Typography>
-  );
-};
+
 
 const Configurator = () => {
   const { t } = useTranslation();

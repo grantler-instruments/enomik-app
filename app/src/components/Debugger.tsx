@@ -11,6 +11,7 @@ import MessageList from "./MessageList";
 import InitMidi from "./InitMidi";
 import WebSerialMonitor from "./SerialMonitor";
 import { ExpandMore } from "@mui/icons-material";
+import SectionHeader from "./SectionHeader";
 
 const Debugger = () => {
   const initialized = useMIDIStore((state) => state.initialized);
@@ -35,7 +36,10 @@ const Debugger = () => {
         <>
           <Accordion defaultExpanded sx={{ mb: 2 }}>
             <AccordionSummary expandIcon={<ExpandMore />}>
-              <Typography variant="h2">MIDI Composer</Typography>
+              <SectionHeader
+                title={"MIDI Composer"}
+                tooltipKey="tooltip_midi_composer"
+              />
             </AccordionSummary>
             <AccordionDetails>
               <Composer />
@@ -43,7 +47,10 @@ const Debugger = () => {
           </Accordion>
           <Accordion defaultExpanded sx={{ mb: 2 }}>
             <AccordionSummary expandIcon={<ExpandMore />}>
-              <Typography variant="h2">MIDI Monitor</Typography>
+              <SectionHeader
+                title={"MIDI Monitor"}
+                tooltipKey="tooltip_midi_monitor"
+              />
             </AccordionSummary>
             <AccordionDetails>
               <MessageList />
@@ -51,7 +58,10 @@ const Debugger = () => {
           </Accordion>
           <Accordion sx={{ mb: 2 }}>
             <AccordionSummary expandIcon={<ExpandMore />}>
-              <Typography variant="h2">Serial Monitor</Typography>
+              <SectionHeader
+                title={"Serial Monitor"}
+                tooltipKey="tooltip_serial_monitor"
+              />
             </AccordionSummary>
             <AccordionDetails>
               <WebSerialMonitor />
