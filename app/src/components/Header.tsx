@@ -9,6 +9,7 @@ import { Button, IconButton } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAppStore } from "../store/app";
 import { ESP_NOW_VERSION_MAJOR, ESP_NOW_VERSION_MINOR } from "../store/io";
+import Logo from "./Logo";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const Header: React.FC = () => {
     <AppBar position="static" color="transparent" elevation={2}>
       <Toolbar sx={{ display: "flex", gap: 2 }}>
         <Box display={"flex"} alignItems="center" gap={1}>
+          <Logo></Logo>
           <Typography
             variant="h6"
             component="div"
