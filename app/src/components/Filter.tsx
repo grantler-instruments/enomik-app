@@ -7,10 +7,10 @@ import {
 } from "@mui/material";
 import { useMIDIStore } from "../store/midi";
 import { useEffect, useState } from "react";
-import { typeToLabel } from "../utils/midi";
+import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 import AllNone from "./AllNone";
 
-const midiTypes = [128, 144, 176, 192, 224, 240];
+const midiTypes = [MIDI_STATUS.NOTE_OFF, MIDI_STATUS.NOTE_ON, MIDI_STATUS.POLY_PRESSURE, MIDI_STATUS.CONTROL_CHANGE, MIDI_STATUS.PROGRAM_CHANGE, MIDI_STATUS.CHANNEL_PRESSURE, MIDI_STATUS.START, MIDI_STATUS.STOP, MIDI_STATUS.CONTINUE, MIDI_STATUS.SYSEX_START];
 export { midiTypes };
 
 const Filter = ({

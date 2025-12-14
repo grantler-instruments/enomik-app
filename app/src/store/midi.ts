@@ -45,16 +45,12 @@ interface MonitorState {
 let midiAccess: MIDIAccess | null = null;
 
 const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
-  console.log(`Setting up handler for: ${input.name} (ID: ${input.id})`);
-
   input.onmidimessage = (event) => {
     if (!event.data || event.data.length === 0) return;
 
     const [status, data1, data2] = event.data;
     const channel = (status & 0x0f) + 1; // Convert to 1-indexed
     const messageType = status & 0xf0;
-
-    console.log(messageType)
 
     const message = {
       id: uuidv4(),
@@ -134,16 +130,37 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 
       case MIDI_STATUS.PITCH_BEND:
         // Combine LSB and MSB into 14-bit value (0-16383)
-        console.log("got pitchbend")
+        console.log("got pitchbend");
         const rawValue = data1 | (data2 << 7);
         get().addIncomingMessage(
           {
             ...message,
-            pitchBendValue: rawValue// - 8192, // Center at 0
+            pitchBendValue: rawValue, // - 8192, // Center at 0
           },
           input.id
         );
         break;
+      case MIDI_STATUS.CHANNEL_PRESSURE: {
+        get().addIncomingMessage(
+          {
+            ...message,
+            value: data1,
+          },
+          input.id
+        );
+        break;
+      }
+      case MIDI_STATUS.POLY_PRESSURE: {
+        get().addIncomingMessage(
+          {
+            ...message,
+            note: data1,
+            value: data2,
+          },
+          input.id
+        );
+        break;
+      }
 
       case MIDI_STATUS.SYSEX_START:
         if (event.data[1] === 125) {
@@ -250,8 +267,6 @@ export const useMIDIStore = create<MonitorState>()(
 
           try {
             midiAccess = await navigator.requestMIDIAccess({ sysex: true });
-            console.log("MIDI access granted");
-
             // Convert inputs to array
             const inputs = Array.from(midiAccess.inputs.values());
             const outputs = Array.from(midiAccess.outputs.values());
@@ -268,7 +283,6 @@ export const useMIDIStore = create<MonitorState>()(
 
             // Listen for device connection/disconnection events
             midiAccess.onstatechange = (event) => {
-              console.log("MIDI device state changed:", event);
               if (!midiAccess) {
                 return;
               }
@@ -285,17 +299,11 @@ export const useMIDIStore = create<MonitorState>()(
                 event.port.state === "connected"
               ) {
                 const input = event.port as MIDIInput;
-                console.log(
-                  `New MIDI Input connected: ${input.name} (ID: ${input.id})`
-                );
                 setupInputHandler(input, get);
               }
 
               // Clean up disconnected devices from active inputs
               if (event.port?.state === "disconnected") {
-                console.log(
-                  `MIDI device disconnected: ${event.port.name} (ID: ${event.port.id})`
-                );
                 set({
                   activeInputs: get().activeInputs.filter(
                     (id) => id !== event.port?.id
@@ -304,7 +312,6 @@ export const useMIDIStore = create<MonitorState>()(
               }
             };
 
-            console.log("Initializing MIDI Monitor");
             set({ initialized: true });
           } catch (err) {
             console.error("Failed to get MIDI access:", err);
@@ -391,8 +398,8 @@ export const useMIDIStore = create<MonitorState>()(
               message.pitchBendValue !== undefined &&
               message.channel !== undefined
             ) {
-              const lsb = (message.pitchBendValue?? 0) & 0x7f;
-              const msb = ((message.pitchBendValue ??0)>> 7) & 0x7f;
+              const lsb = (message.pitchBendValue ?? 0) & 0x7f;
+              const msb = ((message.pitchBendValue ?? 0) >> 7) & 0x7f;
               output.send([0xe0 | (message.channel - 1), lsb, msb]);
             } else if (
               message.type === MIDI_STATUS.PROGRAM_CHANGE &&
@@ -401,6 +408,23 @@ export const useMIDIStore = create<MonitorState>()(
             ) {
               output.send([0xc0 | (message.channel - 1), message.controller]);
             } else if (
+              message.type === MIDI_STATUS.CHANNEL_PRESSURE &&
+              message.value !== undefined &&
+              message.channel !== undefined
+            ) {
+              output.send([0xd0 | (message.channel - 1), message.value]);
+            } else if (
+              message.type === MIDI_STATUS.POLY_PRESSURE &&
+              message.note !== undefined &&
+              message.value !== undefined &&
+              message.channel !== undefined
+            ) {
+              output.send([
+                0xa0 | (message.channel - 1),
+                message.note,
+                message.value,
+              ]);
+            }else if (
               message.type === MIDI_STATUS.START ||
               message.type === MIDI_STATUS.STOP ||
               message.type === MIDI_STATUS.CONTINUE

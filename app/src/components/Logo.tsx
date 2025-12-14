@@ -47,23 +47,6 @@ const Logo: React.FC<LogoProps> = ({ width = 64, height = 64 }) => {
   const lineStrokeWidth = 3
   const dotRadious = 4
 
-  // Debug: Let's verify the distances
-  const distance1 = Math.sqrt(
-    Math.pow(circles.bottomLeft.cx - circles.top.cx, 2) + 
-    Math.pow(circles.bottomLeft.cy - circles.top.cy, 2)
-  );
-  const distance2 = Math.sqrt(
-    Math.pow(circles.bottomRight.cx - circles.top.cx, 2) + 
-    Math.pow(circles.bottomRight.cy - circles.top.cy, 2)
-  );
-  const distance3 = Math.sqrt(
-    Math.pow(circles.bottomRight.cx - circles.bottomLeft.cx, 2) + 
-    Math.pow(circles.bottomRight.cy - circles.bottomLeft.cy, 2)
-  );
-
-  console.log('Distances:', { distance1, distance2, distance3 });
-  console.log('Expected:', sideLength);
-
   interface LinePoints {
     x1: number;
     y1: number;

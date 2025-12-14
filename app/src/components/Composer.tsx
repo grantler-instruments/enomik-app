@@ -43,6 +43,14 @@ const Composer = () => {
       label: typeToLabel(MIDI_STATUS.PITCH_BEND),
     },
     {
+      value: MIDI_STATUS.CHANNEL_PRESSURE,
+      label: typeToLabel(MIDI_STATUS.CHANNEL_PRESSURE),
+    },
+    {
+      value: MIDI_STATUS.POLY_PRESSURE,
+      label: typeToLabel(MIDI_STATUS.POLY_PRESSURE),
+    },
+    {
       value: MIDI_STATUS.SYSEX_START,
       label: typeToLabel(MIDI_STATUS.SYSEX_START),
     },
@@ -133,26 +141,36 @@ const Composer = () => {
         )}
         {(type === MIDI_STATUS.NOTE_ON ||
           type === MIDI_STATUS.NOTE_OFF ||
+          type === MIDI_STATUS.CHANNEL_PRESSURE ||
+          type === MIDI_STATUS.POLY_PRESSURE ||
           type === MIDI_STATUS.CONTROL_CHANGE ||
           type === MIDI_STATUS.PROGRAM_CHANGE) && (
           <>
-            <TextField
-              label={
-                type === MIDI_STATUS.NOTE_ON || type === MIDI_STATUS.NOTE_OFF
-                  ? "Note"
-                  : type === MIDI_STATUS.PROGRAM_CHANGE
-                  ? "Program"
-                  : "Controller"
-              }
-              type="number"
-              value={noteOrCc}
-              onChange={(e) => setNoteOrCc(Number(e.target.value))}
-              sx={{ width: 100 }}
-              size="small"
-            />
+            {type !== MIDI_STATUS.CHANNEL_PRESSURE && (
+              <TextField
+                label={
+                  type === MIDI_STATUS.NOTE_ON ||
+                  type === MIDI_STATUS.NOTE_OFF ||
+                  type === MIDI_STATUS.POLY_PRESSURE
+                    ? "Note"
+                    : type === MIDI_STATUS.PROGRAM_CHANGE
+                    ? "Program"
+                    : "Controller"
+                }
+                type="number"
+                value={noteOrCc}
+                onChange={(e) => setNoteOrCc(Number(e.target.value))}
+                sx={{ width: 100 }}
+                size="small"
+              />
+            )}
             {type !== 192 && (
               <TextField
-                label={type === MIDI_STATUS.NOTE_ON || type === MIDI_STATUS.NOTE_OFF ? "Velocity" : "Value"}
+                label={
+                  type === MIDI_STATUS.NOTE_ON || type === MIDI_STATUS.NOTE_OFF
+                    ? "Velocity"
+                    : "Value"
+                }
                 type="number"
                 value={velocityOrValue}
                 onChange={(e) => setVelocityOrValue(Number(e.target.value))}
@@ -191,11 +209,15 @@ const Composer = () => {
                   ? undefined
                   : type === MIDI_STATUS.CONTROL_CHANGE ||
                     type === MIDI_STATUS.NOTE_ON ||
-                    type === MIDI_STATUS.NOTE_OFF
+                    type === MIDI_STATUS.NOTE_OFF || 
+                    type === MIDI_STATUS.CHANNEL_PRESSURE ||
+                    type === MIDI_STATUS.POLY_PRESSURE  
                   ? velocityOrValue
                   : undefined,
               pitchBendValue:
-                type === MIDI_STATUS.PITCH_BEND ? (pitchBendValue + 8192) : undefined,
+                type === MIDI_STATUS.PITCH_BEND
+                  ? pitchBendValue + 8192
+                  : undefined,
               velocity: type !== 240 ? velocityOrValue : undefined,
               data:
                 type === 240

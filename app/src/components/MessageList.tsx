@@ -72,7 +72,7 @@ function MessageList() {
 
   // Helper to get note/CC/PRG value
   const getNoteOrController = (msg: any) => {
-    if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON) {
+    if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON || msg.type === MIDI_STATUS.POLY_PRESSURE ) {
       return msg.note;
     }
     if (msg.type === MIDI_STATUS.CONTROL_CHANGE || msg.type === MIDI_STATUS.PROGRAM_CHANGE) {
@@ -86,7 +86,7 @@ function MessageList() {
     if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON) {
       return msg.velocity;
     }
-    if (msg.type === MIDI_STATUS.CONTROL_CHANGE) {
+    if (msg.type === MIDI_STATUS.CONTROL_CHANGE || msg.type === MIDI_STATUS.POLY_PRESSURE || msg.type === MIDI_STATUS.CHANNEL_PRESSURE) {
       return msg.value;
     }
     if( msg.type === MIDI_STATUS.PITCH_BEND) {
