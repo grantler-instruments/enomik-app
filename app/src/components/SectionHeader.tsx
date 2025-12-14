@@ -19,7 +19,7 @@ const SectionHeader = ({
       onMouseLeave={() => setHovered(false)}
     >
       {title}
-      {hovered && <InfoWithTooltip text={t(tooltipKey)} />}
+      {hovered && <InfoWithTooltip text={t(tooltipKey)}  asButton={false} />}
     </Typography>
   );
 };

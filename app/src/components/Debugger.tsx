@@ -19,12 +19,13 @@ const Debugger = () => {
     <Box display={"flex"} flexDirection={"column"} padding={2}>
       {!initialized && (
         <Box
-          marginTop={"64px"}
+          my={"64px"}
           textAlign={"center"}
           display={"flex"}
           flexDirection={"column"}
           alignItems={"center"}
           gap={2}
+
         >
           <Typography variant="body1" gutterBottom>
             To use the MIDI features, please initialize the MIDI system.
@@ -56,19 +57,19 @@ const Debugger = () => {
               <MessageList />
             </AccordionDetails>
           </Accordion>
-          <Accordion sx={{ mb: 2 }}>
-            <AccordionSummary expandIcon={<ExpandMore />}>
-              <SectionHeader
-                title={"Serial Monitor"}
-                tooltipKey="tooltip_serial_monitor"
-              />
-            </AccordionSummary>
-            <AccordionDetails>
-              <WebSerialMonitor />
-            </AccordionDetails>
-          </Accordion>
         </>
       )}
+      <Accordion sx={{ mb: 2 }}>
+        <AccordionSummary expandIcon={<ExpandMore />}>
+          <SectionHeader
+            title={"Serial Monitor"}
+            tooltipKey="tooltip_serial_monitor"
+          />
+        </AccordionSummary>
+        <AccordionDetails>
+          <WebSerialMonitor />
+        </AccordionDetails>
+      </Accordion>
     </Box>
   );
 };

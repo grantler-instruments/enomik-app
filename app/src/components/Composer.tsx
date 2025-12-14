@@ -152,7 +152,7 @@ const Composer = () => {
             />
             {type !== 192 && (
               <TextField
-                label={type === 144 || type === 128 ? "Velocity" : "Value"}
+                label={type === MIDI_STATUS.NOTE_ON || type === MIDI_STATUS.NOTE_OFF ? "Velocity" : "Value"}
                 type="number"
                 value={velocityOrValue}
                 onChange={(e) => setVelocityOrValue(Number(e.target.value))}
