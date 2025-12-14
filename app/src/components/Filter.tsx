@@ -10,7 +10,18 @@ import { useEffect, useState } from "react";
 import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 import AllNone from "./AllNone";
 
-const midiTypes = [MIDI_STATUS.NOTE_OFF, MIDI_STATUS.NOTE_ON, MIDI_STATUS.POLY_PRESSURE, MIDI_STATUS.CONTROL_CHANGE, MIDI_STATUS.PROGRAM_CHANGE, MIDI_STATUS.CHANNEL_PRESSURE, MIDI_STATUS.START, MIDI_STATUS.STOP, MIDI_STATUS.CONTINUE, MIDI_STATUS.SYSEX_START];
+const midiTypes = [
+  MIDI_STATUS.NOTE_OFF,
+  MIDI_STATUS.NOTE_ON,
+  MIDI_STATUS.CONTROL_CHANGE,
+  MIDI_STATUS.PROGRAM_CHANGE,
+  MIDI_STATUS.POLY_PRESSURE,
+  MIDI_STATUS.CHANNEL_PRESSURE,
+  MIDI_STATUS.START,
+  MIDI_STATUS.STOP,
+  MIDI_STATUS.CONTINUE,
+  MIDI_STATUS.SYSEX_START,
+];
 export { midiTypes };
 
 const Filter = ({
@@ -30,7 +41,7 @@ const Filter = ({
   const [activeOutputs, setActiveOutputs] = useState<string[]>([]);
   const [activeTypes, setActiveTypes] = useState<number[]>([...midiTypes]);
   const [activeChannels, setActiveChannels] = useState(
-    Array.from({ length: 16 }).map((_, i) => i+1)
+    Array.from({ length: 16 }).map((_, i) => i + 1)
   );
 
   useEffect(() => {
@@ -87,7 +98,7 @@ const Filter = ({
                 onActiveInputsChange(inputs.map((input) => input.id));
               }}
               onNone={() => {
-                setActiveInputs([])
+                setActiveInputs([]);
                 onActiveInputsChange([]);
               }}
             />
@@ -138,8 +149,11 @@ const Filter = ({
         <Box display={"flex"} gap={2}>
           <Typography variant="h4">Channels</Typography>
           <AllNone
-            onAll={() =>{
-              const newActiveChannels = Array.from({ length: 16 }, (_, i) => i + 1);
+            onAll={() => {
+              const newActiveChannels = Array.from(
+                { length: 16 },
+                (_, i) => i + 1
+              );
               setActiveChannels(newActiveChannels);
               onActiveChannelsChange(newActiveChannels);
             }}
@@ -155,8 +169,8 @@ const Filter = ({
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={activeChannels.includes(i+1)}
-                    onChange={() => toggleChannel(i+1)}
+                    checked={activeChannels.includes(i + 1)}
+                    onChange={() => toggleChannel(i + 1)}
                   />
                 }
                 label={`${i + 1}`}
