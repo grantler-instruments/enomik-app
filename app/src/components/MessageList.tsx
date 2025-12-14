@@ -89,6 +89,9 @@ function MessageList() {
     if (msg.type === MIDI_STATUS.CONTROL_CHANGE) {
       return msg.value;
     }
+    if( msg.type === MIDI_STATUS.PITCH_BEND) {
+      return msg.pitchBendValue;
+    }
     return "";
   };
 

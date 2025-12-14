@@ -14,21 +14,38 @@ import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 const Composer = () => {
   const sendMessage = useMIDIStore((state) => state.sendMessage);
-  const selectedOutputId = useMIDIStore((state) => state.selectedComposerOutputDevice);
-  const setSelectedOutputId = useMIDIStore((state) => state.setSelectedComposerOutputDevice);
+  const selectedOutputId = useMIDIStore(
+    (state) => state.selectedComposerOutputDevice
+  );
+  const setSelectedOutputId = useMIDIStore(
+    (state) => state.setSelectedComposerOutputDevice
+  );
   const [channel, setChannel] = useState(1);
   const [type, setType] = useState(144);
   const [noteOrCc, setNoteOrCc] = useState(60);
   const [velocityOrValue, setVelocityOrValue] = useState(127);
+  const [pitchBendValue, setPitchBendValue] = useState(0);
   const [sysexData, setSysexData] = useState("");
   const [manufacturerId, setManufacturerId] = useState("");
   const types = [
     { value: MIDI_STATUS.NOTE_ON, label: typeToLabel(MIDI_STATUS.NOTE_ON) },
     { value: MIDI_STATUS.NOTE_OFF, label: typeToLabel(MIDI_STATUS.NOTE_OFF) },
-    { value: MIDI_STATUS.CONTROL_CHANGE, label: typeToLabel(MIDI_STATUS.CONTROL_CHANGE) },
-    { value: MIDI_STATUS.PROGRAM_CHANGE, label: typeToLabel(MIDI_STATUS.PROGRAM_CHANGE) },
-    { value: MIDI_STATUS.PITCH_BEND, label: typeToLabel(MIDI_STATUS.PITCH_BEND) },
-    { value: MIDI_STATUS.SYSEX_START, label: typeToLabel(MIDI_STATUS.SYSEX_START) },
+    {
+      value: MIDI_STATUS.CONTROL_CHANGE,
+      label: typeToLabel(MIDI_STATUS.CONTROL_CHANGE),
+    },
+    {
+      value: MIDI_STATUS.PROGRAM_CHANGE,
+      label: typeToLabel(MIDI_STATUS.PROGRAM_CHANGE),
+    },
+    {
+      value: MIDI_STATUS.PITCH_BEND,
+      label: typeToLabel(MIDI_STATUS.PITCH_BEND),
+    },
+    {
+      value: MIDI_STATUS.SYSEX_START,
+      label: typeToLabel(MIDI_STATUS.SYSEX_START),
+    },
     { value: MIDI_STATUS.START, label: typeToLabel(MIDI_STATUS.START) },
     { value: MIDI_STATUS.STOP, label: typeToLabel(MIDI_STATUS.STOP) },
     { value: MIDI_STATUS.CONTINUE, label: typeToLabel(MIDI_STATUS.CONTINUE) },
@@ -145,6 +162,15 @@ const Composer = () => {
             )}
           </>
         )}
+        {type === MIDI_STATUS.PITCH_BEND && (
+          <TextField
+            label="Pitch Bend Value"
+            type="number"
+            value={pitchBendValue}
+            onChange={(e) => setPitchBendValue(Number(e.target.value))}
+            size="small"
+          />
+        )}
         <Box flex={1}></Box>
         <MidiDeviceChooser
           value={selectedOutputId || ""}
@@ -160,7 +186,16 @@ const Composer = () => {
               channel: channel,
               note: type !== 240 ? noteOrCc : undefined,
               controller: type !== 240 ? noteOrCc : undefined,
-              value: type !== 240 ? velocityOrValue : undefined,
+              value:
+                type === 240
+                  ? undefined
+                  : type === MIDI_STATUS.CONTROL_CHANGE ||
+                    type === MIDI_STATUS.NOTE_ON ||
+                    type === MIDI_STATUS.NOTE_OFF
+                  ? velocityOrValue
+                  : undefined,
+              pitchBendValue:
+                type === MIDI_STATUS.PITCH_BEND ? pitchBendValue : undefined,
               velocity: type !== 240 ? velocityOrValue : undefined,
               data:
                 type === 240

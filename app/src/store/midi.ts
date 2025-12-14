@@ -12,6 +12,7 @@ export interface MidiMessage {
   note?: number;
   controller?: number;
   value?: number;
+  pitchBendValue?: number;
   velocity?: number;
   channel?: number;
   data?: number[];
@@ -52,6 +53,8 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
     const [status, data1, data2] = event.data;
     const channel = (status & 0x0f) + 1; // Convert to 1-indexed
     const messageType = status & 0xf0;
+
+    console.log(messageType)
 
     const message = {
       id: uuidv4(),
@@ -131,11 +134,12 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 
       case MIDI_STATUS.PITCH_BEND:
         // Combine LSB and MSB into 14-bit value (0-16383)
+        console.log("got pitchbend")
         const rawValue = data1 | (data2 << 7);
         get().addIncomingMessage(
           {
             ...message,
-            value: rawValue - 8192, // Center at 0
+            pitchBendValue: rawValue - 8192, // Center at 0
           },
           input.id
         );
@@ -384,11 +388,11 @@ export const useMIDIStore = create<MonitorState>()(
               ]);
             } else if (
               message.type === MIDI_STATUS.PITCH_BEND &&
-              message.value !== undefined &&
+              message.pitchBendValue !== undefined &&
               message.channel !== undefined
             ) {
-              const lsb = message.value & 0x7f;
-              const msb = (message.value >> 7) & 0x7f;
+              const lsb = (message.pitchBendValue?? 0) & 0x7f;
+              const msb = ((message.pitchBendValue ??0)>> 7) & 0x7f;
               output.send([0xe0 | (message.channel - 1), lsb, msb]);
             } else if (
               message.type === MIDI_STATUS.PROGRAM_CHANGE &&
