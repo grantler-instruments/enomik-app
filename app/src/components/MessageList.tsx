@@ -48,8 +48,8 @@ function MessageList() {
 
   // Calculate active filters count
   const activeFilters = [
-    activeInputs.length > 0,
-    activeOutputs.length > 0,
+    activeInputs.length < inputs.length,
+    activeOutputs.length < outputs.length,
     activeTypes.length < midiTypes.length,
     activeChannels.length < 16,
   ].filter(Boolean).length;

@@ -30,7 +30,7 @@ const Filter = ({
   const [activeOutputs, setActiveOutputs] = useState<string[]>([]);
   const [activeTypes, setActiveTypes] = useState<number[]>([...midiTypes]);
   const [activeChannels, setActiveChannels] = useState(
-    Array.from({ length: 16 }).map((_, i) => i)
+    Array.from({ length: 16 }).map((_, i) => i+1)
   );
 
   useEffect(() => {
