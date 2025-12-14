@@ -195,7 +195,7 @@ const Composer = () => {
                   ? velocityOrValue
                   : undefined,
               pitchBendValue:
-                type === MIDI_STATUS.PITCH_BEND ? pitchBendValue : undefined,
+                type === MIDI_STATUS.PITCH_BEND ? (pitchBendValue + 8192) : undefined,
               velocity: type !== 240 ? velocityOrValue : undefined,
               data:
                 type === 240
