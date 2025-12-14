@@ -164,7 +164,7 @@ const Composer = () => {
         )}
         {type === MIDI_STATUS.PITCH_BEND && (
           <TextField
-            label="Pitch Bend Value"
+            label="Pitch Bend Value (-8192 to +8191)"
             type="number"
             value={pitchBendValue}
             onChange={(e) => setPitchBendValue(Number(e.target.value))}

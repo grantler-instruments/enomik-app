@@ -139,7 +139,7 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
         get().addIncomingMessage(
           {
             ...message,
-            pitchBendValue: rawValue - 8192, // Center at 0
+            pitchBendValue: rawValue// - 8192, // Center at 0
           },
           input.id
         );
