@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { useAppStore } from "./store/app";
@@ -13,39 +13,43 @@ import GettingStarted from "./components/GettingStarted";
 import Modals from "./components/Modals";
 import Home from "./components/Home";
 import WIPBanner from "./components/WorkInProgress";
+import { darkTheme } from "./muiTheme.ts";
 
 function App() {
   const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
   return (
-    <Box
-      width={"100vw"}
-      height={"100vh"}
-      display={"flex"}
-      flexDirection={"column"}
-    >
-      <Header></Header>
-      {isSidebarOpen && <Sidebar />}
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <Box
-        paddingLeft={1}
-        paddingRight={1}
-        flex={1}
-        overflow="auto"
-        minHeight={0}
+        width={"100vw"}
+        height={"100vh"}
+        display={"flex"}
+        flexDirection={"column"}
       >
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/configurator" element={<Configurator />} />
-          <Route path="/debugger" element={<Debugger />} />
-          <Route path="/inspector" element={<Inspector />} />
-          <Route path="/uploader" element={<FirmwareUploader />} />
-          <Route path="/getting-started" element={<GettingStarted />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Header></Header>
+        {isSidebarOpen && <Sidebar />}
+        <Box
+          paddingLeft={1}
+          paddingRight={1}
+          flex={1}
+          overflow="auto"
+          minHeight={0}
+        >
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/configurator" element={<Configurator />} />
+            <Route path="/debugger" element={<Debugger />} />
+            <Route path="/inspector" element={<Inspector />} />
+            <Route path="/uploader" element={<FirmwareUploader />} />
+            <Route path="/getting-started" element={<GettingStarted />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Box>
+        <Footer></Footer>
+        <Modals></Modals>
+        <WIPBanner />
       </Box>
-      <Footer></Footer>
-      <Modals></Modals>
-      <WIPBanner />
-    </Box>
+    </ThemeProvider>
   );
 }
 

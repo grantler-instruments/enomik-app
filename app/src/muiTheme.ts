@@ -1,7 +1,7 @@
 // theme.ts
 import { createTheme } from "@mui/material/styles";
 
-const theme = createTheme({
+const darkTheme = createTheme({
   palette: {
     mode: "dark",
 
@@ -121,4 +121,4 @@ const theme = createTheme({
   },
 });
 
-export default theme;
+export { darkTheme };
