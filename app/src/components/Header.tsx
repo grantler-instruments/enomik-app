@@ -26,14 +26,13 @@ const Header: React.FC = () => {
   return (
     <AppBar position="static" color="transparent" elevation={2}>
       <Toolbar sx={{ display: "flex", gap: 2 }}>
-        <Box display={"flex"} alignItems="center" gap={1}>
+        <Box display={"flex"} alignItems="center" gap={1} onClick={() => navigate("/")} sx={{ cursor: "pointer" }}>
           <Logo></Logo>
           <Typography
             variant="h6"
             component="div"
-            sx={{ flexGrow: 1, fontWeight: 600, cursor: "pointer" }}
+            sx={{ flexGrow: 1, fontWeight: 600 }}
             textTransform="uppercase"
-            onClick={() => navigate("/")}
             color="primary"
           >
             enomik 3000

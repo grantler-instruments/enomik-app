@@ -9,6 +9,7 @@ import Debugger from "./components/Debugger";
 import { Routes, Route } from "react-router-dom";
 import NotFound from "./components/NotFound";
 import FirmwareUploader from "./components/FirmwareUploader";
+import GettingStarted from "./components/GettingStarted";
 import Modals from "./components/Modals";
 import Home from "./components/Home";
 import WIPBanner from "./components/WorkInProgress";
@@ -37,6 +38,7 @@ function App() {
           <Route path="/debugger" element={<Debugger />} />
           <Route path="/inspector" element={<Inspector />} />
           <Route path="/uploader" element={<FirmwareUploader />} />
+          <Route path="/getting-started" element={<GettingStarted />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Box>

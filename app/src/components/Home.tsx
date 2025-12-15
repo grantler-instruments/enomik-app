@@ -17,7 +17,7 @@ const Home = () => {
         {t("home_caption")}
       </Typography>
 
-      <Box mt={4}>
+      <Box mt={4} display={"flex"} gap={2} alignContent={"center"} alignItems={"center"}>
         <Button
           variant="contained"
           size="large"
@@ -25,6 +25,15 @@ const Home = () => {
           to={"/configurator"}
         >
           {t("launch_configurator")}
+        </Button>
+          {/* {t("home_or_getting_started_guide")} */}
+        <Button
+          variant="contained"
+          size="large"
+          component={NavLink}
+          to={"/getting-started"}
+        >
+          {t("getting_started")}
         </Button>
       </Box>
 

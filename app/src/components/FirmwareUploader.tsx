@@ -205,6 +205,15 @@ const FirmwareUploader: React.FC = () => {
         </Alert>
       )}
 
+      <Box>
+        i am currently working on this. it is not yet functioning, but you should get an idea of how it will look like.
+      </Box>
+      <Box>
+        TODO: board selector (can this be done automatically?)
+        firmware selector (dongle or client)
+        firmware is built in github actions and downloadable from releases page
+      </Box>
+
       <Card variant="outlined" sx={{ mb: 3 }}>
         <CardContent>
           <Typography
