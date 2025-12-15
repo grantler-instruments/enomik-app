@@ -26,10 +26,7 @@ export const useSerialStore = create<SerialState>()(
   devtools((set, get) => {
     const addLog = (message: string, type: LogType) => {
       set((state) => ({
-        log: [
-          ...state.log,
-          { message, type, timestamp: new Date() },
-        ],
+        log: [...state.log, { message, type, timestamp: new Date() }],
       }));
     };
 
@@ -45,10 +42,7 @@ export const useSerialStore = create<SerialState>()(
           }
         }
       } catch (error) {
-        addLog(
-          `Read error: ${(error as Error).message}`,
-          "error"
-        );
+        addLog(`Read error: ${(error as Error).message}`, "error");
       }
     };
 
@@ -68,19 +62,15 @@ export const useSerialStore = create<SerialState>()(
 
           const decoder = new TextDecoderStream();
           (port.readable as ReadableStream<Uint8Array>)
-            .pipeTo(decoder.writable)
-            .catch((err) =>
-              addLog(`Readable pipeline error: ${err}`, "error")
-            );
+            .pipeTo(decoder.writable as WritableStream<Uint8Array>)
+            .catch((err) => addLog(`Readable pipeline error: ${err}`, "error"));
 
           const reader = decoder.readable.getReader();
 
           const encoder = new TextEncoderStream();
           encoder.readable
             .pipeTo(port.writable as WritableStream<Uint8Array>)
-            .catch((err) =>
-              addLog(`Writable pipeline error: ${err}`, "error")
-            );
+            .catch((err) => addLog(`Writable pipeline error: ${err}`, "error"));
 
           const writer = encoder.writable.getWriter();
 
@@ -95,10 +85,7 @@ export const useSerialStore = create<SerialState>()(
 
           startReadLoop(reader);
         } catch (error) {
-          addLog(
-            `Connection error: ${(error as Error).message}`,
-            "error"
-          );
+          addLog(`Connection error: ${(error as Error).message}`, "error");
         }
       },
 
@@ -118,10 +105,7 @@ export const useSerialStore = create<SerialState>()(
             await port.close();
           }
         } catch (error) {
-          addLog(
-            `Disconnect error: ${(error as Error).message}`,
-            "error"
-          );
+          addLog(`Disconnect error: ${(error as Error).message}`, "error");
         } finally {
           set({
             port: null,
@@ -142,10 +126,7 @@ export const useSerialStore = create<SerialState>()(
           await writer.write(data + "\n");
           addLog(data, "send");
         } catch (error) {
-          addLog(
-            `Send error: ${(error as Error).message}`,
-            "error"
-          );
+          addLog(`Send error: ${(error as Error).message}`, "error");
         }
       },
 

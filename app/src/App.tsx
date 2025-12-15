@@ -13,12 +13,13 @@ import GettingStarted from "./components/GettingStarted";
 import Modals from "./components/Modals";
 import Home from "./components/Home";
 import WIPBanner from "./components/WorkInProgress";
-import { darkTheme } from "./muiTheme.ts";
+import { darkTheme, lightTheme } from "./muiTheme.ts";
 
 function App() {
   const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
+  const darkMode = useAppStore((state) => state.darkMode);
   return (
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
       <CssBaseline />
       <Box
         width={"100vw"}

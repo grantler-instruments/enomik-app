@@ -10,6 +10,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Checkbox,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/app";
@@ -22,6 +23,8 @@ const Modals = () => {
   );
   const showHints = useAppStore((state) => state.showHints);
   const setShowHints = useAppStore((state) => state.setShowHints);
+  const darkMode = useAppStore((state) => state.darkMode);
+  const toggleDarkMode = useAppStore((state) => state.toggleDarkMode);
 
   return (
     <Dialog
@@ -52,6 +55,9 @@ const Modals = () => {
             <MenuItem value="de">Deutsch</MenuItem>
             <MenuItem value="es">Español</MenuItem>
           </Select>
+        </FormControl>
+        <FormControl fullWidth sx={{ mt: 2 }}>
+          <FormControlLabel control={<Checkbox checked={darkMode} onChange={toggleDarkMode} />} label="Dark Theme" />
         </FormControl>
       </DialogContent>
       <DialogActions>

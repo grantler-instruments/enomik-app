@@ -194,7 +194,7 @@ function MessageList() {
               container
               key={index}
               sx={{
-                backgroundColor: index % 2 === 0 ? "inherit" : "rgb(24,24,24)",
+                backgroundColor: index % 2 === 0 ? "inherit" : "action.hover",
                 p: 1,
               }}
             >

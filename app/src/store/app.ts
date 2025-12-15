@@ -2,28 +2,28 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 interface AppState {
-  themeMode: 'light' | 'dark';
   isSidebarOpen: boolean;
   showHints: boolean;
   showSettingsModal: boolean;
-  setThemeMode: (mode: 'light' | 'dark') => void;
+  darkMode: boolean;
   setShowHints: (show: boolean) => void;
   setShowSettingsModal: (show: boolean) => void;
   toggleSidebar: () => void;
+  toggleDarkMode: () => void;
 }
 
 export const useAppStore = create<AppState>()(
   devtools(
     persist(
       (set) => ({
-        themeMode: 'light',
         isSidebarOpen: false,
         showHints: true,
         showSettingsModal: false,
-        setThemeMode: (mode) => set({ themeMode: mode }),
+        darkMode: false,
         setShowHints: (show) => set({ showHints: show }),
         setShowSettingsModal: (show) => set({ showSettingsModal: show }),
         toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+        toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
       }),
       {
         name: 'app-storage', // localStorage key
