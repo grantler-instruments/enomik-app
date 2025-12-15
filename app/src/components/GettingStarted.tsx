@@ -62,6 +62,7 @@ const GettingStarted = () => {
                       key={`step-${index}-action-${actionIndex}`}
                       component={NavLink}
                       to={action.link}
+                      target={action.link.startsWith("http") ? "_blank" : undefined}
                     >
                       {action.label}
                     </Button>
