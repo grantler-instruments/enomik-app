@@ -103,9 +103,10 @@ function MessageList() {
     
     const parts = [msg.type];
     
-    if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON) {
+    if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON || msg.type === MIDI_STATUS.POLY_PRESSURE) {
       if (msg.note !== undefined) parts.push(msg.note);
       if (msg.velocity !== undefined) parts.push(msg.velocity);
+      if (msg.value !== undefined) parts.push(msg.value);// For Poly Pressure
     }
     
     if (msg.type === MIDI_STATUS.CONTROL_CHANGE) {
