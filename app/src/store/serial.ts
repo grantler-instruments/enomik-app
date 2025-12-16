@@ -15,7 +15,6 @@ interface SerialState {
   writer: WritableStreamDefaultWriter<string> | null;
   isConnected: boolean;
   log: LogEntry[];
-
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   send: (data: string) => Promise<void>;
@@ -24,6 +23,10 @@ interface SerialState {
 
 export const useSerialStore = create<SerialState>()(
   devtools((set, get) => {
+    let readLoopActive = false;
+    let decoderController: AbortController | null = null;
+    let encoderController: AbortController | null = null;
+
     const addLog = (message: string, type: LogType) => {
       set((state) => ({
         log: [...state.log, { message, type, timestamp: new Date() }],
@@ -33,8 +36,9 @@ export const useSerialStore = create<SerialState>()(
     const startReadLoop = async (
       reader: ReadableStreamDefaultReader<string>
     ) => {
+      readLoopActive = true;
       try {
-        while (true) {
+        while (readLoopActive) {
           const { value, done } = await reader.read();
           if (done) break;
           if (value) {
@@ -42,7 +46,9 @@ export const useSerialStore = create<SerialState>()(
           }
         }
       } catch (error) {
-        addLog(`Read error: ${(error as Error).message}`, "error");
+        if (error instanceof Error && error.name !== "AbortError") {
+          addLog(`Read error: ${error.message}`, "error");
+        }
       }
     };
 
@@ -60,17 +66,35 @@ export const useSerialStore = create<SerialState>()(
           const port = await navigator.serial.requestPort();
           await port.open({ baudRate: 115200 });
 
+          // Create abort controllers for cleanup
+          decoderController = new AbortController();
+          encoderController = new AbortController();
+
+          // Set up decoder (for reading)
           const decoder = new TextDecoderStream();
-          (port.readable as ReadableStream<Uint8Array>)
-            .pipeTo(decoder.writable as WritableStream<Uint8Array>)
-            .catch((err) => addLog(`Readable pipeline error: ${err}`, "error"));
+          const decoderPipeline = (port.readable as ReadableStream<Uint8Array>)
+            .pipeTo(decoder.writable as WritableStream<Uint8Array>, {
+              signal: decoderController.signal,
+            })
+            .catch((err) => {
+              if (err.name !== "AbortError") {
+                addLog(`Readable pipeline error: ${err}`, "error");
+              }
+            });
 
           const reader = decoder.readable.getReader();
 
+          // Set up encoder (for writing)
           const encoder = new TextEncoderStream();
-          encoder.readable
-            .pipeTo(port.writable as WritableStream<Uint8Array>)
-            .catch((err) => addLog(`Writable pipeline error: ${err}`, "error"));
+          const encoderPipeline = encoder.readable
+            .pipeTo(port.writable as WritableStream<Uint8Array>, {
+              signal: encoderController.signal,
+            })
+            .catch((err) => {
+              if (err.name !== "AbortError") {
+                addLog(`Writable pipeline error: ${err}`, "error");
+              }
+            });
 
           const writer = encoder.writable.getWriter();
 
@@ -82,7 +106,6 @@ export const useSerialStore = create<SerialState>()(
           });
 
           addLog("Connected to serial device", "system");
-
           startReadLoop(reader);
         } catch (error) {
           addLog(`Connection error: ${(error as Error).message}`, "error");
@@ -93,17 +116,52 @@ export const useSerialStore = create<SerialState>()(
         const { reader, writer, port } = get();
 
         try {
+          // Stop the read loop
+          readLoopActive = false;
+
+          // Cancel and release the reader
           if (reader) {
-            await reader.cancel();
+            try {
+              await reader.cancel();
+              reader.releaseLock();
+            } catch (err) {
+              console.error("Reader cleanup error:", err);
+            }
           }
 
+          // Close and release the writer
           if (writer) {
-            await writer.close();
+            try {
+              await writer.close();
+            } catch (err) {
+              console.error("Writer cleanup error:", err);
+            }
           }
 
-          if (port) {
-            await port.close();
+          // Abort the stream pipelines
+          if (decoderController) {
+            decoderController.abort();
+            decoderController = null;
           }
+
+          if (encoderController) {
+            encoderController.abort();
+            encoderController = null;
+          }
+
+          // Small delay to let streams settle
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          // Close the port
+          if (port) {
+            try {
+              await port.close();
+            } catch (err) {
+              console.error("Port close error:", err);
+            }
+          }
+
+          addLog("Disconnected", "system");
         } catch (error) {
           addLog(`Disconnect error: ${(error as Error).message}`, "error");
         } finally {
@@ -113,8 +171,6 @@ export const useSerialStore = create<SerialState>()(
             writer: null,
             isConnected: false,
           });
-
-          addLog("Disconnected", "system");
         }
       },
 
