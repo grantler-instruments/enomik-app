@@ -8,6 +8,11 @@ import {
   IconButton,
   Stack,
 } from "@mui/material";
+import {
+  UsbOff as UsbOffIcon,
+  Usb as UsbIcon,
+  Close as CloseIcon,
+} from "@mui/icons-material";
 import { Send } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import { useSerialStore } from "../store/serial";
@@ -15,14 +20,8 @@ import { useSerialStore } from "../store/serial";
 type LogType = "send" | "receive" | "error" | "system";
 
 export default function SerialMonitor() {
-  const {
-    isConnected,
-    log,
-    connect,
-    disconnect,
-    send,
-    clearLog,
-  } = useSerialStore();
+  const { isConnected, log, connect, disconnect, send, clearLog } =
+    useSerialStore();
 
   const [input, setInput] = useState("");
   const logEndRef = useRef<HTMLDivElement>(null);
@@ -58,7 +57,11 @@ export default function SerialMonitor() {
       <Stack spacing={2}>
         <Box sx={{ display: "flex", gap: 1 }}>
           {!isConnected ? (
-            <Button variant="contained" onClick={connect}>
+            <Button
+              variant="contained"
+              onClick={connect}
+              startIcon={<UsbIcon />}
+            >
               {t("connect")}
             </Button>
           ) : (
@@ -66,6 +69,7 @@ export default function SerialMonitor() {
               variant="contained"
               color="error"
               onClick={disconnect}
+              startIcon={<UsbOffIcon />}
             >
               {t("disconnect")}
             </Button>
@@ -73,20 +77,14 @@ export default function SerialMonitor() {
 
           <Box flex={1} />
 
-          <Button
-            variant="contained"
-            color="error"
-            onClick={clearLog}
-          >
+          <Button variant="contained" color="error" onClick={clearLog} startIcon={<CloseIcon />}>
             {t("clear")}
           </Button>
         </Box>
 
         <Paper sx={{ p: 2, height: 400, overflow: "auto" }}>
           {log.length === 0 ? (
-            <Typography color="text.secondary">
-              No data yet...
-            </Typography>
+            <Typography color="text.secondary">No data yet...</Typography>
           ) : (
             log.map((entry, idx) => (
               <Typography
