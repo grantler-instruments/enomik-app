@@ -5,6 +5,7 @@ i18n.use(initReactI18next).init({
   resources: {
     en: {
       translation: {
+        "console": "Console",
         "home_create_midi_devices_easily": "Create MIDI Devices Easily",
         "home_no_coding_required": "No Coding Required.",
         "home_or_getting_started_guide": "or check out the Getting Started guide",
@@ -54,6 +55,7 @@ i18n.use(initReactI18next).init({
     },
     de: {
       translation: {
+        "console": "Konsole",
         "home_create_midi_devices_easily": "MIDI-Geräte einfach erstellen",
         "home_no_coding_required": "Keine Programmierung erforderlich.",
         "home_or_getting_started_guide": "oder check den Getting Started Guide aus",
@@ -103,6 +105,7 @@ i18n.use(initReactI18next).init({
     },
     es: {
       translation: {
+        "console": "Consola",
         "home_create_midi_devices_easily": "Crea dispositivos MIDI fácilmente",
         "home_no_coding_required": "No se requiere codificación.",
         "home_or_getting_started_guide": "o consulta la guía de introducción",

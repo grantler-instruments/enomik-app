@@ -8,6 +8,7 @@ import {
   Grid,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { Close } from "@mui/icons-material";
 import SendIcon from "@mui/icons-material/Send";
 import CallReceivedIcon from "@mui/icons-material/CallReceived";
 import { v4 as uuidv4 } from "uuid";
@@ -106,11 +107,14 @@ function MessageList() {
     if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON || msg.type === MIDI_STATUS.POLY_PRESSURE) {
       if (msg.note !== undefined) parts.push(msg.note);
       if (msg.velocity !== undefined) parts.push(msg.velocity);
-      if (msg.value !== undefined) parts.push(msg.value);// For Poly Pressure
     }
     
     if (msg.type === MIDI_STATUS.CONTROL_CHANGE) {
       if (msg.controller) parts.push(msg.controller);
+      parts.push(msg.value);
+    }
+
+    if(msg.type === MIDI_STATUS.POLY_PRESSURE || msg.type === MIDI_STATUS.CHANNEL_PRESSURE) {
       parts.push(msg.value);
     }
     
@@ -148,7 +152,7 @@ function MessageList() {
       <Box display="flex" flexDirection="column" gap={2}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h3">History</Typography>
-          <Button variant="outlined" onClick={clear}>
+          <Button variant="outlined" onClick={clear} startIcon={<Close></Close>}>
             {t("clear")}
           </Button>
         </Box>

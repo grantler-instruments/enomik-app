@@ -7,6 +7,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
+import { Send } from "@mui/icons-material";
 import { useState } from "react";
 import { useMIDIStore, type MidiMessage } from "../store/midi";
 import { v4 as uuidv4 } from "uuid";
@@ -196,6 +197,7 @@ const Composer = () => {
         />
         <Button
           variant="contained"
+          startIcon={<Send />}
           onClick={() => {
             const msg: MidiMessage = {
               id: uuidv4(),

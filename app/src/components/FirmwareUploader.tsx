@@ -1,19 +1,17 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Typography,
   Button,
   Box,
   LinearProgress,
-  TextField,
   Alert,
   Card,
   CardContent,
   Chip,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
   IconButton,
+  Grid,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import {
   Upload as UploadIcon,
@@ -21,383 +19,209 @@ import {
   Usb as UsbIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
-import { ESPLoader, Transport } from "esptool-js";
 import { useAppStore } from "../store/app";
+import { useSerialStore } from "../store/serial";
+import Console from "./SerialConsole";
 
-type StatusType = "error" | "warning" | "info" | "success";
-
-interface Status {
-  message: string;
-  type: StatusType;
-}
-const terminal = {
-  clean: () => {
-    // Clear terminal if needed
-    console.clear();
+const availableFirmwareFiles = [
+  {
+    label: "ESP-NOW Dongle",
+    url: "https://example.com/firmware/dongle.bin",
+    board: "lolin_s2_mini",
   },
-  writeLine: (text: string) => {
-    console.log(text);
-  },
-  write: (text: string) => {
-    console.log(text);
-  },
-};
+];
 
 const FirmwareUploader: React.FC = () => {
-  const showHints = useAppStore((state) => state.showHints);
-  const [connected, setConnected] = useState<boolean>(false);
-  const [status, setStatus] = useState<Status>({ message: "", type: "info" });
-  const [progress, setProgress] = useState<number>(0);
+  const showHints = useAppStore((s) => s.showHints);
+
+  const {
+    chipInfo,
+    isFlashing,
+    flashProgress,
+    log,
+    connectForFlashing,
+    disconnectFlashing,
+    flashFirmware,
+  } = useSerialStore();
+
   const [file, setFile] = useState<File | null>(null);
-  const [flashAddress, setFlashAddress] = useState<string>("0x10000");
-  const [isFlashing, setIsFlashing] = useState<boolean>(false);
-  const [chipInfo, setChipInfo] = useState<string>("");
+  const [selectedFirmware, setSelectedFirmware] = useState("");
+  const logEndRef = useRef<HTMLDivElement>(null);
 
-  const espLoaderRef = useRef<any>(null);
-  const transportRef = useRef<any>(null);
+  const isConnectedForFlashing = Boolean(chipInfo);
 
-  const updateStatus = (message: string, type: StatusType = "info"): void => {
-    setStatus({ message, type });
-  };
+  // Auto-scroll to bottom when log updates
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [log]);
 
-  const connect = async (): Promise<void> => {
+
+  /* ------------------------ connection ------------------------ */
+
+  const handleConnect = async (): Promise<void> => {
     try {
-      updateStatus("Requesting serial port...", "info");
-      const port = await (navigator as any).serial.requestPort();
-
-      updateStatus("Connecting...", "info");
-      const transport = new Transport(port, true);
-      transportRef.current = transport;
-
-      const loader = new ESPLoader({
-        transport,
-        romBaudrate: 115200,
-        // baudrate: 115200,
-        baudrate: 921600,
-        terminal,
-      });
-
-      espLoaderRef.current = loader;
-
-      updateStatus("Connecting to chip...", "info");
-      await loader.main();
-
-      const chipName = await loader.chip.CHIP_NAME;
-      const macAddr = "TODO: mac"; //await loader.chip.readMac()
-
-      setChipInfo(`${chipName} (MAC: ${macAddr})`);
-      setConnected(true);
-      updateStatus(`Connected to ${chipName}! Ready to flash.`, "success");
+      await connectForFlashing();
     } catch (err) {
-      const error = err as Error;
-      updateStatus(`Connection error: ${error.message}`, "error");
-      if (transportRef.current) {
-        await transportRef.current.disconnect();
-        transportRef.current = null;
-      }
-      espLoaderRef.current = null;
+      // Error already logged in store
+      console.error(err);
     }
   };
 
-  const disconnect = async (): Promise<void> => {
+  const handleDisconnect = async (): Promise<void> => {
     try {
-      if (espLoaderRef.current) {
-        await espLoaderRef.current.hardReset();
-      }
-      if (transportRef.current) {
-        await transportRef.current.disconnect();
-      }
+      await disconnectFlashing();
+      setFile(null);
     } catch (err) {
-      console.error("Disconnect error:", err);
-    } finally {
-      espLoaderRef.current = null;
-      transportRef.current = null;
-      setConnected(false);
-      setChipInfo("");
-      updateStatus("Disconnected", "info");
+      console.error(err);
     }
   };
 
-  const flashBin = async (): Promise<void> => {
-    if (!file || !connected || !espLoaderRef.current) {
-      updateStatus("Please connect and select a file first", "error");
+  /* ------------------------ flashing ------------------------ */
+
+  const handleFlash = async (): Promise<void> => {
+    if (!file) {
       return;
     }
 
     try {
-      setIsFlashing(true);
-      setProgress(0);
-      updateStatus("Starting flash process...", "info");
-
-      const loader = espLoaderRef.current;
-
-      const arrayBuffer = await file.arrayBuffer();
-      const fileArray = new Uint8Array(arrayBuffer);
-
-      const address = parseInt(flashAddress, 16);
-      if (isNaN(address)) {
-        throw new Error("Invalid flash address");
-      }
-
-      updateStatus(
-        `Flashing ${file.name} to 0x${address.toString(16)}...`,
-        "info"
-      );
-
-      const fileData = [
-        {
-          data: fileArray,
-          address: address,
-        },
-      ];
-
-      await loader.writeFlash({
-        fileArray: fileData,
-        flashSize: "detect",
-        eraseAll: false,
-        compress: true,
-        reportProgress: (fileIndex: number, written: number, total: number) => {
-          const percent = (written / total) * 100;
-          setProgress(percent);
-          console.log(fileIndex, written, total);
-        },
-      });
-
-      setProgress(100);
-      updateStatus("Flash complete! Resetting device...", "success");
-
-      await loader.hardReset();
-
-      updateStatus("Flash complete! Device has been reset.", "success");
+      await flashFirmware(file);
     } catch (err) {
-      const error = err as Error;
-      updateStatus(`Flash error: ${error.message}`, "error");
-      setProgress(0);
-    } finally {
-      setIsFlashing(false);
+      // Error already logged in store
+      console.error(err);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  /* ------------------------ file handling ------------------------ */
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
-    if (f && f.name.endsWith(".bin")) {
-      setFile(f);
-      updateStatus(
-        `Selected: ${f.name} (${(f.size / 1024).toFixed(2)} KB)`,
-        "success"
-      );
-    } else {
-      updateStatus("Please select a .bin file", "error");
+    if (!f || !f.name.endsWith(".bin")) {
+      return;
     }
+    setFile(f);
   };
 
-  const clearFile = (): void => {
+  const clearFile = () => {
     setFile(null);
-    updateStatus("", "info");
   };
+
+  /* ------------------------ render ------------------------ */
 
   return (
     <Box p={2}>
       {showHints && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Upload firmware to ESP32, without needing to use arduino IDE or
-          platform.io
+          Upload firmware to ESP32 without Arduino IDE or PlatformIO. The serial
+          monitor will be temporarily suspended during flashing.
         </Alert>
       )}
 
-      <Box>
-        i am currently working on this. it is not yet functioning, but you should get an idea of how it will look like.
-      </Box>
-      <Box>
-        TODO: board selector (can this be done automatically?)
-        firmware selector (dongle or client)
-        firmware is built in github actions and downloadable from releases page
-      </Box>
-
-      <Card variant="outlined" sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ display: "flex", alignItems: "center", gap: 1 }}
-          >
-            {connected ? <UsbIcon color="success" /> : <UsbOffIcon />}
-            Connection
-            {connected && (
-              <Chip
-                label="Connected"
-                color="success"
-                size="small"
-                sx={{ ml: "auto" }}
-              />
-            )}
-          </Typography>
-
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           {chipInfo && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              <Typography variant="body2">{chipInfo}</Typography>
+            <Alert severity="success" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                <strong>Chip:</strong> {chipInfo}
+              </Typography>
             </Alert>
           )}
 
           <Button
-            variant="contained"
             fullWidth
             size="large"
-            color={connected ? "error" : "primary"}
-            onClick={connected ? disconnect : connect}
-            startIcon={connected ? <UsbOffIcon /> : <UsbIcon />}
-            sx={{ mt: 2 }}
+            variant="contained"
+            color={isConnectedForFlashing ? "error" : "primary"}
+            onClick={isConnectedForFlashing ? handleDisconnect : handleConnect}
+            startIcon={isConnectedForFlashing ? <UsbOffIcon /> : <UsbIcon />}
+            disabled={isFlashing}
           >
-            {connected ? "Disconnect" : "Connect to ESP"}
+            {isConnectedForFlashing ? "Disconnect" : "Connect for Flashing"}
           </Button>
-        </CardContent>
-      </Card>
+        </Grid>
 
-      {/* File Upload Section */}
-      <Card variant="outlined" sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Firmware File
-          </Typography>
-
-          <Box sx={{ mt: 2 }}>
-            <Button
-              variant="outlined"
-              component="label"
-              fullWidth
-              size="large"
-              startIcon={<UploadIcon />}
-              sx={{
-                py: 3,
-                borderStyle: "dashed",
-                borderWidth: 2,
-                "&:hover": {
-                  borderWidth: 2,
-                  borderStyle: "dashed",
-                },
-              }}
-            >
-              {file ? file.name : "Select .bin file"}
-              <input
-                type="file"
-                accept=".bin"
-                hidden
-                onChange={handleFileChange}
-              />
-            </Button>
-
-            {file && (
-              <Box
-                sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}
-              >
-                <Chip
-                  label={`${(file.size / 1024).toFixed(2)} KB`}
-                  color="primary"
-                  size="small"
-                />
-                <IconButton size="small" onClick={clearFile}>
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            )}
-          </Box>
-
-          <TextField
-            label="Flash Address (hex)"
-            value={flashAddress}
-            onChange={(e) => setFlashAddress(e.target.value)}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <Select
             fullWidth
-            margin="normal"
-            helperText="Common addresses: 0x10000 (app), 0x1000 (bootloader), 0x8000 (partitions)"
-          />
-        </CardContent>
-      </Card>
+            value={selectedFirmware}
+            onChange={(e) => setSelectedFirmware(e.target.value)}
+            displayEmpty
+            sx={{ mb: 2 }}
+          >
+            <MenuItem value="" disabled>
+              Select preset firmware...
+            </MenuItem>
+            {availableFirmwareFiles.map((fw) => (
+              <MenuItem key={fw.url} value={fw.url}>
+                {fw.label} ({fw.board})
+              </MenuItem>
+            ))}
+          </Select>
 
-      {/* Flash Button */}
-      <Button
-        variant="contained"
-        fullWidth
-        size="large"
-        onClick={flashBin}
-        disabled={!connected || !file || isFlashing}
-      >
-        {isFlashing ? "Flashing..." : "Flash Firmware"}
-      </Button>
-
-      {/* Progress */}
-      {progress > 0 && (
-        <Card variant="outlined" sx={{ mt: 3 }}>
-          <CardContent>
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
-            >
-              <Typography variant="body2" fontWeight="medium">
-                Progress
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {progress.toFixed(0)}%
-              </Typography>
-            </Box>
-            <LinearProgress
-              variant="determinate"
-              value={progress}
-              sx={{ height: 8, borderRadius: 4 }}
+          <Button
+            variant="outlined"
+            component="label"
+            fullWidth
+            size="large"
+            startIcon={<UploadIcon />}
+            sx={{ borderStyle: "dashed", borderWidth: 2 }}
+            disabled={isFlashing}
+          >
+            {file ? file.name : "Select .bin file"}
+            <input
+              type="file"
+              hidden
+              accept=".bin"
+              onChange={handleFileChange}
             />
+          </Button>
+
+          {file && (
+            <Box sx={{ mt: 2, display: "flex", gap: 1, alignItems: "center" }}>
+              <Chip
+                label={`${(file.size / 1024).toFixed(2)} KB`}
+                size="small"
+              />
+              <IconButton
+                size="small"
+                onClick={clearFile}
+                disabled={isFlashing}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
+        </Grid>
+      </Grid>
+
+      {flashProgress && flashProgress.total > 0 && (
+        <Card sx={{ mt: 3 }}>
+          <CardContent>
+            <Typography variant="body2" gutterBottom>
+              Progress: {flashProgress.percentage.toFixed(1)}%
+            </Typography>
+            <LinearProgress
+              value={flashProgress.percentage}
+              variant="determinate"
+            />
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+              {(flashProgress.written / 1024).toFixed(2)} KB /{" "}
+              {(flashProgress.total / 1024).toFixed(2)} KB
+            </Typography>
           </CardContent>
         </Card>
       )}
 
-      {/* Status */}
-      {status.message && (
-        <Alert
-          severity={status.type}
-          onClose={() => setStatus({ message: "", type: "info" })}
-          sx={{ mt: 3 }}
+      <Box display="flex" justifyContent="flex-end" mt={3}>
+        <Button
+          variant="contained"
+          size="large"
+          onClick={handleFlash}
+          disabled={!isConnectedForFlashing || !file || isFlashing}
         >
-          {status.message}
-        </Alert>
-      )}
-
-      {/* Instructions */}
-      <Card variant="outlined" sx={{ mt: 3, bgcolor: "grey.50" }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Instructions
-          </Typography>
-          <List dense>
-            <ListItem>
-              <ListItemText primary="1. Connect your ESP via USB" />
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemText primary="2. Click 'Connect to ESP' and select the port" />
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemText primary="3. Tool automatically detects chip and enters bootloader mode" />
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemText primary="4. Select your .bin file" />
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemText primary="5. Verify flash address (0x10000 is default for apps)" />
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemText primary="6. Click 'Flash Firmware'" />
-            </ListItem>
-          </List>
-
-          <Alert severity="warning" sx={{ mt: 2 }}>
-            <Typography variant="body2">
-              <strong>Note:</strong> If auto-connect fails, manually enter
-              bootloader: Hold BOOT, press RESET, release BOOT.
-            </Typography>
-          </Alert>
-        </CardContent>
-      </Card>
+          {isFlashing ? "Flashing..." : "Flash Firmware"}
+        </Button>
+      </Box>
+      <Console canSend={false} height={200} />
     </Box>
   );
 };
