@@ -2,6 +2,17 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { ESPLoader, Transport } from "esptool-js";
 
+/*
+  Design principles of this store:
+
+  1. A SerialPort is opened exactly once.
+  2. Text I/O (monitoring) and flashing are mutually exclusive.
+  3. During flashing, esptool-js owns the port exclusively.
+  4. After flashing, the port is always closed and must be re-requested.
+*/
+
+/* ----------------------------- Types ----------------------------- */
+
 type LogType = "send" | "receive" | "error" | "system";
 
 interface LogEntry {
@@ -18,62 +29,59 @@ interface FlashProgress {
 
 interface SerialState {
   port: SerialPort | null;
+
   reader: ReadableStreamDefaultReader<string> | null;
   writer: WritableStreamDefaultWriter<string> | null;
 
   isConnected: boolean;
-  isSuspended: boolean;
+  isMonitoring: boolean;
+  isFlashing: boolean;
 
   log: LogEntry[];
 
-  // Firmware flashing state
-  isFlashing: boolean;
   flashProgress: FlashProgress | null;
   chipInfo: string;
-  espLoader: any | null;
-  transport: any | null;
 
   connect(): Promise<void>;
   disconnect(): Promise<void>;
 
-  suspendIO(): Promise<void>;
-  resumeIO(): Promise<void>;
+  startMonitoring(): Promise<void>;
+  stopMonitoring(): Promise<void>;
 
   send(data: string): Promise<void>;
   clearLog(): void;
 
-  /** for esptool-js */
-  getRawPort(): SerialPort | null;
-
-  // Firmware flashing methods
   connectForFlashing(): Promise<void>;
   disconnectFlashing(): Promise<void>;
   flashFirmware(file: File, address?: number): Promise<void>;
 }
 
+/* --------------------------- Helpers ---------------------------- */
+
 const terminal = {
-  clean: () => console.clear(),
-  writeLine: (t: string) => console.log(t),
-  write: (t: string) => console.log(t),
+  clean: () => {},
+  writeLine: (t: string) => console.log("[esptool]", t),
+  write: (t: string) => console.log("[esptool]", t),
 };
+
+/* ---------------------------- Store ----------------------------- */
 
 export const useSerialStore = create<SerialState>()(
   devtools((set, get) => {
     let readLoopActive = false;
-    let decoderController: AbortController | null = null;
-    let encoderController: AbortController | null = null;
 
     const addLog = (message: string, type: LogType) => {
-      set((state) => ({
-        log: [...state.log, { message, type, timestamp: new Date() }],
+      set((s) => ({
+        log: [...s.log, { message, type, timestamp: new Date() }],
       }));
     };
+
+    /* ------------------------ Monitoring ------------------------ */
 
     const startReadLoop = async (
       reader: ReadableStreamDefaultReader<string>
     ) => {
       readLoopActive = true;
-
       try {
         while (readLoopActive) {
           const { value, done } = await reader.read();
@@ -87,72 +95,52 @@ export const useSerialStore = create<SerialState>()(
       }
     };
 
-    const setupTextIO = async (port: SerialPort) => {
-      decoderController = new AbortController();
-      encoderController = new AbortController();
+    const startMonitoring = async () => {
+      const { port } = get();
+      if (!port) return;
 
       const decoder = new TextDecoderStream();
-      (port.readable as ReadableStream<BufferSource>).pipeTo(
-        decoder.writable as WritableStream<BufferSource>,
-        { signal: decoderController.signal }
+      const encoder = new TextEncoderStream();
+
+      (port.readable as unknown as ReadableStream<any>).pipeTo(
+        decoder.writable as unknown as WritableStream<any>
       );
 
+      encoder.readable.pipeTo(port.writable as WritableStream<Uint8Array>);
+
       const reader = decoder.readable.getReader();
-
-      const encoder = new TextEncoderStream();
-      encoder.readable.pipeTo(port.writable!, {
-        signal: encoderController.signal,
-      });
-
       const writer = encoder.writable.getWriter();
 
-      set({ reader, writer, isSuspended: false });
+      set({ reader, writer, isMonitoring: true });
       startReadLoop(reader);
     };
 
-    const teardownTextIO = async () => {
+    const stopMonitoring = async () => {
       const { reader, writer } = get();
-
       readLoopActive = false;
 
-      if (reader) {
-        try {
-          await reader.cancel();
-          reader.releaseLock();
-        } catch {}
-      }
-
-      if (writer) {
-        try {
-          await writer.close();
-        } catch {}
-      }
-
-      if (decoderController) decoderController.abort();
-      if (encoderController) encoderController.abort();
-
-      decoderController = null;
-      encoderController = null;
-
-      set({ reader: null, writer: null });
-    };
-
-    const cleanupFlashing = async () => {
-      const { transport } = get();
-      
       try {
-        if (transport) {
-          await transport.disconnect();
-        }
+        await reader?.cancel();
+        reader?.releaseLock();
       } catch {}
 
-      set({
-        transport: null,
-        espLoader: null,
-        chipInfo: "",
-        isFlashing: false,
-        flashProgress: null,
-      });
+      try {
+        await writer?.close();
+      } catch {}
+
+      set({ reader: null, writer: null, isMonitoring: false });
+    };
+
+    /* --------------------------- Flashing ------------------------ */
+
+    const hardReset = async (transport: Transport) => {
+      try {
+        await transport.setDTR(false);
+        await transport.setRTS(true);
+        await new Promise((r) => setTimeout(r, 100));
+        await transport.setRTS(false);
+        await new Promise((r) => setTimeout(r, 50));
+      } catch {}
     };
 
     return {
@@ -161,219 +149,310 @@ export const useSerialStore = create<SerialState>()(
       writer: null,
 
       isConnected: false,
-      isSuspended: false,
+      isMonitoring: false,
+      isFlashing: false,
 
       log: [],
-
-      // Firmware state
-      isFlashing: false,
       flashProgress: null,
       chipInfo: "",
-      espLoader: null,
-      transport: null,
+
+      /* ------------------------- Public API ------------------------- */
 
       connect: async () => {
         if (get().isConnected) return;
 
-        try {
-          const port = await navigator.serial.requestPort();
-          await port.open({ baudRate: 115200 });
+        const port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 });
 
-          set({ port, isConnected: true });
-          addLog("Serial port opened", "system");
+        set({ port, isConnected: true });
+        addLog("Serial port opened", "system");
 
-          await setupTextIO(port);
-        } catch (err: any) {
-          addLog(`Connection error: ${err.message}`, "error");
-        }
+        await startMonitoring();
       },
 
       disconnect: async () => {
         const { port } = get();
+        if (!port) return;
 
-        try {
-          await teardownTextIO();
+        await stopMonitoring();
+        await port.close();
 
-          if (port) {
-            await new Promise((r) => setTimeout(r, 100));
-            
-            // Force close if port is open
-            try {
-              if (port.readable || port.writable) {
-                await port.close();
-              }
-            } catch (err: any) {
-              // Port might already be closed, ignore error
-              console.warn("Port close warning:", err.message);
-            }
-          }
+        set({
+          port: null,
+          isConnected: false,
+          isMonitoring: false,
+        });
 
-          addLog("Disconnected", "system");
-        } catch (err: any) {
-          addLog(`Disconnect error: ${err.message}`, "error");
-        } finally {
-          set({
-            port: null,
-            isConnected: false,
-            isSuspended: false,
-          });
-        }
+        addLog("Disconnected", "system");
       },
 
-      suspendIO: async () => {
-        if (get().isSuspended) return;
-
-        await teardownTextIO();
-        set({ isSuspended: true });
-        addLog("Serial I/O suspended", "system");
-      },
-
-      resumeIO: async () => {
-        const { port, isSuspended } = get();
-        if (!port || !isSuspended) return;
-
-        await setupTextIO(port);
-        addLog("Serial I/O resumed", "system");
-      },
+      startMonitoring,
+      stopMonitoring,
 
       send: async (data: string) => {
-        const { writer, isConnected, isSuspended } = get();
-        if (!writer || !isConnected || isSuspended) return;
-        if (!data.trim()) return;
-
-        try {
-          await writer.write(data + "\n");
-          addLog(data, "send");
-        } catch (err: any) {
-          addLog(`Send error: ${err.message}`, "error");
-        }
+        const { writer, isMonitoring } = get();
+        if (!writer || !isMonitoring) return;
+        await writer.write(data + "\n");
+        addLog(data, "send");
       },
 
       clearLog: () => set({ log: [] }),
-
-      getRawPort: () => get().port,
-
-      // Firmware flashing methods
+     
       connectForFlashing: async () => {
-        try {
-          addLog("Preparing for firmware flash...", "system");
+  let { port, isMonitoring } = get();
+  addLog("Preparing for firmware flash...", "system");
 
-          const { port: existingPort, isConnected: wasConnected } = get();
+  // Stop monitoring if active
+  if (isMonitoring) {
+    console.log("Stopping monitoring for flashing...");
+    await stopMonitoring();
+    await new Promise((r) => setTimeout(r, 500));
+  }
 
-          let port: SerialPort;
+  // Close and clear any existing port
+  if (port) {
+    try {
+      await port.close();
+    } catch {}
+    set({ port: null, isConnected: false });
+    port = null;
+  }
 
-          // If port is already open for monitoring, just suspend I/O and reuse it
-          if (wasConnected && existingPort) {
-            addLog("Using existing serial connection", "system");
-            await get().suspendIO();
-            port = existingPort;
-          } else {
-            // Request a new port
-            port = await navigator.serial.requestPort();
-            
-            // Check if the port is somehow still open from a previous session
-            const isPortOpen = port.readable !== null || port.writable !== null;
-            
-            if (isPortOpen) {
-              addLog("Port already open, closing and reopening...", "system");
-              try {
-                await port.close();
-                await new Promise((r) => setTimeout(r, 200));
-              } catch (err: any) {
-                console.warn("Error closing port:", err.message);
-              }
-            }
-            
-            // Now open the port
-            await port.open({ baudRate: 115200 });
-            addLog("Serial port opened for flashing", "system");
-            
-            set({ port, isConnected: true, isSuspended: true });
-          }
+  await new Promise((r) => setTimeout(r, 500));
 
-          const transport = new Transport(port, false);
-          
-          const loader = new ESPLoader({
-            transport,
-            baudrate: 921600,
-            romBaudrate: 115200,
-            terminal,
-          });
-
-          addLog("Connecting to chip (hold BOOT if required)...", "system");
-          await loader.main();
-
-          const chipName = "TODO: chipname"//await loader.chipName();
-          
-          set({ 
-            transport, 
-            espLoader: loader,
-            chipInfo: chipName 
-          });
-
-          addLog(`Connected to ${chipName}. Ready to flash.`, "system");
-        } catch (err: any) {
-          addLog(`Flash connection error: ${err.message}`, "error");
-          await cleanupFlashing();
-          throw err;
+  // Try to forget all existing ports to force a fresh connection
+  addLog("Checking for existing port references...", "system");
+  try {
+    const existingPorts = await navigator.serial.getPorts();
+    addLog(`Found ${existingPorts.length} existing port(s)`, "system");
+    
+    for (const p of existingPorts) {
+      try {
+        // Try to close it first
+        if ((p as any).connected) {
+          addLog("Closing stale port...", "system");
+          await p.close();
+          addLog("✓ Closed", "system");
         }
-      },
+      } catch (e: any) {
+        addLog(`Close attempt: ${e.message}`, "system");
+      }
+      
+      // Then forget it if the API is available
+      if (typeof (p as any).forget === 'function') {
+        try {
+          addLog("Forgetting port reference...", "system");
+          await (p as any).forget();
+          addLog("✓ Cleared stale port reference", "system");
+        } catch (e: any) {
+          addLog(`Forget attempt: ${e.message}`, "system");
+        }
+      }
+    }
+    
+    addLog("Waiting for port to release...", "system");
+    await new Promise((r) => setTimeout(r, 2000));
+    addLog("✓ Wait complete", "system");
+  } catch (e: any) {
+    addLog(`Port cleanup: ${e.message}`, "system");
+  }
 
+  // Request port - this should now be truly fresh
+  addLog("Please select your device in the popup...", "system");
+  addLog("⚠️ If this fails, unplug and replug your device", "system");
+  port = await navigator.serial.requestPort();
+  
+  console.log("Port state after requestPort():", {
+    connected: (port as any).connected,
+    readable: port.readable,
+    writable: port.writable
+  });
+  
+  // Store the port
+  set({ port, isConnected: false });
+
+  addLog("Opening port manually...", "system");
+  
+  // Open the port ourselves with explicit settings
+  try {
+    await port.open({
+      baudRate: 115200,
+      dataBits: 8,
+      stopBits: 1, 
+      parity: "none",
+      bufferSize: 255,
+      flowControl: "hardware" // Try hardware flow control
+    });
+    addLog("✓ Port opened", "system");
+  } catch (err: any) {
+    addLog(`❌ Cannot open port: ${err.message}`, "error");
+    addLog("💡 Make sure no other program is using the port", "system");
+    addLog("💡 Try unplugging and replugging the device", "system");
+    throw err;
+  }
+
+  addLog("Connecting to chip (hold BOOT if needed)...", "system");
+
+  try {
+    // Create Transport with already-open port (pass false)
+    const transport = new Transport(port, false);
+    const loader = new ESPLoader({
+      transport,
+      baudrate: 115200,
+      romBaudrate: 115200,
+      terminal,
+      enableTracing: true,
+    });
+    addLog("✓ Transport created", "system");
+
+    await loader.connect();
+    addLog("✓ loader connected", "system");
+    
+    await hardReset(transport);
+    addLog("✓ Hard reset performed", "system");
+    await new Promise((r) => setTimeout(r, 500));
+    addLog("✓ Connected to bootloader", "system");
+
+    try {
+      await loader.sync();
+      addLog("✓ Synced with chip", "system");
+    } catch {
+      addLog("ℹ Sync failed, retrying...", "system");
+      await new Promise((r) => setTimeout(r, 500));
+      await loader.sync();
+      addLog("✓ Synced with chip", "system");
+    }
+
+    const chipName = await loader.main();
+    addLog(`✓ Connected to ${chipName}`, "system");
+
+    try {
+      await loader.flashId();
+    } catch {
+      addLog("ℹ Could not read flash ID", "system");
+    }
+
+    set({
+      isConnected: true,
+      isFlashing: true,
+      chipInfo: chipName || "Unknown",
+    });
+
+    (get() as any)._transport = transport;
+    (get() as any)._loader = loader;
+
+    addLog("✓ Ready to flash!", "system");
+  } catch (err: any) {
+    addLog(`❌ Failed: ${err.message}`, "error");
+    addLog(
+      "💡 TIP: Hold BOOT, press RESET, release BOOT, then retry",
+      "system"
+    );
+
+    if (port) {
+      try {
+        await port.close();
+      } catch {}
+    }
+
+    set({
+      port: null,
+      isConnected: false,
+      isFlashing: false,
+    });
+
+    throw err;
+  }
+},
       disconnectFlashing: async () => {
-        await cleanupFlashing();
-        await get().resumeIO();
-        addLog("Flash mode disconnected", "system");
+        const transport = (get() as any)._transport as Transport;
+        const { port } = get();
+
+        addLog("Disconnecting from flashing mode...", "system");
+
+        // Disconnect transport if exists
+        if (transport) {
+          try {
+            await transport.disconnect();
+          } catch (err: any) {
+            addLog(`Transport disconnect warning: ${err.message}`, "system");
+          }
+        }
+
+        // Close port
+        if (port) {
+          try {
+            await port.close();
+          } catch (err: any) {
+            addLog(`Port close warning: ${err.message}`, "system");
+          }
+        }
+
+        // Clean up state
+        set({
+          port: null,
+          isConnected: false,
+          isFlashing: false,
+          chipInfo: "",
+          flashProgress: null,
+        });
+
+        // Clean up internal references
+        delete (get() as any)._transport;
+        delete (get() as any)._loader;
+
+        addLog("Disconnected from flashing mode", "system");
       },
 
-      flashFirmware: async (file: File, address: number = 0x10000) => {
-        const { espLoader, transport } = get();
-        
-        if (!espLoader || !transport) {
-          throw new Error("Not connected for flashing. Call connectForFlashing first.");
+      flashFirmware: async (file: File, address = 0x10000) => {
+        const transport = (get() as any)._transport as Transport;
+        const loader = (get() as any)._loader as ESPLoader;
+
+        if (!transport || !loader) {
+          throw new Error("Not connected for flashing");
         }
 
-        try {
-          set({ isFlashing: true, flashProgress: { written: 0, total: 0, percentage: 0 } });
-          addLog(`Starting flash: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`, "system");
-
-          const buffer = new Uint8Array(await file.arrayBuffer());
-          let binary = "";
-          for (let i = 0; i < buffer.length; i++) {
-            binary += String.fromCharCode(buffer[i]);
-          }
-
-          await espLoader.writeFlash({
-            fileArray: [{ data: binary, address }],
-            flashSize: "keep",
-            eraseAll: false,
-            compress: true,
-            reportProgress: (_: number, written: number, total: number) => {
-              set({
-                flashProgress: {
-                  written,
-                  total,
-                  percentage: (written / total) * 100,
-                },
-              });
-            },
-          });
-
-          addLog("Flash complete. Resetting device...", "system");
-
-          // Reset the device
-          await transport.setDTR(false);
-          await transport.setRTS(true);
-          await new Promise((r) => setTimeout(r, 100));
-          await transport.setRTS(false);
-
-          addLog("Device reset complete.", "system");
-          
-          set({ isFlashing: false });
-        } catch (err: any) {
-          addLog(`Flash error: ${err.message}`, "error");
-          set({ isFlashing: false, flashProgress: null });
-          throw err;
+        const buffer = new Uint8Array(await file.arrayBuffer());
+        let binary = "";
+        for (let i = 0; i < buffer.length; i++) {
+          binary += String.fromCharCode(buffer[i]);
         }
+
+        const total = binary.length;
+        set({ flashProgress: { written: 0, total, percentage: 0 } });
+
+        await loader.writeFlash({
+          fileArray: [{ data: binary, address }],
+          flashSize: "keep",
+          flashMode: "keep",
+          flashFreq: "keep",
+          eraseAll: false,
+          compress: true,
+          reportProgress: (_, written, total) => {
+            set({
+              flashProgress: {
+                written,
+                total,
+                percentage: (written / total) * 100,
+              },
+            });
+          },
+        });
+
+        await hardReset(transport);
+        await transport.disconnect();
+
+        // Port must be closed after flashing
+        await get().port!.close();
+
+        set({
+          port: null,
+          isConnected: false,
+          isFlashing: false,
+          flashProgress: null,
+        });
+
+        addLog("Flashing complete. Reconnect to monitor.", "system");
       },
     };
   })
