@@ -39,8 +39,9 @@ const FirmwareUploader: React.FC = () => {
     isFlashing,
     flashProgress,
     log,
+    isConnected,
     connectForFlashing,
-    disconnectFlashing,
+    disconnect,
     flashFirmware,
   } = useSerialStore();
 
@@ -69,7 +70,7 @@ const FirmwareUploader: React.FC = () => {
 
   const handleDisconnect = async (): Promise<void> => {
     try {
-      await disconnectFlashing();
+      await disconnect();
       setFile(null);
     } catch (err) {
       console.error(err);
@@ -130,12 +131,12 @@ const FirmwareUploader: React.FC = () => {
             fullWidth
             size="large"
             variant="contained"
-            color={isConnectedForFlashing ? "error" : "primary"}
-            onClick={isConnectedForFlashing ? handleDisconnect : handleConnect}
-            startIcon={isConnectedForFlashing ? <UsbOffIcon /> : <UsbIcon />}
+            color={isConnected? "error" : "primary"}
+            onClick={isConnected? handleDisconnect : handleConnect}
+            startIcon={isConnected? <UsbOffIcon /> : <UsbIcon />}
             disabled={isFlashing}
           >
-            {isConnectedForFlashing ? "Disconnect" : "Connect for Flashing"}
+            {isConnected? "Disconnect" : "Connect for Flashing"}
           </Button>
         </Grid>
 
@@ -216,7 +217,7 @@ const FirmwareUploader: React.FC = () => {
           variant="contained"
           size="large"
           onClick={handleFlash}
-          disabled={!isConnectedForFlashing || !file || isFlashing}
+          disabled={!isConnected || !file || isFlashing}
         >
           {isFlashing ? "Flashing..." : "Flash Firmware"}
         </Button>

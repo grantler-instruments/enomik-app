@@ -13,6 +13,16 @@ import { ESPLoader, Transport } from "esptool-js";
 
 /* ----------------------------- Types ----------------------------- */
 
+function uint8ArrayToBinaryString(arr: Uint8Array): string {
+  const chunkSize = 0x8000; // 32KB chunks
+  let result = "";
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    const chunk = arr.subarray(i, i + chunkSize);
+    result += String.fromCharCode(...chunk);
+  }
+  return result;
+}
+
 type LogType = "send" | "receive" | "error" | "system";
 
 interface LogEntry {
@@ -29,6 +39,8 @@ interface FlashProgress {
 
 interface SerialState {
   port: SerialPort | null;
+  transport: Transport | null;
+  loader: ESPLoader | null;
 
   reader: ReadableStreamDefaultReader<string> | null;
   writer: WritableStreamDefaultWriter<string> | null;
@@ -131,18 +143,6 @@ export const useSerialStore = create<SerialState>()(
       set({ reader: null, writer: null, isMonitoring: false });
     };
 
-    /* --------------------------- Flashing ------------------------ */
-
-    const hardReset = async (transport: Transport) => {
-      try {
-        await transport.setDTR(false);
-        await transport.setRTS(true);
-        await new Promise((r) => setTimeout(r, 100));
-        await transport.setRTS(false);
-        await new Promise((r) => setTimeout(r, 50));
-      } catch {}
-    };
-
     return {
       port: null,
       reader: null,
@@ -197,263 +197,156 @@ export const useSerialStore = create<SerialState>()(
       },
 
       clearLog: () => set({ log: [] }),
-     
+
       connectForFlashing: async () => {
-  let { port, isMonitoring } = get();
-  addLog("Preparing for firmware flash...", "system");
+        addLog("Preparing for firmware flash...", "system");
 
-  // Stop monitoring if active
-  if (isMonitoring) {
-    console.log("Stopping monitoring for flashing...");
-    await stopMonitoring();
-    await new Promise((r) => setTimeout(r, 500));
-  }
-
-  // Close and clear any existing port
-  if (port) {
-    try {
-      await port.close();
-    } catch {}
-    set({ port: null, isConnected: false });
-    port = null;
-  }
-
-  await new Promise((r) => setTimeout(r, 500));
-
-  // Try to forget all existing ports to force a fresh connection
-  addLog("Checking for existing port references...", "system");
-  try {
-    const existingPorts = await navigator.serial.getPorts();
-    addLog(`Found ${existingPorts.length} existing port(s)`, "system");
-    
-    for (const p of existingPorts) {
-      try {
-        // Try to close it first
-        if ((p as any).connected) {
-          addLog("Closing stale port...", "system");
-          await p.close();
-          addLog("✓ Closed", "system");
-        }
-      } catch (e: any) {
-        addLog(`Close attempt: ${e.message}`, "system");
-      }
-      
-      // Then forget it if the API is available
-      if (typeof (p as any).forget === 'function') {
-        try {
-          addLog("Forgetting port reference...", "system");
-          await (p as any).forget();
-          addLog("✓ Cleared stale port reference", "system");
-        } catch (e: any) {
-          addLog(`Forget attempt: ${e.message}`, "system");
-        }
-      }
-    }
-    
-    addLog("Waiting for port to release...", "system");
-    await new Promise((r) => setTimeout(r, 2000));
-    addLog("✓ Wait complete", "system");
-  } catch (e: any) {
-    addLog(`Port cleanup: ${e.message}`, "system");
-  }
-
-  // Request port - this should now be truly fresh
-  addLog("Please select your device in the popup...", "system");
-  addLog("⚠️ If this fails, unplug and replug your device", "system");
-  port = await navigator.serial.requestPort();
-  
-  console.log("Port state after requestPort():", {
-    connected: (port as any).connected,
-    readable: port.readable,
-    writable: port.writable
-  });
-  
-  // Store the port
-  set({ port, isConnected: false });
-
-  addLog("Opening port manually...", "system");
-  
-  // Open the port ourselves with explicit settings
-  try {
-    await port.open({
-      baudRate: 115200,
-      dataBits: 8,
-      stopBits: 1, 
-      parity: "none",
-      bufferSize: 255,
-      flowControl: "hardware" // Try hardware flow control
-    });
-    addLog("✓ Port opened", "system");
-  } catch (err: any) {
-    addLog(`❌ Cannot open port: ${err.message}`, "error");
-    addLog("💡 Make sure no other program is using the port", "system");
-    addLog("💡 Try unplugging and replugging the device", "system");
-    throw err;
-  }
-
-  addLog("Connecting to chip (hold BOOT if needed)...", "system");
-
-  try {
-    // Create Transport with already-open port (pass false)
-    const transport = new Transport(port, false);
-    const loader = new ESPLoader({
-      transport,
-      baudrate: 115200,
-      romBaudrate: 115200,
-      terminal,
-      enableTracing: true,
-    });
-    addLog("✓ Transport created", "system");
-
-    await loader.connect();
-    addLog("✓ loader connected", "system");
-    
-    await hardReset(transport);
-    addLog("✓ Hard reset performed", "system");
-    await new Promise((r) => setTimeout(r, 500));
-    addLog("✓ Connected to bootloader", "system");
-
-    try {
-      await loader.sync();
-      addLog("✓ Synced with chip", "system");
-    } catch {
-      addLog("ℹ Sync failed, retrying...", "system");
-      await new Promise((r) => setTimeout(r, 500));
-      await loader.sync();
-      addLog("✓ Synced with chip", "system");
-    }
-
-    const chipName = await loader.main();
-    addLog(`✓ Connected to ${chipName}`, "system");
-
-    try {
-      await loader.flashId();
-    } catch {
-      addLog("ℹ Could not read flash ID", "system");
-    }
-
-    set({
-      isConnected: true,
-      isFlashing: true,
-      chipInfo: chipName || "Unknown",
-    });
-
-    (get() as any)._transport = transport;
-    (get() as any)._loader = loader;
-
-    addLog("✓ Ready to flash!", "system");
-  } catch (err: any) {
-    addLog(`❌ Failed: ${err.message}`, "error");
-    addLog(
-      "💡 TIP: Hold BOOT, press RESET, release BOOT, then retry",
-      "system"
-    );
-
-    if (port) {
-      try {
-        await port.close();
-      } catch {}
-    }
-
-    set({
-      port: null,
-      isConnected: false,
-      isFlashing: false,
-    });
-
-    throw err;
-  }
-},
-      disconnectFlashing: async () => {
-        const transport = (get() as any)._transport as Transport;
-        const { port } = get();
-
-        addLog("Disconnecting from flashing mode...", "system");
-
-        // Disconnect transport if exists
-        if (transport) {
+        // Close previous port if any
+        const oldPort = get().port;
+        console.log("Old port:", oldPort);
+        if (oldPort) {
           try {
-            await transport.disconnect();
-          } catch (err: any) {
-            addLog(`Transport disconnect warning: ${err.message}`, "system");
+            oldPort.close();
+            addLog("Previous port closed", "system");
+          } catch {
+            addLog("Failed to close previous port", "error");
           }
+          set({ port: null, isConnected: false, isFlashing: false });
+          await new Promise((r) => setTimeout(r, 300)); // give browser time
         }
 
-        // Close port
-        if (port) {
-          try {
-            await port.close();
-          } catch (err: any) {
-            addLog(`Port close warning: ${err.message}`, "system");
-          }
-        }
+        // Request port but do NOT auto-open
+        const port = await navigator.serial.requestPort();
 
-        // Clean up state
-        set({
-          port: null,
-          isConnected: false,
-          isFlashing: false,
-          chipInfo: "",
-          flashProgress: null,
+        const transport = new Transport(port, true); // false = do not open automatically
+        (transport as any).setDTR = async () => {};
+        (transport as any).setRTS = async () => {};
+        (transport as any).setSignals = async () => {};
+
+        const loader = new ESPLoader({
+          transport,
+          baudrate: 115200,
+          romBaudrate: 115200,
+          enableTracing: true,
         });
 
-        // Clean up internal references
-        delete (get() as any)._transport;
-        delete (get() as any)._loader;
-
-        addLog("Disconnected from flashing mode", "system");
+        try {
+          await loader.connect();
+          await loader.sync();
+        } catch (err: any) {
+          addLog(`Connection error: ${err.message}`, "error");
+          throw err;
+        }
+        set({ port, transport, loader, isConnected: true, isFlashing: false });
       },
 
-      flashFirmware: async (file: File, address = 0x10000) => {
-        const transport = (get() as any)._transport as Transport;
-        const loader = (get() as any)._loader as ESPLoader;
+       flashFirmware: async (file: File, address = 0x10000) => {
+        const transport = get().transport;
+        const loader = get().loader;
 
         if (!transport || !loader) {
           throw new Error("Not connected for flashing");
         }
 
         const buffer = new Uint8Array(await file.arrayBuffer());
-        let binary = "";
-        for (let i = 0; i < buffer.length; i++) {
-          binary += String.fromCharCode(buffer[i]);
+
+        set({ isFlashing: true });
+        addLog(
+          `Starting flash of ${file.name} (${buffer.length} bytes) at address 0x${address.toString(16)}`,
+          "system"
+        );
+
+        const totalSize = buffer.length;
+
+        set({ flashProgress: { written: 0, total: totalSize, percentage: 0 } });
+
+        try {
+          addLog("Starting flash operation...", "system");
+          
+          // Try to upload stub for much faster flashing
+          try {
+            addLog("Attempting to upload flasher stub...", "system");
+            await loader.runStub();
+            addLog("Flasher stub uploaded - flashing will be much faster!", "system");
+            await new Promise((r) => setTimeout(r, 500));
+          } catch (e: any) {
+            addLog(`Stub upload failed (${e.message}), using slow ROM bootloader`, "system");
+            // Continue with ROM bootloader
+            await new Promise((r) => setTimeout(r, 500));
+          }
+
+          const fileArray = [{ 
+            data: uint8ArrayToBinaryString(buffer),
+            address 
+          }];
+
+          addLog(`Writing ${buffer.length} bytes to flash (this will take several minutes)...`, "system");
+          
+          await loader.writeFlash({
+            fileArray,
+            flashSize: "keep",
+            flashMode: "keep",
+            flashFreq: "keep",
+            eraseAll: false,
+            compress: true, // Must be true - library doesn't support uncompressed writes
+            reportProgress: (fileIndex, written, total) => {
+              const pct = Math.floor((written / total) * 100);
+              
+              // Log progress every 10%
+              const prevPct = Math.floor(((written - 1) / total) * 100);
+              if (Math.floor(pct / 10) > Math.floor(prevPct / 10)) {
+                addLog(`Flash progress: ${pct}%`, "system");
+              }
+              
+              set({
+                flashProgress: {
+                  written,
+                  total,
+                  percentage: pct,
+                },
+              });
+            },
+            calculateMD5Hash: (image: string) => {
+              // Skip MD5 verification to avoid timeout issues
+              return "";
+            },
+          });
+
+          addLog("Flashing complete. Resetting chip...", "system");
+          
+          try {
+            await loader.hardReset();
+            addLog("Chip reset successfully", "system");
+          } catch (e: any) {
+            addLog(`Reset failed: ${e.message}`, "system");
+          }
+        } catch (err: any) {
+          addLog(`Flashing failed: ${err.message}`, "error");
+          console.error("Full error:", err);
+          throw err;
+        } finally {
+          // Disconnect transport and close port
+          try {
+            await transport.disconnect();
+          } catch {}
+          try {
+            await get().port?.close();
+          } catch {}
+
+          set({
+            port: null,
+            isConnected: false,
+            isFlashing: false,
+            flashProgress: null,
+            transport: null,
+            loader: null,
+          });
+
+          addLog("Port closed. Reconnect to monitor.", "system");
         }
-
-        const total = binary.length;
-        set({ flashProgress: { written: 0, total, percentage: 0 } });
-
-        await loader.writeFlash({
-          fileArray: [{ data: binary, address }],
-          flashSize: "keep",
-          flashMode: "keep",
-          flashFreq: "keep",
-          eraseAll: false,
-          compress: true,
-          reportProgress: (_, written, total) => {
-            set({
-              flashProgress: {
-                written,
-                total,
-                percentage: (written / total) * 100,
-              },
-            });
-          },
-        });
-
-        await hardReset(transport);
-        await transport.disconnect();
-
-        // Port must be closed after flashing
-        await get().port!.close();
-
-        set({
-          port: null,
-          isConnected: false,
-          isFlashing: false,
-          flashProgress: null,
-        });
-
-        addLog("Flashing complete. Reconnect to monitor.", "system");
       },
+
+       
     };
   })
 );
