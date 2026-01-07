@@ -18,6 +18,7 @@ import {
   UsbOff as UsbOffIcon,
   Usb as UsbIcon,
   Close as CloseIcon,
+  FlashOn as FlashOnIcon,
 } from "@mui/icons-material";
 import { useAppStore } from "../store/app";
 import { useSerialStore } from "../store/serial";
@@ -40,57 +41,18 @@ const FirmwareUploader: React.FC = () => {
     flashProgress,
     log,
     isConnected,
-    connectForFlashing,
-    disconnect,
     flashFirmware,
+    disconnect,
   } = useSerialStore();
 
   const [file, setFile] = useState<File | null>(null);
   const [selectedFirmware, setSelectedFirmware] = useState("");
   const logEndRef = useRef<HTMLDivElement>(null);
 
-  const isConnectedForFlashing = Boolean(chipInfo);
-
   // Auto-scroll to bottom when log updates
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [log]);
-
-
-  /* ------------------------ connection ------------------------ */
-
-  const handleConnect = async (): Promise<void> => {
-    try {
-      await connectForFlashing();
-    } catch (err) {
-      // Error already logged in store
-      console.error(err);
-    }
-  };
-
-  const handleDisconnect = async (): Promise<void> => {
-    try {
-      await disconnect();
-      setFile(null);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  /* ------------------------ flashing ------------------------ */
-
-  const handleFlash = async (): Promise<void> => {
-    if (!file) {
-      return;
-    }
-
-    try {
-      await flashFirmware(file);
-    } catch (err) {
-      // Error already logged in store
-      console.error(err);
-    }
-  };
 
   /* ------------------------ file handling ------------------------ */
 
@@ -106,47 +68,68 @@ const FirmwareUploader: React.FC = () => {
     setFile(null);
   };
 
+  /* ------------------------ connect & flash in one operation ------------------------ */
+
+  const handleConnectAndFlash = async (): Promise<void> => {
+    if (!file) {
+      return;
+    }
+
+    try {
+      // Single function does everything
+      await flashFirmware(file);
+    } catch (err) {
+      // Error already logged in store
+      console.error(err);
+    }
+  };
+
+  const handleDisconnect = async (): Promise<void> => {
+    try {
+      await disconnect();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   /* ------------------------ render ------------------------ */
+
+  const canFlash = Boolean(file) && !isFlashing;
+  const isConnectedAndNotFlashing = isConnected && !isFlashing;
 
   return (
     <Box p={2}>
       {showHints && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Upload firmware to ESP32 without Arduino IDE or PlatformIO. The serial
-          monitor will be temporarily suspended during flashing.
+          <Typography variant="body2" gutterBottom>
+            Select your firmware file first, then click "Connect & Flash" to upload it to your ESP32-S2.
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
+            ESP32-S2 Manual Bootloader Mode (if auto-reset fails):
+          </Typography>
+          <Typography variant="body2" component="ol" sx={{ pl: 2, mt: 0.5 }}>
+            <li>Hold the BOOT button (GPIO0)</li>
+            <li>While holding BOOT, press and release RESET (or plug in USB)</li>
+            <li>Release BOOT button</li>
+            <li>Click "Connect & Flash" immediately</li>
+          </Typography>
         </Alert>
       )}
 
       <Grid container spacing={2}>
+        {/* Step 1: Select Firmware */}
         <Grid size={{ xs: 12, sm: 6 }}>
-          {chipInfo && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              <Typography variant="body2">
-                <strong>Chip:</strong> {chipInfo}
-              </Typography>
-            </Alert>
-          )}
-
-          <Button
-            fullWidth
-            size="large"
-            variant="contained"
-            color={isConnected? "error" : "primary"}
-            onClick={isConnected? handleDisconnect : handleConnect}
-            startIcon={isConnected? <UsbOffIcon /> : <UsbIcon />}
-            disabled={isFlashing}
-          >
-            {isConnected? "Disconnect" : "Connect for Flashing"}
-          </Button>
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Step 1: Select Firmware
+          </Typography>
+          
           <Select
             fullWidth
             value={selectedFirmware}
             onChange={(e) => setSelectedFirmware(e.target.value)}
             displayEmpty
             sx={{ mb: 2 }}
+            disabled={isFlashing}
           >
             <MenuItem value="" disabled>
               Select preset firmware...
@@ -167,7 +150,7 @@ const FirmwareUploader: React.FC = () => {
             sx={{ borderStyle: "dashed", borderWidth: 2 }}
             disabled={isFlashing}
           >
-            {file ? file.name : "Select .bin file"}
+            {file ? file.name : "Or select custom .bin file"}
             <input
               type="file"
               hidden
@@ -181,6 +164,7 @@ const FirmwareUploader: React.FC = () => {
               <Chip
                 label={`${(file.size / 1024).toFixed(2)} KB`}
                 size="small"
+                color="success"
               />
               <IconButton
                 size="small"
@@ -190,6 +174,53 @@ const FirmwareUploader: React.FC = () => {
                 <CloseIcon fontSize="small" />
               </IconButton>
             </Box>
+          )}
+        </Grid>
+
+        {/* Step 2: Connect & Flash */}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Step 2: Connect & Flash
+          </Typography>
+
+          {chipInfo && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                <strong>Chip:</strong> {chipInfo}
+              </Typography>
+            </Alert>
+          )}
+
+          <Button
+            fullWidth
+            size="large"
+            variant="contained"
+            color="primary"
+            onClick={handleConnectAndFlash}
+            startIcon={<FlashOnIcon />}
+            disabled={!canFlash}
+            sx={{ mb: 2 }}
+          >
+            {isFlashing ? "Flashing..." : "Connect & Flash"}
+          </Button>
+
+          {isConnectedAndNotFlashing && (
+            <Button
+              fullWidth
+              size="small"
+              variant="outlined"
+              color="error"
+              onClick={handleDisconnect}
+              startIcon={<UsbOffIcon />}
+            >
+              Disconnect
+            </Button>
+          )}
+
+          {!file && !isFlashing && (
+            <Alert severity="warning" sx={{ mt: 2 }}>
+              Please select a firmware file first
+            </Alert>
           )}
         </Grid>
       </Grid>
@@ -212,16 +243,6 @@ const FirmwareUploader: React.FC = () => {
         </Card>
       )}
 
-      <Box display="flex" justifyContent="flex-end" mt={3}>
-        <Button
-          variant="contained"
-          size="large"
-          onClick={handleFlash}
-          disabled={!isConnected || !file || isFlashing}
-        >
-          {isFlashing ? "Flashing..." : "Flash Firmware"}
-        </Button>
-      </Box>
       <Console canSend={false} height={200} />
     </Box>
   );

@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Container,
@@ -12,7 +13,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import DevicesOtherIcon from '@mui/icons-material/DevicesOther';
+import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
 import Inputs from "./Inputs";
 import Outputs from "./Outputs";
 import { useIOStore } from "../store/io";
@@ -23,11 +24,12 @@ import { ArrowDropDown } from "@mui/icons-material";
 import Peers from "./Peers";
 import { useTranslation } from "react-i18next";
 import SectionHeader from "./SectionHeader";
-
-
+import { useAppStore } from "../store/app";
+import { NavLink } from "react-router-dom";
 
 const Configurator = () => {
   const { t } = useTranslation();
+  const showHints = useAppStore((state) => state.showHints);
   const deployConfiguration = useIOStore((state) => state.deploy);
   const inputs = useIOStore((state) => state.inputs);
   const outputs = useIOStore((state) => state.outputs);
@@ -109,6 +111,14 @@ const Configurator = () => {
         </Button>
       </Box>
       <Container maxWidth="xl">
+        {showHints && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            {t("configurator_info")}
+          </Alert>
+        )}
+        <Button variant="outlined" component={NavLink} to={"/uploader"}>
+        Firmware Uploader
+        </Button>
         <Accordion defaultExpanded={inputs.length > 0}>
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}

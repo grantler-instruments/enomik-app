@@ -51,6 +51,7 @@ i18n.use(initReactI18next).init({
         "tooltip_midi_monitor": "View incoming and outgoing MIDI messages for debugging purposes",
         "tooltip_serial_monitor": "View serial output from the connected microcontroller for debugging purposes",
         "tooltip_midi_composer": "Compose and send custom MIDI messages to connected devices",
+        "configurator_info": "In order to configure your enomik client devices, you need to flash the appropriate firmware onto them first. You can use the handy Firmware Uploader utility to upload the precompiled firmware to your ESP32-based client boards.",
       },
     },
     de: {
@@ -101,6 +102,7 @@ i18n.use(initReactI18next).init({
         "tooltip_midi_monitor": "Eingehende und ausgehende MIDI-Nachrichten zu Debugging-Zwecken anzeigen",
         "tooltip_serial_monitor": "Serielle Ausgabe des verbundenen Mikrocontrollers zu Debugging-Zwecken anzeigen",
         "tooltip_midi_composer": "Erstelle und sende benutzerdefinierte MIDI-Nachrichten an verbundene Geräte",
+        "configurator_info": "Um deine enomik-Clientgeräte zu konfigurieren, musst du zuerst die entsprechende Firmware auf ihnen flashen. Du kannst das praktische Firmware-Uploader-Dienstprogramm verwenden, um die vorcompilierte Firmware auf deine ESP32-basierten Client-Boards hochzuladen.",
       },
     },
     es: {
@@ -152,6 +154,7 @@ i18n.use(initReactI18next).init({
         "tooltip_midi_monitor": "Ver mensajes MIDI entrantes y salientes para fines de depuración",
         "tooltip_serial_monitor": "Ver la salida serial del microcontrolador conectado para fines de depuración",
         "tooltip_midi_composer": "Componer y enviar mensajes MIDI personalizados a dispositivos conectados",
+        "configurator_info": "Para configurar tus dispositivos cliente enomik, primero debes flashear el firmware apropiado en ellos. Puedes usar la práctica utilidad Firmware Uploader para cargar el firmware precompilado en tus placas cliente basadas en ESP32.",
       },
     },
   },
