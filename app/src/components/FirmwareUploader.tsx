@@ -10,8 +10,6 @@ import {
   Chip,
   IconButton,
   Grid,
-  Select,
-  MenuItem,
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
@@ -32,18 +30,6 @@ import Console from "./SerialConsole";
 type UploadStep = "select" | "bootloader" | "flash";
 
 /* -------------------------------------------------------------------------- */
-/*                              firmware presets                              */
-/* -------------------------------------------------------------------------- */
-
-const availableFirmwareFiles = [
-  {
-    label: "ESP-NOW Dongle",
-    url: "https://example.com/firmware/dongle.bin",
-    board: "lolin_s2_mini",
-  },
-];
-
-/* -------------------------------------------------------------------------- */
 /*                              main component                                */
 /* -------------------------------------------------------------------------- */
 
@@ -58,6 +44,8 @@ const FirmwareUploader: React.FC = () => {
     isConnected,
     flashFirmware,
     disconnect,
+    init,
+    availableFirmware,
   } = useSerialStore();
 
   const [step, setStep] = useState<UploadStep>("select");
@@ -71,6 +59,10 @@ const FirmwareUploader: React.FC = () => {
   /*                                side effects                                */
   /* -------------------------------------------------------------------------- */
 
+  useEffect(() => {
+    init()
+  }, [init]);
+  
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [log]);
@@ -110,17 +102,26 @@ const FirmwareUploader: React.FC = () => {
     setFile(f);
   };
 
-  const handlePresetSelect = async (url: string): Promise<void> => {
-    setSelectedFirmware(url);
+  // TODO: move to store
+  const handlePresetSelect = async (fw: any): Promise<void> => {
+    setSelectedFirmware(fw.label);
+    
     try {
-      const res = await fetch(url);
+      const res = await fetch(fw.path);
+      
+      if (!res.ok) {
+        throw new Error(`Failed to fetch firmware: ${res.statusText}`);
+      }
+      
       const blob = await res.blob();
-      const f = new File([blob], url.split("/").pop() || "firmware.bin", {
+      const fileName = fw.path.split('/').pop() || 'firmware.bin';
+      const f = new File([blob], fileName, {
         type: "application/octet-stream",
       });
       setFile(f);
     } catch (err) {
-      console.error(err);
+      console.error("Error loading firmware:", err);
+      alert("Failed to load firmware. Please select the file manually.");
     }
   };
 
@@ -183,23 +184,28 @@ const FirmwareUploader: React.FC = () => {
             Step 1 — Select firmware
           </Typography>
 
-          <Select
-            fullWidth
-            value={selectedFirmware}
-            onChange={(e) => handlePresetSelect(e.target.value)}
-            displayEmpty
-            disabled={isFlashing}
-            sx={{ mb: 2 }}
-          >
-            <MenuItem value="" disabled>
-              Select preset firmware…
-            </MenuItem>
-            {availableFirmwareFiles.map((fw) => (
-              <MenuItem key={fw.url} value={fw.url}>
-                {fw.label} ({fw.board})
-              </MenuItem>
+          {/* Main firmware types as big buttons */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+            {availableFirmware.map((fw) => (
+              <Button
+                key={fw.label}
+                variant={selectedFirmware === fw.label ? "contained" : "outlined"}
+                size="large"
+                fullWidth
+                onClick={() => handlePresetSelect(fw)}
+                disabled={isFlashing}
+                sx={{
+                  py: 2,
+                  justifyContent: 'flex-start',
+                  textAlign: 'left',
+                  fontSize: '1rem',
+                  fontWeight: selectedFirmware === fw.label ? 'bold' : 'normal',
+                }}
+              >
+                {fw.label}
+              </Button>
             ))}
-          </Select>
+          </Box>
 
           <Button
             variant="outlined"

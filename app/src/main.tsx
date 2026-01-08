@@ -1,13 +1,13 @@
-import { StrictMode } from "react";
+// import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter } from "react-router-dom";
 import App from "./App.tsx";
 import "./i18n.ts";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  // <StrictMode>
     <HashRouter>
       <App />
     </HashRouter>
-  </StrictMode>
+  // </StrictMode>
 );

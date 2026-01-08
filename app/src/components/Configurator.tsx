@@ -112,13 +112,17 @@ const Configurator = () => {
       </Box>
       <Container maxWidth="xl">
         {showHints && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            {t("configurator_info")}
-          </Alert>
+          <Box mb={8} display={"flex"} flexDirection={"column"} gap={2}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {t("configurator_info")}
+            </Alert>
+            <Box>
+            <Button variant="outlined" component={NavLink} to={"/uploader"}>
+              Firmware Uploader
+            </Button>
+            </Box>
+          </Box>
         )}
-        <Button variant="outlined" component={NavLink} to={"/uploader"}>
-        Firmware Uploader
-        </Button>
         <Accordion defaultExpanded={inputs.length > 0}>
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}

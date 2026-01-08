@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { ESPLoader, Transport } from "esptool-js";
 import CryptoJS from "crypto-js";
+// import axios from "axios";
 
 // https://github.com/adafruit/Adafruit_WebSerial_ESPTool/blob/main/js/script.js
 
@@ -33,6 +34,9 @@ interface SerialState {
   log: LogEntry[];
   flashProgress: FlashProgress | null;
   chipInfo: string;
+  availableFirmware: any[];
+
+  init: () => void;
 
   connect(): Promise<void>;
   disconnect(): Promise<void>;
@@ -101,7 +105,7 @@ export const useSerialStore = create<SerialState>()(
       const decoder = new TextDecoderStream();
       const encoder = new TextEncoderStream();
 
-      port.readable!.pipeTo(decoder.writable);
+      port.readable!.pipeTo(decoder.writable as WritableStream<Uint8Array>);
       encoder.readable.pipeTo(port.writable!);
 
       const reader = decoder.readable.getReader();
@@ -134,7 +138,40 @@ export const useSerialStore = create<SerialState>()(
       log: [],
       flashProgress: null,
       chipInfo: "",
+      availableFirmware: [
+        {
+          label: "Dongle",
+          path: "/enomik-app/firmware/0-10-3/lolin_s2_mini_dongle_dongle.ino.bin",
+        },
+        {
+          label: "Client",
+          path: "/enomik-app/firmware/0-10-3/lolin_s2_mini_client_client.ino.bin",
+        },
+        // { label: "Client - Buttons", path: "/firmware/0-10-3/lolin_s2_mini_client_buttons_client_buttons.ino.bin" },
+        // { label: "Client - Clocked", path: "/firmware/0-10-3/lolin_s2_mini_client_clocked_client_clocked.ino.bin" },
+        // ... add all your firmware files
+        {
+          label: "Print MAC",
+          path: "/enomik-app//firmware/0-10-3/lolin_s2_mini_print_mac_print_mac.ino.bin",
+        },
+      ],
 
+      init: () => {
+        // axios.get("https://api.github.com/repos/grantler-instruments/esp-now-midi/releases/latest")
+        //   .then((response) => {
+        //     const { tag_name, assets } = response.data;
+        //     console.log("Latest firmware version:", tag_name);
+        //     const firmwareAssets = assets.filter((asset: any) =>
+        //       asset.name.endsWith(".bin") || asset.name.endsWith(".bin.gz")
+        //     )
+        //     .filter((asset: any) => !(asset.name.includes("merged") || asset.name.includes("partition") || asset.name.includes("bootloader")));
+        //     console.log("Available firmware assets:", firmwareAssets);
+        //     set({ availableFirmware: firmwareAssets });
+        //   })
+        //   .catch((error) => {
+        //     console.error("Error fetching firmware info:", error);
+        //   });
+      },
       connect: async () => {
         if (get().isConnected || get().isFlashing) return;
 
@@ -211,7 +248,7 @@ export const useSerialStore = create<SerialState>()(
           //   chip = await loader.main("no_reset");
           // }
 
-            chip = await loader.main("no_reset");
+          chip = await loader.main("no_reset");
           set({ chipInfo: chip });
           addLog(`Connected to ${chip}`, "system");
 
