@@ -20,7 +20,7 @@ const Header: React.FC = () => {
     { label: "Configurator", path: "/configurator" },
     { label: "Debugger", path: "/debugger" },
     // { label: "Inspector", path: "/inspector" },
-    // { label: "Firmware Uploader", path: "/uploader" },
+    { label: "Firmware Uploader", path: "/uploader" },
   ];
 
   return (

@@ -142,10 +142,14 @@ export const useSerialStore = create<SerialState>()(
         {
           label: "Dongle",
           path: "/enomik-app/firmware/0-10-3/lolin_s2_mini_dongle_dongle.ino.bin",
+          description: "interface to MIDI host",
+          board: "Lolin S2 Mini"
         },
         {
           label: "Client",
           path: "/enomik-app/firmware/0-10-3/lolin_s2_mini_client_client.ino.bin",
+          description: "board to connect sensors and actuators",
+          board: "Lolin S2 Mini"
         },
         // { label: "Client - Buttons", path: "/firmware/0-10-3/lolin_s2_mini_client_buttons_client_buttons.ino.bin" },
         // { label: "Client - Clocked", path: "/firmware/0-10-3/lolin_s2_mini_client_clocked_client_clocked.ino.bin" },
@@ -153,6 +157,8 @@ export const useSerialStore = create<SerialState>()(
         {
           label: "Print MAC",
           path: "/enomik-app//firmware/0-10-3/lolin_s2_mini_print_mac_print_mac.ino.bin",
+          description: "prints the MAC address to serial (use this if you are not using a dongle with display)",
+          board: "Lolin S2 Mini"
         },
       ],
 
@@ -277,6 +283,7 @@ export const useSerialStore = create<SerialState>()(
           });
 
           addLog("✓ Flash complete", "system");
+          addLog("Please press the reset button manually - sorry, was not yet able to automate this", "system");
         } finally {
           try {
             await transport?.disconnect();

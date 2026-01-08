@@ -60,9 +60,9 @@ const FirmwareUploader: React.FC = () => {
   /* -------------------------------------------------------------------------- */
 
   useEffect(() => {
-    init()
+    init();
   }, [init]);
-  
+
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [log]);
@@ -105,16 +105,16 @@ const FirmwareUploader: React.FC = () => {
   // TODO: move to store
   const handlePresetSelect = async (fw: any): Promise<void> => {
     setSelectedFirmware(fw.label);
-    
+
     try {
       const res = await fetch(fw.path);
-      
+
       if (!res.ok) {
         throw new Error(`Failed to fetch firmware: ${res.statusText}`);
       }
-      
+
       const blob = await res.blob();
-      const fileName = fw.path.split('/').pop() || 'firmware.bin';
+      const fileName = fw.path.split("/").pop() || "firmware.bin";
       const f = new File([blob], fileName, {
         type: "application/octet-stream",
       });
@@ -154,10 +154,7 @@ const FirmwareUploader: React.FC = () => {
   /* -------------------------------------------------------------------------- */
 
   const canFlash =
-    step === "flash" &&
-    bootConfirmed &&
-    Boolean(file) &&
-    !isFlashing;
+    step === "flash" && bootConfirmed && Boolean(file) && !isFlashing;
 
   /* -------------------------------------------------------------------------- */
   /*                                   render                                   */
@@ -168,8 +165,8 @@ const FirmwareUploader: React.FC = () => {
       {showHints && (
         <Alert severity="info" sx={{ mb: 2 }}>
           <Typography variant="body2">
-            Firmware upload is a three-stage process. Each step must be completed
-            explicitly before the next becomes available.
+            Firmware upload is a three-stage process. Each step must be
+            completed explicitly before the next becomes available.
           </Typography>
         </Alert>
       )}
@@ -179,30 +176,49 @@ const FirmwareUploader: React.FC = () => {
         {/* Step 1: Firmware selection                                         */}
         {/* ------------------------------------------------------------------ */}
 
-        <Grid size={{xs: 12}}>
+        <Grid size={{ xs: 12 }}>
           <Typography variant="subtitle2" gutterBottom>
             Step 1 — Select firmware
           </Typography>
 
           {/* Main firmware types as big buttons */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}>
             {availableFirmware.map((fw) => (
               <Button
                 key={fw.label}
-                variant={selectedFirmware === fw.label ? "contained" : "outlined"}
+                variant={
+                  selectedFirmware === fw.label ? "contained" : "outlined"
+                }
                 size="large"
                 fullWidth
                 onClick={() => handlePresetSelect(fw)}
                 disabled={isFlashing}
                 sx={{
                   py: 2,
-                  justifyContent: 'flex-start',
-                  textAlign: 'left',
-                  fontSize: '1rem',
-                  fontWeight: selectedFirmware === fw.label ? 'bold' : 'normal',
+                  justifyContent: "flex-start",
+                  textAlign: "left",
+                  fontSize: "1rem",
+                  fontWeight: selectedFirmware === fw.label ? "bold" : "normal",
                 }}
               >
-                {fw.label}
+                <Box>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: selectedFirmware === fw.label ? 600 : 400,
+                    }}
+                  >
+                    {fw.label}
+                  </Typography>
+
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", lineHeight: 1.3 }}
+                  >
+                    {fw.board}, {fw.description}
+                  </Typography>
+                </Box>
               </Button>
             ))}
           </Box>
@@ -243,7 +259,7 @@ const FirmwareUploader: React.FC = () => {
         {/* Step 2: Bootloader confirmation                                    */}
         {/* ------------------------------------------------------------------ */}
 
-        <Grid size={{xs: 12}}>
+        <Grid size={{ xs: 12 }}>
           <Typography variant="subtitle2" gutterBottom>
             Step 2 — Enter bootloader mode
           </Typography>
@@ -251,7 +267,8 @@ const FirmwareUploader: React.FC = () => {
           <Alert severity="warning" sx={{ mb: 2 }}>
             <Typography variant="body2">
               Place the device into manual bootloader mode before proceeding.
-              Hold the BOOT button while pressing and releasing the RESET button.
+              Hold the BOOT button while pressing and releasing the RESET
+              button.
             </Typography>
           </Alert>
 
