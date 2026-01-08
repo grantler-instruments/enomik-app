@@ -8,7 +8,6 @@ import {
   Card,
   CardContent,
   Chip,
-  IconButton,
   Grid,
   Checkbox,
   FormControlLabel,
@@ -20,22 +19,13 @@ import {
 import {
   Upload as UploadIcon,
   UsbOff as UsbOffIcon,
-  Close as CloseIcon,
   FlashOn as FlashOnIcon,
   ExpandMore as ExpandMoreIcon,
 } from "@mui/icons-material";
 import { useSerialStore } from "../store/serial";
 import Console from "./SerialConsole";
 
-/* -------------------------------------------------------------------------- */
-/*                                   types                                    */
-/* -------------------------------------------------------------------------- */
-
-type UploadStep = "select" | "bootloader" | "flash";
-
-/* -------------------------------------------------------------------------- */
-/*                              main component                                */
-/* -------------------------------------------------------------------------- */
+// type UploadStep = "select" | "bootloader" | "flash";
 
 const FirmwareUploader: React.FC = () => {
   const {
@@ -50,9 +40,12 @@ const FirmwareUploader: React.FC = () => {
     availableFirmware,
   } = useSerialStore();
 
-  const [step, setStep] = useState<UploadStep>("select");
+  // const [step, setStep] = useState<UploadStep>("select");
   const [file, setFile] = useState<File | null>(null);
   const [selectedFirmware, setSelectedFirmware] = useState("");
+
+  // Whether manual bootloader mode is required (default depends on board)
+  const [bootloaderRequired, setBootloaderRequired] = useState(true);
   const [bootConfirmed, setBootConfirmed] = useState(false);
 
   const [fwOpen, setFwOpen] = useState(true);
@@ -61,49 +54,41 @@ const FirmwareUploader: React.FC = () => {
 
   const logEndRef = useRef<HTMLDivElement>(null);
 
-  /* -------------------------------------------------------------------------- */
-  /*                                side effects                                */
-  /* -------------------------------------------------------------------------- */
+  useEffect(() => init(), [init]);
+  useEffect(
+    () => logEndRef.current?.scrollIntoView({ behavior: "smooth" }),
+    [log]
+  );
 
-  useEffect(() => {
-    init();
-  }, [init]);
+  // const resetUploader = (): void => {
+  //   setStep("select");
+  //   setFile(null);
+  //   setSelectedFirmware("");
+  //   setBootloaderRequired(false);
+  //   setBootConfirmed(false);
 
-  useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [log]);
-
-  /* -------------------------------------------------------------------------- */
-  /*                              helper functions                              */
-  /* -------------------------------------------------------------------------- */
-
-  const resetUploader = (): void => {
-    setStep("select");
-    setFile(null);
-    setSelectedFirmware("");
-    setBootConfirmed(false);
-
-    setFwOpen(true);
-    setBootOpen(false);
-    setFlashOpen(false);
-  };
-
-  /* -------------------------------------------------------------------------- */
-  /*                              firmware loading                              */
-  /* -------------------------------------------------------------------------- */
+  //   setFwOpen(true);
+  //   setBootOpen(false);
+  //   setFlashOpen(false);
+  // };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const f = e.target.files?.[0];
     if (!f || !f.name.endsWith(".bin")) return;
-
     setFile(f);
-    setFwOpen(false);
-    setBootOpen(true);
-    setStep("bootloader");
+
+    // Step 2 opens if bootloader required, otherwise flash directly
+    setBootOpen(bootloaderRequired);
+    setFlashOpen(!bootloaderRequired);
+    // setStep("bootloader");
   };
 
   const handlePresetSelect = async (fw: any): Promise<void> => {
     setSelectedFirmware(fw.label);
+
+    // Auto-set bootloader requirement based on board
+    const requiresBootloader = fw.board === "LOLIN S2 Mini";
+    setBootloaderRequired(requiresBootloader);
 
     try {
       const res = await fetch(fw.path);
@@ -116,38 +101,30 @@ const FirmwareUploader: React.FC = () => {
 
       setFile(f);
       setFwOpen(false);
-      setBootOpen(true);
-      setStep("bootloader");
+
+      setBootOpen(requiresBootloader);
+      setFlashOpen(!requiresBootloader);
+      // setStep("bootloader");
     } catch {
       alert("Failed to load firmware.");
     }
   };
 
-  /* -------------------------------------------------------------------------- */
-  /*                              flashing logic                                */
-  /* -------------------------------------------------------------------------- */
-
   const handleConnectAndFlash = async (): Promise<void> => {
-    if (!file || !bootConfirmed) return;
+    if (!file || (bootloaderRequired && !bootConfirmed)) return;
 
     try {
-      await flashFirmware(file);
+      // Pass bootloaderRequired to the store for flashing logic
+      await flashFirmware(file, bootloaderRequired);
     } catch (err) {
       console.error(err);
     }
   };
 
-  /* -------------------------------------------------------------------------- */
-  /*                                   render                                   */
-  /* -------------------------------------------------------------------------- */
-
   return (
     <Box p={2}>
       <Grid container spacing={2}>
-        {/* ------------------------------------------------------------------ */}
-        {/* Step 1: Firmware selection                                         */}
-        {/* ------------------------------------------------------------------ */}
-
+        {/* Step 1: Firmware selection */}
         <Grid size={{ xs: 12 }}>
           <Accordion
             expanded={fwOpen}
@@ -164,7 +141,6 @@ const FirmwareUploader: React.FC = () => {
                 <Typography variant="subtitle2">
                   Step 1 — Select firmware
                 </Typography>
-
                 {file && (
                   <>
                     {selectedFirmware && (
@@ -211,7 +187,6 @@ const FirmwareUploader: React.FC = () => {
                       >
                         {fw.label}
                       </Typography>
-
                       <Typography
                         variant="caption"
                         color="text.secondary"
@@ -245,18 +220,12 @@ const FirmwareUploader: React.FC = () => {
           </Accordion>
         </Grid>
 
-        {/* ------------------------------------------------------------------ */}
-        {/* Step 2: Bootloader confirmation                                    */}
-        {/* ------------------------------------------------------------------ */}
-
+        {/* Step 2: Bootloader toggle + confirmation */}
         <Grid size={{ xs: 12 }}>
           <Accordion
             expanded={bootOpen}
             disabled={!file || isFlashing}
-            onChange={(_, expanded) => {
-              if (!file && expanded) return; // cannot open early
-              setBootOpen(expanded);
-            }}
+            onChange={(_, expanded) => setBootOpen(expanded)}
           >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Stack direction="row" spacing={1} alignItems="center">
@@ -270,36 +239,68 @@ const FirmwareUploader: React.FC = () => {
             </AccordionSummary>
 
             <AccordionDetails>
-              <Alert severity="warning" sx={{ mb: 2 }}>
-                Hold BOOT, press and release RESET.
-              </Alert>
-
+              {/* Toggle bootloader requirement */}
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={bootConfirmed}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setBootConfirmed(true);
-                        setBootOpen(false);
-                        setFlashOpen(true);
-                        setStep("flash");
-                      }
-                    }}
+                    checked={bootloaderRequired}
+                    onChange={(e) => setBootloaderRequired(e.target.checked)}
                   />
                 }
-                label="Device is in bootloader mode"
+                label="Manual bootloader required (hold BOOT + RESET)"
               />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mb: 2, ml: 3 }}
+              >
+                Some boards, like LOLIN S2 Mini, must be manually set into
+                bootloader mode by holding BOOT and pressing RESET. This is
+                required for flashing and is not related to any software
+                settings.
+              </Typography>
+
+              {/* Only show confirmation if bootloader is required */}
+              {bootloaderRequired && (
+                <>
+                  <Alert severity="warning" sx={{ my: 2 }}>
+                    Place the device in manual bootloader mode: hold BOOT and
+                    press RESET.
+                  </Alert>
+
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={bootConfirmed}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setBootConfirmed(checked);
+
+                          if (checked) {
+                            setBootOpen(false);
+                            setFlashOpen(true);
+                            // setStep("flash");
+                          } else {
+                            setFlashOpen(false);
+                            // setStep("bootloader");
+                          }
+                        }}
+                      />
+                    }
+                    label="I have placed the device in bootloader mode"
+                  />
+                </>
+              )}
             </AccordionDetails>
           </Accordion>
         </Grid>
 
-        {/* ------------------------------------------------------------------ */}
-        {/* Step 3: Connect and flash                                          */}
-        {/* ------------------------------------------------------------------ */}
-
+        {/* Step 3: Flash */}
         <Grid size={{ xs: 12 }}>
-          <Accordion expanded={flashOpen} disabled={!bootConfirmed}>
+          <Accordion
+            expanded={flashOpen}
+            disabled={bootloaderRequired && !bootConfirmed}
+          >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="subtitle2">
@@ -324,7 +325,7 @@ const FirmwareUploader: React.FC = () => {
                 variant="contained"
                 startIcon={<FlashOnIcon />}
                 onClick={handleConnectAndFlash}
-                disabled={!bootConfirmed || isFlashing}
+                disabled={(bootloaderRequired && !bootConfirmed) || isFlashing}
               >
                 {isFlashing ? "Flashing…" : "Connect & Flash"}
               </Button>
@@ -345,10 +346,6 @@ const FirmwareUploader: React.FC = () => {
           </Accordion>
         </Grid>
       </Grid>
-
-      {/* -------------------------------------------------------------------- */}
-      {/* Progress                                                             */}
-      {/* -------------------------------------------------------------------- */}
 
       {flashProgress && flashProgress.total > 0 && (
         <Card sx={{ mt: 3 }}>
