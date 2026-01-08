@@ -149,7 +149,11 @@ const FirmwareUploader: React.FC = () => {
         {/* ------------------------------------------------------------------ */}
 
         <Grid size={{ xs: 12 }}>
-          <Accordion expanded={fwOpen} disabled={isFlashing}>
+          <Accordion
+            expanded={fwOpen}
+            disabled={isFlashing}
+            onChange={(_, expanded) => setFwOpen(expanded)}
+          >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Stack
                 direction="row"
@@ -246,7 +250,14 @@ const FirmwareUploader: React.FC = () => {
         {/* ------------------------------------------------------------------ */}
 
         <Grid size={{ xs: 12 }}>
-          <Accordion expanded={bootOpen} disabled={!file || isFlashing}>
+          <Accordion
+            expanded={bootOpen}
+            disabled={!file || isFlashing}
+            onChange={(_, expanded) => {
+              if (!file && expanded) return; // cannot open early
+              setBootOpen(expanded);
+            }}
+          >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="subtitle2">
