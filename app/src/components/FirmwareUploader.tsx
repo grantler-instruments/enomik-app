@@ -28,7 +28,6 @@ import Console from "./SerialConsole";
 import { useAppStore } from "../store/app";
 import { useTranslation } from "react-i18next";
 
-
 const FirmwareUploader: React.FC = () => {
   const {
     chipInfo,
@@ -118,7 +117,14 @@ const FirmwareUploader: React.FC = () => {
     <Box p={2}>
       {showHints && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          {t("firmwareuploader_intro")}
+          {t("firmwareuploader_intro")}{" "}
+          <Link
+            href="https://github.com/grantler-instruments/enomik-app/issues"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Github Issue Tracker
+          </Link>
         </Alert>
       )}
       <Grid container spacing={2}>
@@ -197,7 +203,8 @@ const FirmwareUploader: React.FC = () => {
                 ))}
               </Box>
               <Box my={2} typography="body2">
-                {t("firmwareuploader_releases_link")} <Link
+                {t("firmwareuploader_releases_link")}{" "}
+                <Link
                   href="https://github.com/grantler-instruments/esp-now-midi/releases"
                   target="_blank"
                   rel="noopener noreferrer"
