@@ -52,6 +52,12 @@ i18n.use(initReactI18next).init({
         "tooltip_serial_monitor": "View serial output from the connected microcontroller for debugging purposes",
         "tooltip_midi_composer": "Compose and send custom MIDI messages to connected devices",
         "configurator_info": "In order to configure your enomik client devices, you need to flash the appropriate firmware onto them first. You can use the handy Firmware Uploader utility to upload the precompiled firmware to your ESP32-based client boards.",
+        "firmwareuploader_intro": "This is an experimental feature which works best with Chrome browser. Please report any issues you encounter.",
+        "firmwareuploader_releases_link": "Could not find your firmware, or need a specific version? You can download the corresponding .bin file from our ",
+        "firmwareuploader_custom_bin": "Or upload a custom .bin file",
+        "firmwareuploader_bootloader_mode": "Some boards, like LOLIN S2 Mini, must be manually set into bootloader mode by holding BOOT and pressing RESET. This is required for flashing and is not related to any software settings.",
+        "firmwareuploader_bootloader_mode_instruction": "Place the device in manual bootloader mode: hold BOOT and press RESET.",
+        "firmwareuploader_bootloader_mode_confirmation": "I have placed the device in bootloader mode"
       },
     },
     de: {
@@ -103,6 +109,12 @@ i18n.use(initReactI18next).init({
         "tooltip_serial_monitor": "Serielle Ausgabe des verbundenen Mikrocontrollers zu Debugging-Zwecken anzeigen",
         "tooltip_midi_composer": "Erstelle und sende benutzerdefinierte MIDI-Nachrichten an verbundene Geräte",
         "configurator_info": "Um deine enomik-Clientgeräte zu konfigurieren, musst du zuerst die entsprechende Firmware auf ihnen flashen. Du kannst das praktische Firmware-Uploader-Dienstprogramm verwenden, um die vorcompilierte Firmware auf deine ESP32-basierten Client-Boards hochzuladen.",
+        "firmwareuploader_intro": "Dies ist eine experimentelle Funktion, die am besten mit dem Chrome-Browser funktioniert. Bitte melde alle Probleme, auf die du stößt.",
+        "firmwareuploader_releases_link": "Konntest du deine Firmware nicht finden oder benötigst du eine bestimmte Version? Du kannst die entsprechende .bin-Datei von unserer ",
+        "firmwareuploader_custom_bin": "Oder lade eine benutzerdefinierte .bin-Datei hoch",
+        "firmwareuploader_bootloader_mode": "Einige Boards, wie LOLIN S2 Mini, müssen manuell in den Bootloader-Modus versetzt werden, indem du BOOT gedrückt hältst und RESET drückst. Dies ist zum Flashen erforderlich und steht in keinem Zusammenhang mit Softwareeinstellungen.",
+        "firmwareuploader_bootloader_mode_instruction": "Versetze das Gerät in den manuellen Bootloader-Modus: Halte BOOT gedrückt und drücke RESET.",
+        "firmwareuploader_bootloader_mode_confirmation": "Ich habe das Gerät in den Bootloader-Modus versetzt"
       },
     },
     es: {
@@ -155,6 +167,12 @@ i18n.use(initReactI18next).init({
         "tooltip_serial_monitor": "Ver la salida serial del microcontrolador conectado para fines de depuración",
         "tooltip_midi_composer": "Componer y enviar mensajes MIDI personalizados a dispositivos conectados",
         "configurator_info": "Para configurar tus dispositivos cliente enomik, primero debes flashear el firmware apropiado en ellos. Puedes usar la práctica utilidad Firmware Uploader para cargar el firmware precompilado en tus placas cliente basadas en ESP32.",
+        "firmwareuploader_intro": "Esta es una función experimental que funciona mejor con el navegador Chrome. Por favor, informa cualquier problema que encuentres.",
+        "firmwareuploader_releases_link": "¿No puedes encontrar tu firmware o necesitas una versión específica? Puedes descargar el archivo .bin correspondiente de nuestro ",
+        "firmwareuploader_custom_bin": "O sube un archivo .bin personalizado",
+        "firmwareuploader_bootloader_mode": "Algunas placas, como LOLIN S2 Mini, deben configurarse manualmente en modo bootloader manteniendo presionado BOOT y presionando RESET. Esto es necesario para flashear y no está relacionado con ninguna configuración de software.",
+        "firmwareuploader_bootloader_mode_instruction": "Coloca el dispositivo en modo bootloader manual: mantén presionado BOOT y presiona RESET.",
+        "firmwareuploader_bootloader_mode_confirmation": "He colocado el dispositivo en modo bootloader"
       },
     },
   },

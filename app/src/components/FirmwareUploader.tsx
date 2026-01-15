@@ -15,6 +15,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Stack,
+  Link,
 } from "@mui/material";
 import {
   Upload as UploadIcon,
@@ -24,8 +25,9 @@ import {
 } from "@mui/icons-material";
 import { useSerialStore } from "../store/serial";
 import Console from "./SerialConsole";
+import { useAppStore } from "../store/app";
+import { useTranslation } from "react-i18next";
 
-// type UploadStep = "select" | "bootloader" | "flash";
 
 const FirmwareUploader: React.FC = () => {
   const {
@@ -39,6 +41,9 @@ const FirmwareUploader: React.FC = () => {
     init,
     availableFirmware,
   } = useSerialStore();
+
+  const showHints = useAppStore((state) => state.showHints);
+  const { t } = useTranslation();
 
   // const [step, setStep] = useState<UploadStep>("select");
   const [file, setFile] = useState<File | null>(null);
@@ -59,18 +64,6 @@ const FirmwareUploader: React.FC = () => {
     () => logEndRef.current?.scrollIntoView({ behavior: "smooth" }),
     [log]
   );
-
-  // const resetUploader = (): void => {
-  //   setStep("select");
-  //   setFile(null);
-  //   setSelectedFirmware("");
-  //   setBootloaderRequired(false);
-  //   setBootConfirmed(false);
-
-  //   setFwOpen(true);
-  //   setBootOpen(false);
-  //   setFlashOpen(false);
-  // };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const f = e.target.files?.[0];
@@ -123,6 +116,11 @@ const FirmwareUploader: React.FC = () => {
 
   return (
     <Box p={2}>
+      {showHints && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          {t("firmwareuploader_intro")}
+        </Alert>
+      )}
       <Grid container spacing={2}>
         {/* Step 1: Firmware selection */}
         <Grid size={{ xs: 12 }}>
@@ -192,11 +190,21 @@ const FirmwareUploader: React.FC = () => {
                         color="text.secondary"
                         sx={{ display: "block", lineHeight: 1.3 }}
                       >
-                        {fw.board} — {fw.description}
+                        {fw.board} (v{fw.version}) — {fw.description}
                       </Typography>
                     </Box>
                   </Button>
                 ))}
+              </Box>
+              <Box my={2} typography="body2">
+                {t("firmwareuploader_releases_link")} <Link
+                  href="https://github.com/grantler-instruments/esp-now-midi/releases"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub releases page
+                </Link>
+                .
               </Box>
 
               <Button
@@ -208,7 +216,7 @@ const FirmwareUploader: React.FC = () => {
                 sx={{ borderStyle: "dashed", borderWidth: 2 }}
                 disabled={isFlashing}
               >
-                {file ? file.name : "Or select custom .bin file"}
+                {file ? file.name : t("firmwareuploader_custom_bin")}
                 <input
                   type="file"
                   hidden
@@ -254,18 +262,14 @@ const FirmwareUploader: React.FC = () => {
                 color="text.secondary"
                 sx={{ display: "block", mb: 2, ml: 3 }}
               >
-                Some boards, like LOLIN S2 Mini, must be manually set into
-                bootloader mode by holding BOOT and pressing RESET. This is
-                required for flashing and is not related to any software
-                settings.
+                {t("firmwareuploader_bootloader_mode")}
               </Typography>
 
               {/* Only show confirmation if bootloader is required */}
               {bootloaderRequired && (
                 <>
                   <Alert severity="warning" sx={{ my: 2 }}>
-                    Place the device in manual bootloader mode: hold BOOT and
-                    press RESET.
+                    {t("firmwareuploader_bootloader_mode_instruction")}
                   </Alert>
 
                   <FormControlLabel
@@ -287,7 +291,7 @@ const FirmwareUploader: React.FC = () => {
                         }}
                       />
                     }
-                    label="I have placed the device in bootloader mode"
+                    label={t("firmwareuploader_bootloader_mode_confirmation")}
                   />
                 </>
               )}
@@ -327,7 +331,7 @@ const FirmwareUploader: React.FC = () => {
                 onClick={handleConnectAndFlash}
                 disabled={(bootloaderRequired && !bootConfirmed) || isFlashing}
               >
-                {isFlashing ? "Flashing…" : "Connect & Flash"}
+                {isFlashing ? "Flashing …" : "Connect & Flash"}
               </Button>
 
               {isConnected && !isFlashing && (
@@ -339,7 +343,7 @@ const FirmwareUploader: React.FC = () => {
                   startIcon={<UsbOffIcon />}
                   onClick={disconnect}
                 >
-                  Disconnect
+                  {t("disconnect")}
                 </Button>
               )}
             </AccordionDetails>

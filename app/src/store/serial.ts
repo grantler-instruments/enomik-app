@@ -26,6 +26,8 @@ interface SerialState {
   port: SerialPort | null;
   reader: ReadableStreamDefaultReader<string> | null;
   writer: WritableStreamDefaultWriter<string> | null;
+  readerAbortController: AbortController | null;
+  writerAbortController: AbortController | null;
 
   isConnected: boolean;
   isMonitoring: boolean;
@@ -47,7 +49,11 @@ interface SerialState {
   send(data: string): Promise<void>;
   clearLog(): void;
 
-  flashFirmware(file: File, manualBootloaderRequired: boolean,address?: number): Promise<void>;
+  flashFirmware(
+    file: File,
+    manualBootloaderRequired: boolean,
+    address?: number
+  ): Promise<void>;
 }
 
 /* ---------------------------- Helpers ---------------------------- */
@@ -105,23 +111,85 @@ export const useSerialStore = create<SerialState>()(
       const decoder = new TextDecoderStream();
       const encoder = new TextEncoderStream();
 
-      port.readable!.pipeTo(decoder.writable as WritableStream<Uint8Array>);
-      encoder.readable.pipeTo(port.writable!);
+      // Store abort controllers to cancel pipes later
+      const readerAbortController = new AbortController();
+      const writerAbortController = new AbortController();
+
+      // Catch abort errors from pipes (they're expected when we disconnect)
+      port
+        .readable!.pipeTo(decoder.writable as WritableStream<Uint8Array>, {
+          signal: readerAbortController.signal,
+        })
+        .catch(() => {
+          // Expected abort error when disconnecting, ignore
+        });
+
+      encoder.readable
+        .pipeTo(port.writable!, {
+          signal: writerAbortController.signal,
+        })
+        .catch(() => {
+          // Expected abort error when disconnecting, ignore
+        });
 
       const reader = decoder.readable.getReader();
       const writer = encoder.writable.getWriter();
 
-      set({ reader, writer, isMonitoring: true });
+      set({
+        reader,
+        writer,
+        isMonitoring: true,
+        readerAbortController,
+        writerAbortController,
+      });
       startReadLoop(reader);
     };
 
     const stopMonitoring = async () => {
       readLoopActive = false;
+      const { reader, writer, readerAbortController, writerAbortController } =
+        get();
+
+      // Abort the pipes first (this will throw AbortErrors, which is expected)
       try {
-        await get().reader?.cancel();
-        await get().writer?.close();
-      } catch {}
-      set({ reader: null, writer: null, isMonitoring: false });
+        readerAbortController?.abort();
+      } catch (e) {
+        // Expected abort error, ignore
+      }
+
+      try {
+        writerAbortController?.abort();
+      } catch (e) {
+        // Expected abort error, ignore
+      }
+
+      // Then release locks
+      try {
+        if (reader) {
+          reader.releaseLock();
+        }
+      } catch (e) {
+        console.error("Error releasing reader:", e);
+      }
+
+      try {
+        if (writer) {
+          writer.releaseLock();
+        }
+      } catch (e) {
+        console.error("Error releasing writer:", e);
+      }
+
+      // Small delay to ensure streams are fully released
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      set({
+        reader: null,
+        writer: null,
+        isMonitoring: false,
+        readerAbortController: null,
+        writerAbortController: null,
+      });
     };
 
     /* ------------------------- Public API ------------------------- */
@@ -130,6 +198,8 @@ export const useSerialStore = create<SerialState>()(
       port: null,
       reader: null,
       writer: null,
+      readerAbortController: null,
+      writerAbortController: null,
 
       isConnected: false,
       isMonitoring: false,
@@ -141,24 +211,28 @@ export const useSerialStore = create<SerialState>()(
       availableFirmware: [
         {
           label: "Dongle",
-          path: "/enomik-app/firmware/0-10-3/lolin_s2_mini_dongle_dongle.ino.bin",
+          path: "/enomik-app/firmware/0-10-4/lolin_s2_mini_dongle_dongle.ino.bin",
+          version: "0.10.4",
           description: "interface to MIDI host",
-          board: "LOLIN S2 Mini"
+          board: "LOLIN S2 Mini",
         },
         {
           label: "Client",
-          path: "/enomik-app/firmware/0-10-3/lolin_s2_mini_client_client.ino.bin",
+          path: "/enomik-app/firmware/0-10-4/lolin_s2_mini_client_client.ino.bin",
+          version: "0.10.4",
           description: "board to connect sensors and actuators",
-          board: "LOLIN S2 Mini"
+          board: "LOLIN S2 Mini",
         },
         // { label: "Client - Buttons", path: "/firmware/0-10-3/lolin_s2_mini_client_buttons_client_buttons.ino.bin" },
         // { label: "Client - Clocked", path: "/firmware/0-10-3/lolin_s2_mini_client_clocked_client_clocked.ino.bin" },
         // ... add all your firmware files
         {
           label: "Print MAC",
-          path: "/enomik-app//firmware/0-10-3/lolin_s2_mini_print_mac_print_mac.ino.bin",
-          description: "prints the MAC address to serial (use this if you are not using a dongle with display)",
-          board: "LOLIN S2 Mini"
+          path: "/enomik-app//firmware/0-10-4/lolin_s2_mini_print_mac_print_mac.ino.bin",
+          version: "0.10.4",
+          description:
+            "prints the MAC address to serial (use this if you are not using a dongle with display)",
+          board: "LOLIN S2 Mini",
         },
       ],
 
@@ -178,6 +252,7 @@ export const useSerialStore = create<SerialState>()(
         //     console.error("Error fetching firmware info:", error);
         //   });
       },
+
       connect: async () => {
         if (get().isConnected || get().isFlashing) return;
 
@@ -210,7 +285,11 @@ export const useSerialStore = create<SerialState>()(
 
       /* ------------------------- Flashing ------------------------- */
 
-      flashFirmware: async (file: File, manualBootloaderRequired, address = 0x10000) => {
+      flashFirmware: async (
+        file: File,
+        manualBootloaderRequired,
+        address = 0x10000
+      ) => {
         if (get().isFlashing) return;
 
         let port: SerialPort | null = null;
@@ -254,7 +333,9 @@ export const useSerialStore = create<SerialState>()(
           //   chip = await loader.main("no_reset");
           // }
 
-          chip = await loader.main(manualBootloaderRequired ? "no_reset" : "default_reset");
+          chip = await loader.main(
+            manualBootloaderRequired ? "no_reset" : "default_reset"
+          );
           set({ chipInfo: chip });
           addLog(`Connected to ${chip}`, "system");
 
@@ -283,8 +364,11 @@ export const useSerialStore = create<SerialState>()(
           });
 
           addLog("✓ Flash complete", "system");
-          if(manualBootloaderRequired){
-            addLog("Please press the reset button manually - sorry, was not yet able to automate this", "system");
+          if (manualBootloaderRequired) {
+            addLog(
+              "Please press the reset button manually - sorry, was not yet able to automate this",
+              "system"
+            );
           }
         } finally {
           try {
