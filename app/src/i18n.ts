@@ -57,7 +57,8 @@ i18n.use(initReactI18next).init({
         "firmwareuploader_custom_bin": "Or upload a custom .bin file",
         "firmwareuploader_bootloader_mode": "Some boards, like LOLIN S2 Mini, must be manually set into bootloader mode by holding BOOT and pressing RESET. This is required for flashing and is not related to any software settings.",
         "firmwareuploader_bootloader_mode_instruction": "Place the device in manual bootloader mode: hold BOOT and press RESET.",
-        "firmwareuploader_bootloader_mode_confirmation": "I have placed the device in bootloader mode"
+        "firmwareuploader_bootloader_mode_confirmation": "I have placed the device in bootloader mode",
+        "browser_warning": "This app works best with Chrome or Chromium-based browsers. Some features (e.g. Serial, Firmware Uploader) may not be available in your browser."
       },
     },
     de: {
@@ -114,7 +115,8 @@ i18n.use(initReactI18next).init({
         "firmwareuploader_custom_bin": "Oder lade eine benutzerdefinierte .bin-Datei hoch",
         "firmwareuploader_bootloader_mode": "Einige Boards, wie LOLIN S2 Mini, müssen manuell in den Bootloader-Modus versetzt werden, indem du BOOT gedrückt hältst und RESET drückst. Dies ist zum Flashen erforderlich und steht in keinem Zusammenhang mit Softwareeinstellungen.",
         "firmwareuploader_bootloader_mode_instruction": "Versetze das Gerät in den manuellen Bootloader-Modus: Halte BOOT gedrückt und drücke RESET.",
-        "firmwareuploader_bootloader_mode_confirmation": "Ich habe das Gerät in den Bootloader-Modus versetzt"
+        "firmwareuploader_bootloader_mode_confirmation": "Ich habe das Gerät in den Bootloader-Modus versetzt",
+        "browser_warning": "Diese App funktioniert am besten mit Chrome oder Chromium-basierten Browsern. Einige Funktionen (z. B. Serial, Firmware Uploader) sind in deinem Browser möglicherweise nicht verfügbar."
       },
     },
     es: {
@@ -172,7 +174,8 @@ i18n.use(initReactI18next).init({
         "firmwareuploader_custom_bin": "O sube un archivo .bin personalizado",
         "firmwareuploader_bootloader_mode": "Algunas placas, como LOLIN S2 Mini, deben configurarse manualmente en modo bootloader manteniendo presionado BOOT y presionando RESET. Esto es necesario para flashear y no está relacionado con ninguna configuración de software.",
         "firmwareuploader_bootloader_mode_instruction": "Coloca el dispositivo en modo bootloader manual: mantén presionado BOOT y presiona RESET.",
-        "firmwareuploader_bootloader_mode_confirmation": "He colocado el dispositivo en modo bootloader"
+        "firmwareuploader_bootloader_mode_confirmation": "He colocado el dispositivo en modo bootloader",
+        "browser_warning": "Esta aplicación funciona mejor con Chrome o navegadores basados en Chromium. Algunas funciones (p. ej. Serial, Cargador de firmware) pueden no estar disponibles en tu navegador."
       },
     },
   },

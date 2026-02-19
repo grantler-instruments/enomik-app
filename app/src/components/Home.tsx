@@ -1,4 +1,4 @@
-import { Box, Typography, Button, Container, Link } from "@mui/material";
+import { Box, Typography, Button, Container, Link, Grid } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 
@@ -80,9 +80,26 @@ const Home = () => {
           </Box>
         </Typography>
 
-        <Typography variant="h6" sx={{ opacity: 0.9 }}>
-          {t("home_kit_description")}
-        </Typography>
+        <Grid container spacing={3} sx={{ my: 2 }}>
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Box
+              component="img"
+              src={`${import.meta.env.BASE_URL}/enomik_dongle_client.jpg`}
+              alt="enomik_3000 dongle and client boards from Grantler Instruments"
+              sx={{
+                width: "100%",
+                maxWidth: 480,
+                borderRadius: 1,
+                boxShadow: 2,
+              }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Typography variant="h6" sx={{ opacity: 0.9 }}>
+              {t("home_kit_description")}
+            </Typography>
+          </Grid>
+        </Grid>
       </Box>
 
       <Box mt={8}>
