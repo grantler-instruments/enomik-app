@@ -21,13 +21,14 @@ const MidiMinMax = ({
   const minRange = bitResolution === 7 ? 0 : -8192;
   const maxRange = bitResolution === 7 ? 127 : 8191;
 
-  // local string buffers for typing
-  const [minText, setMinText] = useState(String(min));
-  const [maxText, setMaxText] = useState(String(max));
+  // local string buffers for typing; normalize to strip leading zeros
+  const norm = (n: number | string) => String(Number(n));
+  const [minText, setMinText] = useState(norm(min));
+  const [maxText, setMaxText] = useState(norm(max));
 
   // keep local text in sync when parent changes
-  useEffect(() => setMinText(String(min)), [min]);
-  useEffect(() => setMaxText(String(max)), [max]);
+  useEffect(() => setMinText(norm(min)), [min]);
+  useEffect(() => setMaxText(norm(max)), [max]);
 
   const clamp = (n: number) => Math.max(minRange, Math.min(maxRange, n));
 
@@ -42,14 +43,14 @@ const MidiMinMax = ({
     const val = parseOrNull(minText);
     const result = val === null ? minRange : clamp(val);
     onChangeMin(result);
-    setMinText(String(result));
+    setMinText(norm(result));
   };
 
   const handleMaxBlur = () => {
     const val = parseOrNull(maxText);
     const result = val === null ? maxRange : clamp(val);
     onChangeMax(result);
-    setMaxText(String(result));
+    setMaxText(norm(result));
   };
 
   return (

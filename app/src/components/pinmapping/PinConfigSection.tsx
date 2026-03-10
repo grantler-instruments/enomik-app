@@ -50,7 +50,11 @@ export default function PinConfigSection({
         <TextField
           label="Pin"
           type="number"
-          value={config.pin}
+          value={
+            config.pin !== "" && config.pin != null
+              ? String(Number(config.pin))
+              : ""
+          }
           onChange={(e) => onChange("pin", Number(e.target.value))}
           size="small"
           disabled={disabled}
@@ -81,7 +85,11 @@ export default function PinConfigSection({
       <Grid size={{ xs: 6, sm: 2 }}>
           {config.mode === sysexPinModeTouch && type === "input" && (
             <TextField
-              value={config.threshold}
+              value={
+                config.threshold !== "" && config.threshold != null
+                  ? String(Number(config.threshold))
+                  : ""
+              }
               onChange={(e) => onChange("threshold", Number(e.target.value))}
               label="Threshold"
               size="small"
@@ -93,8 +101,8 @@ export default function PinConfigSection({
       <Grid size={{ xs: 6, sm: 4 }} display={"flex"}>
         {config.mode === sysexPinModePWMOut && type === "output" && (
           <MinMax
-            min={config.pinMin ?? 0}
-            max={config.pinMax ?? 1024}
+            min={Number(config.pinMin) ?? 0}
+            max={Number(config.pinMax) ?? 1024}
             onChangeMin={(value) => onChange("pinMin", value)}
             onChangeMax={(value) => onChange("pinMax", value)}
             disabled={disabled}

@@ -84,7 +84,11 @@ export default function MidiConfigSection({
             <TextField
               label="Controller"
               type="number"
-              value={config.controller ?? ""}
+              value={
+                config.controller !== undefined && config.controller !== null && config.controller !== ""
+                  ? String(Number(config.controller))
+                  : ""
+              }
               onChange={(e) => onChange("controller", Number(e.target.value))}
               size="small"
               disabled={disabled}
@@ -100,7 +104,11 @@ export default function MidiConfigSection({
             <TextField
               label="Note"
               type="number"
-              value={config.note ?? 60}
+              value={
+                config.note !== undefined && config.note !== null && config.note !== ""
+                  ? String(Number(config.note))
+                  : 60
+              }
               onChange={(e) => onChange("note", Number(e.target.value))}
               size="small"
               disabled={disabled}
@@ -113,8 +121,8 @@ export default function MidiConfigSection({
       <Grid size={{ xs: 6, sm: 4 }}>
         <FormControl fullWidth>
           <MinMax
-            min={config.midiMin ?? 0}
-            max={config.midiMax ?? 127}
+            min={Number(config.midiMin) ?? 0}
+            max={Number(config.midiMax) ?? 127}
             onChangeMin={(value) => onChange("midiMin", value)}
             onChangeMax={(value) => onChange("midiMax", value)}
             bitResolution={config.midiType === MIDI_PITCH_BEND ? 14 : 7}
