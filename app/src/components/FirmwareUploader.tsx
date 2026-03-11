@@ -362,7 +362,7 @@ const FirmwareUploader: React.FC = () => {
         <Card sx={{ mt: 3 }}>
           <CardContent>
             <Typography variant="body2">
-              {flashProgress.percentage.toFixed(1)}%
+              {flashProgress.percentage} %
             </Typography>
             <LinearProgress
               variant="determinate"

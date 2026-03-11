@@ -310,66 +310,110 @@ export const useSerialStore = create<SerialState>()(
           // Always request a *fresh, unopened* port
           port = await navigator.serial.requestPort();
 
-          transport = new Transport(port, false);
+          // macOS needs time to bind the AppleUSBCDC driver to the
+          // newly-enumerated bootloader device before Chrome can open it.
+          await new Promise((r) => setTimeout(r, 1500));
 
-          const loader = new ESPLoader({
-            transport,
-            baudrate: 115200,
-            romBaudrate: 115200,
-            terminal,
-            debugLogging: false,
-          });
+          const resetMode = manualBootloaderRequired
+            ? "no_reset"
+            : "default_reset";
 
-          let chip: string;
+          let chip: string | undefined;
+          const maxAttempts = 3;
 
-          // try {
-          //   await transport.connect(115200);
-          //   chip = await loader.main("default_reset");
-          // } catch {
-          //   addLog("Retrying without reset signals…", "system");
-          //   await transport.disconnect();
-          //   await new Promise((r) => setTimeout(r, 300));
-          //   await transport.connect(115200);
-          //   chip = await loader.main("no_reset");
-          // }
-
-          chip = await loader.main(
-            manualBootloaderRequired ? "no_reset" : "default_reset"
-          );
-          set({ chipInfo: chip });
-          addLog(`Connected to ${chip}`, "system");
-
-          const data = uint8ArrayToBinaryString(
-            new Uint8Array(await file.arrayBuffer())
-          );
-
-          await loader.writeFlash({
-            fileArray: [{ data, address }],
-            flashSize: "keep",
-            eraseAll: false,
-            flashMode: "keep",
-            flashFreq: "keep",
-            reportProgress: (_, written, total) => {
-              set({
-                flashProgress: {
-                  written,
-                  total,
-                  percentage: Math.floor((written / total) * 100),
-                },
+          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+              transport = new Transport(port!, false);
+              const loader = new ESPLoader({
+                transport,
+                baudrate: 115200,
+                romBaudrate: 115200,
+                terminal,
+                debugLogging: false,
               });
-            },
-            compress: true,
-            calculateMD5Hash: (i: string) =>
-              CryptoJS.MD5(CryptoJS.enc.Latin1.parse(i)).toString(),
-          });
 
-          addLog("✓ Flash complete", "system");
-          if (manualBootloaderRequired) {
-            addLog(
-              "Please press the reset button manually - sorry, was not yet able to automate this",
-              "system"
-            );
+              chip = await loader.main(resetMode);
+              set({ chipInfo: chip });
+              addLog(`Connected to ${chip}`, "system");
+
+              const data = uint8ArrayToBinaryString(
+                new Uint8Array(await file.arrayBuffer())
+              );
+
+              await loader.writeFlash({
+                fileArray: [{ data, address }],
+                flashSize: "keep",
+                eraseAll: false,
+                flashMode: "keep",
+                flashFreq: "keep",
+                reportProgress: (_, written, total) => {
+                  set({
+                    flashProgress: {
+                      written,
+                      total,
+                      percentage: Math.floor((written / total) * 100),
+                    },
+                  });
+                },
+                compress: true,
+                calculateMD5Hash: (i: string) =>
+                  CryptoJS.MD5(CryptoJS.enc.Latin1.parse(i)).toString(),
+              });
+
+              addLog("✓ Flash complete", "system");
+              if (manualBootloaderRequired) {
+                addLog(
+                  "Please press the reset button manually - sorry, was not yet able to automate this",
+                  "system"
+                );
+              }
+              break;
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err);
+
+              // "Failed to open serial port" means the OS is blocking us —
+              // retrying will never help, so bail out immediately with guidance.
+              if (msg.includes("Failed to open serial port")) {
+                addLog("Error: Could not open the serial port.", "error");
+                addLog(
+                  "→ Close any other app that may have it open (Arduino IDE, PlatformIO, screen, minicom…)",
+                  "error"
+                );
+                addLog(
+                  "→ On macOS, run in Terminal:  sudo kextunload -b com.apple.driver.AppleUSBCDCACMData",
+                  "error"
+                );
+                addLog(
+                  "→ Make sure the device is in bootloader mode (hold BOOT, press RESET, release both)",
+                  "error"
+                );
+                throw err;
+              }
+
+              if (attempt >= maxAttempts) throw err;
+
+              const waitMs = attempt * 1500;
+              addLog(
+                `Attempt ${attempt} failed (${msg}), retrying in ${waitMs / 1000} s…`,
+                "system"
+              );
+              try {
+                await transport?.disconnect();
+              } catch {}
+              try {
+                await port!.close();
+              } catch {}
+              await new Promise((r) => setTimeout(r, waitMs));
+            }
           }
+        } catch (err: unknown) {
+          const message =
+            err instanceof Error ? err.message : String(err);
+          // Only log a generic fallback if guidance wasn't already logged above.
+          if (!message.includes("Failed to open serial port")) {
+            addLog(`Error: ${message}`, "error");
+          }
+          throw err;
         } finally {
           try {
             await transport?.disconnect();
