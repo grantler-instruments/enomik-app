@@ -13,6 +13,7 @@ import GettingStarted from "./components/GettingStarted";
 import Modals from "./components/Modals";
 import Home from "./components/Home";
 import WIPBanner from "./components/WorkInProgress";
+import BrowserWarning from "./components/BrowserWarning";
 import { darkTheme, lightTheme } from "./muiTheme.ts";
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         flexDirection={"column"}
       >
         <Header></Header>
+        <BrowserWarning />
         {isSidebarOpen && <Sidebar />}
         <Box
           paddingLeft={1}

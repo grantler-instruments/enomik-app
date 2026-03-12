@@ -58,7 +58,16 @@ i18n.use(initReactI18next).init({
         "firmwareuploader_bootloader_mode": "Some boards, like LOLIN S2 Mini, must be manually set into bootloader mode by holding BOOT and pressing RESET. This is required for flashing and is not related to any software settings.",
         "firmwareuploader_bootloader_mode_instruction": "Place the device in manual bootloader mode: hold BOOT and press RESET.",
         "firmwareuploader_bootloader_mode_confirmation": "I have placed the device in bootloader mode",
-        "browser_warning": "This app works best with Chrome or Chromium-based browsers. Some features (e.g. Serial, Firmware Uploader) may not be available in your browser."
+        "browser_warning": "This app works best with Chrome or Chromium-based browsers. Some features (e.g. Serial, Firmware Uploader) may not be available in your browser.",
+        "browser_warning_unsupported_title": "Unsupported Browser",
+        "browser_warning_unsupported": "Your browser does not support the Web Serial API, which is required for connecting to devices and uploading firmware. Chrome is highly encouraged for the best experience.",
+        "browser_warning_brave_title": "Brave Browser Detected",
+        "browser_warning_brave": "Brave's privacy shields may block the Web Serial and Web MIDI APIs. If you experience connection issues, try disabling shields for this page. Chrome is highly encouraged for the best experience.",
+        "browser_warning_chromium_title": "Browser Compatibility",
+        "browser_warning_chromium": "Most features should work in your browser, but Chrome is highly encouraged for the best experience.",
+        "browser_warning_unknown_title": "Unknown Browser",
+        "browser_warning_unknown": "Your browser could not be identified. This app requires Web Serial API support. Chrome is highly encouraged for the best experience.",
+        "browser_warning_dismiss": "Dismiss"
       },
     },
     de: {
@@ -116,7 +125,16 @@ i18n.use(initReactI18next).init({
         "firmwareuploader_bootloader_mode": "Einige Boards, wie LOLIN S2 Mini, müssen manuell in den Bootloader-Modus versetzt werden, indem du BOOT gedrückt hältst und RESET drückst. Dies ist zum Flashen erforderlich und steht in keinem Zusammenhang mit Softwareeinstellungen.",
         "firmwareuploader_bootloader_mode_instruction": "Versetze das Gerät in den manuellen Bootloader-Modus: Halte BOOT gedrückt und drücke RESET.",
         "firmwareuploader_bootloader_mode_confirmation": "Ich habe das Gerät in den Bootloader-Modus versetzt",
-        "browser_warning": "Diese App funktioniert am besten mit Chrome oder Chromium-basierten Browsern. Einige Funktionen (z. B. Serial, Firmware Uploader) sind in deinem Browser möglicherweise nicht verfügbar."
+        "browser_warning": "Diese App funktioniert am besten mit Chrome oder Chromium-basierten Browsern. Einige Funktionen (z. B. Serial, Firmware Uploader) sind in deinem Browser möglicherweise nicht verfügbar.",
+        "browser_warning_unsupported_title": "Nicht unterstützter Browser",
+        "browser_warning_unsupported": "Dein Browser unterstützt die Web Serial API nicht, die zum Verbinden mit Geräten und zum Hochladen von Firmware erforderlich ist. Chrome wird für die beste Erfahrung ausdrücklich empfohlen.",
+        "browser_warning_brave_title": "Brave Browser erkannt",
+        "browser_warning_brave": "Braves Datenschutzschilder können die Web Serial und Web MIDI APIs blockieren. Wenn Verbindungsprobleme auftreten, deaktiviere die Schilder für diese Seite. Chrome wird für die beste Erfahrung ausdrücklich empfohlen.",
+        "browser_warning_chromium_title": "Browser-Kompatibilität",
+        "browser_warning_chromium": "Die meisten Funktionen sollten in deinem Browser funktionieren, Chrome wird jedoch für die beste Erfahrung ausdrücklich empfohlen.",
+        "browser_warning_unknown_title": "Unbekannter Browser",
+        "browser_warning_unknown": "Dein Browser konnte nicht identifiziert werden. Diese App erfordert die Web Serial API. Chrome wird für die beste Erfahrung ausdrücklich empfohlen.",
+        "browser_warning_dismiss": "Schließen"
       },
     },
     es: {
@@ -175,7 +193,16 @@ i18n.use(initReactI18next).init({
         "firmwareuploader_bootloader_mode": "Algunas placas, como LOLIN S2 Mini, deben configurarse manualmente en modo bootloader manteniendo presionado BOOT y presionando RESET. Esto es necesario para flashear y no está relacionado con ninguna configuración de software.",
         "firmwareuploader_bootloader_mode_instruction": "Coloca el dispositivo en modo bootloader manual: mantén presionado BOOT y presiona RESET.",
         "firmwareuploader_bootloader_mode_confirmation": "He colocado el dispositivo en modo bootloader",
-        "browser_warning": "Esta aplicación funciona mejor con Chrome o navegadores basados en Chromium. Algunas funciones (p. ej. Serial, Cargador de firmware) pueden no estar disponibles en tu navegador."
+        "browser_warning": "Esta aplicación funciona mejor con Chrome o navegadores basados en Chromium. Algunas funciones (p. ej. Serial, Cargador de firmware) pueden no estar disponibles en tu navegador.",
+        "browser_warning_unsupported_title": "Navegador no compatible",
+        "browser_warning_unsupported": "Tu navegador no es compatible con la Web Serial API, necesaria para conectar dispositivos y cargar firmware. Se recomienda encarecidamente Chrome para la mejor experiencia.",
+        "browser_warning_brave_title": "Brave detectado",
+        "browser_warning_brave": "Los escudos de privacidad de Brave pueden bloquear las APIs Web Serial y Web MIDI. Si tienes problemas de conexión, desactiva los escudos para esta página. Se recomienda encarecidamente Chrome para la mejor experiencia.",
+        "browser_warning_chromium_title": "Compatibilidad del navegador",
+        "browser_warning_chromium": "La mayoría de las funciones deberían funcionar en tu navegador, pero se recomienda encarecidamente Chrome para la mejor experiencia.",
+        "browser_warning_unknown_title": "Navegador desconocido",
+        "browser_warning_unknown": "No se pudo identificar tu navegador. Esta app requiere soporte de la Web Serial API. Se recomienda encarecidamente Chrome para la mejor experiencia.",
+        "browser_warning_dismiss": "Cerrar"
       },
     },
   },
