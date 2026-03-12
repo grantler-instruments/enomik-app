@@ -51,7 +51,7 @@ export default function PinConfigSection({
           label="Pin"
           type="number"
           value={
-            config.pin !== "" && config.pin != null
+            config.pin != null
               ? String(Number(config.pin))
               : ""
           }
@@ -86,7 +86,7 @@ export default function PinConfigSection({
           {config.mode === sysexPinModeTouch && type === "input" && (
             <TextField
               value={
-                config.threshold !== "" && config.threshold != null
+                config.threshold != null
                   ? String(Number(config.threshold))
                   : ""
               }

@@ -85,7 +85,7 @@ export default function MidiConfigSection({
               label="Controller"
               type="number"
               value={
-                config.controller !== undefined && config.controller !== null && config.controller !== ""
+                config.controller !== undefined && config.controller !== null
                   ? String(Number(config.controller))
                   : ""
               }
@@ -105,7 +105,7 @@ export default function MidiConfigSection({
               label="Note"
               type="number"
               value={
-                config.note !== undefined && config.note !== null && config.note !== ""
+                config.note !== undefined && config.note !== null
                   ? String(Number(config.note))
                   : 60
               }
