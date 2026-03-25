@@ -5,7 +5,10 @@ import {
   Select,
   MenuItem,
   Grid,
+  Tooltip,
+  InputAdornment,
 } from "@mui/material";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
   sysexPinModeAnalogIn,
   sysexPinModeDigitalIn,
@@ -35,31 +38,57 @@ interface MidiConfigSectionProps {
   onChange: <K extends keyof PinConfig>(key: K, value: PinConfig[K]) => void;
   disabled: boolean;
   type: "input" | "output";
+  hasConflict?: boolean;
 }
 export default function PinConfigSection({
   config,
   onChange,
   disabled,
   type,
+  hasConflict = false,
 }: MidiConfigSectionProps) {
   const modes = type === "input" ? INPUT_MODES : OUTPUT_MODES;
 
   return (
     <Grid container gap={2} flex={1}>
       <Grid size={{ xs: 6, sm: 2 }}>
-        <TextField
-          label="Pin"
-          type="number"
-          value={
-            config.pin != null
-              ? String(Number(config.pin))
+        <Tooltip
+          title={
+            hasConflict
+              ? `Pin ${config.pin} is used as both an input and an output`
               : ""
           }
-          onChange={(e) => onChange("pin", Number(e.target.value))}
-          size="small"
-          disabled={disabled}
-          fullWidth
-        />
+          arrow
+        >
+          <TextField
+            label="Pin"
+            type="number"
+            value={
+              config.pin != null
+                ? String(Number(config.pin))
+                : ""
+            }
+            onChange={(e) => onChange("pin", Number(e.target.value))}
+            size="small"
+            disabled={disabled}
+            fullWidth
+            error={hasConflict}
+            slotProps={{
+              input: hasConflict
+                ? {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <WarningAmberIcon
+                          fontSize="small"
+                          color="error"
+                        />
+                      </InputAdornment>
+                    ),
+                  }
+                : undefined,
+            }}
+          />
+        </Tooltip>
       </Grid>
 
       <Grid size={{ xs: 6, sm: 4 }}>

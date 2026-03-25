@@ -4,6 +4,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {
   useIOStore,
+  useConflictingPins,
   type InputPinConfig,
   type OutputPinConfig,
 } from "../../store/io";
@@ -28,6 +29,7 @@ const PinMapping = ({ config, type, disabled = false }: PinMappingProps) => {
     removeOutput,
     duplicateOutput,
   } = useIOStore();
+  const conflictingPins = useConflictingPins();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hovered, setHovered] = useState(false);
 
@@ -80,6 +82,7 @@ const PinMapping = ({ config, type, disabled = false }: PinMappingProps) => {
               onChange={handleChange}
               disabled={disabled}
               type="input"
+              hasConflict={conflictingPins.has(config.pin)}
             />
           ) : (
             <MidiConfigSection
@@ -126,6 +129,7 @@ const PinMapping = ({ config, type, disabled = false }: PinMappingProps) => {
               onChange={handleChange}
               disabled={disabled}
               type="output"
+              hasConflict={conflictingPins.has(config.pin)}
             />
           )}
         </Grid>

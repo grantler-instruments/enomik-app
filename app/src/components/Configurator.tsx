@@ -14,6 +14,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
+import ClearAllIcon from "@mui/icons-material/ClearAll";
 import Inputs from "./Inputs";
 import Outputs from "./Outputs";
 import { useIOStore } from "../store/io";
@@ -66,6 +67,10 @@ const Configurator = () => {
     reader.readAsText(file);
   };
 
+  const handleClearConfiguration = () => {
+    loadFromFile({});
+  };
+
   return (
     <Box display={"flex"} flexDirection={"column"} gap={1} marginBottom={2}>
       <Box display={"flex"} gap={2} mt={2} mb={2} pl={2} pr={2}>
@@ -86,6 +91,12 @@ const Configurator = () => {
         <Tooltip title={t("tooltip_load_configuration_from_file") || ""}>
           <IconButton color="inherit" onClick={handleUploadClick}>
             <FolderOpenIcon />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title={t("tooltip_clear_configuration") || ""}>
+          <IconButton color="inherit" onClick={handleClearConfiguration}>
+            <ClearAllIcon />
           </IconButton>
         </Tooltip>
 

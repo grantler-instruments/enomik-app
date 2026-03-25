@@ -117,6 +117,14 @@ interface IOState {
   deploy: (deviceId: string) => void;
 }
 
+/** Returns the set of pin numbers that appear in both inputs and outputs. */
+export const useConflictingPins = (): Set<number> => {
+  const inputs = useIOStore((s) => s.inputs);
+  const outputs = useIOStore((s) => s.outputs);
+  const inputPins = new Set(inputs.map((i) => i.pin));
+  return new Set(outputs.filter((o) => inputPins.has(o.pin)).map((o) => o.pin));
+};
+
 export const useIOStore = create<IOState>()(
   devtools(
     persist(
