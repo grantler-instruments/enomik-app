@@ -77,6 +77,10 @@ const terminal = {
   },
 };
 
+/** Semantic firmware version; public assets live under `/firmware/{version with dots → dashes}/`. */
+const version = "0.10.8";
+const firmwarePathSegment = version.replace(/\./g, "-");
+
 /* ---------------------------- Store ----------------------------- */
 
 export const useSerialStore = create<SerialState>()(
@@ -211,15 +215,15 @@ export const useSerialStore = create<SerialState>()(
       availableFirmware: [
         {
           label: "Dongle",
-          path: "/enomik-app/firmware/0-10-5/lolin_s2_mini_dongle_dongle.ino.bin",
-          version: "0.10.5",
+          path: `/enomik-app/firmware/${firmwarePathSegment}/lolin_s2_mini_dongle_dongle.ino.bin`,
+          version,
           description: "interface to MIDI host",
           board: "LOLIN S2 Mini",
         },
         {
           label: "Client",
-          path: "/enomik-app/firmware/0-10-5/lolin_s2_mini_client_client.ino.bin",
-          version: "0.10.5",
+          path: `/enomik-app/firmware/${firmwarePathSegment}/lolin_s3_mini_client_client.ino.bin`,
+          version,
           description: "board to connect sensors and actuators",
           board: "LOLIN S2 Mini",
         },
@@ -228,8 +232,8 @@ export const useSerialStore = create<SerialState>()(
         // ... add all your firmware files
         {
           label: "Print MAC",
-          path: "/enomik-app//firmware/0-10-5/lolin_s2_mini_print_mac_print_mac.ino.bin",
-          version: "0.10.5",
+          path: `/enomik-app/firmware/${firmwarePathSegment}/lolin_s2_mini_print_mac_print_mac.ino.bin`,
+          version,
           description:
             "prints the MAC address to serial (use this if you are not using a dongle with display)",
           board: "LOLIN S2 Mini",
