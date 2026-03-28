@@ -42,7 +42,39 @@ interface MonitorState {
   setSelectedComposerOutputDevice: (deviceId: string) => void;
 }
 
+/** Max rows kept in the MIDI monitor; oldest dropped first (FIFO at the tail). */
+export const MIDI_MONITOR_MAX_MESSAGES = 500;
+
 let midiAccess: MIDIAccess | null = null;
+
+/** Batch rapid MIDI events to one React update per frame (e.g. clock spam). */
+let monitorMessageBatch: MidiMessageWithDirectionAndDevice[] = [];
+let monitorFlushRaf: number | null = null;
+
+function flushMonitorBatch(
+  set: (fn: (state: MonitorState) => Partial<MonitorState>) => void
+) {
+  monitorFlushRaf = null;
+  const batch = monitorMessageBatch;
+  monitorMessageBatch = [];
+  if (batch.length === 0) return;
+  set((state) => ({
+    messages: [...batch.reverse(), ...state.messages].slice(
+      0,
+      MIDI_MONITOR_MAX_MESSAGES
+    ),
+  }));
+}
+
+function queueMonitorMessage(
+  set: (fn: (state: MonitorState) => Partial<MonitorState>) => void,
+  entry: MidiMessageWithDirectionAndDevice
+) {
+  monitorMessageBatch.push(entry);
+  if (monitorFlushRaf === null) {
+    monitorFlushRaf = requestAnimationFrame(() => flushMonitorBatch(set));
+  }
+}
 
 const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
   input.onmidimessage = (event) => {
@@ -319,22 +351,17 @@ export const useMIDIStore = create<MonitorState>()(
         },
 
         addIncomingMessage: (message: MidiMessage, deviceId: string) => {
-          set((state) => ({
-            messages: [
-              { ...message, incoming: true, deviceId },
-              ...state.messages,
-            ],
-          }));
+          queueMonitorMessage(set, { ...message, incoming: true, deviceId });
         },
         addOutgoingMessage: (message: MidiMessage, deviceId: string) => {
-          set((state) => ({
-            messages: [
-              { ...message, incoming: false, deviceId },
-              ...state.messages,
-            ],
-          }));
+          queueMonitorMessage(set, { ...message, incoming: false, deviceId });
         },
         clear: () => {
+          if (monitorFlushRaf !== null) {
+            cancelAnimationFrame(monitorFlushRaf);
+            monitorFlushRaf = null;
+          }
+          monitorMessageBatch = [];
           set({ messages: [] });
         },
 
@@ -457,12 +484,12 @@ export const useMIDIStore = create<MonitorState>()(
       {
         name: "MonitorStore",
         storage: createJSONStorage(() => sessionStorage),
+        // Do not persist messages: serializing a large list every MIDI event kills UI thread.
         partialize: (state) => ({
           selectedComposerOutputDevice: state.selectedComposerOutputDevice,
           selectedConfiguratorOutputDevice:
             state.selectedConfiguratorOutputDevice,
           selectedInspectorOutputDevice: state.selectedInspectorOutputDevice,
-          messages: state.messages,
         }),
       }
     )

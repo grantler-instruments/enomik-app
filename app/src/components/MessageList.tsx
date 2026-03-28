@@ -18,9 +18,12 @@ import SendIcon from "@mui/icons-material/Send";
 import CallReceivedIcon from "@mui/icons-material/CallReceived";
 import { v4 as uuidv4 } from "uuid";
 
-import { useMIDIStore } from "../store/midi";
+import {
+  useMIDIStore,
+  type MidiMessageWithDirectionAndDevice,
+} from "../store/midi";
 import { MIDI_STATUS, typeToLabel } from "../utils/midi";
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import Filter, { midiTypes } from "./Filter";
 import { useTranslation } from "react-i18next";
 
@@ -36,127 +39,106 @@ const gridColumns = {
   data: 2,
 };
 
-function MessageList() {
-  const messages = useMIDIStore((state) => state.messages);
-  const sendMessage = useMIDIStore((state) => state.sendMessage);
-  const inputs = useMIDIStore((state) => state.inputs);
-  const outputs = useMIDIStore((state) => state.outputs);
-  const clear = useMIDIStore((state) => state.clear);
+function getDeviceName(
+  msg: MidiMessageWithDirectionAndDevice,
+  inputs: { id: string; name: string }[],
+  outputs: { id: string; name: string }[]
+) {
+  if (msg.incoming) {
+    return inputs.find((input) => input.id === msg.deviceId)?.name || "";
+  }
+  return outputs.find((output) => output.id === msg.deviceId)?.name || "";
+}
 
-  const { t } = useTranslation();
+function getNoteOrController(msg: MidiMessageWithDirectionAndDevice) {
+  if (
+    msg.type === MIDI_STATUS.NOTE_OFF ||
+    msg.type === MIDI_STATUS.NOTE_ON ||
+    msg.type === MIDI_STATUS.POLY_PRESSURE
+  ) {
+    return msg.note;
+  }
+  if (
+    msg.type === MIDI_STATUS.CONTROL_CHANGE ||
+    msg.type === MIDI_STATUS.PROGRAM_CHANGE
+  ) {
+    return msg.controller;
+  }
+  return "";
+}
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+function getVelocityOrValue(msg: MidiMessageWithDirectionAndDevice) {
+  if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON) {
+    return msg.velocity;
+  }
+  if (
+    msg.type === MIDI_STATUS.CONTROL_CHANGE ||
+    msg.type === MIDI_STATUS.POLY_PRESSURE ||
+    msg.type === MIDI_STATUS.CHANNEL_PRESSURE
+  ) {
+    return msg.value;
+  }
+  if (msg.type === MIDI_STATUS.PITCH_BEND) {
+    return msg.pitchBendValue !== undefined
+      ? msg.pitchBendValue - 8192
+      : "";
+  }
+  return "";
+}
 
-  const [activeInputs, setActiveInputs] = useState<string[]>([]);
-  const [activeOutputs, setActiveOutputs] = useState<string[]>([]);
-  const [activeTypes, setActiveTypes] = useState<number[]>([...midiTypes]);
-  const [activeChannels, setActiveChannels] = useState(
-    Array.from({ length: 16 }).map((_, i) => i)
-  );
+function formatData(msg: MidiMessageWithDirectionAndDevice) {
+  if (msg.type === MIDI_STATUS.SYSEX_START) {
+    return msg.data?.join(", ") || "";
+  }
 
-  // Calculate active filters count
-  const activeFilters = [
-    activeInputs.length < inputs.length,
-    activeOutputs.length < outputs.length,
-    activeTypes.length < midiTypes.length,
-    activeChannels.length < 16,
-  ].filter(Boolean).length;
+  const parts: (number | string | undefined)[] = [msg.type];
 
-  // Filter messages
-  const filteredMessages = messages.filter((msg) => {
-    const channelMatch = msg.channel
-      ? activeChannels.includes(msg.channel)
-      : true;
-    const deviceMatch =
-      activeInputs.includes(msg.deviceId) ||
-      activeOutputs.includes(msg.deviceId);
-    const typeMatch = activeTypes.includes(msg.type);
-    return channelMatch && deviceMatch && typeMatch;
-  });
+  if (
+    msg.type === MIDI_STATUS.NOTE_OFF ||
+    msg.type === MIDI_STATUS.NOTE_ON ||
+    msg.type === MIDI_STATUS.POLY_PRESSURE
+  ) {
+    if (msg.note !== undefined) parts.push(msg.note);
+    if (msg.velocity !== undefined) parts.push(msg.velocity);
+  }
 
-  // Helper to get device name
-  const getDeviceName = (msg: any) => {
-    if (msg.incoming) {
-      return inputs.find((input) => input.id === msg.deviceId)?.name || "";
-    }
-    return outputs.find((output) => output.id === msg.deviceId)?.name || "";
-  };
+  if (msg.type === MIDI_STATUS.CONTROL_CHANGE) {
+    if (msg.controller) parts.push(msg.controller);
+    parts.push(msg.value);
+  }
 
-  // Helper to get note/CC/PRG value
-  const getNoteOrController = (msg: any) => {
-    if (
-      msg.type === MIDI_STATUS.NOTE_OFF ||
-      msg.type === MIDI_STATUS.NOTE_ON ||
-      msg.type === MIDI_STATUS.POLY_PRESSURE
-    ) {
-      return msg.note;
-    }
-    if (
-      msg.type === MIDI_STATUS.CONTROL_CHANGE ||
-      msg.type === MIDI_STATUS.PROGRAM_CHANGE
-    ) {
-      return msg.controller;
-    }
-    return "";
-  };
+  if (
+    msg.type === MIDI_STATUS.POLY_PRESSURE ||
+    msg.type === MIDI_STATUS.CHANNEL_PRESSURE
+  ) {
+    parts.push(msg.value);
+  }
 
-  // Helper to get velocity/value
-  const getVelocityOrValue = (msg: any) => {
-    if (msg.type === MIDI_STATUS.NOTE_OFF || msg.type === MIDI_STATUS.NOTE_ON) {
-      return msg.velocity;
-    }
-    if (
-      msg.type === MIDI_STATUS.CONTROL_CHANGE ||
-      msg.type === MIDI_STATUS.POLY_PRESSURE ||
-      msg.type === MIDI_STATUS.CHANNEL_PRESSURE
-    ) {
-      return msg.value;
-    }
-    if (msg.type === MIDI_STATUS.PITCH_BEND) {
-      return msg.pitchBendValue - 8192;
-    }
-    return "";
-  };
+  return parts.join(", ");
+}
 
-  // Helper to format data column
-  const formatData = (msg: any) => {
-    if (msg.type === MIDI_STATUS.SYSEX_START) {
-      return msg.data?.join(", ") || "";
-    }
+type MobileMessageCardProps = {
+  msg: MidiMessageWithDirectionAndDevice;
+  stripe: boolean;
+  deviceName: string;
+  sendMessage: ReturnType<typeof useMIDIStore.getState>["sendMessage"];
+};
 
-    const parts = [msg.type];
+const MobileMessageCard = memo(function MobileMessageCard({
+  msg,
+  stripe,
+  deviceName,
+  sendMessage,
+}: MobileMessageCardProps) {
+  const noteOrCc = getNoteOrController(msg);
+  const velOrVal = getVelocityOrValue(msg);
+  const dataStr = formatData(msg);
 
-    if (
-      msg.type === MIDI_STATUS.NOTE_OFF ||
-      msg.type === MIDI_STATUS.NOTE_ON ||
-      msg.type === MIDI_STATUS.POLY_PRESSURE
-    ) {
-      if (msg.note !== undefined) parts.push(msg.note);
-      if (msg.velocity !== undefined) parts.push(msg.velocity);
-    }
-
-    if (msg.type === MIDI_STATUS.CONTROL_CHANGE) {
-      if (msg.controller) parts.push(msg.controller);
-      parts.push(msg.value);
-    }
-
-    if (
-      msg.type === MIDI_STATUS.POLY_PRESSURE ||
-      msg.type === MIDI_STATUS.CHANNEL_PRESSURE
-    ) {
-      parts.push(msg.value);
-    }
-
-    return parts.join(", ");
-  };
-
-  // Mobile Card Component
-  const MobileMessageCard = ({ msg, index }: { msg: any; index: number }) => (
+  return (
     <Card
       sx={{
         mb: 1.5,
-        backgroundColor: index % 2 === 0 ? "background.paper" : "action.hover",
+        backgroundColor: stripe ? "background.paper" : "action.hover",
       }}
     >
       <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
@@ -214,11 +196,11 @@ function MessageList() {
               variant="body2"
               sx={{ fontSize: "0.8rem", wordBreak: "break-word" }}
             >
-              {getDeviceName(msg)}
+              {deviceName}
             </Typography>
           </Box>
 
-          {msg.channel && (
+          {msg.channel ? (
             <Box>
               <Typography
                 variant="caption"
@@ -232,9 +214,9 @@ function MessageList() {
                 {msg.channel}
               </Typography>
             </Box>
-          )}
+          ) : null}
 
-          {getNoteOrController(msg) !== "" && (
+          {noteOrCc !== "" && (
             <Box>
               <Typography
                 variant="caption"
@@ -245,12 +227,12 @@ function MessageList() {
                 Note/CC/PRG
               </Typography>
               <Typography variant="body2" sx={{ fontSize: "0.8rem" }}>
-                {getNoteOrController(msg)}
+                {noteOrCc}
               </Typography>
             </Box>
           )}
 
-          {getVelocityOrValue(msg) !== "" && (
+          {velOrVal !== "" && (
             <Box>
               <Typography
                 variant="caption"
@@ -261,13 +243,13 @@ function MessageList() {
                 Vel/Value
               </Typography>
               <Typography variant="body2" sx={{ fontSize: "0.8rem" }}>
-                {getVelocityOrValue(msg)}
+                {velOrVal}
               </Typography>
             </Box>
           )}
         </Box>
 
-        {formatData(msg) && (
+        {dataStr ? (
           <Box mt={1.5} pt={1.5} borderTop="1px solid" borderColor="divider">
             <Typography
               variant="caption"
@@ -285,13 +267,115 @@ function MessageList() {
                 wordBreak: "break-all",
               }}
             >
-              {formatData(msg)}
+              {dataStr}
             </Typography>
           </Box>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );
+});
+
+type DesktopMessageRowProps = {
+  msg: MidiMessageWithDirectionAndDevice;
+  stripe: boolean;
+  deviceName: string;
+  sendMessage: ReturnType<typeof useMIDIStore.getState>["sendMessage"];
+};
+
+const DesktopMessageRow = memo(function DesktopMessageRow({
+  msg,
+  stripe,
+  deviceName,
+  sendMessage,
+}: DesktopMessageRowProps) {
+  return (
+    <Grid
+      container
+      sx={{
+        backgroundColor: stripe ? "inherit" : "action.hover",
+        p: 1,
+      }}
+    >
+      <Grid size={{ xs: gridColumns.direction }}>
+        <Box>
+          {msg.incoming ? (
+            <CallReceivedIcon color="primary" />
+          ) : (
+            <SendIcon
+              color="secondary"
+              sx={{ cursor: "pointer" }}
+              onClick={() =>
+                sendMessage({ ...msg, id: uuidv4() }, msg.deviceId)
+              }
+            />
+          )}
+        </Box>
+      </Grid>
+      <Grid size={{ xs: gridColumns.timestamp }}>
+        <Box>{new Date(msg.timestamp).toLocaleTimeString()}</Box>
+      </Grid>
+      <Grid size={{ xs: gridColumns.device }}>
+        <Box>{deviceName}</Box>
+      </Grid>
+      <Grid size={{ xs: gridColumns.channel }}>
+        <Box>{msg.channel}</Box>
+      </Grid>
+      <Grid size={{ xs: gridColumns.type }}>
+        <Box>{typeToLabel(msg.type)}</Box>
+      </Grid>
+      <Grid size={{ xs: gridColumns.noteCC }}>
+        <Box>{getNoteOrController(msg)}</Box>
+      </Grid>
+      <Grid size={{ xs: gridColumns.velocity }}>
+        <Box>{getVelocityOrValue(msg)}</Box>
+      </Grid>
+      <Grid size={{ xs: gridColumns.data }}>
+        <Box>{formatData(msg)}</Box>
+      </Grid>
+    </Grid>
+  );
+});
+
+function MessageList() {
+  const messages = useMIDIStore((state) => state.messages);
+  const sendMessage = useMIDIStore((state) => state.sendMessage);
+  const inputs = useMIDIStore((state) => state.inputs);
+  const outputs = useMIDIStore((state) => state.outputs);
+  const clear = useMIDIStore((state) => state.clear);
+
+  const { t } = useTranslation();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const [activeInputs, setActiveInputs] = useState<string[]>([]);
+  const [activeOutputs, setActiveOutputs] = useState<string[]>([]);
+  const [activeTypes, setActiveTypes] = useState<number[]>([...midiTypes]);
+  const [activeChannels, setActiveChannels] = useState(() =>
+    Array.from({ length: 16 }, (_, i) => i + 1)
+  );
+
+  // Calculate active filters count
+  const activeFilters = [
+    activeInputs.length < inputs.length,
+    activeOutputs.length < outputs.length,
+    activeTypes.length < midiTypes.length,
+    activeChannels.length < 16,
+  ].filter(Boolean).length;
+
+  const filteredMessages = useMemo(() => {
+    return messages.filter((msg) => {
+      const channelMatch = msg.channel
+        ? activeChannels.includes(msg.channel)
+        : true;
+      const deviceMatch =
+        activeInputs.includes(msg.deviceId) ||
+        activeOutputs.includes(msg.deviceId);
+      const typeMatch = activeTypes.includes(msg.type);
+      return channelMatch && deviceMatch && typeMatch;
+    });
+  }, [messages, activeChannels, activeInputs, activeOutputs, activeTypes]);
 
   return (
     <Box mt={isMobile ? 2 : 4} px={isMobile ? 1 : 0}>
@@ -344,7 +428,6 @@ function MessageList() {
         </Box>
 
         {isMobile ? (
-          // Mobile Card Layout
           <Box
             sx={{
               maxHeight: "500px",
@@ -352,11 +435,16 @@ function MessageList() {
             }}
           >
             {filteredMessages.map((msg, index) => (
-              <MobileMessageCard key={index} msg={msg} index={index} />
+              <MobileMessageCard
+                key={msg.id}
+                msg={msg}
+                stripe={index % 2 === 0}
+                deviceName={getDeviceName(msg, inputs, outputs)}
+                sendMessage={sendMessage}
+              />
             ))}
           </Box>
         ) : (
-          // Desktop Table Layout
           <Box
             sx={{
               maxHeight: "400px",
@@ -365,7 +453,6 @@ function MessageList() {
               fontSize: "12px",
             }}
           >
-            {/* Header */}
             <Grid
               container
               sx={{ fontWeight: "bold", pb: 1, borderBottom: "1px solid #333" }}
@@ -396,53 +483,14 @@ function MessageList() {
               </Grid>
             </Grid>
 
-            {/* Data Rows */}
             {filteredMessages.map((msg, index) => (
-              <Grid
-                container
-                key={index}
-                sx={{
-                  backgroundColor: index % 2 === 0 ? "inherit" : "action.hover",
-                  p: 1,
-                }}
-              >
-                <Grid size={{ xs: gridColumns.direction }}>
-                  <Box>
-                    {msg.incoming ? (
-                      <CallReceivedIcon color="primary" />
-                    ) : (
-                      <SendIcon
-                        color="secondary"
-                        sx={{ cursor: "pointer" }}
-                        onClick={() =>
-                          sendMessage({ ...msg, id: uuidv4() }, msg.deviceId)
-                        }
-                      />
-                    )}
-                  </Box>
-                </Grid>
-                <Grid size={{ xs: gridColumns.timestamp }}>
-                  <Box>{new Date(msg.timestamp).toLocaleTimeString()}</Box>
-                </Grid>
-                <Grid size={{ xs: gridColumns.device }}>
-                  <Box>{getDeviceName(msg)}</Box>
-                </Grid>
-                <Grid size={{ xs: gridColumns.channel }}>
-                  <Box>{msg.channel}</Box>
-                </Grid>
-                <Grid size={{ xs: gridColumns.type }}>
-                  <Box>{typeToLabel(msg.type)}</Box>
-                </Grid>
-                <Grid size={{ xs: gridColumns.noteCC }}>
-                  <Box>{getNoteOrController(msg)}</Box>
-                </Grid>
-                <Grid size={{ xs: gridColumns.velocity }}>
-                  <Box>{getVelocityOrValue(msg)}</Box>
-                </Grid>
-                <Grid size={{ xs: gridColumns.data }}>
-                  <Box>{formatData(msg)}</Box>
-                </Grid>
-              </Grid>
+              <DesktopMessageRow
+                key={msg.id}
+                msg={msg}
+                stripe={index % 2 === 0}
+                deviceName={getDeviceName(msg, inputs, outputs)}
+                sendMessage={sendMessage}
+              />
             ))}
           </Box>
         )}
