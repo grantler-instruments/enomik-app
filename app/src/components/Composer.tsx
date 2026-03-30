@@ -9,7 +9,6 @@ import {
   TextField,
 } from "@mui/material";
 import { Send } from "@mui/icons-material";
-import { useState } from "react";
 import { useMIDIStore, type MidiMessage } from "../store/midi";
 import { v4 as uuidv4 } from "uuid";
 import { MIDI_STATUS, typeToLabel } from "../utils/midi";
@@ -24,13 +23,32 @@ const Composer = () => {
     (state) => state.setSelectedComposerOutputDevice
   );
 
-  const [channel, setChannel] = useState(1);
-  const [type, setType] = useState(144);
-  const [noteOrCc, setNoteOrCc] = useState(60);
-  const [velocityOrValue, setVelocityOrValue] = useState(127);
-  const [pitchBendValue, setPitchBendValue] = useState(0);
-  const [sysexData, setSysexData] = useState("");
-  const [manufacturerId, setManufacturerId] = useState("");
+  const channel = useMIDIStore((state) => state.composerChannel);
+  const setChannel = useMIDIStore((state) => state.setComposerChannel);
+  const type = useMIDIStore((state) => state.composerType);
+  const setType = useMIDIStore((state) => state.setComposerType);
+  const noteOrCc = useMIDIStore((state) => state.composerNoteOrCc);
+  const setNoteOrCc = useMIDIStore((state) => state.setComposerNoteOrCc);
+  const velocityOrValue = useMIDIStore(
+    (state) => state.composerVelocityOrValue
+  );
+  const setVelocityOrValue = useMIDIStore(
+    (state) => state.setComposerVelocityOrValue
+  );
+  const pitchBendValue = useMIDIStore(
+    (state) => state.composerPitchBendValue
+  );
+  const setPitchBendValue = useMIDIStore(
+    (state) => state.setComposerPitchBendValue
+  );
+  const sysexData = useMIDIStore((state) => state.composerSysexData);
+  const setSysexData = useMIDIStore((state) => state.setComposerSysexData);
+  const manufacturerId = useMIDIStore(
+    (state) => state.composerManufacturerId
+  );
+  const setManufacturerId = useMIDIStore(
+    (state) => state.setComposerManufacturerId
+  );
 
   const types = [
     { value: MIDI_STATUS.NOTE_ON, label: typeToLabel(MIDI_STATUS.NOTE_ON) },

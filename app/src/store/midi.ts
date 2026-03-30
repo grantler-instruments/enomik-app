@@ -32,6 +32,14 @@ interface MonitorState {
   selectedConfiguratorOutputDevice?: string;
   selectedInspectorOutputDevice?: string;
   selectedComposerOutputDevice?: string;
+  // MIDI Composer (persists across route/tab changes)
+  composerChannel: number;
+  composerType: number;
+  composerNoteOrCc: number;
+  composerVelocityOrValue: number;
+  composerPitchBendValue: number;
+  composerSysexData: string;
+  composerManufacturerId: string;
   init: () => void;
   addIncomingMessage: (message: MidiMessage, deviceId: string) => void;
   addOutgoingMessage: (message: MidiMessage, deviceId: string) => void;
@@ -40,6 +48,13 @@ interface MonitorState {
   setSelectedConfiguratorOutputDevice: (deviceId: string) => void;
   setSelectedInspectorOutputDevice: (deviceId: string) => void;
   setSelectedComposerOutputDevice: (deviceId: string) => void;
+  setComposerChannel: (value: number) => void;
+  setComposerType: (value: number) => void;
+  setComposerNoteOrCc: (value: number) => void;
+  setComposerVelocityOrValue: (value: number) => void;
+  setComposerPitchBendValue: (value: number) => void;
+  setComposerSysexData: (value: string) => void;
+  setComposerManufacturerId: (value: string) => void;
 }
 
 /** Max rows kept in the MIDI monitor; oldest dropped first (FIFO at the tail). */
@@ -294,6 +309,13 @@ export const useMIDIStore = create<MonitorState>()(
         inputs: [],
         outputs: [],
         activeInputs: [],
+        composerChannel: 1,
+        composerType: MIDI_STATUS.NOTE_ON,
+        composerNoteOrCc: 60,
+        composerVelocityOrValue: 127,
+        composerPitchBendValue: 0,
+        composerSysexData: "",
+        composerManufacturerId: "",
         init: async () => {
           if (get().initialized) return;
 
@@ -480,6 +502,27 @@ export const useMIDIStore = create<MonitorState>()(
         setSelectedComposerOutputDevice: (deviceId: string) => {
           set({ selectedComposerOutputDevice: deviceId });
         },
+        setComposerChannel: (value: number) => {
+          set({ composerChannel: value });
+        },
+        setComposerType: (value: number) => {
+          set({ composerType: value });
+        },
+        setComposerNoteOrCc: (value: number) => {
+          set({ composerNoteOrCc: value });
+        },
+        setComposerVelocityOrValue: (value: number) => {
+          set({ composerVelocityOrValue: value });
+        },
+        setComposerPitchBendValue: (value: number) => {
+          set({ composerPitchBendValue: value });
+        },
+        setComposerSysexData: (value: string) => {
+          set({ composerSysexData: value });
+        },
+        setComposerManufacturerId: (value: string) => {
+          set({ composerManufacturerId: value });
+        },
       }),
       {
         name: "MonitorStore",
@@ -490,6 +533,13 @@ export const useMIDIStore = create<MonitorState>()(
           selectedConfiguratorOutputDevice:
             state.selectedConfiguratorOutputDevice,
           selectedInspectorOutputDevice: state.selectedInspectorOutputDevice,
+          composerChannel: state.composerChannel,
+          composerType: state.composerType,
+          composerNoteOrCc: state.composerNoteOrCc,
+          composerVelocityOrValue: state.composerVelocityOrValue,
+          composerPitchBendValue: state.composerPitchBendValue,
+          composerSysexData: state.composerSysexData,
+          composerManufacturerId: state.composerManufacturerId,
         }),
       }
     )
