@@ -3,6 +3,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Box from "@mui/material/Box";
+import { useId } from "react";
 import { useMIDIStore } from "../store/midi";
 import InitMidi from "./InitMidi";
 
@@ -13,20 +14,37 @@ const MidiDeviceChooser = ({
 }: {
   value: string;
   onChange: (value: string) => void;
-  sx?: object;
+  // Best-effort: this component mainly needs an object-style merge for `sx`.
+  // (Current callsites don't pass `sx`.)
+  sx?: Record<string, unknown>;
 }) => {
   const outputs = useMIDIStore((state) => state.outputs);
   const initialized = useMIDIStore((state) => state.initialized);
+  const labelId = useId();
+
+  const additionalSx: Record<string, unknown> =
+    sx && typeof sx === "object" && !Array.isArray(sx) ? sx : {};
+
+  // Ensure we always render a value that exists in our options list.
+  // Several callsites pass `""` before the store has a persisted selection.
+  const selectedValue =
+    value && value !== "" && outputs.some((out) => out.id === value)
+      ? value
+      : "-1";
 
   return (
-    <Box sx={sx}>
+    <Box>
       <InitMidi></InitMidi>
       {initialized && (
-        <FormControl>
-          <InputLabel>MIDI Output</InputLabel>
+        <FormControl
+          size="small"
+          sx={{ minWidth: 220, flexShrink: 0, ...additionalSx }}
+        >
+          <InputLabel id={labelId}>MIDI Output</InputLabel>
           <Select
             size="small"
-            value={value || ""}
+            labelId={labelId}
+            value={selectedValue}
             onChange={(e) => onChange(e.target.value)}
             label="MIDI Output"
           >
