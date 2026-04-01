@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useInspectorStore } from "./inspector";
 import { MIDI_STATUS } from "../utils/midi";
 import { ESP_NOW_VERSION_MAJOR } from "./io";
+import { ENOMIK_COMMAND_RESET_RESPONSE } from "./midi.config";
 
 export interface MidiMessage {
   id: string;
@@ -89,6 +90,56 @@ function queueMonitorMessage(
   if (monitorFlushRaf === null) {
     monitorFlushRaf = requestAnimationFrame(() => flushMonitorBatch(set));
   }
+}
+
+/** Resolves when matching RESET_RESPONSE (0x49) SysEx arrives on an input with the same name as the output. */
+type PendingResetAck = {
+  outputName: string;
+  finish: (ok: boolean) => void;
+  timeoutId: ReturnType<typeof setTimeout>;
+};
+
+let pendingResetAck: PendingResetAck | null = null;
+
+export function beginWaitForResetAck(
+  outputId: string,
+  timeoutMs: number
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!midiAccess || outputId === "-1") {
+      resolve(true);
+      return;
+    }
+    const out = Array.from(midiAccess.outputs.values()).find(
+      (o) => o.id === outputId
+    );
+    if (!out) {
+      resolve(false);
+      return;
+    }
+    if (pendingResetAck) {
+      clearTimeout(pendingResetAck.timeoutId);
+      pendingResetAck.finish(false);
+    }
+    const outputName = out.name ?? "";
+    const timeoutId = setTimeout(() => {
+      if (pendingResetAck?.outputName === outputName) {
+        pendingResetAck = null;
+        resolve(false);
+      }
+    }, timeoutMs);
+    pendingResetAck = {
+      outputName,
+      finish: (ok) => {
+        clearTimeout(timeoutId);
+        if (pendingResetAck?.outputName === outputName) {
+          pendingResetAck = null;
+          resolve(ok);
+        }
+      },
+      timeoutId,
+    };
+  });
 }
 
 const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
@@ -290,6 +341,20 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
             const deviceMinor = event.data[6];
             console.log(`Device version: ${deviceMajor}.${deviceMinor}`);
             // Store or use device version as needed
+          }
+
+          // RESET_RESPONSE (0x49) — empty ack after RESET (0x09). F0 7D MAJ MIN 49 F7
+          if (
+            command === ENOMIK_COMMAND_RESET_RESPONSE &&
+            event.data.length >= 6 &&
+            event.data[event.data.length - 1] === 0xf7
+          ) {
+            if (
+              pendingResetAck &&
+              (input.name ?? "") === pendingResetAck.outputName
+            ) {
+              pendingResetAck.finish(true);
+            }
           }
         }
         break;

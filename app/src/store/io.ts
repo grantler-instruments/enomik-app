@@ -20,7 +20,11 @@ import {
   sysexPinModeDigitalInPullup,
   sysexPinModeTouch,
 } from "./midi.config";
-import { useMIDIStore, type MidiMessage} from "./midi";
+import {
+  beginWaitForResetAck,
+  useMIDIStore,
+  type MidiMessage,
+} from "./midi";
 
 
 export type MidiType =
@@ -114,7 +118,7 @@ interface IOState {
     peers?: PeerConfig[];
   }) => void;
 
-  deploy: (deviceId: string) => void;
+  deploy: (deviceId: string) => Promise<{ resetAck: boolean }>;
 }
 
 /** Returns the set of pin numbers that appear in both inputs and outputs. */
@@ -248,8 +252,11 @@ export const useIOStore = create<IOState>()(
             peers: state.peers.filter((p) => p.uuid !== uuid),
           })),
 
-        deploy: (deviceId: string) => {
-          // first reset
+        deploy: async (deviceId: string) => {
+          const outputId =
+            !deviceId || deviceId === "" ? "-1" : deviceId;
+
+          // first reset — firmware sends RESET_RESPONSE (0x49) when done
           const resetMessage: MidiMessage = {
             id: uuidv4(),
             timestamp: Date.now(),
@@ -263,7 +270,12 @@ export const useIOStore = create<IOState>()(
               sysexEnd,
             ],
           };
-          useMIDIStore.getState().sendMessage(resetMessage, deviceId);
+          useMIDIStore.getState().sendMessage(resetMessage, outputId);
+
+          let resetAck = true;
+          if (outputId !== "-1") {
+            resetAck = await beginWaitForResetAck(outputId, 5000);
+          }
 
           const mapPitchBendTo7Bit = (value: number) => {
             // Clamp value to valid pitch bend range
@@ -302,7 +314,7 @@ export const useIOStore = create<IOState>()(
               type: 240,
               data: sysexMessage,
             };
-            useMIDIStore.getState().sendMessage(msg, deviceId);
+            useMIDIStore.getState().sendMessage(msg, outputId);
           });
 
           // set outputs
@@ -338,7 +350,7 @@ export const useIOStore = create<IOState>()(
               type: 240,
               data: sysexMessage,
             };
-            useMIDIStore.getState().sendMessage(msg, deviceId);
+            useMIDIStore.getState().sendMessage(msg, outputId);
           });
 
           // set peers
@@ -363,8 +375,10 @@ export const useIOStore = create<IOState>()(
               type: 240,
               data: sysexMessage,
             };
-            useMIDIStore.getState().sendMessage(msg, deviceId);
+            useMIDIStore.getState().sendMessage(msg, outputId);
           });
+
+          return { resetAck };
         },
       }),
       { name: "IOStore" }

@@ -4,6 +4,7 @@ import {
   Button,
   Container,
   IconButton,
+  Snackbar,
   Tooltip,
 } from "@mui/material";
 import Accordion from "@mui/material/Accordion";
@@ -20,7 +21,7 @@ import Outputs from "./Outputs";
 import { useIOStore } from "../store/io";
 import { useMIDIStore } from "../store/midi";
 import MidiDeviceChooser from "./MidiDeviceChooser";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ArrowDropDown } from "@mui/icons-material";
 import Peers from "./Peers";
 import { useTranslation } from "react-i18next";
@@ -47,6 +48,40 @@ const Configurator = () => {
   const loadFromFile = useIOStore((state) => state.loadFromFile);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [deployToast, setDeployToast] = useState<string | null>(null);
+  const [deployToastSeverity, setDeployToastSeverity] = useState<
+    "success" | "warning"
+  >("success");
+  const [deploying, setDeploying] = useState(false);
+
+  const handleDeploy = async () => {
+    const pinConfigs = inputs.length + outputs.length;
+    const peerCount = peers.length;
+    const rawOut = selectedOutputId ?? "";
+    const isBroadcast =
+      rawOut === "" || rawOut === "-1";
+
+    setDeploying(true);
+    try {
+      const { resetAck } = await deployConfiguration(rawOut);
+      if (isBroadcast) {
+        setDeployToastSeverity("success");
+        setDeployToast(t("deploy_toast_summary", { pinConfigs, peerCount }));
+      } else if (resetAck) {
+        setDeployToastSeverity("success");
+        setDeployToast(
+          t("deploy_toast_summary_reset_ok", { pinConfigs, peerCount })
+        );
+      } else {
+        setDeployToastSeverity("warning");
+        setDeployToast(
+          t("deploy_toast_summary_reset_timeout", { pinConfigs, peerCount })
+        );
+      }
+    } finally {
+      setDeploying(false);
+    }
+  };
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -115,8 +150,8 @@ const Configurator = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => deployConfiguration(selectedOutputId || "")}
-          disabled={!initialized}
+          onClick={handleDeploy}
+          disabled={!initialized || deploying}
         >
           Deploy
         </Button>
@@ -178,6 +213,21 @@ const Configurator = () => {
         </Accordion>
       </Container>
       <Box flex={1}></Box>
+      <Snackbar
+        open={deployToast !== null}
+        autoHideDuration={8000}
+        onClose={() => setDeployToast(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setDeployToast(null)}
+          severity={deployToastSeverity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {deployToast}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

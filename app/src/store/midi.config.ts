@@ -33,6 +33,9 @@ const sysexPinModeAnalogIn = 0x03;
 const sysexPinModePWMOut = 0x04;
 const sysexPinModeTouch = 0x05;
 
+/** SysEx command + 0x40; empty ack after RESET (0x09). */
+const ENOMIK_COMMAND_RESET_RESPONSE = 0x49;
+
 export {
   MIDI_NOTE_OFF,
   MIDI_NOTE_ON,
@@ -63,7 +66,8 @@ export {
   sysexPinModeDigitalInPullup,
   sysexPinModeAnalogIn,
   sysexPinModePWMOut,
-  sysexPinModeTouch
+  sysexPinModeTouch,
+  ENOMIK_COMMAND_RESET_RESPONSE
 };
 
 
