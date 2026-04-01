@@ -78,7 +78,7 @@ const terminal = {
 };
 
 /** Semantic firmware version; public assets live under `/firmware/{version with dots → dashes}/`. */
-const version = "0.10.8";
+const version = "0.10.9";
 const firmwarePathSegment = version.replace(/\./g, "-");
 
 /* ---------------------------- Store ----------------------------- */
@@ -222,7 +222,7 @@ export const useSerialStore = create<SerialState>()(
         },
         {
           label: "Client",
-          path: `/enomik-app/firmware/${firmwarePathSegment}/lolin_s3_mini_client_client.ino.bin`,
+          path: `/enomik-app/firmware/${firmwarePathSegment}/lolin_s2_mini_client_client.ino.bin`,
           version,
           description: "board to connect sensors and actuators",
           board: "LOLIN S2 Mini",
