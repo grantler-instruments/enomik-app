@@ -37,6 +37,8 @@ interface SerialState {
   flashProgress: FlashProgress | null;
   chipInfo: string;
   availableFirmware: any[];
+  latestVersion: string;
+  versions: string[];
 
   init: () => void;
 
@@ -76,10 +78,6 @@ const terminal = {
     console.log("[esptool]", t);
   },
 };
-
-/** Semantic firmware version; public assets live under `/firmware/{version with dots → dashes}/`. */
-const version = "0.10.9";
-const firmwarePathSegment = version.replace(/\./g, "-");
 
 /* ---------------------------- Store ----------------------------- */
 
@@ -212,49 +210,54 @@ export const useSerialStore = create<SerialState>()(
       log: [],
       flashProgress: null,
       chipInfo: "",
-      availableFirmware: [
-        {
-          label: "Dongle",
-          path: `/enomik-app/firmware/${firmwarePathSegment}/lolin_s2_mini_dongle_dongle.ino.bin`,
-          version,
-          description: "interface to MIDI host",
-          board: "LOLIN S2 Mini",
-        },
-        {
-          label: "Client",
-          path: `/enomik-app/firmware/${firmwarePathSegment}/lolin_s2_mini_client_client.ino.bin`,
-          version,
-          description: "board to connect sensors and actuators",
-          board: "LOLIN S2 Mini",
-        },
-        // { label: "Client - Buttons", path: "/firmware/0-10-3/lolin_s2_mini_client_buttons_client_buttons.ino.bin" },
-        // { label: "Client - Clocked", path: "/firmware/0-10-3/lolin_s2_mini_client_clocked_client_clocked.ino.bin" },
-        // ... add all your firmware files
-        {
-          label: "Print MAC",
-          path: `/enomik-app/firmware/${firmwarePathSegment}/lolin_s2_mini_print_mac_print_mac.ino.bin`,
-          version,
-          description:
-            "prints the MAC address to serial (use this if you are not using a dongle with display)",
-          board: "LOLIN S2 Mini",
-        },
-      ],
+      availableFirmware: [],
+      latestVersion: "",
+      versions: [],
 
       init: () => {
-        // axios.get("https://api.github.com/repos/grantler-instruments/esp-now-midi/releases/latest")
-        //   .then((response) => {
-        //     const { tag_name, assets } = response.data;
-        //     console.log("Latest firmware version:", tag_name);
-        //     const firmwareAssets = assets.filter((asset: any) =>
-        //       asset.name.endsWith(".bin") || asset.name.endsWith(".bin.gz")
-        //     )
-        //     .filter((asset: any) => !(asset.name.includes("merged") || asset.name.includes("partition") || asset.name.includes("bootloader")));
-        //     console.log("Available firmware assets:", firmwareAssets);
-        //     set({ availableFirmware: firmwareAssets });
-        //   })
-        //   .catch((error) => {
-        //     console.error("Error fetching firmware info:", error);
-        //   });
+        (async () => {
+          try {
+            const res = await fetch("/enomik-app/firmware/versions.json");
+            if (!res.ok) throw new Error(`versions.json fetch failed: ${res.status}`);
+            const data = await res.json();
+            const versions: string[] = data.versions ?? [];
+            const latestPathSegment = versions[0] ?? "";
+            const latestVersion = latestPathSegment.replace(/-/g, ".");
+
+            set({
+              latestVersion,
+              versions,
+              availableFirmware: latestPathSegment
+                ? [
+                    {
+                      label: "Dongle",
+                      path: `/enomik-app/firmware/${latestPathSegment}/lolin_s2_mini_dongle_dongle.ino.bin`,
+                      version: latestVersion,
+                      description: "interface to MIDI host",
+                      board: "LOLIN S2 Mini",
+                    },
+                    {
+                      label: "Client",
+                      path: `/enomik-app/firmware/${latestPathSegment}/lolin_s2_mini_client_client.ino.bin`,
+                      version: latestVersion,
+                      description: "board to connect sensors and actuators",
+                      board: "LOLIN S2 Mini",
+                    },
+                    {
+                      label: "Print MAC",
+                      path: `/enomik-app/firmware/${latestPathSegment}/lolin_s2_mini_print_mac_print_mac.ino.bin`,
+                      version: latestVersion,
+                      description:
+                        "prints the MAC address to serial (use this if you are not using a dongle with display)",
+                      board: "LOLIN S2 Mini",
+                    },
+                  ]
+                : [],
+            });
+          } catch (err) {
+            console.error("Failed to fetch firmware versions:", err);
+          }
+        })();
       },
 
       connect: async () => {
