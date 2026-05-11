@@ -18,6 +18,7 @@ import {
   sysexPinModeTouch,
 } from "../../store/midi.config";
 import MinMax from "../MinMax";
+import InfoWithTooltip from "../InfoWithTooltip";
 import type { InputPinConfig, OutputPinConfig } from "../../store/io";
 
 const INPUT_MODES = [
@@ -48,6 +49,32 @@ export default function PinConfigSection({
   hasConflict = false,
 }: MidiConfigSectionProps) {
   const modes = type === "input" ? INPUT_MODES : OUTPUT_MODES;
+
+  const getModeDescription = () => {
+    if (type === "input") {
+      switch (config.mode) {
+        case sysexPinModeAnalogIn:
+          return "Read a continuous value (e.g. from a potentiometer or sensor).";
+        case sysexPinModeDigitalIn:
+          return "Digital input. Reads LOW/HIGH, use with switches or buttons (with external resistors).";
+        case sysexPinModeDigitalInPullup:
+          return "Digital input with internal pull-up. Use for buttons wired to ground; idle HIGH, pressed = LOW.";
+        case sysexPinModeTouch:
+          return "Capacitive touch input. Use Threshold to tune touch sensitivity.";
+        default:
+          return "";
+      }
+    }
+
+    switch (config.mode) {
+      case sysexPinModeDigitalOut:
+        return "Digital output. Drives LOW/HIGH for LEDs, relays or other digital loads.";
+      case sysexPinModePWMOut:
+        return "PWM output. Use for dimming LEDs or controlling motor speed with an analog-like value.";
+      default:
+        return "";
+    }
+  };
 
   return (
     <Grid container gap={2} flex={1}>
@@ -92,7 +119,7 @@ export default function PinConfigSection({
       </Grid>
 
       <Grid size={{ xs: 6, sm: 4 }}>
-        <FormControl fullWidth>
+        <FormControl fullWidth size="small" sx={{ minWidth: 200 }}>
           <InputLabel>Mode</InputLabel>
           <Select
             value={config.mode}
@@ -109,6 +136,7 @@ export default function PinConfigSection({
             ))}
           </Select>
         </FormControl>
+        <InfoWithTooltip text={getModeDescription()} />
       </Grid>
 
       <Grid size={{ xs: 6, sm: 2 }}>

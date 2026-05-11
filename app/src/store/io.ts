@@ -53,7 +53,7 @@ const ENOMIK_COMMAND_RESET = 0x09;
 
 
 const ESP_NOW_VERSION_MAJOR = 0
-const ESP_NOW_VERSION_MINOR = 10
+const ESP_NOW_VERSION_MINOR = 11
 export {ESP_NOW_VERSION_MAJOR, ESP_NOW_VERSION_MINOR}
 
 export interface InputPinConfig {
