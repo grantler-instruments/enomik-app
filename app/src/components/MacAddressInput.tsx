@@ -73,6 +73,7 @@ const MacAddressInput = ({
             onChange={(e) => handleChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             onPaste={(e) => handlePaste(index, e)}
+            onFocus={(e) => e.target.select()}
             disabled={disabled}
             inputProps={{
               maxLength: 2,
