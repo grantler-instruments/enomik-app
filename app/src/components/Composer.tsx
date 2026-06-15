@@ -9,10 +9,14 @@ import {
   TextField,
 } from "@mui/material";
 import { Send } from "@mui/icons-material";
+import { useState, useEffect } from "react";
 import { useMIDIStore, type MidiMessage } from "../store/midi";
 import { v4 as uuidv4 } from "uuid";
 import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 import MidiDeviceChooser from "./MidiDeviceChooser";
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
 
 const Composer = () => {
   const sendMessage = useMIDIStore((state) => state.sendMessage);
@@ -41,6 +45,41 @@ const Composer = () => {
   const setPitchBendValue = useMIDIStore(
     (state) => state.setComposerPitchBendValue
   );
+
+  const [noteOrCcInput, setNoteOrCcInput] = useState(String(noteOrCc));
+  const [velocityInput, setVelocityInput] = useState(String(velocityOrValue));
+  const [pitchBendInput, setPitchBendInput] = useState(String(pitchBendValue));
+
+  useEffect(() => setNoteOrCcInput(String(noteOrCc)), [noteOrCc]);
+  useEffect(() => setVelocityInput(String(velocityOrValue)), [velocityOrValue]);
+  useEffect(() => setPitchBendInput(String(pitchBendValue)), [pitchBendValue]);
+
+  const handleNumberChange = (
+    raw: string,
+    setLocal: (s: string) => void,
+    setStore: (n: number) => void,
+    min: number,
+    max: number
+  ) => {
+    setLocal(raw);
+    if (raw === "" || raw === "-") return;
+    const num = parseInt(raw, 10);
+    if (!isNaN(num)) setStore(clamp(num, min, max));
+  };
+
+  const handleNumberBlur = (
+    local: string,
+    setLocal: (s: string) => void,
+    setStore: (n: number) => void,
+    min: number,
+    max: number
+  ) => {
+    const num = parseInt(local, 10);
+    const clamped = isNaN(num) ? min : clamp(num, min, max);
+    setStore(clamped);
+    setLocal(String(clamped));
+  };
+
   const sysexData = useMIDIStore((state) => state.composerSysexData);
   const setSysexData = useMIDIStore((state) => state.setComposerSysexData);
   const manufacturerId = useMIDIStore(
@@ -190,9 +229,26 @@ const Composer = () => {
                     ? "Program"
                     : "Controller"
                 }
-                type="number"
-                value={noteOrCc}
-                onChange={(e) => setNoteOrCc(Number(e.target.value))}
+                value={noteOrCcInput}
+                onChange={(e) =>
+                  handleNumberChange(
+                    e.target.value,
+                    setNoteOrCcInput,
+                    setNoteOrCc,
+                    0,
+                    127
+                  )
+                }
+                onBlur={() =>
+                  handleNumberBlur(
+                    noteOrCcInput,
+                    setNoteOrCcInput,
+                    setNoteOrCc,
+                    0,
+                    127
+                  )
+                }
+                inputMode="numeric"
                 size="small"
                 sx={{ width: { xs: "100%", sm: 120 } }}
               />
@@ -206,9 +262,26 @@ const Composer = () => {
                     ? "Velocity"
                     : "Value"
                 }
-                type="number"
-                value={velocityOrValue}
-                onChange={(e) => setVelocityOrValue(Number(e.target.value))}
+                value={velocityInput}
+                onChange={(e) =>
+                  handleNumberChange(
+                    e.target.value,
+                    setVelocityInput,
+                    setVelocityOrValue,
+                    0,
+                    127
+                  )
+                }
+                onBlur={() =>
+                  handleNumberBlur(
+                    velocityInput,
+                    setVelocityInput,
+                    setVelocityOrValue,
+                    0,
+                    127
+                  )
+                }
+                inputMode="numeric"
                 size="small"
                 sx={{ width: { xs: "100%", sm: 120 } }}
               />
@@ -219,9 +292,26 @@ const Composer = () => {
         {type === MIDI_STATUS.PITCH_BEND && (
           <TextField
             label="Pitch Bend (-8192 to +8191)"
-            type="number"
-            value={pitchBendValue}
-            onChange={(e) => setPitchBendValue(Number(e.target.value))}
+            value={pitchBendInput}
+            onChange={(e) =>
+              handleNumberChange(
+                e.target.value,
+                setPitchBendInput,
+                setPitchBendValue,
+                -8192,
+                8191
+              )
+            }
+            onBlur={() =>
+              handleNumberBlur(
+                pitchBendInput,
+                setPitchBendInput,
+                setPitchBendValue,
+                -8192,
+                8191
+              )
+            }
+            inputMode="numeric"
             size="small"
             sx={{ width: { xs: "100%", sm: 220 } }}
           />
