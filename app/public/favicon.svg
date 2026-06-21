@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 260">
+  <circle cx="150" cy="60.717967697244916" r="30" fill="none" stroke="#d89cae" stroke-width="4" />
+  <g fill="#d89cae">
+    <circle cx="150" cy="44.717967697244916" r="4" />
+    <circle cx="135" cy="54.717967697244916" r="4" />
+    <circle cx="165" cy="54.717967697244916" r="4" />
+    <circle cx="140" cy="72.71796769724492" r="4" />
+    <circle cx="160" cy="72.71796769724492" r="4" />
+  </g>
+  <circle cx="90" cy="164.64101615137753" r="30" fill="none" stroke="#d89cae" stroke-width="4" />
+  <g fill="#d89cae">
+    <circle cx="90" cy="148.64101615137753" r="4" />
+    <circle cx="75" cy="158.64101615137753" r="4" />
+    <circle cx="105" cy="158.64101615137753" r="4" />
+    <circle cx="80" cy="176.64101615137753" r="4" />
+    <circle cx="100" cy="176.64101615137753" r="4" />
+  </g>
+  <circle cx="210" cy="164.64101615137753" r="30" fill="none" stroke="#d89cae" stroke-width="4" />
+  <g fill="#d89cae">
+    <circle cx="210" cy="148.64101615137753" r="4" />
+    <circle cx="195" cy="158.64101615137753" r="4" />
+    <circle cx="225" cy="158.64101615137753" r="4" />
+    <circle cx="200" cy="176.64101615137753" r="4" />
+    <circle cx="220" cy="176.64101615137753" r="4" />
+  </g>
+  <line x1="132.5" y1="91.02885682970026" x2="107.5" y2="134.33012701892218" stroke="#d89cae" stroke-width="3" stroke-dasharray="10 10" />
+  <line x1="167.5" y1="91.02885682970026" x2="192.5" y2="134.33012701892218" stroke="#d89cae" stroke-width="3" stroke-dasharray="10 10" />
+  <line x1="125" y1="164.64101615137753" x2="175" y2="164.64101615137753" stroke="#d89cae" stroke-width="3" stroke-dasharray="12 12" />
+</svg>
