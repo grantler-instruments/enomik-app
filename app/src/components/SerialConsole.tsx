@@ -22,7 +22,7 @@ interface ConsoleProps {
 
 export default function Console({
   canSend = false,
-  placeholder = "Type message...",
+  placeholder,
   height = 400,
 }: ConsoleProps) {
   const { send, log, clearLog } = useSerialStore();
@@ -74,7 +74,7 @@ export default function Console({
       <Paper sx={{ p: 2, height, overflow: "auto" }}>
         {log.length === 0 ? (
           <Typography color="text.secondary" sx={{ fontFamily: "monospace" }}>
-            No data yet...
+            {t("console_no_data")}
           </Typography>
         ) : (
           log.map((entry, idx) => (
@@ -105,7 +105,7 @@ export default function Console({
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSend();
             }}
-            placeholder={placeholder}
+            placeholder={placeholder ?? t("console_placeholder")}
           />
           <IconButton onClick={handleSend} disabled={!input.trim()}>
             <Send />

@@ -20,6 +20,7 @@ import {
 import MinMax from "../MinMax";
 import InfoWithTooltip from "../InfoWithTooltip";
 import type { InputPinConfig, OutputPinConfig } from "../../store/io";
+import { useTranslation } from "react-i18next";
 
 const INPUT_MODES = [
   { label: "ANALOG", value: sysexPinModeAnalogIn },
@@ -48,19 +49,20 @@ export default function PinConfigSection({
   type,
   hasConflict = false,
 }: MidiConfigSectionProps) {
+  const { t } = useTranslation();
   const modes = type === "input" ? INPUT_MODES : OUTPUT_MODES;
 
   const getModeDescription = () => {
     if (type === "input") {
       switch (config.mode) {
         case sysexPinModeAnalogIn:
-          return "Read a continuous value (e.g. from a potentiometer or sensor).";
+          return t("pin_mode_analog_desc");
         case sysexPinModeDigitalIn:
-          return "Digital input. Reads LOW/HIGH, use with switches or buttons (with external resistors).";
+          return t("pin_mode_digital_in_desc");
         case sysexPinModeDigitalInPullup:
-          return "Digital input with internal pull-up. Use for buttons wired to ground; idle HIGH, pressed = LOW.";
+          return t("pin_mode_digital_in_pullup_desc");
         case sysexPinModeTouch:
-          return "Capacitive touch input. Use Threshold to tune touch sensitivity.";
+          return t("pin_mode_touch_desc");
         default:
           return "";
       }
@@ -68,9 +70,9 @@ export default function PinConfigSection({
 
     switch (config.mode) {
       case sysexPinModeDigitalOut:
-        return "Digital output. Drives LOW/HIGH for LEDs, relays or other digital loads.";
+        return t("pin_mode_digital_out_desc");
       case sysexPinModePWMOut:
-        return "PWM output. Use for dimming LEDs or controlling motor speed with an analog-like value.";
+        return t("pin_mode_pwm_desc");
       default:
         return "";
     }
@@ -82,13 +84,13 @@ export default function PinConfigSection({
         <Tooltip
           title={
             hasConflict
-              ? `Pin ${config.pin} is used as both an input and an output`
+              ? t("pin_conflict", { pin: config.pin })
               : ""
           }
           arrow
         >
           <TextField
-            label="Pin"
+            label={t("pin")}
             type="number"
             value={
               config.pin != null
@@ -120,10 +122,10 @@ export default function PinConfigSection({
 
       <Grid size={{ xs: 6, sm: 4 }}>
         <FormControl fullWidth size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>Mode</InputLabel>
+          <InputLabel>{t("mode")}</InputLabel>
           <Select
             value={config.mode}
-            label="Mode"
+            label={t("mode")}
             onChange={(e) => onChange("mode", e.target.value)}
             size="small"
             disabled={disabled}
@@ -148,7 +150,7 @@ export default function PinConfigSection({
                   : ""
               }
               onChange={(e) => onChange("threshold", Number(e.target.value))}
-              label="Threshold"
+              label={t("threshold")}
               size="small"
               disabled={disabled}
             />

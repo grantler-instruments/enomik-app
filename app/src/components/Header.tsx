@@ -6,11 +6,13 @@ import Box from "@mui/material/Box";
 import { Settings as SettingsIcon, Menu as MenuIcon } from "@mui/icons-material";
 import { Button, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText, useMediaQuery, useTheme } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/app";
 import { ESP_NOW_VERSION_MAJOR, ESP_NOW_VERSION_MINOR } from "../store/io";
 import Logo from "./Logo";
 
 const Header: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -21,10 +23,10 @@ const Header: React.FC = () => {
   );
 
   const menu = [
-    { label: "Configurator", path: "/configurator" },
-    { label: "Debugger", path: "/debugger" },
+    { label: t("configurator"), path: "/configurator" },
+    { label: t("debugger"), path: "/debugger" },
     // { label: "Inspector", path: "/inspector" },
-    { label: "Firmware Uploader", path: "/uploader" },
+    { label: t("firmware_uploader"), path: "/uploader" },
   ];
 
   const handleMobileMenuClose = () => {

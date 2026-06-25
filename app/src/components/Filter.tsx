@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import { useMIDIStore } from "../store/midi";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 import AllNone from "./AllNone";
 
@@ -35,6 +36,7 @@ const Filter = ({
   onActiveChannelsChange: (channels: number[]) => void;
   onActiveTypesChange: (types: number[]) => void;
 }) => {
+  const { t } = useTranslation();
   const inputs = useMIDIStore((state) => state.inputs);
   const outputs = useMIDIStore((state) => state.outputs);
   const [activeInputs, setActiveInputs] = useState<string[]>([]);
@@ -91,7 +93,7 @@ const Filter = ({
         <Grid size={{ xs: 12, sm: 6 }}>
           {/* Input filter options can be added here */}
           <Box display={"flex"} flexDirection={"row"} gap={2}>
-            <Typography variant="h4">Inputs</Typography>
+            <Typography variant="h4">{t("inputs")}</Typography>
             <AllNone
               onAll={() => {
                 setActiveInputs(inputs.map((input) => input.id));
@@ -119,7 +121,7 @@ const Filter = ({
         <Grid size={{ xs: 12, sm: 6 }}>
           {/* Output filter options can be added here */}
           <Box display={"flex"} flexDirection={"row"} gap={2}>
-            <Typography variant="h4">Outputs</Typography>
+            <Typography variant="h4">{t("outputs")}</Typography>
             <AllNone
               onAll={() => {
                 setActiveOutputs(outputs.map((output) => output.id));
@@ -147,7 +149,7 @@ const Filter = ({
       </Grid>
       <Box display={"flex"} gap={2} flexDirection={"column"}>
         <Box display={"flex"} gap={2}>
-          <Typography variant="h4">Channels</Typography>
+          <Typography variant="h4">{t("channels")}</Typography>
           <AllNone
             onAll={() => {
               const newActiveChannels = Array.from(
@@ -181,7 +183,7 @@ const Filter = ({
       </Box>
       <Box display={"flex"} gap={2} flexDirection={"column"}>
         <Box display={"flex"} gap={2}>
-          <Typography variant="h4">Types</Typography>
+          <Typography variant="h4">{t("types")}</Typography>
           <AllNone
             onAll={() => setActiveTypes(midiTypes)}
             onNone={() => setActiveTypes([])}

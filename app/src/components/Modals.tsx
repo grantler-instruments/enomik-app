@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/app";
 
 const Modals = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const showSettingsModal = useAppStore((state) => state.showSettingsModal);
   const setShowSettingsModal = useAppStore(
     (state) => state.setShowSettingsModal
@@ -33,7 +33,7 @@ const Modals = () => {
       fullWidth
       maxWidth="xs"
     >
-      <DialogTitle>Settings</DialogTitle>
+      <DialogTitle>{t("settings")}</DialogTitle>
       <DialogContent dividers>
         <FormControlLabel
           control={
@@ -42,26 +42,27 @@ const Modals = () => {
               onChange={(e) => setShowHints(e.target.checked)}
             />
           }
-          label="Show Hints"
+          label={t("show_hints")}
         />
         <FormControl fullWidth sx={{ mt: 2 }}>
-          <InputLabel>Language</InputLabel>
+          <InputLabel>{t("language")}</InputLabel>
           <Select
             value={i18n.language}
-            label="Language"
+            label={t("language")}
             onChange={(e) => i18n.changeLanguage(e.target.value)}
           >
             <MenuItem value="en">English</MenuItem>
             <MenuItem value="de">Deutsch</MenuItem>
             <MenuItem value="es">Español</MenuItem>
+            <MenuItem value="zh">中文</MenuItem>
           </Select>
         </FormControl>
         <FormControl fullWidth sx={{ mt: 2 }}>
-          <FormControlLabel control={<Checkbox checked={darkMode} onChange={toggleDarkMode} />} label="Dark Theme" />
+          <FormControlLabel control={<Checkbox checked={darkMode} onChange={toggleDarkMode} />} label={t("dark_theme")} />
         </FormControl>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setShowSettingsModal(false)}>Close</Button>
+        <Button onClick={() => setShowSettingsModal(false)}>{t("close")}</Button>
       </DialogActions>
     </Dialog>
   );

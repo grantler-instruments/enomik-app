@@ -4,6 +4,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Box from "@mui/material/Box";
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 import { useMIDIStore } from "../store/midi";
 import InitMidi from "./InitMidi";
 
@@ -18,6 +19,7 @@ const MidiDeviceChooser = ({
   // (Current callsites don't pass `sx`.)
   sx?: Record<string, unknown>;
 }) => {
+  const { t } = useTranslation();
   const outputs = useMIDIStore((state) => state.outputs);
   const initialized = useMIDIStore((state) => state.initialized);
   const labelId = useId();
@@ -40,15 +42,15 @@ const MidiDeviceChooser = ({
           size="small"
           sx={{ minWidth: 220, flexShrink: 0, ...additionalSx }}
         >
-          <InputLabel id={labelId}>MIDI Output</InputLabel>
+          <InputLabel id={labelId}>{t("midi_output")}</InputLabel>
           <Select
             size="small"
             labelId={labelId}
             value={selectedValue}
             onChange={(e) => onChange(e.target.value)}
-            label="MIDI Output"
+            label={t("midi_output")}
           >
-            <MenuItem value={"-1"}>All outputs</MenuItem>
+            <MenuItem value={"-1"}>{t("all_outputs")}</MenuItem>
             {outputs.map((out) => (
               <MenuItem key={out.id} value={out.id}>
                 {out.name}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Box, TextField } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 const MidiMinMax = ({
   min,
@@ -18,6 +19,7 @@ const MidiMinMax = ({
   bitResolution?: 7 | 14;
   sx?: any;
 }) => {
+  const { t } = useTranslation();
   const minRange = bitResolution === 7 ? 0 : -8192;
   const maxRange = bitResolution === 7 ? 127 : 8191;
 
@@ -62,7 +64,7 @@ const MidiMinMax = ({
       sx={{ ...sx }}
     >
       <TextField
-        label="Min"
+        label={t("min")}
         value={minText}
         onChange={(e) => setMinText(e.target.value)}
         onBlur={handleMinBlur}
@@ -76,7 +78,7 @@ const MidiMinMax = ({
       />
 
       <TextField
-        label="Max"
+        label={t("max")}
         value={maxText}
         onChange={(e) => setMaxText(e.target.value)}
         onBlur={handleMaxBlur}

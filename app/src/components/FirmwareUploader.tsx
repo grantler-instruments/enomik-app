@@ -98,7 +98,7 @@ const FirmwareUploader: React.FC = () => {
       setFlashOpen(!requiresBootloader);
       // setStep("bootloader");
     } catch {
-      alert("Failed to load firmware.");
+      alert(t("firmwareuploader_load_failed"));
     }
   };
 
@@ -123,7 +123,7 @@ const FirmwareUploader: React.FC = () => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Github Issue Tracker
+            {t("firmwareuploader_issue_tracker")}
           </Link>
         </Alert>
       )}
@@ -143,7 +143,7 @@ const FirmwareUploader: React.FC = () => {
                 flexWrap="wrap"
               >
                 <Typography variant="subtitle2">
-                  Step 1 — Select firmware
+                  {t("firmwareuploader_step1")}
                 </Typography>
                 {file && (
                   <>
@@ -209,7 +209,7 @@ const FirmwareUploader: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  GitHub releases page
+                  {t("firmwareuploader_releases_page")}
                 </Link>
                 .
               </Box>
@@ -245,10 +245,10 @@ const FirmwareUploader: React.FC = () => {
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="subtitle2">
-                  Step 2 — Bootloader mode
+                  {t("firmwareuploader_step2")}
                 </Typography>
                 {bootConfirmed && (
-                  <Chip size="small" color="success" label="Confirmed" />
+                  <Chip size="small" color="success" label={t("confirmed")} />
                 )}
               </Stack>
             </AccordionSummary>
@@ -262,7 +262,7 @@ const FirmwareUploader: React.FC = () => {
                     onChange={(e) => setBootloaderRequired(e.target.checked)}
                   />
                 }
-                label="Manual bootloader required (hold BOOT + RESET)"
+                label={t("firmwareuploader_manual_bootloader_required")}
               />
               <Typography
                 variant="caption"
@@ -315,16 +315,16 @@ const FirmwareUploader: React.FC = () => {
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="subtitle2">
-                  Step 3 — Flash firmware
+                  {t("firmwareuploader_step3")}
                 </Typography>
                 {chipInfo && (
                   <Chip size="small" color="primary" label={chipInfo} />
                 )}
                 {isConnected && !isFlashing && (
-                  <Chip size="small" color="success" label="Connected" />
+                  <Chip size="small" color="success" label={t("connected")} />
                 )}
                 {isFlashing && (
-                  <Chip size="small" color="warning" label="Flashing" />
+                  <Chip size="small" color="warning" label={t("flashing")} />
                 )}
               </Stack>
             </AccordionSummary>
@@ -338,7 +338,7 @@ const FirmwareUploader: React.FC = () => {
                 onClick={handleConnectAndFlash}
                 disabled={(bootloaderRequired && !bootConfirmed) || isFlashing}
               >
-                {isFlashing ? "Flashing …" : "Connect & Flash"}
+                {isFlashing ? t("flashing_progress") : t("connect_and_flash")}
               </Button>
 
               {isConnected && !isFlashing && (

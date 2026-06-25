@@ -41,8 +41,7 @@ const GettingStarted = () => {
   ];
   return (
     <Container maxWidth="lg" sx={{ my: 4 }}>
-      <Typography variant="h1">Getting Started</Typography>
-      <Typography>TODO: illustrations and action buttons</Typography>
+      <Typography variant="h1">{t("getting_started")}</Typography>
       <List component={"ol"}>
         {steps.map((step, index) => {
           return (

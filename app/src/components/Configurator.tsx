@@ -167,7 +167,7 @@ const Configurator = () => {
           onClick={handleDeploy}
           disabled={!initialized || deploying}
         >
-          Deploy
+          {t("deploy")}
         </Button>
       </Box>
       <Container maxWidth="xl">
@@ -178,7 +178,7 @@ const Configurator = () => {
             </Alert>
             <Box>
             <Button variant="outlined" component={NavLink} to={"/uploader"}>
-              Firmware Uploader
+              {t("firmware_uploader")}
             </Button>
             </Box>
           </Box>
@@ -189,7 +189,7 @@ const Configurator = () => {
             aria-controls="inputs-content"
           >
             <SectionHeader
-              title={"Input Pin to MIDI Mapping"}
+              title={t("section_input_pin_to_midi")}
               tooltipKey="tooltip_pin_to_midi"
             />
           </AccordionSummary>
@@ -203,7 +203,7 @@ const Configurator = () => {
             aria-controls="outputs-content"
           >
             <SectionHeader
-              title={"MIDI to Output Pin Mapping"}
+              title={t("section_midi_to_output_pin")}
               tooltipKey="tooltip_midi_to_pin"
             />
           </AccordionSummary>
@@ -217,7 +217,7 @@ const Configurator = () => {
             aria-controls="wireless-midi-content"
           >
             <SectionHeader
-              title={"Wireless MIDI Configuration"}
+              title={t("section_wireless_midi")}
               tooltipKey="tooltip_wireless_midi"
             />
           </AccordionSummary>

@@ -14,11 +14,13 @@ import { useMIDIStore, type MidiMessage } from "../store/midi";
 import { v4 as uuidv4 } from "uuid";
 import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 import MidiDeviceChooser from "./MidiDeviceChooser";
+import { useTranslation } from "react-i18next";
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
 const Composer = () => {
+  const { t } = useTranslation();
   const sendMessage = useMIDIStore((state) => state.sendMessage);
   const selectedOutputId = useMIDIStore(
     (state) => state.selectedComposerOutputDevice
@@ -144,10 +146,10 @@ const Composer = () => {
           size="small"
           sx={{ width: { xs: "100%", sm: 120 } }}
         >
-          <InputLabel>Channel</InputLabel>
+          <InputLabel>{t("channel")}</InputLabel>
           <Select
             value={channel}
-            label="Channel"
+            label={t("channel")}
             onChange={(e) => setChannel(Number(e.target.value))}
           >
             {[...Array(16)].map((_, i) => (
@@ -162,15 +164,15 @@ const Composer = () => {
           size="small"
           sx={{ width: { xs: "100%", sm: 180 } }}
         >
-          <InputLabel>Type</InputLabel>
+          <InputLabel>{t("type")}</InputLabel>
           <Select
             value={type}
-            label="Type"
+            label={t("type")}
             onChange={(e) => setType(Number(e.target.value))}
           >
-            {types.map((t) => (
-              <MenuItem key={t.value} value={t.value}>
-                {t.label}
+            {types.map((item) => (
+              <MenuItem key={item.value} value={item.value}>
+                {item.label}
               </MenuItem>
             ))}
           </Select>
@@ -179,14 +181,14 @@ const Composer = () => {
         {type === MIDI_STATUS.SYSEX_START && (
           <>
             <TextField
-              label="Start Byte"
+              label={t("composer_start_byte")}
               value="F0"
               disabled
               size="small"
               sx={{ width: { xs: "100%", sm: 80 } }}
             />
             <TextField
-              label="Manufacturer ID (*)"
+              label={t("composer_manufacturer_id")}
               value={manufacturerId}
               onChange={(e) => setManufacturerId(e.target.value)}
               placeholder="FD"
@@ -194,7 +196,7 @@ const Composer = () => {
               sx={{ width: { xs: "100%", sm: 140 } }}
             />
             <TextField
-              label="Data (hex)"
+              label={t("composer_data_hex")}
               value={sysexData.replace(/\s+/g, "").toUpperCase()}
               onChange={(e) => setSysexData(e.target.value)}
               placeholder="43 12 00"
@@ -202,7 +204,7 @@ const Composer = () => {
               sx={{ width: { xs: "100%", sm: 240 } }}
             />
             <TextField
-              label="End Byte"
+              label={t("composer_end_byte")}
               value="F7"
               disabled
               size="small"
@@ -224,10 +226,10 @@ const Composer = () => {
                   type === MIDI_STATUS.NOTE_ON ||
                   type === MIDI_STATUS.NOTE_OFF ||
                   type === MIDI_STATUS.POLY_PRESSURE
-                    ? "Note"
+                    ? t("note")
                     : type === MIDI_STATUS.PROGRAM_CHANGE
-                    ? "Program"
-                    : "Controller"
+                    ? t("composer_program")
+                    : t("controller")
                 }
                 value={noteOrCcInput}
                 onChange={(e) =>
@@ -259,8 +261,8 @@ const Composer = () => {
                 label={
                   type === MIDI_STATUS.NOTE_ON ||
                   type === MIDI_STATUS.NOTE_OFF
-                    ? "Velocity"
-                    : "Value"
+                    ? t("composer_velocity")
+                    : t("composer_value")
                 }
                 value={velocityInput}
                 onChange={(e) =>
@@ -291,7 +293,7 @@ const Composer = () => {
 
         {type === MIDI_STATUS.PITCH_BEND && (
           <TextField
-            label="Pitch Bend (-8192 to +8191)"
+            label={t("composer_pitch_bend")}
             value={pitchBendInput}
             onChange={(e) =>
               handleNumberChange(
@@ -365,7 +367,7 @@ const Composer = () => {
             sendMessage(msg, selectedOutputId);
           }}
         >
-          Send MIDI
+          {t("composer_send_midi")}
         </Button>
       </Stack>
     </Box>

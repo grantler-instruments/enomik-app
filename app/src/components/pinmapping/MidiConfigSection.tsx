@@ -16,6 +16,7 @@ import {
 import { type InputPinConfig, type OutputPinConfig } from "../../store/io";
 import MinMax from "../MinMax";
 import InfoWithTooltip from "../InfoWithTooltip";
+import { useTranslation } from "react-i18next";
 
 const MIDI_TYPES = [
   MIDI_CONTROL_CHANGE,
@@ -38,14 +39,15 @@ export default function MidiConfigSection({
   disabled,
   type,
 }: MidiConfigSectionProps) {
+  const { t } = useTranslation();
   return (
     <Grid container gap={2} flex={1}>
       <Grid size={{ xs: 6, sm: 2 }}>
         <FormControl fullWidth>
-          <InputLabel>Channel</InputLabel>
+          <InputLabel>{t("channel")}</InputLabel>
           <Select
             value={config.channel}
-            label="Channel"
+            label={t("channel")}
             onChange={(e) => onChange("channel", Number(e.target.value))}
             size="small"
             disabled={disabled}
@@ -61,10 +63,10 @@ export default function MidiConfigSection({
 
       <Grid size={{ xs: 6, sm: 3 }}>
         <FormControl fullWidth>
-          <InputLabel>MIDI Type</InputLabel>
+          <InputLabel>{t("midi_type")}</InputLabel>
           <Select
             value={config.midiType}
-            label="MIDI Type"
+            label={t("midi_type")}
             onChange={(e) => onChange("midiType", e.target.value)}
             size="small"
             disabled={disabled}
@@ -82,7 +84,7 @@ export default function MidiConfigSection({
         <Grid size={{ xs: 6, sm: 2 }}>
           <FormControl fullWidth>
             <TextField
-              label="Controller"
+              label={t("controller")}
               type="number"
               value={
                 config.controller !== undefined && config.controller !== null
@@ -102,7 +104,7 @@ export default function MidiConfigSection({
         <Grid size={{ xs: 6, sm: 2 }}>
           <FormControl fullWidth>
             <TextField
-              label="Note"
+              label={t("note")}
               type="number"
               value={
                 config.note !== undefined && config.note !== null
@@ -131,7 +133,7 @@ export default function MidiConfigSection({
         </FormControl>
 
         {config.midiType === MIDI_PITCH_BEND && type === "input" && (
-          <InfoWithTooltip text="min/max values are transmitted as 7 bit values, you might lose precision. the underlying config api needs some adjustments. the actual pitchbend values are sent as 14bit values, no worries." />
+          <InfoWithTooltip text={t("pitch_bend_precision_info")} />
         )}
       </Grid>
     </Grid>

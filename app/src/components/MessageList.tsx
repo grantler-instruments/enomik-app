@@ -130,6 +130,7 @@ const MobileMessageCard = memo(function MobileMessageCard({
   deviceName,
   sendMessage,
 }: MobileMessageCardProps) {
+  const { t } = useTranslation();
   const noteOrCc = getNoteOrController(msg);
   const velOrVal = getVelocityOrValue(msg);
   const dataStr = formatData(msg);
@@ -190,7 +191,7 @@ const MobileMessageCard = memo(function MobileMessageCard({
               display="block"
               sx={{ fontSize: "0.65rem", mb: 0.25 }}
             >
-              Device
+              {t("device")}
             </Typography>
             <Typography
               variant="body2"
@@ -208,7 +209,7 @@ const MobileMessageCard = memo(function MobileMessageCard({
                 display="block"
                 sx={{ fontSize: "0.65rem", mb: 0.25 }}
               >
-                Channel
+                {t("channel")}
               </Typography>
               <Typography variant="body2" sx={{ fontSize: "0.8rem" }}>
                 {msg.channel}
@@ -224,7 +225,7 @@ const MobileMessageCard = memo(function MobileMessageCard({
                 display="block"
                 sx={{ fontSize: "0.65rem", mb: 0.25 }}
               >
-                Note/CC/PRG
+                {t("note_cc_prg")}
               </Typography>
               <Typography variant="body2" sx={{ fontSize: "0.8rem" }}>
                 {noteOrCc}
@@ -240,7 +241,7 @@ const MobileMessageCard = memo(function MobileMessageCard({
                 display="block"
                 sx={{ fontSize: "0.65rem", mb: 0.25 }}
               >
-                Vel/Value
+                {t("vel_value")}
               </Typography>
               <Typography variant="body2" sx={{ fontSize: "0.8rem" }}>
                 {velOrVal}
@@ -257,7 +258,7 @@ const MobileMessageCard = memo(function MobileMessageCard({
               display="block"
               sx={{ fontSize: "0.65rem", mb: 0.25 }}
             >
-              Data
+              {t("data")}
             </Typography>
             <Typography
               variant="body2"
@@ -386,13 +387,13 @@ function MessageList() {
             aria-controls="inputs-content"
           >
             <Box display="flex" gap={1} alignItems="center">
-              <Typography variant={isMobile ? "h6" : "h3"}>Filter</Typography>
+              <Typography variant={isMobile ? "h6" : "h3"}>{t("filter")}</Typography>
               {activeFilters > 0 && (
                 <Typography
                   variant="body2"
                   fontSize={isMobile ? "9px" : "10px"}
                 >
-                  ({activeFilters} active)
+                  {t("filters_active", { count: activeFilters })}
                 </Typography>
               )}
             </Box>
@@ -416,7 +417,7 @@ function MessageList() {
           flexWrap="wrap"
           gap={1}
         >
-          <Typography variant={isMobile ? "h6" : "h3"}>History</Typography>
+          <Typography variant={isMobile ? "h6" : "h3"}>{t("history")}</Typography>
           <Button
             variant="outlined"
             onClick={clear}
@@ -458,28 +459,28 @@ function MessageList() {
               sx={{ fontWeight: "bold", pb: 1, borderBottom: "1px solid #333" }}
             >
               <Grid size={{ xs: gridColumns.direction }}>
-                <Box>Direction</Box>
+                <Box>{t("direction")}</Box>
               </Grid>
               <Grid size={{ xs: gridColumns.timestamp }}>
-                <Box>Timestamp</Box>
+                <Box>{t("timestamp")}</Box>
               </Grid>
               <Grid size={{ xs: gridColumns.device }}>
-                <Box>Device</Box>
+                <Box>{t("device")}</Box>
               </Grid>
               <Grid size={{ xs: gridColumns.channel }}>
-                <Box>Channel</Box>
+                <Box>{t("channel")}</Box>
               </Grid>
               <Grid size={{ xs: gridColumns.type }}>
-                <Box>Type</Box>
+                <Box>{t("type")}</Box>
               </Grid>
               <Grid size={{ xs: gridColumns.noteCC }}>
-                <Box>Note/CC/PRG</Box>
+                <Box>{t("note_cc_prg")}</Box>
               </Grid>
               <Grid size={{ xs: gridColumns.velocity }}>
-                <Box>Vel/Value</Box>
+                <Box>{t("vel_value")}</Box>
               </Grid>
               <Grid size={{ xs: gridColumns.data }}>
-                <Box>Data</Box>
+                <Box>{t("data")}</Box>
               </Grid>
             </Grid>
 

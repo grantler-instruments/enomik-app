@@ -1,6 +1,8 @@
 import { Box, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 export default function WIPBanner() {
+  const { t } = useTranslation();
   return (
     <Box
       sx={{
@@ -37,7 +39,7 @@ export default function WIPBanner() {
             fontSize: '14px',
           }}
         >
-          WORK IN PROGRESS
+          {t('work_in_progress')}
         </Typography>
       </Box>
     </Box>

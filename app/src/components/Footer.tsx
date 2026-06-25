@@ -25,7 +25,7 @@ const Footer: React.FC = () => {
           grantler instruments
         </Link>{" "}
         {new Date().getFullYear()}
-        {". All rights reserved."}
+        {t("all_rights_reserved")}
       </Typography>
     </Box>
   );

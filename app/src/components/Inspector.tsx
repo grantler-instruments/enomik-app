@@ -6,8 +6,10 @@ import { useInspectorStore } from "../store/inspector";
 import MacAddressInput from "./MacAddressInput";
 import PinMapping from "./pinmapping/PinMapping";
 import { useAppStore } from "../store/app";
+import { useTranslation } from "react-i18next";
 
 const Inspector = () => {
+  const { t } = useTranslation();
   const device = useMIDIStore((state) => state.selectedInspectorOutputDevice);
   const setDevice = useMIDIStore(
     (state) => state.setSelectedInspectorOutputDevice
@@ -23,8 +25,7 @@ const Inspector = () => {
     <Box display={"flex"} flexDirection="column" gap={2} padding={2}>
       {showHints && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          The Inspector allows you to select MIDI devices and synchronize
-          settings. Because who knows what one did months ago.
+          {t("inspector_info")}
         </Alert>
       )}
       <Box display={"flex"} flex={1} gap={2}>
@@ -59,11 +60,11 @@ const Inspector = () => {
             sendMessage(allPinConfigsmsg);
           }}
         >
-          sync
+          {t("inspector_sync")}
         </Button>
       </Box>
       <Box>
-        <Typography variant="h2">Input PIN to MIDI</Typography>
+        <Typography variant="h2">{t("inspector_input_to_midi")}</Typography>
         {inputPinConfigs.map((config, index) => (
           <PinMapping
             key={`input-${index}`}
@@ -74,7 +75,7 @@ const Inspector = () => {
         ))}
       </Box>
       <Box>
-        <Typography variant="h2">MIDI to Output PIN</Typography>
+        <Typography variant="h2">{t("inspector_midi_to_output")}</Typography>
         {outputPinConfigs.map((config, index) => (
           <PinMapping
             key={`output-${index}`}
@@ -85,7 +86,7 @@ const Inspector = () => {
         ))}
       </Box>
       <Box>
-        <Typography variant="h2">ESP-NOW MIDI</Typography>
+        <Typography variant="h2">{t("inspector_esp_now_midi")}</Typography>
         {peers.map((peer) => (
           <MacAddressInput
             key={peer}

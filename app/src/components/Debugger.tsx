@@ -12,8 +12,10 @@ import InitMidi from "./InitMidi";
 import WebSerialMonitor from "./SerialMonitor";
 import { ExpandMore } from "@mui/icons-material";
 import SectionHeader from "./SectionHeader";
+import { useTranslation } from "react-i18next";
 
 const Debugger = () => {
+  const { t } = useTranslation();
   const initialized = useMIDIStore((state) => state.initialized);
   return (
     <Box display={"flex"} flexDirection={"column"} padding={2}>
@@ -28,7 +30,7 @@ const Debugger = () => {
 
         >
           <Typography variant="body1" gutterBottom>
-            To use the MIDI features, please initialize the MIDI system.
+            {t("debugger_init_prompt")}
           </Typography>
           <InitMidi></InitMidi>
         </Box>
@@ -38,7 +40,7 @@ const Debugger = () => {
           <Accordion defaultExpanded sx={{ mb: 2 }}>
             <AccordionSummary expandIcon={<ExpandMore />}>
               <SectionHeader
-                title={"MIDI Composer"}
+                title={t("section_midi_composer")}
                 tooltipKey="tooltip_midi_composer"
               />
             </AccordionSummary>
@@ -49,7 +51,7 @@ const Debugger = () => {
           <Accordion defaultExpanded sx={{ mb: 2 }}>
             <AccordionSummary expandIcon={<ExpandMore />}>
               <SectionHeader
-                title={"MIDI Monitor"}
+                title={t("section_midi_monitor")}
                 tooltipKey="tooltip_midi_monitor"
               />
             </AccordionSummary>
@@ -62,7 +64,7 @@ const Debugger = () => {
       <Accordion sx={{ mb: 2 }}>
         <AccordionSummary expandIcon={<ExpandMore />}>
           <SectionHeader
-            title={"Serial Monitor"}
+            title={t("section_serial_monitor")}
             tooltipKey="tooltip_serial_monitor"
           />
         </AccordionSummary>
