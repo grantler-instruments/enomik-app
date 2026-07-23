@@ -17,12 +17,15 @@ import { type InputPinConfig, type OutputPinConfig } from "../../store/io";
 import MinMax from "../MinMax";
 import InfoWithTooltip from "../InfoWithTooltip";
 import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 
 const MIDI_TYPES = [
   MIDI_CONTROL_CHANGE,
   MIDI_NOTE_ON,
   MIDI_PITCH_BEND,
 ] as const;
+
+const DEFAULT_NOTE = 60;
 
 type PinConfig = InputPinConfig | OutputPinConfig;
 
@@ -40,6 +43,18 @@ export default function MidiConfigSection({
   type,
 }: MidiConfigSectionProps) {
   const { t } = useTranslation();
+
+  // Display falls back to 60 when note is missing; write it into the store so
+  // deploy does not send note 0 while the field still looks like 60.
+  useEffect(() => {
+    if (
+      config.midiType === MIDI_NOTE_ON &&
+      (config.note === undefined || config.note === null)
+    ) {
+      onChange("note", DEFAULT_NOTE);
+    }
+  }, [config.midiType, config.note, onChange]);
+
   return (
     <Grid container gap={2} flex={1}>
       <Grid size={{ xs: 6, sm: 2 }}>
@@ -106,11 +121,7 @@ export default function MidiConfigSection({
             <TextField
               label={t("note")}
               type="number"
-              value={
-                config.note !== undefined && config.note !== null
-                  ? String(Number(config.note))
-                  : 60
-              }
+              value={String(config.note ?? DEFAULT_NOTE)}
               onChange={(e) => onChange("note", Number(e.target.value))}
               size="small"
               disabled={disabled}
