@@ -41,6 +41,9 @@ i18n.use(initReactI18next).init({
 					"for real-time message tracking and a",
 				home_utilities_description_includes_end:
 					"to easily flash your ESP32 devices.",
+				home_pwa_title: "Runs in Your Browser",
+				home_pwa_description:
+					"No desktop app required. Configure devices, monitor MIDI, and flash firmware right in the browser. Install it as a Progressive Web App for quick access from your dock or home screen.",
 				getting_started_github_link_example: "Example on GitHub",
 				getting_started_upload_dongle_title:
 					"Upload the firmware to the Dongle board",
@@ -122,6 +125,12 @@ i18n.use(initReactI18next).init({
 				browser_warning_unknown:
 					"Your browser could not be identified. This app requires Web Serial API support. Chrome is highly encouraged for the best experience.",
 				browser_warning_dismiss: "Dismiss",
+				install_app: "Install app",
+				uninstall_app: "Uninstall app",
+				uninstall_app_copied:
+					"Could not open the apps page from here. Copied {{url}}. Paste it into the address bar to manage installed apps.",
+				uninstall_app_open_failed:
+					"Could not open the apps page from here. Open {{url}} in the address bar to manage installed apps.",
 				settings: "Settings",
 				show_hints: "Show Hints",
 				language: "Language",
@@ -258,6 +267,9 @@ i18n.use(initReactI18next).init({
 					"zur Echtzeit-Nachrichtenverfolgung und einen",
 				home_utilities_description_includes_end:
 					"um deine ESP32-Geräte einfach zu flashen.",
+				home_pwa_title: "Läuft im Browser",
+				home_pwa_description:
+					"Keine Desktop-App nötig. Konfiguriere Geräte, überwache MIDI und flashe Firmware direkt im Browser. Installiere sie als Progressive Web App für schnellen Zugriff vom Dock oder Startbildschirm.",
 				getting_started_github_link_example: "Beispiel auf GitHub",
 				getting_started_upload_dongle_title:
 					"Lade die Firmware auf den Dongle hoch",
@@ -341,6 +353,12 @@ i18n.use(initReactI18next).init({
 				browser_warning_unknown:
 					"Dein Browser konnte nicht identifiziert werden. Diese App erfordert die Web Serial API. Chrome wird für die beste Erfahrung ausdrücklich empfohlen.",
 				browser_warning_dismiss: "Schließen",
+				install_app: "App installieren",
+				uninstall_app: "App deinstallieren",
+				uninstall_app_copied:
+					"Die Apps-Seite konnte von hier nicht geöffnet werden. {{url}} wurde kopiert. Füge es in die Adresszeile ein, um installierte Apps zu verwalten.",
+				uninstall_app_open_failed:
+					"Die Apps-Seite konnte von hier nicht geöffnet werden. Öffne {{url}} in der Adresszeile, um installierte Apps zu verwalten.",
 				settings: "Einstellungen",
 				show_hints: "Hinweise anzeigen",
 				language: "Sprache",
@@ -476,6 +494,9 @@ i18n.use(initReactI18next).init({
 					"para el seguimiento de mensajes en tiempo real y un",
 				home_utilities_description_includes_end:
 					"para flashear fácilmente tus dispositivos ESP32.",
+				home_pwa_title: "Funciona en tu navegador",
+				home_pwa_description:
+					"No necesitas una app de escritorio. Configura dispositivos, monitoriza MIDI y flashea firmware directamente en el navegador. Instálala como Progressive Web App para acceso rápido desde el dock o la pantalla de inicio.",
 				getting_started_github_link_example: "Ejemplo en GitHub",
 				getting_started_upload_dongle_title: "Sube el firmware al dongle",
 				getting_started_upload_dongle_description:
@@ -557,6 +578,12 @@ i18n.use(initReactI18next).init({
 				browser_warning_unknown:
 					"No se pudo identificar tu navegador. Esta app requiere soporte de la Web Serial API. Se recomienda encarecidamente Chrome para la mejor experiencia.",
 				browser_warning_dismiss: "Cerrar",
+				install_app: "Instalar app",
+				uninstall_app: "Desinstalar app",
+				uninstall_app_copied:
+					"No se pudo abrir la página de apps desde aquí. Se copió {{url}}: pégalo en la barra de direcciones para gestionar las apps instaladas.",
+				uninstall_app_open_failed:
+					"No se pudo abrir la página de apps desde aquí. Abre {{url}} en la barra de direcciones para gestionar las apps instaladas.",
 				settings: "Configuración",
 				show_hints: "Mostrar sugerencias",
 				language: "Idioma",
@@ -690,6 +717,9 @@ i18n.use(initReactI18next).init({
 				home_utilities_description_includes_continues:
 					"用于实时消息跟踪，以及一个",
 				home_utilities_description_includes_end: "可轻松刷写你的 ESP32 设备。",
+				home_pwa_title: "在浏览器中运行",
+				home_pwa_description:
+					"无需桌面应用。直接在浏览器中配置设备、监视 MIDI 并刷写固件。可安装为 Progressive Web App，方便从程序坞或主屏幕快速打开。",
 				getting_started_github_link_example: "GitHub 上的示例",
 				getting_started_upload_dongle_title: "将固件上传到适配器板",
 				getting_started_upload_dongle_description:
@@ -762,6 +792,12 @@ i18n.use(initReactI18next).init({
 				browser_warning_unknown:
 					"无法识别你的浏览器。此应用需要 Web Serial API 支持。强烈建议使用 Chrome 以获得最佳体验。",
 				browser_warning_dismiss: "关闭",
+				install_app: "安装应用",
+				uninstall_app: "卸载应用",
+				uninstall_app_copied:
+					"无法从此处打开应用管理页。已复制 {{url}}，请粘贴到地址栏以管理已安装应用。",
+				uninstall_app_open_failed:
+					"无法从此处打开应用管理页。请在地址栏打开 {{url}} 以管理已安装应用。",
 				settings: "设置",
 				show_hints: "显示提示",
 				language: "语言",

@@ -1,0 +1,37 @@
+{
+	"id": "/enomik-app/",
+	"name": "enomik 3000",
+	"short_name": "enomik",
+	"description": "Configure and flash enomik wireless MIDI devices in the browser.",
+	"start_url": "/enomik-app/",
+	"scope": "/enomik-app/",
+	"display": "standalone",
+	"theme_color": "#1a1718",
+	"background_color": "#1a1718",
+	"icons": [
+		{
+			"src": "/enomik-app/icons/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/enomik-app/icons/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		},
+		{
+			"src": "/enomik-app/icons/icon-512-maskable.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	],
+	"related_applications": [
+		{
+			"platform": "webapp",
+			"url": "/enomik-app/manifest.webmanifest",
+			"id": "/enomik-app/"
+		}
+	],
+	"prefer_related_applications": false
+}
