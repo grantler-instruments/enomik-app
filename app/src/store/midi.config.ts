@@ -26,57 +26,169 @@ const sysexOutput = 0x02;
 const sysexPinModeDigitalIn = 0x00;
 const sysexPinModeDigitalOut = 0x01;
 const sysexPinModeDigitalInPullup = 0x02;
-// #define INPUT 0x0
-// #define OUTPUT 0x1
-// #define INPUT_PULLUP 0x2
 const sysexPinModeAnalogIn = 0x03;
 const sysexPinModePWMOut = 0x04;
 const sysexPinModeTouch = 0x05;
 
-/** SysEx command + 0x40; empty ack after RESET (0x09). */
-const ENOMIK_COMMAND_RESET_RESPONSE = 0x49;
+/** Keep in sync with ESP-NOW-MIDI version.h */
+const ESP_NOW_VERSION_MAJOR = 0;
+const ESP_NOW_VERSION_MINOR = 13;
 
-export {
-  MIDI_NOTE_OFF,
-  MIDI_NOTE_ON,
-  MIDI_POLY_AFTERTOUCH,
-  MIDI_CONTROL_CHANGE,
-  MIDI_PROGRAM_CHANGE,
-  MIDI_CHANNEL_AFTERTOUCH,
-  MIDI_PITCH_BEND,
-  MIDI_SYSEX_START,
-  MIDI_MIDI_TIME_CODE,
-  MIDI_SONG_POSITION_POINTER,
-  MIDI_SONG_SELECT,
-  MIDI_TUNE_REQUEST,
-  MIDI_SYSEX_END,
-  MIDI_TIMING_CLOCK,
-  MIDI_START,
-  MIDI_CONTINUE,
-  MIDI_STOP,
-  MIDI_ACTIVE_SENSING,
-  MIDI_SYSTEM_RESET,
-  sysexManufacturerId,
-  sysexStart,
-  sysexEnd,
-  sysexInput,
-  sysexOutput,
-  sysexPinModeDigitalIn,
-  sysexPinModeDigitalOut,
-  sysexPinModeDigitalInPullup,
-  sysexPinModeAnalogIn,
-  sysexPinModePWMOut,
-  sysexPinModeTouch,
-  ENOMIK_COMMAND_RESET_RESPONSE
+/** Enomik SysEx request commands (enomik::SysExCommand) */
+const ENOMIK_COMMAND_SET_PIN_CONFIG = 0x01;
+const ENOMIK_COMMAND_GET_PIN_CONFIG = 0x02;
+const ENOMIK_COMMAND_CLEAR_PIN_CONFIGS = 0x03;
+const ENOMIK_COMMAND_GET_ALL_PIN_CONFIGS = 0x04;
+const ENOMIK_COMMAND_DELETE_PIN_CONFIG = 0x05;
+const ENOMIK_COMMAND_GET_MAC = 0x06;
+const ENOMIK_COMMAND_ADD_PEER = 0x07;
+const ENOMIK_COMMAND_GET_ALL_PEERS = 0x08;
+const ENOMIK_COMMAND_RESET = 0x09;
+const ENOMIK_COMMAND_GET_VERSION = 0x0a;
+const ENOMIK_COMMAND_GET_PEER = 0x0b;
+const ENOMIK_COMMAND_GET_CONFIG = 0x0c;
+
+/** Success responses = request + 0x40 */
+const ENOMIK_COMMAND_SET_PIN_CONFIG_RESPONSE = 0x41;
+const ENOMIK_COMMAND_GET_PIN_CONFIG_RESPONSE = 0x42;
+const ENOMIK_COMMAND_CLEAR_PIN_CONFIGS_RESPONSE = 0x43;
+const ENOMIK_COMMAND_GET_ALL_PIN_CONFIGS_RESPONSE = 0x44;
+const ENOMIK_COMMAND_DELETE_PIN_CONFIG_RESPONSE = 0x45;
+const ENOMIK_COMMAND_GET_MAC_RESPONSE = 0x46;
+const ENOMIK_COMMAND_ADD_PEER_RESPONSE = 0x47;
+const ENOMIK_COMMAND_GET_ALL_PEERS_RESPONSE = 0x48;
+const ENOMIK_COMMAND_RESET_RESPONSE = 0x49;
+const ENOMIK_COMMAND_GET_VERSION_RESPONSE = 0x4a;
+const ENOMIK_COMMAND_GET_PEER_RESPONSE = 0x4b;
+const ENOMIK_COMMAND_GET_CONFIG_RESPONSE = 0x4c;
+const ENOMIK_COMMAND_ERROR_RESPONSE = 0x7f;
+
+const ENOMIK_PEER_ENTRY_PAYLOAD_SIZE = 13; // index + 12 MAC nibbles
+const ENOMIK_PIN_CONFIG_PAYLOAD_SIZE = 8;
+
+const ENOMIK_ERROR_BAD_VERSION = 0x01;
+const ENOMIK_ERROR_UNKNOWN_COMMAND = 0x02;
+const ENOMIK_ERROR_DECODE_FAILED = 0x03;
+const ENOMIK_ERROR_PIN_NOT_FOUND = 0x04;
+const ENOMIK_ERROR_NOT_READY = 0x05;
+const ENOMIK_ERROR_OPERATION_FAILED = 0x06;
+const ENOMIK_ERROR_PEER_NOT_FOUND = 0x07;
+const ENOMIK_ERROR_PEER_TABLE_FULL = 0x08;
+const ENOMIK_ERROR_PEER_ALREADY_EXISTS = 0x09;
+
+const ENOMIK_ERROR_NAMES: Record<number, string> = {
+	[ENOMIK_ERROR_BAD_VERSION]: "bad_version",
+	[ENOMIK_ERROR_UNKNOWN_COMMAND]: "unknown_command",
+	[ENOMIK_ERROR_DECODE_FAILED]: "decode_failed",
+	[ENOMIK_ERROR_PIN_NOT_FOUND]: "pin_not_found",
+	[ENOMIK_ERROR_NOT_READY]: "not_ready",
+	[ENOMIK_ERROR_OPERATION_FAILED]: "operation_failed",
+	[ENOMIK_ERROR_PEER_NOT_FOUND]: "peer_not_found",
+	[ENOMIK_ERROR_PEER_TABLE_FULL]: "peer_table_full",
+	[ENOMIK_ERROR_PEER_ALREADY_EXISTS]: "peer_already_exists",
 };
 
+/** Build a full enomik SysEx packet including F0/F7. */
+function buildEnomikSysex(command: number, payload: number[] = []): number[] {
+	return [
+		sysexStart,
+		sysexManufacturerId,
+		ESP_NOW_VERSION_MAJOR,
+		ESP_NOW_VERSION_MINOR,
+		command,
+		...payload,
+		sysexEnd,
+	];
+}
+
+/** Decode 12 MAC nibbles (each 0–15) into a colon-separated MAC string. */
+function nibblesToMacString(nibbles: ArrayLike<number>): string {
+	const macBytes: number[] = [];
+	for (let j = 0; j < 12; j += 2) {
+		macBytes.push(((nibbles[j] & 0x0f) << 4) | (nibbles[j + 1] & 0x0f));
+	}
+	return macBytes
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join(":")
+		.toUpperCase();
+}
+
+function isOutputPinMode(mode: number): boolean {
+	return mode === sysexPinModeDigitalOut || mode === sysexPinModePWMOut;
+}
+
+export {
+	buildEnomikSysex,
+	ENOMIK_COMMAND_ADD_PEER,
+	ENOMIK_COMMAND_ADD_PEER_RESPONSE,
+	ENOMIK_COMMAND_CLEAR_PIN_CONFIGS,
+	ENOMIK_COMMAND_CLEAR_PIN_CONFIGS_RESPONSE,
+	ENOMIK_COMMAND_DELETE_PIN_CONFIG,
+	ENOMIK_COMMAND_DELETE_PIN_CONFIG_RESPONSE,
+	ENOMIK_COMMAND_ERROR_RESPONSE,
+	ENOMIK_COMMAND_GET_ALL_PEERS,
+	ENOMIK_COMMAND_GET_ALL_PEERS_RESPONSE,
+	ENOMIK_COMMAND_GET_ALL_PIN_CONFIGS,
+	ENOMIK_COMMAND_GET_ALL_PIN_CONFIGS_RESPONSE,
+	ENOMIK_COMMAND_GET_CONFIG,
+	ENOMIK_COMMAND_GET_CONFIG_RESPONSE,
+	ENOMIK_COMMAND_GET_MAC,
+	ENOMIK_COMMAND_GET_MAC_RESPONSE,
+	ENOMIK_COMMAND_GET_PEER,
+	ENOMIK_COMMAND_GET_PEER_RESPONSE,
+	ENOMIK_COMMAND_GET_PIN_CONFIG,
+	ENOMIK_COMMAND_GET_PIN_CONFIG_RESPONSE,
+	ENOMIK_COMMAND_GET_VERSION,
+	ENOMIK_COMMAND_GET_VERSION_RESPONSE,
+	ENOMIK_COMMAND_RESET,
+	ENOMIK_COMMAND_RESET_RESPONSE,
+	ENOMIK_COMMAND_SET_PIN_CONFIG,
+	ENOMIK_COMMAND_SET_PIN_CONFIG_RESPONSE,
+	ENOMIK_ERROR_NAMES,
+	ENOMIK_PEER_ENTRY_PAYLOAD_SIZE,
+	ENOMIK_PIN_CONFIG_PAYLOAD_SIZE,
+	ESP_NOW_VERSION_MAJOR,
+	ESP_NOW_VERSION_MINOR,
+	isOutputPinMode,
+	MIDI_ACTIVE_SENSING,
+	MIDI_CHANNEL_AFTERTOUCH,
+	MIDI_CONTINUE,
+	MIDI_CONTROL_CHANGE,
+	MIDI_MIDI_TIME_CODE,
+	MIDI_NOTE_OFF,
+	MIDI_NOTE_ON,
+	MIDI_PITCH_BEND,
+	MIDI_POLY_AFTERTOUCH,
+	MIDI_PROGRAM_CHANGE,
+	MIDI_SONG_POSITION_POINTER,
+	MIDI_SONG_SELECT,
+	MIDI_START,
+	MIDI_STOP,
+	MIDI_SYSEX_END,
+	MIDI_SYSEX_START,
+	MIDI_SYSTEM_RESET,
+	MIDI_TIMING_CLOCK,
+	MIDI_TUNE_REQUEST,
+	nibblesToMacString,
+	sysexEnd,
+	sysexInput,
+	sysexManufacturerId,
+	sysexOutput,
+	sysexPinModeAnalogIn,
+	sysexPinModeDigitalIn,
+	sysexPinModeDigitalInPullup,
+	sysexPinModeDigitalOut,
+	sysexPinModePWMOut,
+	sysexPinModeTouch,
+	sysexStart,
+};
 
 const MIDI_TYPE_LABELS: Record<number, string> = {
-  [MIDI_CONTROL_CHANGE]: "Control Change",
-  [MIDI_NOTE_ON]: "Note On",
-  [MIDI_PITCH_BEND]: "Pitch Bend",
-  [MIDI_PROGRAM_CHANGE]: "Program Change",
-  [MIDI_POLY_AFTERTOUCH]: "Aftertouch",
+	[MIDI_CONTROL_CHANGE]: "Control Change",
+	[MIDI_NOTE_ON]: "Note On",
+	[MIDI_PITCH_BEND]: "Pitch Bend",
+	[MIDI_PROGRAM_CHANGE]: "Program Change",
+	[MIDI_POLY_AFTERTOUCH]: "Aftertouch",
 };
 
 export { MIDI_TYPE_LABELS };

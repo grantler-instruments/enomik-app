@@ -1,0 +1,3 @@
+cd app
+npm test
+npm run build
