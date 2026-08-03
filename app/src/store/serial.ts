@@ -24,11 +24,21 @@ interface FlashProgress {
 	percentage: number;
 }
 
+export type BoardResetMode = "no_reset" | "default_reset" | "usb_reset";
+
 export interface BoardDefinition {
 	id: string;
 	label: string;
 	/** S2 Mini needs BOOT+RESET; S3 Mini can enter download mode over USB. */
 	requiresManualBootloader: boolean;
+	/** esptool-js connect / main() reset strategy */
+	resetMode: BoardResetMode;
+	/** Call loader.after("hard_reset") after a successful flash */
+	hardResetAfterFlash: boolean;
+}
+
+export interface FlashFirmwareResult {
+	hardReset: boolean;
 }
 
 export interface FirmwareRole {
@@ -92,7 +102,7 @@ interface SerialState {
 		file: File,
 		manualBootloaderRequired: boolean,
 		address?: number,
-	): Promise<void>;
+	): Promise<FlashFirmwareResult | undefined>;
 }
 
 /* ------------------------ Board / firmware ------------------------ */
@@ -137,6 +147,52 @@ function resolveSelectedBoardId(
 	return boards[0]?.id ?? "";
 }
 
+const RESET_MODES: BoardResetMode[] = [
+	"no_reset",
+	"default_reset",
+	"usb_reset",
+];
+
+type RawBoardDefinition = Omit<
+	BoardDefinition,
+	"resetMode" | "hardResetAfterFlash" | "requiresManualBootloader"
+> & {
+	requiresManualBootloader?: boolean;
+	resetMode?: string;
+	hardResetAfterFlash?: boolean;
+};
+
+function normalizeBoard(board: RawBoardDefinition): BoardDefinition {
+	const requiresManualBootloader = Boolean(board.requiresManualBootloader);
+	const resetMode = RESET_MODES.includes(board.resetMode as BoardResetMode)
+		? (board.resetMode as BoardResetMode)
+		: requiresManualBootloader
+			? "no_reset"
+			: "default_reset";
+	const hardResetAfterFlash =
+		typeof board.hardResetAfterFlash === "boolean"
+			? board.hardResetAfterFlash
+			: !requiresManualBootloader;
+
+	return {
+		id: board.id,
+		label: board.label,
+		requiresManualBootloader,
+		resetMode,
+		hardResetAfterFlash,
+	};
+}
+
+function normalizeManifest(manifest: {
+	boards?: RawBoardDefinition[];
+	roles?: FirmwareRole[];
+}): FirmwareManifest {
+	return {
+		boards: (manifest.boards ?? []).map(normalizeBoard),
+		roles: manifest.roles ?? [],
+	};
+}
+
 async function fetchManifest(
 	versionPathSegment: string,
 ): Promise<FirmwareManifest> {
@@ -146,7 +202,7 @@ async function fetchManifest(
 	if (!manifestRes.ok) {
 		throw new Error(`manifest.json fetch failed: ${manifestRes.status}`);
 	}
-	return manifestRes.json();
+	return normalizeManifest(await manifestRes.json());
 }
 
 /* ---------------------------- Helpers ---------------------------- */
@@ -459,11 +515,19 @@ export const useSerialStore = create<SerialState>()(
 				file: File,
 				manualBootloaderRequired,
 				address = 0x10000,
-			) => {
+			): Promise<FlashFirmwareResult | undefined> => {
 				if (get().isFlashing) return;
 
 				let port: SerialPort | null = null;
 				let transport: Transport | null = null;
+				let result: FlashFirmwareResult | undefined;
+
+				const board = boardById(get().boards, get().selectedBoardId);
+				const resetMode: BoardResetMode = manualBootloaderRequired
+					? "no_reset"
+					: (board?.resetMode ?? "default_reset");
+				const shouldHardReset =
+					!manualBootloaderRequired && Boolean(board?.hardResetAfterFlash);
 
 				try {
 					addLog("Preparing for flashing…", "system");
@@ -483,10 +547,6 @@ export const useSerialStore = create<SerialState>()(
 					// macOS needs time to bind the AppleUSBCDC driver to the
 					// newly-enumerated bootloader device before Chrome can open it.
 					await new Promise((r) => setTimeout(r, 1500));
-
-					const resetMode = manualBootloaderRequired
-						? "no_reset"
-						: "default_reset";
 
 					let chip: string | undefined;
 					const maxAttempts = 3;
@@ -531,11 +591,14 @@ export const useSerialStore = create<SerialState>()(
 							});
 
 							addLog("✓ Flash complete", "system");
-							if (manualBootloaderRequired) {
-								addLog(
-									"Please press the reset button manually - sorry, was not yet able to automate this",
-									"system",
-								);
+
+							if (shouldHardReset) {
+								await loader.after("hard_reset");
+								addLog("Board hard-reset after flash.", "system");
+								result = { hardReset: true };
+							} else {
+								addLog("Please press the reset button manually.", "system");
+								result = { hardReset: false };
 							}
 							break;
 						} catch (err) {
@@ -576,6 +639,8 @@ export const useSerialStore = create<SerialState>()(
 							await new Promise((r) => setTimeout(r, waitMs));
 						}
 					}
+
+					return result;
 				} catch (err: unknown) {
 					const message = err instanceof Error ? err.message : String(err);
 					// Only log a generic fallback if guidance wasn't already logged above.

@@ -3,17 +3,23 @@
 		{
 			"id": "lolin_s2_mini",
 			"label": "LOLIN S2 Mini",
-			"requiresManualBootloader": true
+			"requiresManualBootloader": true,
+			"resetMode": "no_reset",
+			"hardResetAfterFlash": false
 		},
 		{
 			"id": "esp32s2",
 			"label": "ESP32-S2",
-			"requiresManualBootloader": true
+			"requiresManualBootloader": true,
+			"resetMode": "no_reset",
+			"hardResetAfterFlash": false
 		},
 		{
 			"id": "esp32s3",
 			"label": "ESP32-S3",
-			"requiresManualBootloader": false
+			"requiresManualBootloader": false,
+			"resetMode": "usb_reset",
+			"hardResetAfterFlash": true
 		}
 	],
 	"roles": [

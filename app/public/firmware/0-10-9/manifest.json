@@ -3,7 +3,9 @@
 		{
 			"id": "lolin_s2_mini",
 			"label": "LOLIN S2 Mini",
-			"requiresManualBootloader": true
+			"requiresManualBootloader": true,
+			"resetMode": "no_reset",
+			"hardResetAfterFlash": false
 		}
 	],
 	"roles": [

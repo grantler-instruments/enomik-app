@@ -23,6 +23,7 @@ import {
 	Link,
 	MenuItem,
 	Select,
+	Snackbar,
 	Stack,
 	Typography,
 } from "@mui/material";
@@ -82,6 +83,7 @@ const FirmwareUploader: FC = () => {
 	const [fwOpen, setFwOpen] = useState(true);
 	const [bootOpen, setBootOpen] = useState(false);
 	const [flashOpen, setFlashOpen] = useState(false);
+	const [flashToast, setFlashToast] = useState<string | null>(null);
 
 	useEffect(() => {
 		init();
@@ -164,8 +166,13 @@ const FirmwareUploader: FC = () => {
 		if (!file || (bootloaderRequired && !bootConfirmed)) return;
 
 		try {
-			// Pass bootloaderRequired to the store for flashing logic
-			await flashFirmware(file, bootloaderRequired);
+			const result = await flashFirmware(file, bootloaderRequired);
+			if (!result) return;
+			setFlashToast(
+				result.hardReset
+					? t("firmwareuploader_flash_success")
+					: t("firmwareuploader_flash_success_reset_manual"),
+			);
 		} catch (err) {
 			console.error(err);
 		}
@@ -517,6 +524,22 @@ const FirmwareUploader: FC = () => {
 			)}
 
 			<Console canSend={false} height={200} />
+
+			<Snackbar
+				open={flashToast !== null}
+				autoHideDuration={8000}
+				onClose={() => setFlashToast(null)}
+				anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+			>
+				<Alert
+					onClose={() => setFlashToast(null)}
+					severity="success"
+					variant="filled"
+					sx={{ width: "100%" }}
+				>
+					{flashToast}
+				</Alert>
+			</Snackbar>
 		</Box>
 	);
 };

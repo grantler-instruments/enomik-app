@@ -205,6 +205,10 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_manual_bootloader_required:
 					"Manual bootloader required (hold BOOT + RESET)",
 				firmwareuploader_load_failed: "Failed to load firmware.",
+				firmwareuploader_flash_success:
+					"Firmware flashed successfully. The board was reset.",
+				firmwareuploader_flash_success_reset_manual:
+					"Firmware flashed successfully. Press RESET on the board to boot.",
 				firmwareuploader_select_board: "Board",
 				firmwareuploader_select_version: "Version",
 				firmwareuploader_version_latest: "{{version}} (latest)",
@@ -421,6 +425,10 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_manual_bootloader_required:
 					"Manueller Bootloader erforderlich (BOOT + RESET halten)",
 				firmwareuploader_load_failed: "Firmware konnte nicht geladen werden.",
+				firmwareuploader_flash_success:
+					"Firmware erfolgreich geflasht. Das Board wurde zurückgesetzt.",
+				firmwareuploader_flash_success_reset_manual:
+					"Firmware erfolgreich geflasht. Drücke RESET am Board zum Starten.",
 				firmwareuploader_select_board: "Board",
 				firmwareuploader_select_version: "Version",
 				firmwareuploader_version_latest: "{{version}} (aktuell)",
@@ -632,6 +640,10 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_manual_bootloader_required:
 					"Bootloader manual requerido (mantén BOOT + RESET)",
 				firmwareuploader_load_failed: "No se pudo cargar el firmware.",
+				firmwareuploader_flash_success:
+					"Firmware flasheado correctamente. La placa se reinició.",
+				firmwareuploader_flash_success_reset_manual:
+					"Firmware flasheado correctamente. Pulsa RESET en la placa para arrancar.",
 				firmwareuploader_select_board: "Placa",
 				firmwareuploader_select_version: "Versión",
 				firmwareuploader_version_latest: "{{version}} (más reciente)",
@@ -830,6 +842,9 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_manual_bootloader_required:
 					"需要手动引导加载程序（按住 BOOT + RESET）",
 				firmwareuploader_load_failed: "加载固件失败。",
+				firmwareuploader_flash_success: "固件烧录成功。开发板已复位。",
+				firmwareuploader_flash_success_reset_manual:
+					"固件烧录成功。请按下开发板上的 RESET 以启动。",
 				firmwareuploader_select_board: "开发板",
 				firmwareuploader_select_version: "版本",
 				firmwareuploader_version_latest: "{{version}}（最新）",
