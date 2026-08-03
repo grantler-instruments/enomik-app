@@ -6,11 +6,15 @@ interface InspectorState {
 	peers: string[];
 	inputPinConfigs: InputPinConfig[];
 	outputPinConfigs: OutputPinConfig[];
+	midiLoopback: boolean;
+	powerSave: boolean;
 	clear: () => void;
 	setPeers: (newPeers: string[]) => void;
 	addPeer: (mac: string) => void;
 	addInputPinConfig: (config: any) => void;
 	addOutputPinConfig: (config: any) => void;
+	setMidiLoopback: (enabled: boolean) => void;
+	setPowerSave: (enabled: boolean) => void;
 }
 
 export const useInspectorStore = create<InspectorState>()(
@@ -20,6 +24,8 @@ export const useInspectorStore = create<InspectorState>()(
 				peers: [],
 				inputPinConfigs: [],
 				outputPinConfigs: [],
+				midiLoopback: false,
+				powerSave: false,
 				setPeers: (newPeers: string[]) =>
 					set(() => ({
 						peers: newPeers,
@@ -47,8 +53,20 @@ export const useInspectorStore = create<InspectorState>()(
 							config,
 						],
 					})),
+
+				setMidiLoopback: (enabled: boolean) =>
+					set(() => ({ midiLoopback: enabled })),
+
+				setPowerSave: (enabled: boolean) => set(() => ({ powerSave: enabled })),
+
 				clear: () => {
-					set({ peers: [], inputPinConfigs: [], outputPinConfigs: [] });
+					set({
+						peers: [],
+						inputPinConfigs: [],
+						outputPinConfigs: [],
+						midiLoopback: false,
+						powerSave: false,
+					});
 				},
 			}),
 			{

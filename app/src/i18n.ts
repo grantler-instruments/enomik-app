@@ -73,6 +73,11 @@ i18n.use(initReactI18next).init({
 				tooltip_midi_to_pin: "Set pins values from MIDI messages",
 				tooltip_wireless_midi:
 					"Set up ESP-NOW MIDI connections to other devices",
+				tooltip_global: "Device-wide settings that apply to the whole board",
+				tooltip_midi_loopback:
+					"When enabled, outgoing channel and realtime MIDI is soft-thrus locally to receive handlers. SysEx is not looped.",
+				tooltip_power_save:
+					"When enabled, reduces power (modem sleep and lower TX power) at the cost of higher latency. Default is off for lower latency.",
 				tooltip_save_configuration_to_file:
 					"Save current configuration to a file",
 				tooltip_load_configuration_from_file: "Load configuration from a file",
@@ -223,18 +228,22 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_version_latest: "{{version}} (latest)",
 				debugger_init_prompt:
 					"To use the MIDI features, please initialize the MIDI system.",
+				section_global: "Global",
 				section_input_pin_to_midi: "Input Pin to MIDI Mapping",
 				section_midi_to_output_pin: "MIDI to Output Pin Mapping",
 				section_wireless_midi: "Wireless MIDI Configuration",
 				section_midi_composer: "MIDI Composer",
 				section_midi_monitor: "MIDI Monitor",
 				section_serial_monitor: "Serial Monitor",
+				midi_loopback: "MIDI Loopback",
+				power_save: "Safe Power Mode",
 				inspector_info:
 					"The Inspector allows you to select MIDI devices and synchronize settings. Because who knows what one did months ago.",
 				inspector_sync: "sync",
 				inspector_input_to_midi: "Input PIN to MIDI",
 				inspector_midi_to_output: "MIDI to Output PIN",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
+				inspector_global: "Global",
 			},
 		},
 		de: {
@@ -299,6 +308,11 @@ i18n.use(initReactI18next).init({
 				tooltip_midi_to_pin: "Setze Pin-Werte von MIDI-Nachrichten",
 				tooltip_wireless_midi:
 					"Richte ESP-NOW MIDI-Verbindungen zu anderen Geräten ein",
+				tooltip_global: "Geräteweite Einstellungen für das gesamte Board",
+				tooltip_midi_loopback:
+					"Wenn aktiviert, werden ausgehende Kanal- und Echtzeit-MIDI-Nachrichten lokal an Empfangs-Handler weitergeleitet. SysEx wird nicht geloopt.",
+				tooltip_power_save:
+					"Wenn aktiviert, wird der Stromverbrauch gesenkt (Modem-Sleep und geringere Sendeleistung) bei höherer Latenz. Standard ist aus für niedrigere Latenz.",
 				tooltip_save_configuration_to_file:
 					"Aktuelle Konfiguration in einer Datei speichern",
 				tooltip_load_configuration_from_file:
@@ -452,18 +466,22 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_version_latest: "{{version}} (aktuell)",
 				debugger_init_prompt:
 					"Um die MIDI-Funktionen zu nutzen, initialisiere bitte das MIDI-System.",
+				section_global: "Global",
 				section_input_pin_to_midi: "Eingangs-Pin-zu-MIDI-Zuordnung",
 				section_midi_to_output_pin: "MIDI-zu-Ausgangs-Pin-Zuordnung",
 				section_wireless_midi: "Drahtlose MIDI-Konfiguration",
 				section_midi_composer: "MIDI-Composer",
 				section_midi_monitor: "MIDI-Monitor",
 				section_serial_monitor: "Serieller Monitor",
+				midi_loopback: "MIDI-Loopback",
+				power_save: "Energiesparmodus",
 				inspector_info:
 					"Der Inspector ermöglicht es dir, MIDI-Geräte auszuwählen und Einstellungen zu synchronisieren. Denn wer weiß schon, was man vor Monaten gemacht hat.",
 				inspector_sync: "Synchronisieren",
 				inspector_input_to_midi: "Eingangs-PIN zu MIDI",
 				inspector_midi_to_output: "MIDI zu Ausgangs-PIN",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
+				inspector_global: "Global",
 			},
 		},
 		es: {
@@ -525,6 +543,12 @@ i18n.use(initReactI18next).init({
 				tooltip_midi_to_pin: "Establecer valores de pines desde mensajes MIDI",
 				tooltip_wireless_midi:
 					"Configurar conexiones MIDI ESP-NOW a otros dispositivos",
+				tooltip_global:
+					"Ajustes del dispositivo que se aplican a toda la placa",
+				tooltip_midi_loopback:
+					"Cuando está activado, el MIDI de canal y tiempo real saliente se reenvía localmente a los manejadores de recepción. SysEx no se hace loop.",
+				tooltip_power_save:
+					"Cuando está activado, reduce el consumo (sueño del módem y menor potencia TX) a costa de mayor latencia. Por defecto está desactivado para menor latencia.",
 				tooltip_save_configuration_to_file:
 					"Guardar la configuración actual en un archivo",
 				tooltip_load_configuration_from_file:
@@ -676,18 +700,22 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_version_latest: "{{version}} (más reciente)",
 				debugger_init_prompt:
 					"Para usar las funciones MIDI, inicializa el sistema MIDI.",
+				section_global: "Global",
 				section_input_pin_to_midi: "Asignación de pin de entrada a MIDI",
 				section_midi_to_output_pin: "Asignación de MIDI a pin de salida",
 				section_wireless_midi: "Configuración de MIDI inalámbrico",
 				section_midi_composer: "Compositor MIDI",
 				section_midi_monitor: "Monitor MIDI",
 				section_serial_monitor: "Monitor serial",
+				midi_loopback: "MIDI Loopback",
+				power_save: "Modo de ahorro de energía",
 				inspector_info:
 					"El Inspector te permite seleccionar dispositivos MIDI y sincronizar la configuración. Porque quién sabe lo que uno hizo hace meses.",
 				inspector_sync: "sincronizar",
 				inspector_input_to_midi: "PIN de entrada a MIDI",
 				inspector_midi_to_output: "MIDI a PIN de salida",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
+				inspector_global: "Global",
 			},
 		},
 		zh: {
@@ -745,6 +773,11 @@ i18n.use(initReactI18next).init({
 				tooltip_pin_to_midi: "配置微控制器上的输入引脚如何映射到 MIDI 消息。",
 				tooltip_midi_to_pin: "根据 MIDI 消息设置引脚值",
 				tooltip_wireless_midi: "设置与其他设备的 ESP-NOW MIDI 连接",
+				tooltip_global: "适用于整个开发板的设备级设置",
+				tooltip_midi_loopback:
+					"启用后，传出的通道和实时 MIDI 会在本地软通到接收处理程序。SysEx 不会被回环。",
+				tooltip_power_save:
+					"启用后会降低功耗（调制解调器休眠和更低发射功率），但会增加延迟。默认关闭以获得更低延迟。",
 				tooltip_save_configuration_to_file: "将当前配置保存到文件",
 				tooltip_load_configuration_from_file: "从文件加载配置",
 				tooltip_clear_configuration: "清除当前配置",
@@ -885,18 +918,22 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_select_version: "版本",
 				firmwareuploader_version_latest: "{{version}}（最新）",
 				debugger_init_prompt: "要使用 MIDI 功能，请先初始化 MIDI 系统。",
+				section_global: "全局",
 				section_input_pin_to_midi: "输入引脚到 MIDI 映射",
 				section_midi_to_output_pin: "MIDI 到输出引脚映射",
 				section_wireless_midi: "无线 MIDI 配置",
 				section_midi_composer: "MIDI 编辑器",
 				section_midi_monitor: "MIDI 监视器",
 				section_serial_monitor: "串行监视器",
+				midi_loopback: "MIDI 回环",
+				power_save: "安全省电模式",
 				inspector_info:
 					"检查器允许你选择 MIDI 设备并同步设置。因为谁还记得几个月前做了什么呢。",
 				inspector_sync: "同步",
 				inspector_input_to_midi: "输入引脚到 MIDI",
 				inspector_midi_to_output: "MIDI 到输出引脚",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
+				inspector_global: "全局",
 			},
 		},
 	},

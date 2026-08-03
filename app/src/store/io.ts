@@ -6,7 +6,9 @@ import {
 	buildEnomikSysex,
 	ENOMIK_COMMAND_ADD_PEER,
 	ENOMIK_COMMAND_RESET,
+	ENOMIK_COMMAND_SET_MIDI_LOOPBACK,
 	ENOMIK_COMMAND_SET_PIN_CONFIG,
+	ENOMIK_COMMAND_SET_POWER_SAVE,
 	MIDI_CONTROL_CHANGE,
 	type MIDI_NOTE_OFF,
 	type MIDI_NOTE_ON,
@@ -80,6 +82,8 @@ interface IOState {
 	inputs: InputPinConfig[];
 	outputs: OutputPinConfig[];
 	peers: PeerConfig[];
+	midiLoopback: boolean;
+	powerSave: boolean;
 
 	addInput: (input: Omit<InputPinConfig, "uuid">) => void;
 	updateInput: (uuid: string, patch: Partial<InputPinConfig>) => void;
@@ -95,11 +99,16 @@ interface IOState {
 	updatePeer: (uuid: string, patch: Partial<PeerConfig>) => void;
 	removePeer: (uuid: string) => void;
 
+	setMidiLoopback: (enabled: boolean) => void;
+	setPowerSave: (enabled: boolean) => void;
+
 	saveToFile: () => void;
 	loadFromFile: (json: {
 		inputs?: Array<Omit<InputPinConfig, "uuid"> & { uuid?: string }>;
 		outputs?: Array<Omit<OutputPinConfig, "uuid"> & { uuid?: string }>;
 		peers?: Array<Omit<PeerConfig, "uuid"> & { uuid?: string }>;
+		midiLoopback?: boolean;
+		powerSave?: boolean;
 	}) => void;
 
 	deploy: (deviceId: string) => Promise<{ resetAck: boolean }>;
@@ -120,6 +129,8 @@ export const useIOStore = create<IOState>()(
 				inputs: [],
 				outputs: [],
 				peers: [],
+				midiLoopback: false,
+				powerSave: false,
 
 				addInput: (input) =>
 					set((state) => ({
@@ -184,6 +195,8 @@ export const useIOStore = create<IOState>()(
 							inputs: state.inputs,
 							outputs: state.outputs,
 							peers: state.peers,
+							midiLoopback: state.midiLoopback,
+							powerSave: state.powerSave,
 						};
 						const dataStr = JSON.stringify(data, null, 2);
 
@@ -216,7 +229,13 @@ export const useIOStore = create<IOState>()(
 						uuid: p.uuid || uuidv4(),
 					}));
 
-					set(() => ({ inputs, outputs, peers }));
+					set(() => ({
+						inputs,
+						outputs,
+						peers,
+						midiLoopback: json.midiLoopback ?? false,
+						powerSave: json.powerSave ?? false,
+					}));
 				},
 
 				addPeer: (peer) =>
@@ -235,6 +254,11 @@ export const useIOStore = create<IOState>()(
 					set((state) => ({
 						peers: state.peers.filter((p) => p.uuid !== uuid),
 					})),
+
+				setMidiLoopback: (enabled: boolean) =>
+					set(() => ({ midiLoopback: enabled })),
+
+				setPowerSave: (enabled: boolean) => set(() => ({ powerSave: enabled })),
 
 				deploy: async (deviceId: string) => {
 					const outputId = !deviceId || deviceId === "" ? "-1" : deviceId;
@@ -330,6 +354,32 @@ export const useIOStore = create<IOState>()(
 						};
 						useMIDIStore.getState().sendMessage(msg, outputId);
 					});
+
+					// MIDI loopback (RESET clears it on device — must re-apply)
+					{
+						const msg: MidiMessage = {
+							id: uuidv4(),
+							timestamp: Date.now(),
+							type: 240,
+							data: buildEnomikSysex(ENOMIK_COMMAND_SET_MIDI_LOOPBACK, [
+								get().midiLoopback ? 1 : 0,
+							]),
+						};
+						useMIDIStore.getState().sendMessage(msg, outputId);
+					}
+
+					// Power save (RESET clears it on device — must re-apply)
+					{
+						const msg: MidiMessage = {
+							id: uuidv4(),
+							timestamp: Date.now(),
+							type: 240,
+							data: buildEnomikSysex(ENOMIK_COMMAND_SET_POWER_SAVE, [
+								get().powerSave ? 1 : 0,
+							]),
+						};
+						useMIDIStore.getState().sendMessage(msg, outputId);
+					}
 
 					return { resetAck };
 				},

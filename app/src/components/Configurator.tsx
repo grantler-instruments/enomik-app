@@ -31,6 +31,7 @@ import {
 	buildEnomikSysex,
 	ENOMIK_COMMAND_GET_CONFIG,
 } from "../store/midi.config";
+import Globals from "./Globals";
 import Inputs from "./Inputs";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import Outputs from "./Outputs";
@@ -44,6 +45,8 @@ const Configurator = () => {
 	const inputs = useIOStore((state) => state.inputs);
 	const outputs = useIOStore((state) => state.outputs);
 	const peers = useIOStore((state) => state.peers);
+	const midiLoopback = useIOStore((state) => state.midiLoopback);
+	const powerSave = useIOStore((state) => state.powerSave);
 	const initialized = useMIDIStore((state) => state.initialized);
 	const sendMessage = useMIDIStore((state) => state.sendMessage);
 	const selectedOutputId = useMIDIStore(
@@ -147,6 +150,8 @@ const Configurator = () => {
 					typeof loadFromFile
 				>[0]["outputs"],
 				peers: result.peers,
+				midiLoopback: result.midiLoopback,
+				powerSave: result.powerSave,
 			});
 			setDeployToastSeverity("success");
 			setDeployToast(
@@ -243,6 +248,20 @@ const Configurator = () => {
 						</Box>
 					</Box>
 				)}
+				<Accordion defaultExpanded={midiLoopback || powerSave}>
+					<AccordionSummary
+						expandIcon={<ArrowDropDownIcon />}
+						aria-controls="global-content"
+					>
+						<SectionHeader
+							title={t("section_global")}
+							tooltipKey="tooltip_global"
+						/>
+					</AccordionSummary>
+					<AccordionDetails>
+						<Globals />
+					</AccordionDetails>
+				</Accordion>
 				<Accordion defaultExpanded={inputs.length > 0}>
 					<AccordionSummary
 						expandIcon={<ArrowDropDownIcon />}

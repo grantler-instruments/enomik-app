@@ -1,4 +1,11 @@
-import { Alert, Box, Button, Typography } from "@mui/material";
+import {
+	Alert,
+	Box,
+	Button,
+	FormControlLabel,
+	Switch,
+	Typography,
+} from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
 import { useAppStore } from "../store/app";
@@ -23,6 +30,8 @@ const Inspector = () => {
 	const peers = useInspectorStore((state) => state.peers);
 	const inputPinConfigs = useInspectorStore((state) => state.inputPinConfigs);
 	const outputPinConfigs = useInspectorStore((state) => state.outputPinConfigs);
+	const midiLoopback = useInspectorStore((state) => state.midiLoopback);
+	const powerSave = useInspectorStore((state) => state.powerSave);
 	const clear = useInspectorStore((state) => state.clear);
 	const showHints = useAppStore((state) => state.showHints);
 	return (
@@ -43,7 +52,7 @@ const Inspector = () => {
 					disabled={!initialized}
 					onClick={() => {
 						clear();
-						// GET_CONFIG streams 0x44 pins + 0x48 peers + empty 0x4C done
+						// GET_CONFIG streams 0x44 pins + 0x48 peers + 0x4E loopback + 0x50 power-save + empty 0x4C done
 						const msg: MidiMessage = {
 							id: uuidv4(),
 							type: 240,
@@ -56,6 +65,17 @@ const Inspector = () => {
 				>
 					{t("inspector_sync")}
 				</Button>
+			</Box>
+			<Box>
+				<Typography variant="h2">{t("inspector_global")}</Typography>
+				<FormControlLabel
+					control={<Switch checked={midiLoopback} disabled />}
+					label={t("midi_loopback")}
+				/>
+				<FormControlLabel
+					control={<Switch checked={powerSave} disabled />}
+					label={t("power_save")}
+				/>
 			</Box>
 			<Box>
 				<Typography variant="h2">{t("inspector_input_to_midi")}</Typography>

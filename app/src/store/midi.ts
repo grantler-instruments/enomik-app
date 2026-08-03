@@ -10,8 +10,10 @@ import {
 	ENOMIK_COMMAND_GET_ALL_PIN_CONFIGS_RESPONSE,
 	ENOMIK_COMMAND_GET_CONFIG,
 	ENOMIK_COMMAND_GET_CONFIG_RESPONSE,
+	ENOMIK_COMMAND_GET_MIDI_LOOPBACK_RESPONSE,
 	ENOMIK_COMMAND_GET_PEER_RESPONSE,
 	ENOMIK_COMMAND_GET_PIN_CONFIG_RESPONSE,
+	ENOMIK_COMMAND_GET_POWER_SAVE_RESPONSE,
 	ENOMIK_COMMAND_GET_VERSION_RESPONSE,
 	ENOMIK_COMMAND_RESET_RESPONSE,
 	ENOMIK_COMMAND_SET_PIN_CONFIG_RESPONSE,
@@ -195,6 +197,8 @@ export type LoadedDeviceConfig = {
 		pinMax: number;
 	}>;
 	peers: Array<{ macAddress: string }>;
+	midiLoopback: boolean;
+	powerSave: boolean;
 };
 
 type PendingConfigLoad = {
@@ -202,6 +206,8 @@ type PendingConfigLoad = {
 	inputs: LoadedDeviceConfig["inputs"];
 	outputs: LoadedDeviceConfig["outputs"];
 	peers: string[];
+	midiLoopback: boolean;
+	powerSave: boolean;
 	finish: (result: LoadedDeviceConfig | null) => void;
 	timeoutId: ReturnType<typeof setTimeout>;
 };
@@ -248,6 +254,8 @@ export function beginWaitForConfigLoad(
 			inputs: [],
 			outputs: [],
 			peers: [],
+			midiLoopback: false,
+			powerSave: false,
 			finish: (result) => resolve(result),
 			timeoutId,
 		};
@@ -469,6 +477,30 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						}
 					}
 
+					// MIDI loopback: GET_MIDI_LOOPBACK / GET_CONFIG stream (0x4E + byte)
+					if (
+						command === ENOMIK_COMMAND_GET_MIDI_LOOPBACK_RESPONSE &&
+						payload.length >= 1
+					) {
+						const enabled = payload[0] !== 0;
+						useInspectorStore.getState().setMidiLoopback(enabled);
+						if (matchesPendingDevice(input.name) && pendingConfigLoad) {
+							pendingConfigLoad.midiLoopback = enabled;
+						}
+					}
+
+					// Power save: GET_POWER_SAVE / GET_CONFIG stream (0x50 + byte)
+					if (
+						command === ENOMIK_COMMAND_GET_POWER_SAVE_RESPONSE &&
+						payload.length >= 1
+					) {
+						const enabled = payload[0] !== 0;
+						useInspectorStore.getState().setPowerSave(enabled);
+						if (matchesPendingDevice(input.name) && pendingConfigLoad) {
+							pendingConfigLoad.powerSave = enabled;
+						}
+					}
+
 					// GET_CONFIG done marker (empty 0x4C)
 					if (
 						command === ENOMIK_COMMAND_GET_CONFIG_RESPONSE &&
@@ -481,6 +513,8 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 								peers: pendingConfigLoad.peers.map((macAddress) => ({
 									macAddress,
 								})),
+								midiLoopback: pendingConfigLoad.midiLoopback,
+								powerSave: pendingConfigLoad.powerSave,
 							});
 						}
 					}
