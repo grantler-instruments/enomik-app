@@ -226,6 +226,9 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_select_board: "Board",
 				firmwareuploader_select_version: "Version",
 				firmwareuploader_version_latest: "{{version}} (latest)",
+				firmwareuploader_clear_nvs: "Clear NVS (reset saved settings)",
+				firmwareuploader_clear_nvs_help:
+					"Erases stored settings (e.g. peer config). Leave unchecked for normal updates. Intended for standard Arduino ESP32 firmware / this uploader’s presets.",
 				debugger_init_prompt:
 					"To use the MIDI features, please initialize the MIDI system.",
 				section_global: "Global",
@@ -464,6 +467,10 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_select_board: "Board",
 				firmwareuploader_select_version: "Version",
 				firmwareuploader_version_latest: "{{version}} (aktuell)",
+				firmwareuploader_clear_nvs:
+					"NVS löschen (gespeicherte Einstellungen zurücksetzen)",
+				firmwareuploader_clear_nvs_help:
+					"Löscht gespeicherte Einstellungen (z. B. Peer-Konfiguration). Für normale Updates deaktiviert lassen. Für Standard-Arduino-ESP32-Firmware / die Presets dieses Uploaders.",
 				debugger_init_prompt:
 					"Um die MIDI-Funktionen zu nutzen, initialisiere bitte das MIDI-System.",
 				section_global: "Global",
@@ -698,6 +705,10 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_select_board: "Placa",
 				firmwareuploader_select_version: "Versión",
 				firmwareuploader_version_latest: "{{version}} (más reciente)",
+				firmwareuploader_clear_nvs:
+					"Borrar NVS (restablecer ajustes guardados)",
+				firmwareuploader_clear_nvs_help:
+					"Borra la configuración guardada (p. ej. peers). Déjalo desmarcado para actualizaciones normales. Pensado para firmware Arduino ESP32 estándar / los presets de este cargador.",
 				debugger_init_prompt:
 					"Para usar las funciones MIDI, inicializa el sistema MIDI.",
 				section_global: "Global",
@@ -917,6 +928,9 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_select_board: "开发板",
 				firmwareuploader_select_version: "版本",
 				firmwareuploader_version_latest: "{{version}}（最新）",
+				firmwareuploader_clear_nvs: "清除 NVS（重置已保存的设置）",
+				firmwareuploader_clear_nvs_help:
+					"擦除已保存的设置（例如对端配置）。普通更新请保持未勾选。适用于标准 Arduino ESP32 固件 / 本上传器的预设。",
 				debugger_init_prompt: "要使用 MIDI 功能，请先初始化 MIDI 系统。",
 				section_global: "全局",
 				section_input_pin_to_midi: "输入引脚到 MIDI 映射",

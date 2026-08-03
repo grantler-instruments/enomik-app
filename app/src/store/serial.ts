@@ -102,12 +102,17 @@ interface SerialState {
 		file: File,
 		manualBootloaderRequired: boolean,
 		address?: number,
+		clearNvs?: boolean,
 	): Promise<FlashFirmwareResult | undefined>;
 }
 
 /* ------------------------ Board / firmware ------------------------ */
 
 const DEFAULT_BOARD_ID = "lolin_s2_mini";
+
+/** Arduino-ESP32 default partition table NVS region */
+const NVS_ADDRESS = 0x9000;
+const NVS_SIZE = 0x6000;
 
 function versionDisplayFromPath(versionPathSegment: string): string {
 	return versionPathSegment.replace(/-/g, ".");
@@ -532,6 +537,7 @@ export const useSerialStore = create<SerialState>()(
 				file: File,
 				manualBootloaderRequired,
 				address = 0x10000,
+				clearNvs = false,
 			): Promise<FlashFirmwareResult | undefined> => {
 				if (get().isFlashing) return;
 
@@ -589,8 +595,21 @@ export const useSerialStore = create<SerialState>()(
 								new Uint8Array(await file.arrayBuffer()),
 							);
 
+							const fileArray: { data: string; address: number }[] = [];
+							if (clearNvs) {
+								const erasedNvs = uint8ArrayToBinaryString(
+									new Uint8Array(NVS_SIZE).fill(0xff),
+								);
+								fileArray.push({ data: erasedNvs, address: NVS_ADDRESS });
+								addLog(
+									`Clearing NVS at 0x${NVS_ADDRESS.toString(16)} (${NVS_SIZE} bytes)…`,
+									"system",
+								);
+							}
+							fileArray.push({ data, address });
+
 							await loader.writeFlash({
-								fileArray: [{ data, address }],
+								fileArray,
 								flashSize: "keep",
 								eraseAll: false,
 								flashMode: "keep",

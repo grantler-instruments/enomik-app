@@ -77,6 +77,7 @@ const FirmwareUploader: FC = () => {
 		selectedBoard?.requiresManualBootloader ?? true,
 	);
 	const [bootConfirmed, setBootConfirmed] = useState(false);
+	const [clearNvs, setClearNvs] = useState(false);
 
 	const [versionOpen, setVersionOpen] = useState(false);
 	const [boardOpen, setBoardOpen] = useState(false);
@@ -166,7 +167,12 @@ const FirmwareUploader: FC = () => {
 		if (!file || (bootloaderRequired && !bootConfirmed)) return;
 
 		try {
-			const result = await flashFirmware(file, bootloaderRequired);
+			const result = await flashFirmware(
+				file,
+				bootloaderRequired,
+				undefined,
+				clearNvs,
+			);
 			if (!result) return;
 			setFlashToast(
 				result.hardReset
@@ -481,6 +487,24 @@ const FirmwareUploader: FC = () => {
 						</AccordionSummary>
 
 						<AccordionDetails>
+							<FormControlLabel
+								control={
+									<Checkbox
+										checked={clearNvs}
+										onChange={(e) => setClearNvs(e.target.checked)}
+										disabled={isFlashing}
+									/>
+								}
+								label={t("firmwareuploader_clear_nvs")}
+							/>
+							<Typography
+								variant="caption"
+								color="text.secondary"
+								sx={{ display: "block", mb: 2, ml: 3 }}
+							>
+								{t("firmwareuploader_clear_nvs_help")}
+							</Typography>
+
 							<Button
 								fullWidth
 								size="large"
