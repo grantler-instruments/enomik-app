@@ -92,14 +92,18 @@ i18n.use(initReactI18next).init({
 					"Compose and send custom MIDI messages to connected devices",
 				configurator_info:
 					"In order to configure your enomik client devices, you need to flash the appropriate firmware onto them first. You can use the handy Firmware Uploader utility to upload the precompiled firmware to your ESP32-based client boards.",
+				state_on: "on",
+				state_off: "off",
 				deploy_toast_summary:
-					"Sent {{pinConfigs}} pin configs and {{peerCount}} wireless MIDI addresses.",
+					"Sent {{pinConfigs}} pin configs, {{peerCount}} wireless MIDI addresses, MIDI loopback {{midiLoopback}}, and safe power mode {{powerSave}}.",
 				deploy_toast_summary_reset_ok:
-					"Device reset confirmed. Sent {{pinConfigs}} pin configs and {{peerCount}} wireless MIDI addresses.",
+					"Device reset confirmed. Sent {{pinConfigs}} pin configs, {{peerCount}} wireless MIDI addresses, MIDI loopback {{midiLoopback}}, and safe power mode {{powerSave}}.",
 				deploy_toast_summary_reset_timeout:
-					"Reset confirmation not received (timed out). Sent {{pinConfigs}} pin configs and {{peerCount}} wireless MIDI addresses. If this error persists, please update the client firmware to the latest version.",
+					"Reset confirmation not received (timed out). Sent {{pinConfigs}} pin configs, {{peerCount}} wireless MIDI addresses, MIDI loopback {{midiLoopback}}, and safe power mode {{powerSave}}. If this error persists, please update the client firmware to the latest version.",
+				deploy_toast_globals_unsupported:
+					"Global settings require firmware 0.14+ (device reported {{version}}).",
 				load_from_device_toast_ok:
-					"Loaded {{pinConfigs}} pin configs and {{peerCount}} wireless MIDI addresses from device.",
+					"Loaded {{pinConfigs}} pin configs, {{peerCount}} wireless MIDI addresses, MIDI loopback {{midiLoopback}}, and safe power mode {{powerSave}} from device.",
 				load_from_device_toast_timeout:
 					"Could not load configuration from device (timed out or no response). Select a device and ensure firmware supports GET_CONFIG.",
 				load_from_device_toast_no_device:
@@ -331,14 +335,18 @@ i18n.use(initReactI18next).init({
 					"Erstelle und sende benutzerdefinierte MIDI-Nachrichten an verbundene Geräte",
 				configurator_info:
 					"Um deine enomik-Clientgeräte zu konfigurieren, musst du zuerst die entsprechende Firmware auf ihnen flashen. Du kannst das praktische Firmware-Uploader-Dienstprogramm verwenden, um die vorcompilierte Firmware auf deine ESP32-basierten Client-Boards hochzuladen.",
+				state_on: "an",
+				state_off: "aus",
 				deploy_toast_summary:
-					"{{pinConfigs}} Pin-Konfigurationen und {{peerCount}} drahtlose MIDI-Adressen gesendet.",
+					"{{pinConfigs}} Pin-Konfigurationen, {{peerCount}} drahtlose MIDI-Adressen, MIDI-Loopback {{midiLoopback}} und Energiesparmodus {{powerSave}} gesendet.",
 				deploy_toast_summary_reset_ok:
-					"Geräte-Reset bestätigt. {{pinConfigs}} Pin-Konfigurationen und {{peerCount}} drahtlose MIDI-Adressen gesendet.",
+					"Geräte-Reset bestätigt. {{pinConfigs}} Pin-Konfigurationen, {{peerCount}} drahtlose MIDI-Adressen, MIDI-Loopback {{midiLoopback}} und Energiesparmodus {{powerSave}} gesendet.",
 				deploy_toast_summary_reset_timeout:
-					"Keine Reset-Bestätigung (Zeitüberschreitung). {{pinConfigs}} Pin-Konfigurationen und {{peerCount}} drahtlose MIDI-Adressen gesendet. Wenn dieser Fehler weiterhin auftritt, aktualisiere bitte die Client-Firmware auf die neueste Version.",
+					"Keine Reset-Bestätigung (Zeitüberschreitung). {{pinConfigs}} Pin-Konfigurationen, {{peerCount}} drahtlose MIDI-Adressen, MIDI-Loopback {{midiLoopback}} und Energiesparmodus {{powerSave}} gesendet. Wenn dieser Fehler weiterhin auftritt, aktualisiere bitte die Client-Firmware auf die neueste Version.",
+				deploy_toast_globals_unsupported:
+					"Globale Einstellungen erfordern Firmware 0.14+ (Gerät meldete {{version}}).",
 				load_from_device_toast_ok:
-					"{{pinConfigs}} Pin-Konfigurationen und {{peerCount}} drahtlose MIDI-Adressen vom Gerät geladen.",
+					"{{pinConfigs}} Pin-Konfigurationen, {{peerCount}} drahtlose MIDI-Adressen, MIDI-Loopback {{midiLoopback}} und Energiesparmodus {{powerSave}} vom Gerät geladen.",
 				load_from_device_toast_timeout:
 					"Konfiguration konnte nicht vom Gerät geladen werden (Zeitüberschreitung oder keine Antwort). Wähle ein Gerät und stelle sicher, dass die Firmware GET_CONFIG unterstützt.",
 				load_from_device_toast_no_device:
@@ -571,14 +579,18 @@ i18n.use(initReactI18next).init({
 					"Componer y enviar mensajes MIDI personalizados a dispositivos conectados",
 				configurator_info:
 					"Para configurar tus dispositivos cliente enomik, primero debes flashear el firmware apropiado en ellos. Puedes usar la práctica utilidad Firmware Uploader para cargar el firmware precompilado en tus placas cliente basadas en ESP32.",
+				state_on: "activado",
+				state_off: "desactivado",
 				deploy_toast_summary:
-					"Enviadas {{pinConfigs}} configuraciones de pin y {{peerCount}} direcciones MIDI inalámbricas.",
+					"Enviadas {{pinConfigs}} configuraciones de pin, {{peerCount}} direcciones MIDI inalámbricas, MIDI loopback {{midiLoopback}} y modo de ahorro de energía {{powerSave}}.",
 				deploy_toast_summary_reset_ok:
-					"Reinicio del dispositivo confirmado. Enviadas {{pinConfigs}} configuraciones de pin y {{peerCount}} direcciones MIDI inalámbricas.",
+					"Reinicio del dispositivo confirmado. Enviadas {{pinConfigs}} configuraciones de pin, {{peerCount}} direcciones MIDI inalámbricas, MIDI loopback {{midiLoopback}} y modo de ahorro de energía {{powerSave}}.",
 				deploy_toast_summary_reset_timeout:
-					"No se recibió confirmación de reinicio (tiempo agotado). Enviadas {{pinConfigs}} configuraciones de pin y {{peerCount}} direcciones MIDI inalámbricas. Si este error persiste, actualiza el firmware del cliente a la última versión.",
+					"No se recibió confirmación de reinicio (tiempo agotado). Enviadas {{pinConfigs}} configuraciones de pin, {{peerCount}} direcciones MIDI inalámbricas, MIDI loopback {{midiLoopback}} y modo de ahorro de energía {{powerSave}}. Si este error persiste, actualiza el firmware del cliente a la última versión.",
+				deploy_toast_globals_unsupported:
+					"Los ajustes globales requieren firmware 0.14+ (el dispositivo informó {{version}}).",
 				load_from_device_toast_ok:
-					"Se cargaron {{pinConfigs}} configuraciones de pin y {{peerCount}} direcciones MIDI inalámbricas desde el dispositivo.",
+					"Se cargaron {{pinConfigs}} configuraciones de pin, {{peerCount}} direcciones MIDI inalámbricas, MIDI loopback {{midiLoopback}} y modo de ahorro de energía {{powerSave}} desde el dispositivo.",
 				load_from_device_toast_timeout:
 					"No se pudo cargar la configuración del dispositivo (tiempo agotado o sin respuesta). Selecciona un dispositivo y asegúrate de que el firmware admite GET_CONFIG.",
 				load_from_device_toast_no_device:
@@ -798,14 +810,18 @@ i18n.use(initReactI18next).init({
 				tooltip_midi_composer: "编写并向已连接设备发送自定义 MIDI 消息",
 				configurator_info:
 					"为了配置你的 enomik 客户端设备，你需要先将相应的固件刷写到它们上面。你可以使用便捷的固件上传器工具将预编译的固件上传到基于 ESP32 的客户端板。",
+				state_on: "开",
+				state_off: "关",
 				deploy_toast_summary:
-					"已发送 {{pinConfigs}} 个引脚配置和 {{peerCount}} 个无线 MIDI 地址。",
+					"已发送 {{pinConfigs}} 个引脚配置、{{peerCount}} 个无线 MIDI 地址、MIDI 回环 {{midiLoopback}} 和安全省电模式 {{powerSave}}。",
 				deploy_toast_summary_reset_ok:
-					"设备重置已确认。已发送 {{pinConfigs}} 个引脚配置和 {{peerCount}} 个无线 MIDI 地址。",
+					"设备重置已确认。已发送 {{pinConfigs}} 个引脚配置、{{peerCount}} 个无线 MIDI 地址、MIDI 回环 {{midiLoopback}} 和安全省电模式 {{powerSave}}。",
 				deploy_toast_summary_reset_timeout:
-					"未收到重置确认（超时）。已发送 {{pinConfigs}} 个引脚配置和 {{peerCount}} 个无线 MIDI 地址。如果此错误持续存在，请将客户端固件更新到最新版本。",
+					"未收到重置确认（超时）。已发送 {{pinConfigs}} 个引脚配置、{{peerCount}} 个无线 MIDI 地址、MIDI 回环 {{midiLoopback}} 和安全省电模式 {{powerSave}}。如果此错误持续存在，请将客户端固件更新到最新版本。",
+				deploy_toast_globals_unsupported:
+					"全局设置需要固件 0.14+（设备报告为 {{version}}）。",
 				load_from_device_toast_ok:
-					"已从设备加载 {{pinConfigs}} 个引脚配置和 {{peerCount}} 个无线 MIDI 地址。",
+					"已从设备加载 {{pinConfigs}} 个引脚配置、{{peerCount}} 个无线 MIDI 地址、MIDI 回环 {{midiLoopback}} 和安全省电模式 {{powerSave}}。",
 				load_from_device_toast_timeout:
 					"无法从设备加载配置（超时或无响应）。请选择设备并确保固件支持 GET_CONFIG。",
 				load_from_device_toast_no_device:

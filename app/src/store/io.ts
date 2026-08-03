@@ -1,7 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { beginWaitForResetAck, type MidiMessage, useMIDIStore } from "./midi";
+import {
+	beginSysexErrorCollection,
+	beginWaitForResetAck,
+	type MidiMessage,
+	type SysexErrorEvent,
+	takeSysexErrors,
+	useMIDIStore,
+} from "./midi";
 import {
 	buildEnomikSysex,
 	ENOMIK_COMMAND_ADD_PEER,
@@ -111,7 +118,9 @@ interface IOState {
 		powerSave?: boolean;
 	}) => void;
 
-	deploy: (deviceId: string) => Promise<{ resetAck: boolean }>;
+	deploy: (
+		deviceId: string,
+	) => Promise<{ resetAck: boolean; sysexErrors: SysexErrorEvent[] }>;
 }
 
 /** Returns the set of pin numbers that appear in both inputs and outputs. */
@@ -262,6 +271,7 @@ export const useIOStore = create<IOState>()(
 
 				deploy: async (deviceId: string) => {
 					const outputId = !deviceId || deviceId === "" ? "-1" : deviceId;
+					beginSysexErrorCollection();
 
 					// first reset — firmware sends RESET_RESPONSE (0x49) when done
 					const resetMessage: MidiMessage = {
@@ -381,7 +391,11 @@ export const useIOStore = create<IOState>()(
 						useMIDIStore.getState().sendMessage(msg, outputId);
 					}
 
-					return { resetAck };
+					// Allow async 0x7F replies (e.g. unknown_command on older firmware)
+					await new Promise((resolve) => setTimeout(resolve, 400));
+					const sysexErrors = takeSysexErrors();
+
+					return { resetAck, sysexErrors };
 				},
 			}),
 			{ name: "IOStore" },

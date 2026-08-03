@@ -24,12 +24,16 @@ import { useAppStore } from "../store/app";
 import { useIOStore } from "../store/io";
 import {
 	beginWaitForConfigLoad,
+	isEnomikPortName,
 	type MidiMessage,
 	useMIDIStore,
 } from "../store/midi";
 import {
 	buildEnomikSysex,
 	ENOMIK_COMMAND_GET_CONFIG,
+	ENOMIK_COMMAND_SET_MIDI_LOOPBACK,
+	ENOMIK_COMMAND_SET_POWER_SAVE,
+	ENOMIK_ERROR_UNKNOWN_COMMAND,
 } from "../store/midi.config";
 import Globals from "./Globals";
 import Inputs from "./Inputs";
@@ -49,11 +53,16 @@ const Configurator = () => {
 	const powerSave = useIOStore((state) => state.powerSave);
 	const initialized = useMIDIStore((state) => state.initialized);
 	const sendMessage = useMIDIStore((state) => state.sendMessage);
+	const midiInputs = useMIDIStore((state) => state.inputs);
+	const midiOutputs = useMIDIStore((state) => state.outputs);
 	const selectedOutputId = useMIDIStore(
 		(state) => state.selectedConfiguratorOutputDevice,
 	);
 	const setSelectedOutputId = useMIDIStore(
 		(state) => state.setSelectedConfiguratorOutputDevice,
+	);
+	const hasEnomikBoard = [...midiInputs, ...midiOutputs].some((port) =>
+		isEnomikPortName(port.name),
 	);
 
 	const saveToFile = useIOStore((state) => state.saveToFile);
@@ -66,29 +75,77 @@ const Configurator = () => {
 	>("success");
 	const [deploying, setDeploying] = useState(false);
 	const [loadingFromDevice, setLoadingFromDevice] = useState(false);
+	const [globalOpen, setGlobalOpen] = useState(() => {
+		const s = useIOStore.getState();
+		return s.midiLoopback || s.powerSave;
+	});
+	const [inputsOpen, setInputsOpen] = useState(
+		() => useIOStore.getState().inputs.length > 0,
+	);
+	const [outputsOpen, setOutputsOpen] = useState(
+		() => useIOStore.getState().outputs.length > 0,
+	);
+	const [peersOpen, setPeersOpen] = useState(
+		() => useIOStore.getState().peers.length > 0,
+	);
+
+	const syncSectionOpen = (cfg: {
+		inputsCount: number;
+		outputsCount: number;
+		peersCount: number;
+		midiLoopback: boolean;
+		powerSave: boolean;
+	}) => {
+		setGlobalOpen(cfg.midiLoopback || cfg.powerSave);
+		setInputsOpen(cfg.inputsCount > 0);
+		setOutputsOpen(cfg.outputsCount > 0);
+		setPeersOpen(cfg.peersCount > 0);
+	};
 
 	const handleDeploy = async () => {
 		const pinConfigs = inputs.length + outputs.length;
 		const peerCount = peers.length;
 		const rawOut = selectedOutputId ?? "";
 		const isBroadcast = rawOut === "" || rawOut === "-1";
+		const toastGlobals = {
+			pinConfigs,
+			peerCount,
+			midiLoopback: t(midiLoopback ? "state_on" : "state_off"),
+			powerSave: t(powerSave ? "state_on" : "state_off"),
+		};
 
 		setDeploying(true);
 		try {
-			const { resetAck } = await deployConfiguration(rawOut);
+			const { resetAck, sysexErrors } = await deployConfiguration(rawOut);
+			const globalsUnsupported = sysexErrors.find(
+				(err) =>
+					err.errorCode === ENOMIK_ERROR_UNKNOWN_COMMAND &&
+					(err.failedRequest === ENOMIK_COMMAND_SET_MIDI_LOOPBACK ||
+						err.failedRequest === ENOMIK_COMMAND_SET_POWER_SAVE),
+			);
+
+			let summary: string;
 			if (isBroadcast) {
-				setDeployToastSeverity("success");
-				setDeployToast(t("deploy_toast_summary", { pinConfigs, peerCount }));
+				summary = t("deploy_toast_summary", toastGlobals);
 			} else if (resetAck) {
-				setDeployToastSeverity("success");
-				setDeployToast(
-					t("deploy_toast_summary_reset_ok", { pinConfigs, peerCount }),
-				);
+				summary = t("deploy_toast_summary_reset_ok", toastGlobals);
 			} else {
+				summary = t("deploy_toast_summary_reset_timeout", toastGlobals);
+			}
+
+			if (globalsUnsupported) {
 				setDeployToastSeverity("warning");
 				setDeployToast(
-					t("deploy_toast_summary_reset_timeout", { pinConfigs, peerCount }),
+					`${summary} ${t("deploy_toast_globals_unsupported", {
+						version: `${globalsUnsupported.major}.${globalsUnsupported.minor}`,
+					})}`,
 				);
+			} else if (isBroadcast || resetAck) {
+				setDeployToastSeverity("success");
+				setDeployToast(summary);
+			} else {
+				setDeployToastSeverity("warning");
+				setDeployToast(summary);
 			}
 		} finally {
 			setDeploying(false);
@@ -107,6 +164,13 @@ const Configurator = () => {
 			try {
 				const json = JSON.parse(event.target?.result as string);
 				loadFromFile(json);
+				syncSectionOpen({
+					inputsCount: json.inputs?.length ?? 0,
+					outputsCount: json.outputs?.length ?? 0,
+					peersCount: json.peers?.length ?? 0,
+					midiLoopback: json.midiLoopback ?? false,
+					powerSave: json.powerSave ?? false,
+				});
 			} catch (err) {
 				console.error("Failed to load JSON", err);
 			}
@@ -116,6 +180,13 @@ const Configurator = () => {
 
 	const handleClearConfiguration = () => {
 		loadFromFile({});
+		syncSectionOpen({
+			inputsCount: 0,
+			outputsCount: 0,
+			peersCount: 0,
+			midiLoopback: false,
+			powerSave: false,
+		});
 	};
 
 	const handleLoadFromDevice = async () => {
@@ -153,11 +224,20 @@ const Configurator = () => {
 				midiLoopback: result.midiLoopback,
 				powerSave: result.powerSave,
 			});
+			syncSectionOpen({
+				inputsCount: result.inputs.length,
+				outputsCount: result.outputs.length,
+				peersCount: result.peers.length,
+				midiLoopback: result.midiLoopback,
+				powerSave: result.powerSave,
+			});
 			setDeployToastSeverity("success");
 			setDeployToast(
 				t("load_from_device_toast_ok", {
 					pinConfigs: result.inputs.length + result.outputs.length,
 					peerCount: result.peers.length,
+					midiLoopback: t(result.midiLoopback ? "state_on" : "state_off"),
+					powerSave: t(result.powerSave ? "state_on" : "state_off"),
 				}),
 			);
 		} finally {
@@ -236,7 +316,7 @@ const Configurator = () => {
 				</Button>
 			</Box>
 			<Container maxWidth="xl">
-				{showHints && (
+				{showHints && !hasEnomikBoard && (
 					<Box mb={8} display={"flex"} flexDirection={"column"} gap={2}>
 						<Alert severity="info" sx={{ mb: 2 }}>
 							{t("configurator_info")}
@@ -248,7 +328,10 @@ const Configurator = () => {
 						</Box>
 					</Box>
 				)}
-				<Accordion defaultExpanded={midiLoopback || powerSave}>
+				<Accordion
+					expanded={globalOpen}
+					onChange={(_, open) => setGlobalOpen(open)}
+				>
 					<AccordionSummary
 						expandIcon={<ArrowDropDownIcon />}
 						aria-controls="global-content"
@@ -262,7 +345,10 @@ const Configurator = () => {
 						<Globals />
 					</AccordionDetails>
 				</Accordion>
-				<Accordion defaultExpanded={inputs.length > 0}>
+				<Accordion
+					expanded={inputsOpen}
+					onChange={(_, open) => setInputsOpen(open)}
+				>
 					<AccordionSummary
 						expandIcon={<ArrowDropDownIcon />}
 						aria-controls="inputs-content"
@@ -276,7 +362,10 @@ const Configurator = () => {
 						<Inputs></Inputs>
 					</AccordionDetails>
 				</Accordion>
-				<Accordion defaultExpanded={outputs.length > 0}>
+				<Accordion
+					expanded={outputsOpen}
+					onChange={(_, open) => setOutputsOpen(open)}
+				>
 					<AccordionSummary
 						expandIcon={<ArrowDropDown />}
 						aria-controls="outputs-content"
@@ -290,7 +379,10 @@ const Configurator = () => {
 						<Outputs></Outputs>
 					</AccordionDetails>
 				</Accordion>
-				<Accordion defaultExpanded={peers.length > 0}>
+				<Accordion
+					expanded={peersOpen}
+					onChange={(_, open) => setPeersOpen(open)}
+				>
 					<AccordionSummary
 						expandIcon={<ArrowDropDown />}
 						aria-controls="wireless-midi-content"

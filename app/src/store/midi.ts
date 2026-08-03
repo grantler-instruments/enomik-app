@@ -83,7 +83,7 @@ export const MIDI_MONITOR_MAX_MESSAGES = 500;
 
 let midiAccess: MIDIAccess | null = null;
 
-const isEnomikPortName = (name: string | null | undefined) =>
+export const isEnomikPortName = (name: string | null | undefined) =>
 	typeof name === "string" && /enomik/i.test(name);
 
 const findEnomikOutputId = (outputs: { id: string; name?: string | null }[]) =>
@@ -222,6 +222,28 @@ function resolveConfigLoad(result: LoadedDeviceConfig | null) {
 	pending.finish(result);
 }
 
+export type SysexErrorEvent = {
+	failedRequest: number;
+	errorCode: number;
+	major: number;
+	minor: number;
+	context?: number;
+};
+
+let sysexErrorCollection: SysexErrorEvent[] | null = null;
+
+/** Start collecting SysEx 0x7F errors (clears any prior buffer). */
+export function beginSysexErrorCollection() {
+	sysexErrorCollection = [];
+}
+
+/** Return collected errors and stop collecting. */
+export function takeSysexErrors(): SysexErrorEvent[] {
+	const errors = sysexErrorCollection ?? [];
+	sysexErrorCollection = null;
+	return errors;
+}
+
 /** Resolves when empty GET_CONFIG_RESPONSE (0x4C) arrives from the matching device. */
 export function beginWaitForConfigLoad(
 	outputId: string,
@@ -262,9 +284,29 @@ export function beginWaitForConfigLoad(
 	});
 }
 
+/** True if MIDI in/out names refer to the same device (exact, prefix, or both enomik). */
+function midiPortNamesMatch(
+	inputName: string | null | undefined,
+	outputName: string,
+): boolean {
+	const inn = (inputName ?? "").trim();
+	const out = outputName.trim();
+	if (!inn || !out) return false;
+	if (inn === out) return true;
+	const innLower = inn.toLowerCase();
+	const outLower = out.toLowerCase();
+	if (innLower === outLower) return true;
+	if (innLower.startsWith(outLower) || outLower.startsWith(innLower)) {
+		return true;
+	}
+	// Same board often exposes slightly different in/out product strings
+	return isEnomikPortName(inn) && isEnomikPortName(out);
+}
+
 function matchesPendingDevice(inputName: string | null | undefined): boolean {
 	return (
-		!!pendingConfigLoad && (inputName ?? "") === pendingConfigLoad.outputName
+		!!pendingConfigLoad &&
+		midiPortNamesMatch(inputName, pendingConfigLoad.outputName)
 	);
 }
 
@@ -546,6 +588,15 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 								`(${ENOMIK_ERROR_NAMES[errorCode] ?? "unknown"})` +
 								(context !== undefined ? ` context=${context}` : ""),
 						);
+						if (sysexErrorCollection) {
+							sysexErrorCollection.push({
+								failedRequest,
+								errorCode,
+								major: packetMajor,
+								minor: packetMinor,
+								context,
+							});
+						}
 						if (
 							matchesPendingDevice(input.name) &&
 							failedRequest === ENOMIK_COMMAND_GET_CONFIG
@@ -562,7 +613,7 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 					) {
 						if (
 							pendingResetAck &&
-							(input.name ?? "") === pendingResetAck.outputName
+							midiPortNamesMatch(input.name, pendingResetAck.outputName)
 						) {
 							pendingResetAck.finish(true);
 						}
