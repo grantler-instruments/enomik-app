@@ -1,4 +1,4 @@
-import { Box, FormControlLabel, Switch } from "@mui/material";
+import { Box, Checkbox, FormControlLabel } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useIOStore } from "../store/io";
 import InfoWithTooltip from "./InfoWithTooltip";
@@ -15,7 +15,7 @@ const Globals = () => {
 			<Box display="flex" alignItems="center">
 				<FormControlLabel
 					control={
-						<Switch
+						<Checkbox
 							checked={midiLoopback}
 							onChange={(e) => setMidiLoopback(e.target.checked)}
 						/>
@@ -27,7 +27,7 @@ const Globals = () => {
 			<Box display="flex" alignItems="center">
 				<FormControlLabel
 					control={
-						<Switch
+						<Checkbox
 							checked={powerSave}
 							onChange={(e) => setPowerSave(e.target.checked)}
 						/>
