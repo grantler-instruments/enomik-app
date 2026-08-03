@@ -556,6 +556,8 @@ export const useSerialStore = create<SerialState>()(
 						port: null,
 						isConnected: false,
 						isFlashing: true,
+						flashProgress: null,
+						chipInfo: "",
 					});
 
 					// Always request a *fresh, unopened* port
@@ -653,12 +655,14 @@ export const useSerialStore = create<SerialState>()(
 							try {
 								await port!.close();
 							} catch {}
+							set({ flashProgress: null, chipInfo: "" });
 							await new Promise((r) => setTimeout(r, waitMs));
 						}
 					}
 
 					return result;
 				} catch (err: unknown) {
+					set({ flashProgress: null, chipInfo: "" });
 					const message = err instanceof Error ? err.message : String(err);
 					// Only log a generic fallback if guidance wasn't already logged above.
 					if (!message.includes("Failed to open serial port")) {
