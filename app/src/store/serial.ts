@@ -216,21 +216,12 @@ function uint8ArrayToBinaryString(arr: Uint8Array): string {
 	return result;
 }
 
-const terminal = {
-	clean() {},
-	writeLine(t: string) {
-		console.log("[esptool]", t);
-	},
-	write(t: string) {
-		console.log("[esptool]", t);
-	},
-};
-
 /* ---------------------------- Store ----------------------------- */
 
 export const useSerialStore = create<SerialState>()(
 	devtools((set, get) => {
 		let readLoopActive = false;
+		let terminalBuffer = "";
 
 		const addLog = (message: string, type: LogType) => {
 			set((s) => ({
@@ -244,6 +235,32 @@ export const useSerialStore = create<SerialState>()(
 					},
 				],
 			}));
+		};
+
+		const flushTerminalLine = (line: string) => {
+			const trimmed = line.replace(/\r/g, "").trimEnd();
+			if (!trimmed) return;
+			// Per-block flash progress is already shown via flashProgress UI.
+			if (/^Writing at 0x/i.test(trimmed)) return;
+			addLog(trimmed, "system");
+		};
+
+		const terminal = {
+			clean() {
+				terminalBuffer = "";
+			},
+			writeLine(t: string) {
+				flushTerminalLine(terminalBuffer + t);
+				terminalBuffer = "";
+			},
+			write(t: string) {
+				terminalBuffer += t;
+				const parts = terminalBuffer.split(/\r?\n/);
+				terminalBuffer = parts.pop() ?? "";
+				for (const part of parts) {
+					flushTerminalLine(part);
+				}
+			},
 		};
 
 		/* ------------------------ Monitoring ------------------------ */
