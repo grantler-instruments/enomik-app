@@ -81,6 +81,12 @@ export const MIDI_MONITOR_MAX_MESSAGES = 500;
 
 let midiAccess: MIDIAccess | null = null;
 
+const isEnomikPortName = (name: string | null | undefined) =>
+	typeof name === "string" && /enomik/i.test(name);
+
+const findEnomikOutputId = (outputs: { id: string; name?: string | null }[]) =>
+	outputs.find((out) => isEnomikPortName(out.name))?.id;
+
 /** Batch rapid MIDI events to one React update per frame (e.g. clock spam). */
 let monitorMessageBatch: MidiMessageWithDirectionAndDevice[] = [];
 let monitorFlushRaf: number | null = null;
@@ -561,9 +567,16 @@ export const useMIDIStore = create<MonitorState>()(
 						const inputs = Array.from(midiAccess.inputs.values());
 						const outputs = Array.from(midiAccess.outputs.values());
 
+						const enomikOutputId = findEnomikOutputId(outputs);
 						set({
 							inputs,
 							outputs,
+							...(enomikOutputId
+								? {
+										selectedComposerOutputDevice: enomikOutputId,
+										selectedConfiguratorOutputDevice: enomikOutputId,
+									}
+								: {}),
 						});
 
 						// Set up MIDI input listeners for initial devices
@@ -590,6 +603,17 @@ export const useMIDIStore = create<MonitorState>()(
 							) {
 								const input = event.port as MIDIInput;
 								setupInputHandler(input, get);
+							}
+
+							if (
+								event.port?.type === "output" &&
+								event.port.state === "connected" &&
+								isEnomikPortName(event.port.name)
+							) {
+								set({
+									selectedComposerOutputDevice: event.port.id,
+									selectedConfiguratorOutputDevice: event.port.id,
+								});
 							}
 
 							// Clean up disconnected devices from active inputs
