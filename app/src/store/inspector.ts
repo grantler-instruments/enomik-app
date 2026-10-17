@@ -8,6 +8,9 @@ interface InspectorState {
 	outputPinConfigs: OutputPinConfig[];
 	midiLoopback: boolean;
 	powerSave: boolean;
+	macAddress: string | null;
+	protocolVersion: string | null;
+	name: string | null;
 	clear: () => void;
 	setPeers: (newPeers: string[]) => void;
 	addPeer: (mac: string) => void;
@@ -15,6 +18,9 @@ interface InspectorState {
 	addOutputPinConfig: (config: any) => void;
 	setMidiLoopback: (enabled: boolean) => void;
 	setPowerSave: (enabled: boolean) => void;
+	setMacAddress: (mac: string) => void;
+	setProtocolVersion: (version: string) => void;
+	setName: (name: string) => void;
 }
 
 export const useInspectorStore = create<InspectorState>()(
@@ -26,6 +32,9 @@ export const useInspectorStore = create<InspectorState>()(
 				outputPinConfigs: [],
 				midiLoopback: false,
 				powerSave: false,
+				macAddress: null,
+				protocolVersion: null,
+				name: null,
 				setPeers: (newPeers: string[]) =>
 					set(() => ({
 						peers: newPeers,
@@ -59,6 +68,14 @@ export const useInspectorStore = create<InspectorState>()(
 
 				setPowerSave: (enabled: boolean) => set(() => ({ powerSave: enabled })),
 
+				setMacAddress: (mac: string) =>
+					set(() => ({ macAddress: mac.toUpperCase() })),
+
+				setProtocolVersion: (version: string) =>
+					set(() => ({ protocolVersion: version })),
+
+				setName: (name: string) => set(() => ({ name })),
+
 				clear: () => {
 					set({
 						peers: [],
@@ -66,6 +83,9 @@ export const useInspectorStore = create<InspectorState>()(
 						outputPinConfigs: [],
 						midiLoopback: false,
 						powerSave: false,
+						macAddress: null,
+						protocolVersion: null,
+						name: null,
 					});
 				},
 			}),

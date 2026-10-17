@@ -14,7 +14,10 @@ import { type MidiMessage, useMIDIStore } from "../store/midi";
 import {
 	buildEnomikSysex,
 	ENOMIK_COMMAND_GET_CONFIG,
+	ENOMIK_COMMAND_GET_MAC,
+	ENOMIK_COMMAND_GET_VERSION,
 } from "../store/midi.config";
+import RawValues from "./inspector/RawValues";
 import MacAddressInput from "./MacAddressInput";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import PinMapping from "./pinmapping/PinMapping";
@@ -32,6 +35,9 @@ const Inspector = () => {
 	const outputPinConfigs = useInspectorStore((state) => state.outputPinConfigs);
 	const midiLoopback = useInspectorStore((state) => state.midiLoopback);
 	const powerSave = useInspectorStore((state) => state.powerSave);
+	const macAddress = useInspectorStore((state) => state.macAddress);
+	const protocolVersion = useInspectorStore((state) => state.protocolVersion);
+	const name = useInspectorStore((state) => state.name);
 	const clear = useInspectorStore((state) => state.clear);
 	const showHints = useAppStore((state) => state.showHints);
 	return (
@@ -52,15 +58,22 @@ const Inspector = () => {
 					disabled={!initialized}
 					onClick={() => {
 						clear();
+						// GET_VERSION -> 0x4A, GET_MAC -> 0x46,
 						// GET_CONFIG streams 0x44 pins + 0x48 peers + 0x4E loopback + 0x50 power-save + empty 0x4C done
-						const msg: MidiMessage = {
-							id: uuidv4(),
-							type: 240,
-							channel: 1,
-							data: buildEnomikSysex(ENOMIK_COMMAND_GET_CONFIG),
-							timestamp: Date.now(),
-						};
-						sendMessage(msg);
+						for (const command of [
+							ENOMIK_COMMAND_GET_VERSION,
+							ENOMIK_COMMAND_GET_MAC,
+							ENOMIK_COMMAND_GET_CONFIG,
+						]) {
+							const msg: MidiMessage = {
+								id: uuidv4(),
+								type: 240,
+								channel: 1,
+								data: buildEnomikSysex(command),
+								timestamp: Date.now(),
+							};
+							sendMessage(msg, device || "-1");
+						}
 					}}
 				>
 					{t("inspector_sync")}
@@ -68,6 +81,15 @@ const Inspector = () => {
 			</Box>
 			<Box>
 				<Typography variant="h2">{t("inspector_global")}</Typography>
+				<Typography>
+					{t("client_name")}: {name ?? "–"}
+				</Typography>
+				<Typography>
+					{t("inspector_mac_address")}: {macAddress ?? "–"}
+				</Typography>
+				<Typography>
+					{t("inspector_protocol_version")}: {protocolVersion ?? "–"}
+				</Typography>
 				<FormControlLabel
 					control={<Switch checked={midiLoopback} disabled />}
 					label={t("midi_loopback")}
@@ -88,6 +110,7 @@ const Inspector = () => {
 					></PinMapping>
 				))}
 			</Box>
+			<RawValues device={device || "-1"} />
 			<Box>
 				<Typography variant="h2">{t("inspector_midi_to_output")}</Typography>
 				{outputPinConfigs.map((config) => (

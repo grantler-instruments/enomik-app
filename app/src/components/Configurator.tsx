@@ -16,7 +16,7 @@ import {
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
@@ -32,9 +32,11 @@ import {
 	buildEnomikSysex,
 	ENOMIK_COMMAND_GET_CONFIG,
 	ENOMIK_COMMAND_SET_MIDI_LOOPBACK,
+	ENOMIK_COMMAND_SET_NAME,
 	ENOMIK_COMMAND_SET_POWER_SAVE,
 	ENOMIK_ERROR_UNKNOWN_COMMAND,
 } from "../store/midi.config";
+import { useRawStreamStore } from "../store/rawStream";
 import Globals from "./Globals";
 import Inputs from "./Inputs";
 import MidiDeviceChooser from "./MidiDeviceChooser";
@@ -69,6 +71,13 @@ const Configurator = () => {
 	const loadFromFile = useIOStore((state) => state.loadFromFile);
 
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const mountedRef = useRef(true);
+	useEffect(() => {
+		mountedRef.current = true;
+		return () => {
+			mountedRef.current = false;
+		};
+	}, []);
 	const [deployToast, setDeployToast] = useState<string | null>(null);
 	const [deployToastSeverity, setDeployToastSeverity] = useState<
 		"success" | "warning"
@@ -77,7 +86,7 @@ const Configurator = () => {
 	const [loadingFromDevice, setLoadingFromDevice] = useState(false);
 	const [globalOpen, setGlobalOpen] = useState(() => {
 		const s = useIOStore.getState();
-		return s.midiLoopback || s.powerSave;
+		return s.midiLoopback || s.powerSave || s.name !== "";
 	});
 	const [inputsOpen, setInputsOpen] = useState(
 		() => useIOStore.getState().inputs.length > 0,
@@ -95,8 +104,9 @@ const Configurator = () => {
 		peersCount: number;
 		midiLoopback: boolean;
 		powerSave: boolean;
+		name: string;
 	}) => {
-		setGlobalOpen(cfg.midiLoopback || cfg.powerSave);
+		setGlobalOpen(cfg.midiLoopback || cfg.powerSave || cfg.name !== "");
 		setInputsOpen(cfg.inputsCount > 0);
 		setOutputsOpen(cfg.outputsCount > 0);
 		setPeersOpen(cfg.peersCount > 0);
@@ -114,14 +124,30 @@ const Configurator = () => {
 			powerSave: t(powerSave ? "state_on" : "state_off"),
 		};
 
+		// Deploy starts with RESET, which ends the raw stream on the device, and a
+		// keepalive between RESET and the new pin configs would fail. Pause, then resume.
+		const rawStream = useRawStreamStore.getState();
+		const wasStreaming = rawStream.active;
+		rawStream.setActive(false);
+
 		setDeploying(true);
 		try {
 			const { resetAck, sysexErrors } = await deployConfiguration(rawOut);
+			// Only resume if the user is still on the Configurator.
+			if (wasStreaming && mountedRef.current) {
+				rawStream.clear();
+				rawStream.setActive(true);
+			}
 			const globalsUnsupported = sysexErrors.find(
 				(err) =>
 					err.errorCode === ENOMIK_ERROR_UNKNOWN_COMMAND &&
 					(err.failedRequest === ENOMIK_COMMAND_SET_MIDI_LOOPBACK ||
 						err.failedRequest === ENOMIK_COMMAND_SET_POWER_SAVE),
+			);
+			const nameUnsupported = sysexErrors.find(
+				(err) =>
+					err.errorCode === ENOMIK_ERROR_UNKNOWN_COMMAND &&
+					err.failedRequest === ENOMIK_COMMAND_SET_NAME,
 			);
 
 			let summary: string;
@@ -138,6 +164,13 @@ const Configurator = () => {
 				setDeployToast(
 					`${summary} ${t("deploy_toast_globals_unsupported", {
 						version: `${globalsUnsupported.major}.${globalsUnsupported.minor}`,
+					})}`,
+				);
+			} else if (nameUnsupported) {
+				setDeployToastSeverity("warning");
+				setDeployToast(
+					`${summary} ${t("deploy_toast_name_unsupported", {
+						version: `${nameUnsupported.major}.${nameUnsupported.minor}`,
 					})}`,
 				);
 			} else if (isBroadcast || resetAck) {
@@ -170,6 +203,7 @@ const Configurator = () => {
 					peersCount: json.peers?.length ?? 0,
 					midiLoopback: json.midiLoopback ?? false,
 					powerSave: json.powerSave ?? false,
+					name: json.name ?? "",
 				});
 			} catch (err) {
 				console.error("Failed to load JSON", err);
@@ -186,6 +220,7 @@ const Configurator = () => {
 			peersCount: 0,
 			midiLoopback: false,
 			powerSave: false,
+			name: "",
 		});
 	};
 
@@ -223,6 +258,7 @@ const Configurator = () => {
 				peers: result.peers,
 				midiLoopback: result.midiLoopback,
 				powerSave: result.powerSave,
+				name: result.name ?? "",
 			});
 			syncSectionOpen({
 				inputsCount: result.inputs.length,
@@ -230,6 +266,7 @@ const Configurator = () => {
 				peersCount: result.peers.length,
 				midiLoopback: result.midiLoopback,
 				powerSave: result.powerSave,
+				name: result.name ?? "",
 			});
 			setDeployToastSeverity("success");
 			setDeployToast(

@@ -147,6 +147,8 @@ i18n.use(initReactI18next).init({
 				close: "Close",
 				configurator: "Configurator",
 				debugger: "Debugger",
+				inspector: "Inspector",
+				main_navigation: "Main navigation",
 				getting_started: "Getting Started",
 				deploy: "Deploy",
 				init_midi: "Init MIDI",
@@ -197,7 +199,7 @@ i18n.use(initReactI18next).init({
 				pin_mode_digital_in_pullup_desc:
 					"Digital input with internal pull-up. Use for buttons wired to ground; idle HIGH, pressed = LOW.",
 				pin_mode_touch_desc:
-					"Capacitive touch input. Use Threshold to tune touch sensitivity.",
+					"Capacitive touch input. Threshold is the change from the untouched reading in % (1–127): sends max at threshold, min below ¾ of it. 0 = continuous value. Use Live Values in the Inspector to tune.",
 				pin_mode_digital_out_desc:
 					"Digital output. Drives LOW/HIGH for LEDs, relays or other digital loads.",
 				pin_mode_pwm_desc:
@@ -244,6 +246,12 @@ i18n.use(initReactI18next).init({
 				section_serial_monitor: "Serial Monitor",
 				midi_loopback: "MIDI Loopback",
 				power_save: "Safe Power Mode",
+				client_name: "Client name",
+				client_name_placeholder: "firmware default",
+				tooltip_client_name:
+					"Name shown to tell clients apart. Saved on the device when you deploy. Leave empty to keep the name set by the firmware. Printable ASCII, max. 16 characters.",
+				deploy_toast_name_unsupported:
+					"Client name requires firmware 0.19+ (device reported {{version}}).",
 				inspector_info:
 					"The Inspector allows you to select MIDI devices and synchronize settings. Because who knows what one did months ago.",
 				inspector_sync: "sync",
@@ -251,6 +259,25 @@ i18n.use(initReactI18next).init({
 				inspector_midi_to_output: "MIDI to Output PIN",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
 				inspector_global: "Global",
+				inspector_mac_address: "MAC Address",
+				inspector_protocol_version: "Protocol Version",
+				inspector_raw_stream: "Live Values",
+				inspector_raw_stream_toggle: "Stream raw input values",
+				inspector_raw_stream_hint:
+					"Live readings of all configured input pins (firmware 0.19+, USB only). To tune a touch pad: touch it, read the %, and set the threshold to about half of what a light touch reaches.",
+				inspector_raw_stream_error:
+					"Raw stream not available ({{error}}). Requires firmware 0.19+, configured input pins and a USB connection.",
+				configurator_raw_stream_not_deployed:
+					"Live values are only shown after this pin is deployed.",
+				configurator_raw_stream_broadcast:
+					"Select a device (not broadcast) to stream live values.",
+				inspector_raw_stream_waiting: "Waiting for values…",
+				raw: "Raw",
+				baseline: "Baseline",
+				peak: "Peak",
+				percent: "Change",
+				normalized: "Normalized",
+				touched: "touched",
 			},
 		},
 		de: {
@@ -391,6 +418,8 @@ i18n.use(initReactI18next).init({
 				close: "Schließen",
 				configurator: "Konfigurator",
 				debugger: "Debugger",
+				inspector: "Inspector",
+				main_navigation: "Hauptnavigation",
 				getting_started: "Erste Schritte",
 				deploy: "Bereitstellen",
 				init_midi: "MIDI initialisieren",
@@ -442,7 +471,7 @@ i18n.use(initReactI18next).init({
 				pin_mode_digital_in_pullup_desc:
 					"Digitaler Eingang mit internem Pull-up. Für Taster gegen Masse; im Ruhezustand HIGH, gedrückt = LOW.",
 				pin_mode_touch_desc:
-					"Kapazitiver Touch-Eingang. Verwende den Schwellenwert, um die Berührungsempfindlichkeit einzustellen.",
+					"Kapazitiver Touch-Eingang. Der Schwellenwert ist die Änderung gegenüber dem unberührten Messwert in % (1–127): sendet max ab dem Schwellenwert, min unter ¾ davon. 0 = kontinuierlicher Wert. Zum Einstellen die Live-Werte im Inspector nutzen.",
 				pin_mode_digital_out_desc:
 					"Digitaler Ausgang. Schaltet LOW/HIGH für LEDs, Relais oder andere digitale Lasten.",
 				pin_mode_pwm_desc:
@@ -490,6 +519,12 @@ i18n.use(initReactI18next).init({
 				section_serial_monitor: "Serieller Monitor",
 				midi_loopback: "MIDI-Loopback",
 				power_save: "Energiesparmodus",
+				client_name: "Client-Name",
+				client_name_placeholder: "Standard der Firmware",
+				tooltip_client_name:
+					"Name, um Clients auseinanderzuhalten. Wird beim Deploy auf dem Gerät gespeichert. Leer lassen, um den Namen der Firmware zu behalten. Nur ASCII, max. 16 Zeichen.",
+				deploy_toast_name_unsupported:
+					"Der Client-Name erfordert Firmware 0.19+ (Gerät meldet {{version}}).",
 				inspector_info:
 					"Der Inspector ermöglicht es dir, MIDI-Geräte auszuwählen und Einstellungen zu synchronisieren. Denn wer weiß schon, was man vor Monaten gemacht hat.",
 				inspector_sync: "Synchronisieren",
@@ -497,6 +532,25 @@ i18n.use(initReactI18next).init({
 				inspector_midi_to_output: "MIDI zu Ausgangs-PIN",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
 				inspector_global: "Global",
+				inspector_mac_address: "MAC-Adresse",
+				inspector_protocol_version: "Protokollversion",
+				inspector_raw_stream: "Live-Werte",
+				inspector_raw_stream_toggle: "Rohwerte der Eingänge streamen",
+				inspector_raw_stream_hint:
+					"Live-Messwerte aller konfigurierten Eingangs-PINs (Firmware 0.19+, nur über USB). Touch-Pad einstellen: Pad berühren, % ablesen und den Schwellwert auf etwa die Hälfte dessen setzen, was eine leichte Berührung erreicht.",
+				inspector_raw_stream_error:
+					"Rohwert-Stream nicht verfügbar ({{error}}). Benötigt Firmware 0.19+, konfigurierte Eingangs-PINs und eine USB-Verbindung.",
+				configurator_raw_stream_not_deployed:
+					"Live-Werte werden erst angezeigt, nachdem dieser PIN deployt wurde.",
+				configurator_raw_stream_broadcast:
+					"Gerät auswählen (nicht Broadcast), um Live-Werte zu streamen.",
+				inspector_raw_stream_waiting: "Warte auf Werte…",
+				raw: "Rohwert",
+				baseline: "Basiswert",
+				peak: "Spitze",
+				percent: "Änderung",
+				normalized: "Normalisiert",
+				touched: "berührt",
 			},
 		},
 		es: {
@@ -634,6 +688,8 @@ i18n.use(initReactI18next).init({
 				close: "Cerrar",
 				configurator: "Configurador",
 				debugger: "Depurador",
+				inspector: "Inspector",
+				main_navigation: "Navegación principal",
 				getting_started: "Introducción",
 				deploy: "Desplegar",
 				init_midi: "Iniciar MIDI",
@@ -684,7 +740,7 @@ i18n.use(initReactI18next).init({
 				pin_mode_digital_in_pullup_desc:
 					"Entrada digital con pull-up interno. Para botones conectados a tierra; en reposo HIGH, presionado = LOW.",
 				pin_mode_touch_desc:
-					"Entrada táctil capacitiva. Usa el umbral para ajustar la sensibilidad al tacto.",
+					"Entrada táctil capacitiva. El umbral es el cambio respecto a la lectura sin tocar en % (1–127): envía max al alcanzar el umbral, min por debajo de ¾ de él. 0 = valor continuo. Usa Valores en vivo en el Inspector para ajustarlo.",
 				pin_mode_digital_out_desc:
 					"Salida digital. Genera LOW/HIGH para LEDs, relés u otras cargas digitales.",
 				pin_mode_pwm_desc:
@@ -732,6 +788,12 @@ i18n.use(initReactI18next).init({
 				section_serial_monitor: "Monitor serial",
 				midi_loopback: "MIDI Loopback",
 				power_save: "Modo de ahorro de energía",
+				client_name: "Nombre del cliente",
+				client_name_placeholder: "predeterminado del firmware",
+				tooltip_client_name:
+					"Nombre para distinguir los clientes. Se guarda en el dispositivo al desplegar. Déjalo vacío para mantener el nombre del firmware. Solo ASCII, máx. 16 caracteres.",
+				deploy_toast_name_unsupported:
+					"El nombre del cliente requiere firmware 0.19+ (el dispositivo indicó {{version}}).",
 				inspector_info:
 					"El Inspector te permite seleccionar dispositivos MIDI y sincronizar la configuración. Porque quién sabe lo que uno hizo hace meses.",
 				inspector_sync: "sincronizar",
@@ -739,6 +801,25 @@ i18n.use(initReactI18next).init({
 				inspector_midi_to_output: "MIDI a PIN de salida",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
 				inspector_global: "Global",
+				inspector_mac_address: "Dirección MAC",
+				inspector_protocol_version: "Versión del protocolo",
+				inspector_raw_stream: "Valores en vivo",
+				inspector_raw_stream_toggle: "Transmitir valores brutos de entrada",
+				inspector_raw_stream_hint:
+					"Lecturas en vivo de todos los PIN de entrada configurados (firmware 0.19+, solo USB). Para ajustar un pad táctil: tócalo, lee el % y ajusta el umbral a aproximadamente la mitad de lo que alcanza un toque ligero.",
+				inspector_raw_stream_error:
+					"Transmisión de valores brutos no disponible ({{error}}). Requiere firmware 0.19+, PIN de entrada configurados y conexión USB.",
+				configurator_raw_stream_not_deployed:
+					"Los valores en vivo solo se muestran después de desplegar este PIN.",
+				configurator_raw_stream_broadcast:
+					"Selecciona un dispositivo (no broadcast) para transmitir valores en vivo.",
+				inspector_raw_stream_waiting: "Esperando valores…",
+				raw: "Bruto",
+				baseline: "Referencia",
+				peak: "Pico",
+				percent: "Cambio",
+				normalized: "Normalizado",
+				touched: "tocado",
 			},
 		},
 		zh: {
@@ -865,6 +946,8 @@ i18n.use(initReactI18next).init({
 				close: "关闭",
 				configurator: "配置器",
 				debugger: "调试器",
+				inspector: "检查器",
+				main_navigation: "主导航",
 				getting_started: "入门指南",
 				deploy: "部署",
 				init_midi: "初始化 MIDI",
@@ -913,7 +996,8 @@ i18n.use(initReactI18next).init({
 					"数字输入。读取 LOW/HIGH，与开关或按钮配合使用（需外接电阻）。",
 				pin_mode_digital_in_pullup_desc:
 					"带内部上拉的数字输入。用于接地的按钮；空闲时为 HIGH，按下时为 LOW。",
-				pin_mode_touch_desc: "电容式触摸输入。使用阈值来调整触摸灵敏度。",
+				pin_mode_touch_desc:
+					"电容式触摸输入。阈值为相对未触摸读数的变化百分比（1–127）：达到阈值时发送 max，低于其 ¾ 时发送 min。0 = 连续值。可在检查器的实时数值中调整。",
 				pin_mode_digital_out_desc:
 					"数字输出。为 LED、继电器或其他数字负载提供 LOW/HIGH。",
 				pin_mode_pwm_desc: "PWM 输出。用于调暗 LED 或以类模拟值控制电机速度。",
@@ -957,6 +1041,12 @@ i18n.use(initReactI18next).init({
 				section_serial_monitor: "串行监视器",
 				midi_loopback: "MIDI 回环",
 				power_save: "安全省电模式",
+				client_name: "客户端名称",
+				client_name_placeholder: "固件默认",
+				tooltip_client_name:
+					"用于区分客户端的名称。部署时保存到设备上。留空则保留固件设置的名称。仅限 ASCII 字符，最多 16 个。",
+				deploy_toast_name_unsupported:
+					"客户端名称需要固件 0.19+（设备报告 {{version}}）。",
 				inspector_info:
 					"检查器允许你选择 MIDI 设备并同步设置。因为谁还记得几个月前做了什么呢。",
 				inspector_sync: "同步",
@@ -964,6 +1054,25 @@ i18n.use(initReactI18next).init({
 				inspector_midi_to_output: "MIDI 到输出引脚",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
 				inspector_global: "全局",
+				inspector_mac_address: "MAC 地址",
+				inspector_protocol_version: "协议版本",
+				inspector_raw_stream: "实时数值",
+				inspector_raw_stream_toggle: "传输输入原始值",
+				inspector_raw_stream_hint:
+					"所有已配置输入引脚的实时读数（固件 0.19+，仅限 USB）。调整触摸板：触摸它，读取百分比，并将阈值设置为轻触所达到值的一半左右。",
+				inspector_raw_stream_error:
+					"原始值传输不可用（{{error}}）。需要固件 0.19+、已配置的输入引脚和 USB 连接。",
+				configurator_raw_stream_not_deployed:
+					"仅在部署此引脚后才会显示实时数值。",
+				configurator_raw_stream_broadcast:
+					"选择一个设备（非广播）以传输实时数值。",
+				inspector_raw_stream_waiting: "等待数值…",
+				raw: "原始值",
+				baseline: "基准值",
+				peak: "峰值",
+				percent: "变化",
+				normalized: "归一化",
+				touched: "已触摸",
 			},
 		},
 	},

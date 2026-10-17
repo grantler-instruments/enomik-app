@@ -51,6 +51,11 @@ const ENOMIK_COMMAND_SET_MIDI_LOOPBACK = 0x0d;
 const ENOMIK_COMMAND_GET_MIDI_LOOPBACK = 0x0e;
 const ENOMIK_COMMAND_SET_POWER_SAVE = 0x0f;
 const ENOMIK_COMMAND_GET_POWER_SAVE = 0x10;
+const ENOMIK_COMMAND_SET_NAME = 0x11;
+const ENOMIK_COMMAND_GET_NAME = 0x12;
+const ENOMIK_COMMAND_SET_RAW_STREAM = 0x16;
+/** Notification, never answered: live reading of an input pin (device → host). */
+const ENOMIK_COMMAND_RAW_VALUE = 0x17;
 
 /** Success responses = request + 0x40 */
 const ENOMIK_COMMAND_SET_PIN_CONFIG_RESPONSE = 0x41;
@@ -69,10 +74,25 @@ const ENOMIK_COMMAND_SET_MIDI_LOOPBACK_RESPONSE = 0x4d;
 const ENOMIK_COMMAND_GET_MIDI_LOOPBACK_RESPONSE = 0x4e;
 const ENOMIK_COMMAND_SET_POWER_SAVE_RESPONSE = 0x4f;
 const ENOMIK_COMMAND_GET_POWER_SAVE_RESPONSE = 0x50;
+const ENOMIK_COMMAND_SET_NAME_RESPONSE = 0x51;
+const ENOMIK_COMMAND_GET_NAME_RESPONSE = 0x52;
+const ENOMIK_COMMAND_SET_RAW_STREAM_RESPONSE = 0x56;
 const ENOMIK_COMMAND_ERROR_RESPONSE = 0x7f;
 
 const ENOMIK_PEER_ENTRY_PAYLOAD_SIZE = 13; // index + 12 MAC nibbles
 const ENOMIK_PIN_CONFIG_PAYLOAD_SIZE = 8;
+/** pin + mode + raw/baseline/peak (5 septets each) + percent + norm + threshold + active */
+const ENOMIK_RAW_VALUE_PAYLOAD_SIZE = 21;
+/** SET_RAW_STREAM pin value that selects every configured input pin. */
+const ENOMIK_RAW_STREAM_ALL_PINS = 0x7f;
+
+/** Client name: printable ASCII (0x20–0x7E), sent as raw 7-bit SysEx bytes. */
+const ENOMIK_MAX_NAME_LENGTH = 16;
+
+/** Drop characters the firmware rejects and cap at ENOMIK_MAX_NAME_LENGTH. */
+function sanitizeClientName(name: string): string {
+	return name.replace(/[^\x20-\x7e]/g, "").slice(0, ENOMIK_MAX_NAME_LENGTH);
+}
 
 const ENOMIK_ERROR_BAD_VERSION = 0x01;
 const ENOMIK_ERROR_UNKNOWN_COMMAND = 0x02;
@@ -121,12 +141,22 @@ function nibblesToMacString(nibbles: ArrayLike<number>): string {
 		.toUpperCase();
 }
 
+/** Decode a 32-bit value sent as 5 septets, most significant first. */
+function decodeSeptets32(bytes: ArrayLike<number>, offset: number): number {
+	let value = 0;
+	for (let i = 0; i < 5; i++) {
+		value = (value * 128 + (bytes[offset + i] & 0x7f)) >>> 0;
+	}
+	return value;
+}
+
 function isOutputPinMode(mode: number): boolean {
 	return mode === sysexPinModeDigitalOut || mode === sysexPinModePWMOut;
 }
 
 export {
 	buildEnomikSysex,
+	decodeSeptets32,
 	ENOMIK_COMMAND_ADD_PEER,
 	ENOMIK_COMMAND_ADD_PEER_RESPONSE,
 	ENOMIK_COMMAND_CLEAR_PIN_CONFIGS,
@@ -144,6 +174,8 @@ export {
 	ENOMIK_COMMAND_GET_MAC_RESPONSE,
 	ENOMIK_COMMAND_GET_MIDI_LOOPBACK,
 	ENOMIK_COMMAND_GET_MIDI_LOOPBACK_RESPONSE,
+	ENOMIK_COMMAND_GET_NAME,
+	ENOMIK_COMMAND_GET_NAME_RESPONSE,
 	ENOMIK_COMMAND_GET_PEER,
 	ENOMIK_COMMAND_GET_PEER_RESPONSE,
 	ENOMIK_COMMAND_GET_PIN_CONFIG,
@@ -152,18 +184,26 @@ export {
 	ENOMIK_COMMAND_GET_POWER_SAVE_RESPONSE,
 	ENOMIK_COMMAND_GET_VERSION,
 	ENOMIK_COMMAND_GET_VERSION_RESPONSE,
+	ENOMIK_COMMAND_RAW_VALUE,
 	ENOMIK_COMMAND_RESET,
 	ENOMIK_COMMAND_RESET_RESPONSE,
 	ENOMIK_COMMAND_SET_MIDI_LOOPBACK,
 	ENOMIK_COMMAND_SET_MIDI_LOOPBACK_RESPONSE,
+	ENOMIK_COMMAND_SET_NAME,
+	ENOMIK_COMMAND_SET_NAME_RESPONSE,
 	ENOMIK_COMMAND_SET_PIN_CONFIG,
 	ENOMIK_COMMAND_SET_PIN_CONFIG_RESPONSE,
 	ENOMIK_COMMAND_SET_POWER_SAVE,
 	ENOMIK_COMMAND_SET_POWER_SAVE_RESPONSE,
+	ENOMIK_COMMAND_SET_RAW_STREAM,
+	ENOMIK_COMMAND_SET_RAW_STREAM_RESPONSE,
 	ENOMIK_ERROR_NAMES,
 	ENOMIK_ERROR_UNKNOWN_COMMAND,
+	ENOMIK_MAX_NAME_LENGTH,
 	ENOMIK_PEER_ENTRY_PAYLOAD_SIZE,
 	ENOMIK_PIN_CONFIG_PAYLOAD_SIZE,
+	ENOMIK_RAW_STREAM_ALL_PINS,
+	ENOMIK_RAW_VALUE_PAYLOAD_SIZE,
 	ESP_NOW_VERSION_MAJOR,
 	ESP_NOW_VERSION_MINOR,
 	isOutputPinMode,
@@ -187,6 +227,7 @@ export {
 	MIDI_TIMING_CLOCK,
 	MIDI_TUNE_REQUEST,
 	nibblesToMacString,
+	sanitizeClientName,
 	sysexEnd,
 	sysexInput,
 	sysexManufacturerId,

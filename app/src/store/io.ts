@@ -14,6 +14,7 @@ import {
 	ENOMIK_COMMAND_ADD_PEER,
 	ENOMIK_COMMAND_RESET,
 	ENOMIK_COMMAND_SET_MIDI_LOOPBACK,
+	ENOMIK_COMMAND_SET_NAME,
 	ENOMIK_COMMAND_SET_PIN_CONFIG,
 	ENOMIK_COMMAND_SET_POWER_SAVE,
 	MIDI_CONTROL_CHANGE,
@@ -22,6 +23,7 @@ import {
 	MIDI_PITCH_BEND,
 	type MIDI_POLY_AFTERTOUCH,
 	type MIDI_PROGRAM_CHANGE,
+	sanitizeClientName,
 	type sysexPinModeAnalogIn,
 	type sysexPinModeDigitalIn,
 	type sysexPinModeDigitalInPullup,
@@ -91,6 +93,8 @@ interface IOState {
 	peers: PeerConfig[];
 	midiLoopback: boolean;
 	powerSave: boolean;
+	/** Client name override; empty = keep the name the firmware sets. */
+	name: string;
 
 	addInput: (input: Omit<InputPinConfig, "uuid">) => void;
 	updateInput: (uuid: string, patch: Partial<InputPinConfig>) => void;
@@ -108,6 +112,7 @@ interface IOState {
 
 	setMidiLoopback: (enabled: boolean) => void;
 	setPowerSave: (enabled: boolean) => void;
+	setName: (name: string) => void;
 
 	saveToFile: () => void;
 	loadFromFile: (json: {
@@ -116,6 +121,7 @@ interface IOState {
 		peers?: Array<Omit<PeerConfig, "uuid"> & { uuid?: string }>;
 		midiLoopback?: boolean;
 		powerSave?: boolean;
+		name?: string;
 	}) => void;
 
 	deploy: (
@@ -140,6 +146,7 @@ export const useIOStore = create<IOState>()(
 				peers: [],
 				midiLoopback: false,
 				powerSave: false,
+				name: "",
 
 				addInput: (input) =>
 					set((state) => ({
@@ -206,6 +213,7 @@ export const useIOStore = create<IOState>()(
 							peers: state.peers,
 							midiLoopback: state.midiLoopback,
 							powerSave: state.powerSave,
+							name: state.name,
 						};
 						const dataStr = JSON.stringify(data, null, 2);
 
@@ -244,6 +252,7 @@ export const useIOStore = create<IOState>()(
 						peers,
 						midiLoopback: json.midiLoopback ?? false,
 						powerSave: json.powerSave ?? false,
+						name: sanitizeClientName(json.name ?? ""),
 					}));
 				},
 
@@ -268,6 +277,9 @@ export const useIOStore = create<IOState>()(
 					set(() => ({ midiLoopback: enabled })),
 
 				setPowerSave: (enabled: boolean) => set(() => ({ powerSave: enabled })),
+
+				setName: (name: string) =>
+					set(() => ({ name: sanitizeClientName(name) })),
 
 				deploy: async (deviceId: string) => {
 					const outputId = !deviceId || deviceId === "" ? "-1" : deviceId;
@@ -303,7 +315,8 @@ export const useIOStore = create<IOState>()(
 							data: buildEnomikSysex(ENOMIK_COMMAND_SET_PIN_CONFIG, [
 								input.pin,
 								input.mode,
-								input.threshold || 0,
+								// SysEx data byte; touch threshold is % (0–127) since firmware 0.19
+								Math.max(0, Math.min(127, input.threshold || 0)),
 								input.channel || 1,
 								input.midiType / 2,
 								input.midiType === MIDI_CONTROL_CHANGE
@@ -387,6 +400,20 @@ export const useIOStore = create<IOState>()(
 							data: buildEnomikSysex(ENOMIK_COMMAND_SET_POWER_SAVE, [
 								get().powerSave ? 1 : 0,
 							]),
+						};
+						useMIDIStore.getState().sendMessage(msg, outputId);
+					}
+
+					// Client name (RESET drops the override — re-apply; empty keeps the firmware's name)
+					if (get().name) {
+						const msg: MidiMessage = {
+							id: uuidv4(),
+							timestamp: Date.now(),
+							type: 240,
+							data: buildEnomikSysex(
+								ENOMIK_COMMAND_SET_NAME,
+								Array.from(get().name, (c) => c.charCodeAt(0)),
+							),
 						};
 						useMIDIStore.getState().sendMessage(msg, outputId);
 					}

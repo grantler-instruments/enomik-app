@@ -4,27 +4,35 @@ import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import { MIDI_STATUS } from "../utils/midi";
 import { useInspectorStore } from "./inspector";
 import {
+	decodeSeptets32,
 	ENOMIK_COMMAND_ADD_PEER_RESPONSE,
 	ENOMIK_COMMAND_ERROR_RESPONSE,
 	ENOMIK_COMMAND_GET_ALL_PEERS_RESPONSE,
 	ENOMIK_COMMAND_GET_ALL_PIN_CONFIGS_RESPONSE,
 	ENOMIK_COMMAND_GET_CONFIG,
 	ENOMIK_COMMAND_GET_CONFIG_RESPONSE,
+	ENOMIK_COMMAND_GET_MAC_RESPONSE,
 	ENOMIK_COMMAND_GET_MIDI_LOOPBACK_RESPONSE,
+	ENOMIK_COMMAND_GET_NAME_RESPONSE,
 	ENOMIK_COMMAND_GET_PEER_RESPONSE,
 	ENOMIK_COMMAND_GET_PIN_CONFIG_RESPONSE,
 	ENOMIK_COMMAND_GET_POWER_SAVE_RESPONSE,
 	ENOMIK_COMMAND_GET_VERSION_RESPONSE,
+	ENOMIK_COMMAND_RAW_VALUE,
 	ENOMIK_COMMAND_RESET_RESPONSE,
+	ENOMIK_COMMAND_SET_NAME_RESPONSE,
 	ENOMIK_COMMAND_SET_PIN_CONFIG_RESPONSE,
+	ENOMIK_COMMAND_SET_RAW_STREAM,
 	ENOMIK_ERROR_NAMES,
 	ENOMIK_PEER_ENTRY_PAYLOAD_SIZE,
 	ENOMIK_PIN_CONFIG_PAYLOAD_SIZE,
+	ENOMIK_RAW_VALUE_PAYLOAD_SIZE,
 	ESP_NOW_VERSION_MAJOR,
 	isOutputPinMode,
 	nibblesToMacString,
 	sysexManufacturerId,
 } from "./midi.config";
+import { useRawStreamStore } from "./rawStream";
 
 export interface MidiMessage {
 	id: string;
@@ -199,6 +207,8 @@ export type LoadedDeviceConfig = {
 	peers: Array<{ macAddress: string }>;
 	midiLoopback: boolean;
 	powerSave: boolean;
+	/** Effective client name; null if the firmware predates GET_NAME. */
+	name: string | null;
 };
 
 type PendingConfigLoad = {
@@ -208,6 +218,7 @@ type PendingConfigLoad = {
 	peers: string[];
 	midiLoopback: boolean;
 	powerSave: boolean;
+	name: string | null;
 	finish: (result: LoadedDeviceConfig | null) => void;
 	timeoutId: ReturnType<typeof setTimeout>;
 };
@@ -278,6 +289,7 @@ export function beginWaitForConfigLoad(
 			peers: [],
 			midiLoopback: false,
 			powerSave: false,
+			name: null,
 			finish: (result) => resolve(result),
 			timeoutId,
 		};
@@ -543,6 +555,18 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						}
 					}
 
+					// Client name: GET_NAME / SET_NAME / GET_CONFIG stream (0x52/0x51 + ASCII bytes)
+					if (
+						command === ENOMIK_COMMAND_GET_NAME_RESPONSE ||
+						command === ENOMIK_COMMAND_SET_NAME_RESPONSE
+					) {
+						const name = String.fromCharCode(...payload);
+						useInspectorStore.getState().setName(name);
+						if (matchesPendingDevice(input.name) && pendingConfigLoad) {
+							pendingConfigLoad.name = name;
+						}
+					}
+
 					// GET_CONFIG done marker (empty 0x4C)
 					if (
 						command === ENOMIK_COMMAND_GET_CONFIG_RESPONSE &&
@@ -557,14 +581,48 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 								})),
 								midiLoopback: pendingConfigLoad.midiLoopback,
 								powerSave: pendingConfigLoad.powerSave,
+								name: pendingConfigLoad.name,
 							});
 						}
 					}
 
-					if (command === ENOMIK_COMMAND_GET_VERSION_RESPONSE) {
-						const deviceMajor = payload[0];
-						const deviceMinor = payload[1];
-						console.log(`Device version: ${deviceMajor}.${deviceMinor}`);
+					if (
+						command === ENOMIK_COMMAND_GET_VERSION_RESPONSE &&
+						payload.length >= 2
+					) {
+						// Payload: [major, minor] or, since 0.19, [major, minor, patch]
+						const version = Array.from(payload.slice(0, 3)).join(".");
+						console.log(`Device version: ${version}`);
+						useInspectorStore.getState().setProtocolVersion(version);
+					}
+
+					// Raw stream frame: RAW_VALUE notification (0x17), see SET_RAW_STREAM
+					if (
+						command === ENOMIK_COMMAND_RAW_VALUE &&
+						payload.length >= ENOMIK_RAW_VALUE_PAYLOAD_SIZE
+					) {
+						useRawStreamStore.getState().setValue({
+							pin: payload[0],
+							mode: payload[1],
+							raw: decodeSeptets32(payload, 2),
+							baseline: decodeSeptets32(payload, 7),
+							peak: decodeSeptets32(payload, 12),
+							percent: payload[17],
+							norm: payload[18],
+							threshold: payload[19],
+							active: payload[20] !== 0,
+							timestamp: Date.now(),
+						});
+					}
+
+					// Own MAC: GET_MAC response (0x46 + 12 MAC nibbles)
+					if (
+						command === ENOMIK_COMMAND_GET_MAC_RESPONSE &&
+						payload.length >= 12
+					) {
+						useInspectorStore
+							.getState()
+							.setMacAddress(nibblesToMacString(payload.slice(0, 12)));
 					}
 
 					if (
@@ -596,6 +654,11 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 								minor: packetMinor,
 								context,
 							});
+						}
+						if (failedRequest === ENOMIK_COMMAND_SET_RAW_STREAM) {
+							const rawStream = useRawStreamStore.getState();
+							rawStream.setError(ENOMIK_ERROR_NAMES[errorCode] ?? "unknown");
+							rawStream.setActive(false);
 						}
 						if (
 							matchesPendingDevice(input.name) &&

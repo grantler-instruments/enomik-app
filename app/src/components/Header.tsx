@@ -3,9 +3,9 @@ import {
 	Settings as SettingsIcon,
 } from "@mui/icons-material";
 import {
-	Button,
 	Drawer,
 	IconButton,
+	Link,
 	List,
 	ListItem,
 	ListItemButton,
@@ -42,7 +42,7 @@ const Header: React.FC = () => {
 	const menu = [
 		{ label: t("configurator"), path: "/configurator" },
 		{ label: t("debugger"), path: "/debugger" },
-		// { label: "Inspector", path: "/inspector" },
+		{ label: t("inspector"), path: "/inspector" },
 		{ label: t("firmware_uploader"), path: "/uploader" },
 	];
 
@@ -83,24 +83,37 @@ const Header: React.FC = () => {
 
 					{/* Desktop Menu */}
 					{!isMobile && (
-						<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-							{menu.map((item) => (
-								<Button
-									key={item.path}
-									component={NavLink}
-									to={item.path}
-									color="inherit"
-									sx={{
-										"&.active": {
-											backgroundColor: "primary.main",
-											color: "primary.contrastText",
-											fontWeight: 600,
-										},
-									}}
-								>
-									{item.label}
-								</Button>
-							))}
+						<Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+							<Box
+								component="nav"
+								aria-label={t("main_navigation")}
+								sx={{ display: "flex", alignSelf: "stretch", gap: 3 }}
+							>
+								{menu.map((item) => (
+									<Link
+										key={item.path}
+										component={NavLink}
+										to={item.path}
+										color="inherit"
+										underline="none"
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											borderBottom: 2,
+											borderColor: "transparent",
+											transition: "color 150ms, border-color 150ms",
+											"&:hover": { color: "primary.main" },
+											"&.active": {
+												color: "primary.main",
+												borderColor: "primary.main",
+												fontWeight: 600,
+											},
+										}}
+									>
+										{item.label}
+									</Link>
+								))}
+							</Box>
 							<IconButton
 								onClick={() => setShowSettingsModal(true)}
 								color="inherit"
@@ -137,7 +150,11 @@ const Header: React.FC = () => {
 				open={mobileMenuOpen}
 				onClose={handleMobileMenuClose}
 			>
-				<Box sx={{ width: 250 }} role="presentation">
+				<Box
+					component="nav"
+					aria-label={t("main_navigation")}
+					sx={{ width: 250 }}
+				>
 					<List>
 						{menu.map((item) => (
 							<ListItem key={item.path} disablePadding>
