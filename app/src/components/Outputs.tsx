@@ -5,7 +5,7 @@ import { useAppStore } from "../store/app";
 import { useIOStore } from "../store/io";
 import { MIDI_CONTROL_CHANGE, sysexPinModePWMOut } from "../store/midi.config";
 import AddRowButton from "./AddRowButton";
-import PinMapping, { pinRowSx } from "./pinmapping/PinMapping";
+import PinRow, { hasPwmOutput, PinTableHeader } from "./pinmapping/PinRow";
 
 const Outputs = () => {
 	const outputs = useIOStore((state) => state.outputs);
@@ -13,6 +13,7 @@ const Outputs = () => {
 	const showHints = useAppStore((state) => state.showHints);
 	const [hovered, setHovered] = useState(false);
 	const { t } = useTranslation();
+	const showPwmRange = hasPwmOutput(outputs);
 	return (
 		<Box
 			display={"flex"}
@@ -25,11 +26,17 @@ const Outputs = () => {
 					{t("tooltip_midi_to_pin")}
 				</Alert>
 			)}
+			{outputs.length > 0 && (
+				<PinTableHeader type="output" showPwmRange={showPwmRange} />
+			)}
 			{outputs.map((output, index) => (
-				<Box key={output.uuid} sx={pinRowSx(index)}>
-					<PinMapping config={output} type="output" />
-				</Box>
-				// <Output key={index} output={output} />
+				<PinRow
+					key={output.uuid}
+					config={output}
+					type="output"
+					index={index}
+					showPwmRange={showPwmRange}
+				/>
 			))}
 			<Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>
 				<AddRowButton

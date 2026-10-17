@@ -269,6 +269,11 @@ i18n.use(initReactI18next).init({
 					"Raw stream not available ({{error}}). Requires firmware 0.19+, configured input pins and a USB connection.",
 				configurator_raw_stream_not_deployed:
 					"Live values are only shown after this pin is deployed.",
+				cc_or_note: "CC / Note",
+				live: "Live",
+				pwm_min: "PWM min",
+				pwm_max: "PWM max",
+				live_after_deploy: "after deploy",
 				configurator_raw_stream_broadcast:
 					"Select a device (not broadcast) to stream live values.",
 				inspector_raw_stream_waiting: "Waiting for values…",
@@ -542,6 +547,11 @@ i18n.use(initReactI18next).init({
 					"Rohwert-Stream nicht verfügbar ({{error}}). Benötigt Firmware 0.19+, konfigurierte Eingangs-PINs und eine USB-Verbindung.",
 				configurator_raw_stream_not_deployed:
 					"Live-Werte werden erst angezeigt, nachdem dieser PIN deployt wurde.",
+				cc_or_note: "CC / Note",
+				live: "Live",
+				pwm_min: "PWM min",
+				pwm_max: "PWM max",
+				live_after_deploy: "nach Deploy",
 				configurator_raw_stream_broadcast:
 					"Gerät auswählen (nicht Broadcast), um Live-Werte zu streamen.",
 				inspector_raw_stream_waiting: "Warte auf Werte…",
@@ -811,6 +821,11 @@ i18n.use(initReactI18next).init({
 					"Transmisión de valores brutos no disponible ({{error}}). Requiere firmware 0.19+, PIN de entrada configurados y conexión USB.",
 				configurator_raw_stream_not_deployed:
 					"Los valores en vivo solo se muestran después de desplegar este PIN.",
+				cc_or_note: "CC / Nota",
+				live: "En vivo",
+				pwm_min: "PWM mín",
+				pwm_max: "PWM máx",
+				live_after_deploy: "tras desplegar",
 				configurator_raw_stream_broadcast:
 					"Selecciona un dispositivo (no broadcast) para transmitir valores en vivo.",
 				inspector_raw_stream_waiting: "Esperando valores…",
@@ -1064,6 +1079,11 @@ i18n.use(initReactI18next).init({
 					"原始值传输不可用（{{error}}）。需要固件 0.19+、已配置的输入引脚和 USB 连接。",
 				configurator_raw_stream_not_deployed:
 					"仅在部署此引脚后才会显示实时数值。",
+				cc_or_note: "CC / 音符",
+				live: "实时",
+				pwm_min: "PWM 最小",
+				pwm_max: "PWM 最大",
+				live_after_deploy: "部署后",
 				configurator_raw_stream_broadcast:
 					"选择一个设备（非广播）以传输实时数值。",
 				inspector_raw_stream_waiting: "等待数值…",

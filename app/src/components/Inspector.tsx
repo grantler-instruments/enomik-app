@@ -20,7 +20,11 @@ import {
 import RawValues from "./inspector/RawValues";
 import MacAddressInput from "./MacAddressInput";
 import MidiDeviceChooser from "./MidiDeviceChooser";
-import PinMapping, { pinRowSx } from "./pinmapping/PinMapping";
+import PinRow, {
+	hasPwmOutput,
+	hasTouchInput,
+	PinTableHeader,
+} from "./pinmapping/PinRow";
 
 const Inspector = () => {
 	const { t } = useTranslation();
@@ -101,19 +105,41 @@ const Inspector = () => {
 			</Box>
 			<Box>
 				<Typography variant="h2">{t("inspector_input_to_midi")}</Typography>
+				{inputPinConfigs.length > 0 && (
+					<PinTableHeader
+						type="input"
+						showThreshold={hasTouchInput(inputPinConfigs)}
+					/>
+				)}
 				{inputPinConfigs.map((config, index) => (
-					<Box key={`input-${config.pin}`} sx={pinRowSx(index)}>
-						<PinMapping config={config} type={"input"} disabled={true} />
-					</Box>
+					<PinRow
+						key={`input-${config.pin}`}
+						config={config}
+						type="input"
+						index={index}
+						showThreshold={hasTouchInput(inputPinConfigs)}
+						readOnly
+					/>
 				))}
 			</Box>
-			<RawValues device={device || "-1"} />
+			{hasTouchInput(inputPinConfigs) && <RawValues device={device || "-1"} />}
 			<Box>
 				<Typography variant="h2">{t("inspector_midi_to_output")}</Typography>
+				{outputPinConfigs.length > 0 && (
+					<PinTableHeader
+						type="output"
+						showPwmRange={hasPwmOutput(outputPinConfigs)}
+					/>
+				)}
 				{outputPinConfigs.map((config, index) => (
-					<Box key={`output-${config.pin}`} sx={pinRowSx(index)}>
-						<PinMapping config={config} type={"output"} disabled={true} />
-					</Box>
+					<PinRow
+						key={`output-${config.pin}`}
+						config={config}
+						type="output"
+						index={index}
+						showPwmRange={hasPwmOutput(outputPinConfigs)}
+						readOnly
+					/>
 				))}
 			</Box>
 			<Box>

@@ -13,7 +13,7 @@ import { useAppStore } from "../../store/app";
 import { useMIDIStore } from "../../store/midi";
 import { sysexPinModeTouch } from "../../store/midi.config";
 import { type RawValue, useRawStreamStore } from "../../store/rawStream";
-import { INPUT_MODES } from "../pinmapping/PinConfigSection";
+import { INPUT_MODES } from "../pinmapping/modes";
 
 const Value = ({ label, value }: { label: string; value: number | string }) => (
 	<Box minWidth={90}>
@@ -121,8 +121,8 @@ const RawValueRow = ({ value }: { value: RawValue }) => {
 	);
 };
 
-/** One-line live value for a Configurator input row. */
-export const CompactRawValue = ({
+/** Live value as one table cell: bar, value and (touch) a touched dot. */
+export const LiveCell = ({
 	value,
 	threshold,
 }: {
@@ -133,37 +133,58 @@ export const CompactRawValue = ({
 	const { t } = useTranslation();
 	const isTouch = value.mode === sysexPinModeTouch;
 	const marker = threshold ?? value.threshold;
+	const pct = isTouch ? value.percent : value.norm;
+	const max = isTouch ? 100 : 127;
+	const markerAt = (m: number) => `${Math.min(100, (m / max) * 100)}%`;
 	return (
 		<Box
 			display="flex"
 			alignItems="center"
-			gap={2}
-			paddingX={1}
-			paddingBottom={1}
+			gap={1}
+			minWidth={0}
+			title={`${t("raw")}: ${value.raw}`}
 		>
-			{isTouch ? (
-				<>
-					<Bar
-						label={t("percent")}
-						value={value.percent}
-						max={100}
-						marker={marker > 0 ? marker : undefined}
-						secondaryMarker={value.threshold > 0 ? value.threshold : undefined}
-						suffix="%"
+			<Box position="relative" flex={1} minWidth={40}>
+				<LinearProgress
+					variant="determinate"
+					value={Math.min(100, (pct / max) * 100)}
+					sx={{ height: 6, borderRadius: 1, transition: "none" }}
+				/>
+				{isTouch && value.threshold > 0 && value.threshold !== marker && (
+					<Box
+						position="absolute"
+						top={-2}
+						bottom={-2}
+						left={markerAt(value.threshold)}
+						width={2}
+						bgcolor="text.disabled"
 					/>
-					<Chip
-						label={t("touched")}
-						size="small"
-						color={value.active ? "primary" : "default"}
-						variant={value.active ? "filled" : "outlined"}
+				)}
+				{isTouch && marker > 0 && (
+					<Box
+						position="absolute"
+						top={-2}
+						bottom={-2}
+						left={markerAt(marker)}
+						width={2}
+						bgcolor="text.primary"
 					/>
-				</>
-			) : (
-				<Bar label={t("normalized")} value={value.norm} max={127} />
-			)}
-			<Typography variant="caption" fontFamily="monospace" minWidth={90}>
-				{t("raw")}: {value.raw}
+				)}
+			</Box>
+			<Typography variant="caption" fontFamily="monospace" minWidth={36}>
+				{pct}
+				{isTouch ? "%" : ""}
 			</Typography>
+			{isTouch && (
+				<Box
+					title={t("touched")}
+					width={8}
+					height={8}
+					borderRadius="50%"
+					flexShrink={0}
+					bgcolor={value.active ? "primary.main" : "action.disabled"}
+				/>
+			)}
 		</Box>
 	);
 };

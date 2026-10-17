@@ -1,5 +1,5 @@
 import { Alert, Box, Typography } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRawStream } from "../hooks/useRawStream";
 import { useAppStore } from "../store/app";
@@ -11,8 +11,8 @@ import {
 } from "../store/midi.config";
 import { useRawStreamStore } from "../store/rawStream";
 import AddRowButton from "./AddRowButton";
-import { CompactRawValue, RawStreamToggle } from "./inspector/RawValues";
-import PinMapping, { pinRowSx } from "./pinmapping/PinMapping";
+import { LiveCell, RawStreamToggle } from "./inspector/RawValues";
+import PinRow, { hasTouchInput, PinTableHeader } from "./pinmapping/PinRow";
 
 const Inputs = () => {
 	const inputs = useIOStore((state) => state.inputs);
@@ -27,9 +27,23 @@ const Inputs = () => {
 	const [hovered, setHovered] = useState(false);
 	const { t } = useTranslation();
 
+	// Values come from the device: only show them when it runs this pin in the same mode.
+	const deployedValue = (input: (typeof inputs)[number]) => {
+		const value = rawValues[input.pin];
+		return value !== undefined && value.mode === input.mode ? value : null;
+	};
+	const showThreshold = hasTouchInput(inputs);
+	const anyUndeployed = inputs.some((input) => !deployedValue(input));
+
 	// The stream needs one specific device; it can't run on broadcast.
 	const isBroadcast = !device || device === "-1";
 	useRawStream(device || "-1");
+
+	// Live values are for touch tuning: no touch input left, no stream.
+	const setStreaming = useRawStreamStore((state) => state.setActive);
+	useEffect(() => {
+		if (!showThreshold && streaming) setStreaming(false);
+	}, [showThreshold, streaming, setStreaming]);
 
 	return (
 		<Box
@@ -43,30 +57,48 @@ const Inputs = () => {
 					{t("tooltip_pin_to_midi")}
 				</Alert>
 			)}
-			<Box>
-				<RawStreamToggle disabled={!initialized || isBroadcast} />
-				{isBroadcast && (
-					<Typography variant="caption" color="text.secondary">
-						{t("configurator_raw_stream_broadcast")}
-					</Typography>
-				)}
-			</Box>
+			{showThreshold && (
+				<Box>
+					<RawStreamToggle disabled={!initialized || isBroadcast} />
+					{isBroadcast && (
+						<Typography variant="caption" color="text.secondary">
+							{t("configurator_raw_stream_broadcast")}
+						</Typography>
+					)}
+				</Box>
+			)}
+			{streaming && anyUndeployed && (
+				<Alert severity="info" sx={{ mb: 1 }}>
+					{t("configurator_raw_stream_not_deployed")}
+				</Alert>
+			)}
+			{inputs.length > 0 && (
+				<PinTableHeader type="input" showThreshold={showThreshold} />
+			)}
 			{inputs.map((input, index) => {
-				// Values come from the device: only show them when it runs this pin in the same mode.
-				const value = rawValues[input.pin];
-				const deployed = value !== undefined && value.mode === input.mode;
+				const value = deployedValue(input);
 				return (
-					<Box key={input.uuid} sx={pinRowSx(index)}>
-						<PinMapping config={input} type="input" />
-						{streaming &&
-							(deployed ? (
-								<CompactRawValue value={value} threshold={input.threshold} />
+					<PinRow
+						key={input.uuid}
+						config={input}
+						type="input"
+						index={index}
+						showThreshold={showThreshold}
+						live={
+							streaming &&
+							(value ? (
+								<LiveCell value={value} threshold={input.threshold} />
 							) : (
-								<Alert severity="info" sx={{ mx: 1, mb: 1, py: 0 }}>
-									{t("configurator_raw_stream_not_deployed")}
-								</Alert>
-							))}
-					</Box>
+								<Typography
+									variant="caption"
+									color="text.secondary"
+									title={t("configurator_raw_stream_not_deployed")}
+								>
+									{t("live_after_deploy")}
+								</Typography>
+							))
+						}
+					/>
 				);
 			})}
 			<Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>
