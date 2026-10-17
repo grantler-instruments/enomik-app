@@ -20,7 +20,7 @@ import {
 import RawValues from "./inspector/RawValues";
 import MacAddressInput from "./MacAddressInput";
 import MidiDeviceChooser from "./MidiDeviceChooser";
-import PinMapping from "./pinmapping/PinMapping";
+import PinMapping, { pinRowSx } from "./pinmapping/PinMapping";
 
 const Inspector = () => {
 	const { t } = useTranslation();
@@ -101,25 +101,19 @@ const Inspector = () => {
 			</Box>
 			<Box>
 				<Typography variant="h2">{t("inspector_input_to_midi")}</Typography>
-				{inputPinConfigs.map((config) => (
-					<PinMapping
-						key={`input-${config.uuid}`}
-						config={config}
-						type={"input"}
-						disabled={true}
-					></PinMapping>
+				{inputPinConfigs.map((config, index) => (
+					<Box key={`input-${config.pin}`} sx={pinRowSx(index)}>
+						<PinMapping config={config} type={"input"} disabled={true} />
+					</Box>
 				))}
 			</Box>
 			<RawValues device={device || "-1"} />
 			<Box>
 				<Typography variant="h2">{t("inspector_midi_to_output")}</Typography>
-				{outputPinConfigs.map((config) => (
-					<PinMapping
-						key={`output-${config.uuid}`}
-						config={config}
-						type={"output"}
-						disabled={true}
-					></PinMapping>
+				{outputPinConfigs.map((config, index) => (
+					<Box key={`output-${config.pin}`} sx={pinRowSx(index)}>
+						<PinMapping config={config} type={"output"} disabled={true} />
+					</Box>
 				))}
 			</Box>
 			<Box>

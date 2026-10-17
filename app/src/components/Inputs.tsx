@@ -12,7 +12,7 @@ import {
 import { useRawStreamStore } from "../store/rawStream";
 import AddRowButton from "./AddRowButton";
 import { CompactRawValue, RawStreamToggle } from "./inspector/RawValues";
-import PinMapping from "./pinmapping/PinMapping";
+import PinMapping, { pinRowSx } from "./pinmapping/PinMapping";
 
 const Inputs = () => {
 	const inputs = useIOStore((state) => state.inputs);
@@ -51,12 +51,12 @@ const Inputs = () => {
 					</Typography>
 				)}
 			</Box>
-			{inputs.map((input) => {
+			{inputs.map((input, index) => {
 				// Values come from the device: only show them when it runs this pin in the same mode.
 				const value = rawValues[input.pin];
 				const deployed = value !== undefined && value.mode === input.mode;
 				return (
-					<Box key={input.uuid}>
+					<Box key={input.uuid} sx={pinRowSx(index)}>
 						<PinMapping config={input} type="input" />
 						{streaming &&
 							(deployed ? (
