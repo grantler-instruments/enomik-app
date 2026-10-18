@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRawStream } from "../hooks/useRawStream";
 import { useAppStore } from "../store/app";
-import { useIOStore } from "../store/io";
+import { nextFreePin, useIOStore } from "../store/io";
 import { useMIDIStore } from "../store/midi";
 import {
 	MIDI_CONTROL_CHANGE,
@@ -106,7 +106,7 @@ const Inputs = () => {
 					visible={inputs.length === 0 || hovered}
 					onClick={() => {
 						addInput({
-							pin: inputs.length,
+							pin: nextFreePin(inputs, useIOStore.getState().outputs),
 							mode: sysexPinModeAnalogIn,
 							channel: 1,
 							midiType: MIDI_CONTROL_CHANGE,

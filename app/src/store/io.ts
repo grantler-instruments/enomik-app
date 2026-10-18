@@ -129,12 +129,40 @@ interface IOState {
 	) => Promise<{ resetAck: boolean; sysexErrors: SysexErrorEvent[] }>;
 }
 
-/** Returns the set of pin numbers that appear in both inputs and outputs. */
+/**
+ * Pin numbers used by more than one config, inputs and outputs together.
+ * The firmware keeps one config per pin, so a second row would overwrite the first.
+ */
+export const findDuplicatePins = (
+	inputs: { pin: number }[],
+	outputs: { pin: number }[],
+): Set<number> => {
+	const seen = new Set<number>();
+	const duplicates = new Set<number>();
+	for (const { pin } of [...inputs, ...outputs]) {
+		if (seen.has(pin)) duplicates.add(pin);
+		seen.add(pin);
+	}
+	return duplicates;
+};
+
+/** Lowest pin >= `from` that no input or output uses yet. */
+export const nextFreePin = (
+	inputs: { pin: number }[],
+	outputs: { pin: number }[],
+	from = 0,
+): number => {
+	const used = new Set([...inputs, ...outputs].map((c) => c.pin));
+	let pin = Math.max(0, from);
+	while (used.has(pin)) pin++;
+	return pin;
+};
+
+/** Pin numbers used more than once (see findDuplicatePins). */
 export const useConflictingPins = (): Set<number> => {
 	const inputs = useIOStore((s) => s.inputs);
 	const outputs = useIOStore((s) => s.outputs);
-	const inputPins = new Set(inputs.map((i) => i.pin));
-	return new Set(outputs.filter((o) => inputPins.has(o.pin)).map((o) => o.pin));
+	return findDuplicatePins(inputs, outputs);
 };
 
 export const useIOStore = create<IOState>()(
@@ -169,7 +197,11 @@ export const useIOStore = create<IOState>()(
 						const input = state.inputs.find((i) => i.uuid === uuid);
 						if (!input) return state;
 
-						const newInput = { ...input, uuid: uuidv4() };
+						const newInput = {
+							...input,
+							uuid: uuidv4(),
+							pin: nextFreePin(state.inputs, state.outputs, input.pin + 1),
+						};
 						return {
 							inputs: [...state.inputs, newInput],
 						};
@@ -198,7 +230,11 @@ export const useIOStore = create<IOState>()(
 						const output = state.outputs.find((o) => o.uuid === uuid);
 						if (!output) return state;
 
-						const newOutput = { ...output, uuid: uuidv4() };
+						const newOutput = {
+							...output,
+							uuid: uuidv4(),
+							pin: nextFreePin(state.inputs, state.outputs, output.pin + 1),
+						};
 						return {
 							outputs: [...state.outputs, newOutput],
 						};

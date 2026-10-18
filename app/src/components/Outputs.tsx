@@ -2,7 +2,7 @@ import { Alert, Box } from "@mui/material";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/app";
-import { useIOStore } from "../store/io";
+import { nextFreePin, useIOStore } from "../store/io";
 import { MIDI_CONTROL_CHANGE, sysexPinModePWMOut } from "../store/midi.config";
 import AddRowButton from "./AddRowButton";
 import PinRow, { hasPwmOutput, PinTableHeader } from "./pinmapping/PinRow";
@@ -42,7 +42,7 @@ const Outputs = () => {
 				<AddRowButton
 					onClick={() => {
 						addOutput({
-							pin: outputs.length,
+							pin: nextFreePin(useIOStore.getState().inputs, outputs),
 							mode: sysexPinModePWMOut,
 							pinMin: 0,
 							pinMax: 1024,

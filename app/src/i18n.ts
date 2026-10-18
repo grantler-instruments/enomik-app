@@ -191,7 +191,9 @@ i18n.use(initReactI18next).init({
 				note: "Note",
 				min: "Min",
 				max: "Max",
-				pin_conflict: "Pin {{pin}} is used as both an input and an output",
+				deploy_toast_duplicate_pins:
+					"Not deployed: pin {{pins}} is used more than once. Each pin can only have one configuration.",
+				pin_conflict: "Pin {{pin}} is used more than once",
 				pin_mode_analog_desc:
 					"Read a continuous value (e.g. from a potentiometer or sensor).",
 				pin_mode_digital_in_desc:
@@ -467,8 +469,9 @@ i18n.use(initReactI18next).init({
 				note: "Note",
 				min: "Min",
 				max: "Max",
-				pin_conflict:
-					"Pin {{pin}} wird sowohl als Eingang als auch als Ausgang verwendet",
+				deploy_toast_duplicate_pins:
+					"Nicht deployt: PIN {{pins}} wird mehrfach verwendet. Jeder PIN kann nur eine Konfiguration haben.",
+				pin_conflict: "PIN {{pin}} wird mehrfach verwendet",
 				pin_mode_analog_desc:
 					"Liest einen kontinuierlichen Wert (z. B. von einem Potentiometer oder Sensor).",
 				pin_mode_digital_in_desc:
@@ -742,7 +745,9 @@ i18n.use(initReactI18next).init({
 				note: "Nota",
 				min: "Mín",
 				max: "Máx",
-				pin_conflict: "El pin {{pin}} se usa como entrada y como salida",
+				deploy_toast_duplicate_pins:
+					"No desplegado: el pin {{pins}} se usa más de una vez. Cada pin solo puede tener una configuración.",
+				pin_conflict: "El pin {{pin}} se usa más de una vez",
 				pin_mode_analog_desc:
 					"Lee un valor continuo (p. ej. de un potenciómetro o sensor).",
 				pin_mode_digital_in_desc:
@@ -1005,7 +1010,9 @@ i18n.use(initReactI18next).init({
 				note: "音符",
 				min: "最小值",
 				max: "最大值",
-				pin_conflict: "引脚 {{pin}} 同时用作输入和输出",
+				deploy_toast_duplicate_pins:
+					"未部署：引脚 {{pins}} 被多次使用。每个引脚只能有一个配置。",
+				pin_conflict: "引脚 {{pin}} 被多次使用",
 				pin_mode_analog_desc: "读取连续值（例如来自电位器或传感器）。",
 				pin_mode_digital_in_desc:
 					"数字输入。读取 LOW/HIGH，与开关或按钮配合使用（需外接电阻）。",

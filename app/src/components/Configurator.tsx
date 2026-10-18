@@ -21,7 +21,7 @@ import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useAppStore } from "../store/app";
-import { useIOStore } from "../store/io";
+import { findDuplicatePins, useIOStore } from "../store/io";
 import {
 	beginWaitForConfigLoad,
 	isEnomikPortName,
@@ -80,7 +80,7 @@ const Configurator = () => {
 	}, []);
 	const [deployToast, setDeployToast] = useState<string | null>(null);
 	const [deployToastSeverity, setDeployToastSeverity] = useState<
-		"success" | "warning"
+		"success" | "warning" | "error"
 	>("success");
 	const [deploying, setDeploying] = useState(false);
 	const [loadingFromDevice, setLoadingFromDevice] = useState(false);
@@ -113,6 +113,18 @@ const Configurator = () => {
 	};
 
 	const handleDeploy = async () => {
+		// The firmware keeps one config per pin: a duplicate would silently overwrite another row.
+		const duplicatePins = findDuplicatePins(inputs, outputs);
+		if (duplicatePins.size > 0) {
+			setDeployToastSeverity("error");
+			setDeployToast(
+				t("deploy_toast_duplicate_pins", {
+					pins: [...duplicatePins].sort((x, y) => x - y).join(", "),
+				}),
+			);
+			return;
+		}
+
 		const pinConfigs = inputs.length + outputs.length;
 		const peerCount = peers.length;
 		const rawOut = selectedOutputId ?? "";
