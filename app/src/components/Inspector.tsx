@@ -6,18 +6,24 @@ import {
 	Switch,
 	Typography,
 } from "@mui/material";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
+import { useDevice } from "../hooks/useDevice";
 import { useAppStore } from "../store/app";
+import { supportsInspection, thresholdUnit } from "../store/device";
 import { useInspectorStore } from "../store/inspector";
-import { type MidiMessage, useMIDIStore } from "../store/midi";
+import {
+	beginWaitForConfigLoad,
+	type MidiMessage,
+	useMIDIStore,
+} from "../store/midi";
 import {
 	buildEnomikSysex,
 	ENOMIK_COMMAND_GET_CONFIG,
 	ENOMIK_COMMAND_GET_MAC,
-	ENOMIK_COMMAND_GET_VERSION,
 } from "../store/midi.config";
-import RawValues from "./inspector/RawValues";
+import RawValues, { DeviceCompatibility } from "./inspector/RawValues";
 import MacAddressInput from "./MacAddressInput";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import PinRow, {
@@ -40,9 +46,24 @@ const Inspector = () => {
 	const midiLoopback = useInspectorStore((state) => state.midiLoopback);
 	const powerSave = useInspectorStore((state) => state.powerSave);
 	const macAddress = useInspectorStore((state) => state.macAddress);
-	const protocolVersion = useInspectorStore((state) => state.protocolVersion);
+	const info = useDevice(device || "-1");
+	const protocolVersion = info?.version
+		? [info.version.major, info.version.minor, info.version.patch]
+				.filter((part) => part !== undefined)
+				.join(".")
+		: null;
+	const syncing = useInspectorStore((state) => state.syncing);
+	const syncError = useInspectorStore((state) => state.syncError);
 	const name = useInspectorStore((state) => state.name);
 	const clear = useInspectorStore((state) => state.clear);
+	const syncRequest = useRef(0);
+	useEffect(() => {
+		clear();
+		return () => {
+			syncRequest.current++;
+			clear();
+		};
+	}, [clear]);
 	const showHints = useAppStore((state) => state.showHints);
 	return (
 		<Box display={"flex"} flexDirection="column" gap={2} padding={2}>
@@ -59,13 +80,19 @@ const Inspector = () => {
 				<Button
 					variant="outlined"
 					color="primary"
-					disabled={!initialized}
-					onClick={() => {
+					disabled={
+						!initialized ||
+						syncing ||
+						info?.status !== "ready" ||
+						!supportsInspection(info.version)
+					}
+					onClick={async () => {
+						if (!device || device === "-1") return;
+						const request = ++syncRequest.current;
 						clear();
-						// GET_VERSION -> 0x4A, GET_MAC -> 0x46,
-						// GET_CONFIG streams 0x44 pins + 0x48 peers + 0x4E loopback + 0x50 power-save + empty 0x4C done
+						useInspectorStore.setState({ deviceId: device, syncing: true });
+						const wait = beginWaitForConfigLoad(device, 5000);
 						for (const command of [
-							ENOMIK_COMMAND_GET_VERSION,
 							ENOMIK_COMMAND_GET_MAC,
 							ENOMIK_COMMAND_GET_CONFIG,
 						]) {
@@ -76,17 +103,30 @@ const Inspector = () => {
 								data: buildEnomikSysex(command),
 								timestamp: Date.now(),
 							};
-							sendMessage(msg, device || "-1");
+							sendMessage(msg, device);
+						}
+						const result = await wait;
+						if (
+							request === syncRequest.current &&
+							useInspectorStore.getState().deviceId === device
+						) {
+							useInspectorStore.setState({
+								syncing: false,
+								syncError: result === null,
+							});
 						}
 					}}
 				>
 					{t("inspector_sync")}
 				</Button>
 			</Box>
+			<DeviceCompatibility device={device || "-1"} inspection />
+			{syncing && <Typography>{t("compat_syncing")}</Typography>}
+			{syncError && <Alert severity="warning">{t("compat_sync_failed")}</Alert>}
 			<Box>
 				<Typography variant="h2">{t("inspector_global")}</Typography>
 				<Typography>
-					{t("client_name")}: {name ?? "–"}
+					{t("client_name")}: {name ?? t("compat_unavailable")}
 				</Typography>
 				<Typography>
 					{t("inspector_mac_address")}: {macAddress ?? "–"}
@@ -95,12 +135,12 @@ const Inspector = () => {
 					{t("inspector_protocol_version")}: {protocolVersion ?? "–"}
 				</Typography>
 				<FormControlLabel
-					control={<Switch checked={midiLoopback} disabled />}
-					label={t("midi_loopback")}
+					control={<Switch checked={midiLoopback ?? false} disabled />}
+					label={`${t("midi_loopback")}${midiLoopback === null ? `: ${t("compat_unavailable")}` : ""}`}
 				/>
 				<FormControlLabel
-					control={<Switch checked={powerSave} disabled />}
-					label={t("power_save")}
+					control={<Switch checked={powerSave ?? false} disabled />}
+					label={`${t("power_save")}${powerSave === null ? `: ${t("compat_unavailable")}` : ""}`}
 				/>
 			</Box>
 			<Box>
@@ -118,6 +158,7 @@ const Inspector = () => {
 						type="input"
 						index={index}
 						showThreshold={hasTouchInput(inputPinConfigs)}
+						thresholdUnit={thresholdUnit(info?.version)}
 						readOnly
 					/>
 				))}
@@ -138,6 +179,7 @@ const Inspector = () => {
 						type="output"
 						index={index}
 						showPwmRange={hasPwmOutput(outputPinConfigs)}
+						thresholdUnit={thresholdUnit(info?.version)}
 						readOnly
 					/>
 				))}

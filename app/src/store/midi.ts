@@ -2,8 +2,15 @@ import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import { MIDI_STATUS } from "../utils/midi";
+import {
+	isCompatibleFirmware,
+	pairedInputId,
+	thresholdUnit,
+	useDeviceStore,
+} from "./device";
 import { useInspectorStore } from "./inspector";
 import {
+	buildEnomikSysex,
 	decodeSeptets32,
 	ENOMIK_COMMAND_ADD_PEER_RESPONSE,
 	ENOMIK_COMMAND_ERROR_RESPONSE,
@@ -11,18 +18,21 @@ import {
 	ENOMIK_COMMAND_GET_ALL_PIN_CONFIGS_RESPONSE,
 	ENOMIK_COMMAND_GET_CONFIG,
 	ENOMIK_COMMAND_GET_CONFIG_RESPONSE,
+	ENOMIK_COMMAND_GET_MAC,
 	ENOMIK_COMMAND_GET_MAC_RESPONSE,
 	ENOMIK_COMMAND_GET_MIDI_LOOPBACK_RESPONSE,
 	ENOMIK_COMMAND_GET_NAME_RESPONSE,
 	ENOMIK_COMMAND_GET_PEER_RESPONSE,
 	ENOMIK_COMMAND_GET_PIN_CONFIG_RESPONSE,
 	ENOMIK_COMMAND_GET_POWER_SAVE_RESPONSE,
+	ENOMIK_COMMAND_GET_VERSION,
 	ENOMIK_COMMAND_GET_VERSION_RESPONSE,
 	ENOMIK_COMMAND_RAW_VALUE,
 	ENOMIK_COMMAND_RESET_RESPONSE,
 	ENOMIK_COMMAND_SET_NAME_RESPONSE,
 	ENOMIK_COMMAND_SET_PIN_CONFIG_RESPONSE,
 	ENOMIK_COMMAND_SET_RAW_STREAM,
+	ENOMIK_COMMAND_SET_RAW_STREAM_RESPONSE,
 	ENOMIK_ERROR_NAMES,
 	ENOMIK_PEER_ENTRY_PAYLOAD_SIZE,
 	ENOMIK_PIN_CONFIG_PAYLOAD_SIZE,
@@ -73,7 +83,7 @@ interface MonitorState {
 	addIncomingMessage: (message: MidiMessage, deviceId: string) => void;
 	addOutgoingMessage: (message: MidiMessage, deviceId: string) => void;
 	clear: () => void;
-	sendMessage: (message: MidiMessage, outputId?: string) => void;
+	sendMessage: (message: MidiMessage, outputId?: string) => boolean;
 	setSelectedConfiguratorOutputDevice: (deviceId: string) => void;
 	setSelectedInspectorOutputDevice: (deviceId: string) => void;
 	setSelectedComposerOutputDevice: (deviceId: string) => void;
@@ -96,6 +106,81 @@ export const isEnomikPortName = (name: string | null | undefined) =>
 
 const findEnomikOutputId = (outputs: { id: string; name?: string | null }[]) =>
 	outputs.find((out) => isEnomikPortName(out.name))?.id;
+
+/** Input/output pairing is deliberately conservative when multiple boards share names. */
+export function deviceInputId(outputId: string): string | undefined {
+	const state = useMIDIStore.getState();
+	return pairedInputId(outputId, state.inputs, state.outputs);
+}
+
+const versionRequests = new Map<string, ReturnType<typeof setTimeout>>();
+const sessionInputs = new Map<string, string>();
+export function inspectDeviceVersion(outputId: string, retry = false) {
+	if (!outputId || outputId === "-1" || !midiAccess) return;
+	const store = useDeviceStore.getState();
+	if (
+		!retry &&
+		store.devices[outputId] &&
+		store.devices[outputId].status !== "unpaired"
+	)
+		return;
+	const previous = versionRequests.get(outputId);
+	if (previous) clearTimeout(previous);
+	const inputId = deviceInputId(outputId);
+	if (!inputId) {
+		store.setDevice(outputId, { status: "unpaired" });
+		return;
+	}
+	sessionInputs.set(outputId, inputId);
+	store.setDevice(outputId, { status: "checking" });
+	versionRequests.set(
+		outputId,
+		setTimeout(() => {
+			// Before 0.13 GET_VERSION may not be wired up. GET_MAC is read-only,
+			// and its response header contains the same major/minor version.
+			versionRequests.set(
+				outputId,
+				setTimeout(() => {
+					versionRequests.delete(outputId);
+					store.setDevice(outputId, { status: "timeout" });
+				}, 1500),
+			);
+			useMIDIStore.getState().sendMessage(
+				{
+					id: uuidv4(),
+					timestamp: Date.now(),
+					type: 240,
+					data: buildEnomikSysex(ENOMIK_COMMAND_GET_MAC),
+				},
+				outputId,
+			);
+		}, 1500),
+	);
+	useMIDIStore.getState().sendMessage(
+		{
+			id: uuidv4(),
+			timestamp: Date.now(),
+			type: 240,
+			data: buildEnomikSysex(ENOMIK_COMMAND_GET_VERSION),
+		},
+		outputId,
+	);
+}
+
+function clearDeviceSession(outputId: string) {
+	sessionInputs.delete(outputId);
+	clearTimeout(versionRequests.get(outputId));
+	versionRequests.delete(outputId);
+	useDeviceStore.getState().removeDevice(outputId);
+	if (useRawStreamStore.getState().deviceId === outputId) {
+		useRawStreamStore.getState().setActive(false);
+		useRawStreamStore.getState().clear();
+	}
+	if (useInspectorStore.getState().deviceId === outputId)
+		useInspectorStore.getState().clear();
+	if (pendingConfigLoad?.outputId === outputId) resolveConfigLoad(null);
+	if (pendingResetAck?.outputId === outputId) pendingResetAck.finish(false);
+}
 
 /** Batch rapid MIDI events to one React update per frame (e.g. clock spam). */
 let monitorMessageBatch: MidiMessageWithDirectionAndDevice[] = [];
@@ -128,7 +213,8 @@ function queueMonitorMessage(
 
 /** Resolves when matching RESET_RESPONSE (0x49) SysEx arrives on an input with the same name as the output. */
 type PendingResetAck = {
-	outputName: string;
+	outputId: string;
+	inputId: string;
 	finish: (ok: boolean) => void;
 	timeoutId: ReturnType<typeof setTimeout>;
 };
@@ -155,18 +241,23 @@ export function beginWaitForResetAck(
 			clearTimeout(pendingResetAck.timeoutId);
 			pendingResetAck.finish(false);
 		}
-		const outputName = out.name ?? "";
+		const inputId = deviceInputId(outputId);
+		if (!inputId) {
+			resolve(false);
+			return;
+		}
 		const timeoutId = setTimeout(() => {
-			if (pendingResetAck?.outputName === outputName) {
+			if (pendingResetAck?.outputId === outputId) {
 				pendingResetAck = null;
 				resolve(false);
 			}
 		}, timeoutMs);
 		pendingResetAck = {
-			outputName,
+			outputId,
+			inputId,
 			finish: (ok) => {
 				clearTimeout(timeoutId);
-				if (pendingResetAck?.outputName === outputName) {
+				if (pendingResetAck?.outputId === outputId) {
 					pendingResetAck = null;
 					resolve(ok);
 				}
@@ -182,6 +273,7 @@ export type LoadedDeviceConfig = {
 		pin: number;
 		mode: number;
 		threshold?: number;
+		thresholdUnit?: "raw" | "percent";
 		channel: number;
 		midiType: number;
 		controller?: number;
@@ -195,6 +287,7 @@ export type LoadedDeviceConfig = {
 		pin: number;
 		mode: number;
 		threshold?: number;
+		thresholdUnit?: "raw" | "percent";
 		channel: number;
 		midiType: number;
 		controller?: number;
@@ -205,19 +298,20 @@ export type LoadedDeviceConfig = {
 		pinMax: number;
 	}>;
 	peers: Array<{ macAddress: string }>;
-	midiLoopback: boolean;
-	powerSave: boolean;
+	midiLoopback: boolean | null;
+	powerSave: boolean | null;
 	/** Effective client name; null if the firmware predates GET_NAME. */
 	name: string | null;
 };
 
 type PendingConfigLoad = {
-	outputName: string;
+	outputId: string;
+	inputId: string;
 	inputs: LoadedDeviceConfig["inputs"];
 	outputs: LoadedDeviceConfig["outputs"];
 	peers: string[];
-	midiLoopback: boolean;
-	powerSave: boolean;
+	midiLoopback: boolean | null;
+	powerSave: boolean | null;
 	name: string | null;
 	finish: (result: LoadedDeviceConfig | null) => void;
 	timeoutId: ReturnType<typeof setTimeout>;
@@ -242,9 +336,11 @@ export type SysexErrorEvent = {
 };
 
 let sysexErrorCollection: SysexErrorEvent[] | null = null;
+let sysexErrorOutputId: string | undefined;
 
 /** Start collecting SysEx 0x7F errors (clears any prior buffer). */
-export function beginSysexErrorCollection() {
+export function beginSysexErrorCollection(outputId?: string) {
+	sysexErrorOutputId = outputId;
 	sysexErrorCollection = [];
 }
 
@@ -275,20 +371,25 @@ export function beginWaitForConfigLoad(
 		if (pendingConfigLoad) {
 			resolveConfigLoad(null);
 		}
-		const outputName = out.name ?? "";
+		const inputId = deviceInputId(outputId);
+		if (!inputId) {
+			resolve(null);
+			return;
+		}
 		const timeoutId = setTimeout(() => {
-			if (pendingConfigLoad?.outputName === outputName) {
+			if (pendingConfigLoad?.outputId === outputId) {
 				pendingConfigLoad = null;
 				resolve(null);
 			}
 		}, timeoutMs);
 		pendingConfigLoad = {
-			outputName,
+			outputId,
+			inputId,
 			inputs: [],
 			outputs: [],
 			peers: [],
-			midiLoopback: false,
-			powerSave: false,
+			midiLoopback: null,
+			powerSave: null,
 			name: null,
 			finish: (result) => resolve(result),
 			timeoutId,
@@ -296,30 +397,8 @@ export function beginWaitForConfigLoad(
 	});
 }
 
-/** True if MIDI in/out names refer to the same device (exact, prefix, or both enomik). */
-function midiPortNamesMatch(
-	inputName: string | null | undefined,
-	outputName: string,
-): boolean {
-	const inn = (inputName ?? "").trim();
-	const out = outputName.trim();
-	if (!inn || !out) return false;
-	if (inn === out) return true;
-	const innLower = inn.toLowerCase();
-	const outLower = out.toLowerCase();
-	if (innLower === outLower) return true;
-	if (innLower.startsWith(outLower) || outLower.startsWith(innLower)) {
-		return true;
-	}
-	// Same board often exposes slightly different in/out product strings
-	return isEnomikPortName(inn) && isEnomikPortName(out);
-}
-
-function matchesPendingDevice(inputName: string | null | undefined): boolean {
-	return (
-		!!pendingConfigLoad &&
-		midiPortNamesMatch(inputName, pendingConfigLoad.outputName)
-	);
+function matchesPendingDevice(inputId: string): boolean {
+	return !!pendingConfigLoad && pendingConfigLoad.inputId === inputId;
 }
 
 const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
@@ -444,12 +523,52 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 			case MIDI_STATUS.SYSEX_START:
 				if (event.data[1] === sysexManufacturerId) {
 					// F0 7D MAJOR MINOR CMD [payload…] F7
-					if (event.data.length < 6) break;
+					if (
+						event.data.length < 6 ||
+						event.data[0] !== 0xf0 ||
+						event.data[event.data.length - 1] !== 0xf7 ||
+						Array.from(event.data.slice(1, -1)).some((byte) => byte > 0x7f)
+					)
+						break;
 
 					const packetMajor = event.data[2];
 					const packetMinor = event.data[3];
 					const command = event.data[4];
 					const payload = event.data.slice(5, event.data.length - 1);
+
+					const outputId = get().outputs.find(
+						(port) => deviceInputId(port.id) === input.id,
+					)?.id;
+					const inspector = useInspectorStore.getState();
+					const inspecting =
+						!!outputId && inspector.deviceId === outputId && inspector.syncing;
+					if (
+						outputId &&
+						versionRequests.has(outputId) &&
+						(packetMajor !== ESP_NOW_VERSION_MAJOR ||
+							(command === ENOMIK_COMMAND_GET_VERSION_RESPONSE &&
+								payload.length >= 2) ||
+							((command === ENOMIK_COMMAND_GET_MAC_RESPONSE ||
+								(packetMinor < 13 && command === ENOMIK_COMMAND_GET_MAC)) &&
+								payload.length >= 12 &&
+								Array.from(payload.slice(0, 12)).every((byte) => byte < 16)))
+					) {
+						clearTimeout(versionRequests.get(outputId));
+						versionRequests.delete(outputId);
+						const version =
+							command === ENOMIK_COMMAND_GET_VERSION_RESPONSE &&
+							payload.length >= 2
+								? { major: payload[0], minor: payload[1], patch: payload[2] }
+								: { major: packetMajor, minor: packetMinor };
+						useDeviceStore.getState().setDevice(outputId, {
+							status:
+								packetMajor === ESP_NOW_VERSION_MAJOR &&
+								isCompatibleFirmware(version)
+									? "ready"
+									: "incompatible",
+							version,
+						});
+					}
 
 					// Check version compatibility (same major version)
 					if (packetMajor !== ESP_NOW_VERSION_MAJOR) {
@@ -468,8 +587,8 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 					) {
 						if (payload.length >= ENOMIK_PEER_ENTRY_PAYLOAD_SIZE) {
 							const macStr = nibblesToMacString(payload.slice(1, 13));
-							useInspectorStore.getState().addPeer(macStr);
-							if (matchesPendingDevice(input.name) && pendingConfigLoad) {
+							if (inspecting) inspector.addPeer(macStr);
+							if (matchesPendingDevice(input.id) && pendingConfigLoad) {
 								if (!pendingConfigLoad.peers.includes(macStr)) {
 									pendingConfigLoad.peers.push(macStr);
 								}
@@ -498,6 +617,11 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 								pin,
 								mode,
 								threshold,
+								thresholdUnit: thresholdUnit(
+									outputId
+										? useDeviceStore.getState().devices[outputId]?.version
+										: undefined,
+								),
 								channel: midi_channel,
 								midiType: midi_type,
 								controller: midi_type === 176 ? midi_cc_or_note : undefined,
@@ -512,16 +636,16 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 							};
 
 							if (isOutputPinMode(mode)) {
-								useInspectorStore.getState().addOutputPinConfig(config);
-								if (matchesPendingDevice(input.name) && pendingConfigLoad) {
+								if (inspecting) inspector.addOutputPinConfig(config);
+								if (matchesPendingDevice(input.id) && pendingConfigLoad) {
 									pendingConfigLoad.outputs = [
 										...pendingConfigLoad.outputs.filter((c) => c.pin !== pin),
 										config,
 									];
 								}
 							} else {
-								useInspectorStore.getState().addInputPinConfig(config);
-								if (matchesPendingDevice(input.name) && pendingConfigLoad) {
+								if (inspecting) inspector.addInputPinConfig(config);
+								if (matchesPendingDevice(input.id) && pendingConfigLoad) {
 									pendingConfigLoad.inputs = [
 										...pendingConfigLoad.inputs.filter((c) => c.pin !== pin),
 										config,
@@ -537,8 +661,8 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						payload.length >= 1
 					) {
 						const enabled = payload[0] !== 0;
-						useInspectorStore.getState().setMidiLoopback(enabled);
-						if (matchesPendingDevice(input.name) && pendingConfigLoad) {
+						if (inspecting) inspector.setMidiLoopback(enabled);
+						if (matchesPendingDevice(input.id) && pendingConfigLoad) {
 							pendingConfigLoad.midiLoopback = enabled;
 						}
 					}
@@ -549,8 +673,8 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						payload.length >= 1
 					) {
 						const enabled = payload[0] !== 0;
-						useInspectorStore.getState().setPowerSave(enabled);
-						if (matchesPendingDevice(input.name) && pendingConfigLoad) {
+						if (inspecting) inspector.setPowerSave(enabled);
+						if (matchesPendingDevice(input.id) && pendingConfigLoad) {
 							pendingConfigLoad.powerSave = enabled;
 						}
 					}
@@ -561,8 +685,8 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						command === ENOMIK_COMMAND_SET_NAME_RESPONSE
 					) {
 						const name = String.fromCharCode(...payload);
-						useInspectorStore.getState().setName(name);
-						if (matchesPendingDevice(input.name) && pendingConfigLoad) {
+						if (inspecting) inspector.setName(name);
+						if (matchesPendingDevice(input.id) && pendingConfigLoad) {
 							pendingConfigLoad.name = name;
 						}
 					}
@@ -572,7 +696,7 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						command === ENOMIK_COMMAND_GET_CONFIG_RESPONSE &&
 						payload.length === 0
 					) {
-						if (matchesPendingDevice(input.name) && pendingConfigLoad) {
+						if (matchesPendingDevice(input.id) && pendingConfigLoad) {
 							resolveConfigLoad({
 								inputs: pendingConfigLoad.inputs,
 								outputs: pendingConfigLoad.outputs,
@@ -593,12 +717,15 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						// Payload: [major, minor] or, since 0.19, [major, minor, patch]
 						const version = Array.from(payload.slice(0, 3)).join(".");
 						console.log(`Device version: ${version}`);
-						useInspectorStore.getState().setProtocolVersion(version);
+						if (inspecting) inspector.setProtocolVersion(version);
 					}
 
 					// Raw stream frame: RAW_VALUE notification (0x17), see SET_RAW_STREAM
 					if (
 						command === ENOMIK_COMMAND_RAW_VALUE &&
+						outputId &&
+						useRawStreamStore.getState().deviceId === outputId &&
+						useRawStreamStore.getState().active &&
 						payload.length >= ENOMIK_RAW_VALUE_PAYLOAD_SIZE
 					) {
 						useRawStreamStore.getState().setValue({
@@ -615,14 +742,24 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						});
 					}
 
+					if (
+						command === ENOMIK_COMMAND_SET_RAW_STREAM_RESPONSE &&
+						payload.length >= 3 &&
+						payload[1] === 1 &&
+						outputId &&
+						useRawStreamStore.getState().deviceId === outputId &&
+						useRawStreamStore.getState().active
+					) {
+						useRawStreamStore.getState().acknowledge();
+					}
+
 					// Own MAC: GET_MAC response (0x46 + 12 MAC nibbles)
 					if (
 						command === ENOMIK_COMMAND_GET_MAC_RESPONSE &&
 						payload.length >= 12
 					) {
-						useInspectorStore
-							.getState()
-							.setMacAddress(nibblesToMacString(payload.slice(0, 12)));
+						if (inspecting)
+							inspector.setMacAddress(nibblesToMacString(payload.slice(0, 12)));
 					}
 
 					if (
@@ -646,7 +783,12 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 								`(${ENOMIK_ERROR_NAMES[errorCode] ?? "unknown"})` +
 								(context !== undefined ? ` context=${context}` : ""),
 						);
-						if (sysexErrorCollection) {
+						if (
+							sysexErrorCollection &&
+							(!sysexErrorOutputId ||
+								sysexErrorOutputId === "-1" ||
+								outputId === sysexErrorOutputId)
+						) {
 							sysexErrorCollection.push({
 								failedRequest,
 								errorCode,
@@ -655,13 +797,18 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 								context,
 							});
 						}
-						if (failedRequest === ENOMIK_COMMAND_SET_RAW_STREAM) {
+						if (
+							failedRequest === ENOMIK_COMMAND_SET_RAW_STREAM &&
+							outputId &&
+							useRawStreamStore.getState().deviceId === outputId &&
+							useRawStreamStore.getState().active
+						) {
 							const rawStream = useRawStreamStore.getState();
 							rawStream.setError(ENOMIK_ERROR_NAMES[errorCode] ?? "unknown");
 							rawStream.setActive(false);
 						}
 						if (
-							matchesPendingDevice(input.name) &&
+							matchesPendingDevice(input.id) &&
 							failedRequest === ENOMIK_COMMAND_GET_CONFIG
 						) {
 							resolveConfigLoad(null);
@@ -674,10 +821,7 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						event.data.length >= 6 &&
 						event.data[event.data.length - 1] === 0xf7
 					) {
-						if (
-							pendingResetAck &&
-							midiPortNamesMatch(input.name, pendingResetAck.outputName)
-						) {
+						if (pendingResetAck && input.id === pendingResetAck.inputId) {
 							pendingResetAck.finish(true);
 						}
 					}
@@ -742,7 +886,25 @@ export const useMIDIStore = create<MonitorState>()(
 							const inputs = Array.from(midiAccess.inputs.values());
 							const outputs = Array.from(midiAccess.outputs.values());
 
+							if (event.port?.state === "disconnected") {
+								const portId = event.port.id;
+								for (const out of get().outputs) {
+									if (
+										out.id === portId ||
+										sessionInputs.get(out.id) === portId ||
+										deviceInputId(out.id) === portId ||
+										get().inputs.some(
+											(port) => port.id === portId && port.name === out.name,
+										)
+									)
+										clearDeviceSession(out.id);
+								}
+							}
 							set({ inputs, outputs });
+							for (const [outputId, inputId] of sessionInputs) {
+								if (deviceInputId(outputId) !== inputId)
+									clearDeviceSession(outputId);
+							}
 
 							// Set up handler for newly connected input
 							if (
@@ -795,10 +957,10 @@ export const useMIDIStore = create<MonitorState>()(
 					set({ messages: [] });
 				},
 
-				sendMessage: async (message: MidiMessage, outputId = "-1") => {
+				sendMessage: (message: MidiMessage, outputId = "-1") => {
 					if (!midiAccess) {
 						console.error("MIDI not initialized");
-						return;
+						return false;
 					}
 					if (outputId === "-1") {
 						midiAccess.outputs.forEach((output) => {
@@ -889,22 +1051,32 @@ export const useMIDIStore = create<MonitorState>()(
 							output.send([message.type]);
 						}
 					};
-					if (outputId !== "-1") {
-						midiAccess.outputs.forEach((output) => {
-							if (output.id === outputId) {
+					try {
+						let sent = false;
+						for (const output of midiAccess.outputs.values()) {
+							if (
+								(outputId === "-1" || output.id === outputId) &&
+								output.state !== "disconnected"
+							) {
 								send(message, output);
+								sent = true;
 							}
-						});
-					} else {
-						midiAccess.outputs.forEach((output) => {
-							send(message, output);
-						});
+						}
+						return sent;
+					} catch (error) {
+						console.warn("MIDI send failed", error);
+						return false;
 					}
 				},
 				setSelectedConfiguratorOutputDevice: (deviceId: string) => {
+					useRawStreamStore.getState().setActive(false);
+					useRawStreamStore.getState().clear();
 					set({ selectedConfiguratorOutputDevice: deviceId });
 				},
 				setSelectedInspectorOutputDevice: (deviceId: string) => {
+					useRawStreamStore.getState().setActive(false);
+					useRawStreamStore.getState().clear();
+					useInspectorStore.getState().clear();
 					set({ selectedInspectorOutputDevice: deviceId });
 				},
 				setSelectedComposerOutputDevice: (deviceId: string) => {

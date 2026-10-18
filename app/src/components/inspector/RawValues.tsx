@@ -1,6 +1,7 @@
 import {
 	Alert,
 	Box,
+	Button,
 	Chip,
 	FormControlLabel,
 	LinearProgress,
@@ -8,9 +9,11 @@ import {
 	Typography,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import { useDevice } from "../../hooks/useDevice";
 import { useRawStream } from "../../hooks/useRawStream";
 import { useAppStore } from "../../store/app";
-import { useMIDIStore } from "../../store/midi";
+import { supportsInspection, supportsLiveValues } from "../../store/device";
+import { inspectDeviceVersion, useMIDIStore } from "../../store/midi";
 import { sysexPinModeTouch } from "../../store/midi.config";
 import { type RawValue, useRawStreamStore } from "../../store/rawStream";
 import { INPUT_MODES } from "../pinmapping/modes";
@@ -190,8 +193,58 @@ export const LiveCell = ({
 };
 
 /** Stream on/off switch plus the stream error, shared by Inspector and Configurator. */
-export const RawStreamToggle = ({ disabled }: { disabled?: boolean }) => {
+export const DeviceCompatibility = ({
+	device,
+	live = false,
+	inspection = false,
+}: {
+	device: string;
+	live?: boolean;
+	inspection?: boolean;
+}) => {
 	const { t } = useTranslation();
+	const info = useDevice(device);
+	const outputs = useMIDIStore((state) => state.outputs);
+	const connected = outputs.some(
+		(port) => port.id === device && port.state !== "disconnected",
+	);
+	const key = !connected
+		? "compat_select_device"
+		: !info || info.status === "checking"
+			? "compat_checking"
+			: info.status === "ready"
+				? inspection && !supportsInspection(info.version)
+					? "compat_inspection_unsupported"
+					: live && !supportsLiveValues(info.version)
+						? "compat_live_unsupported"
+						: null
+				: `compat_${info.status}`;
+	return key ? (
+		<Alert
+			severity="info"
+			sx={{ my: 1 }}
+			action={
+				connected && info?.status === "timeout" ? (
+					<Button onClick={() => inspectDeviceVersion(device, true)}>
+						{t("compat_retry")}
+					</Button>
+				) : undefined
+			}
+		>
+			{t(key)}
+		</Alert>
+	) : null;
+};
+
+export const RawStreamToggle = ({
+	device,
+	disabled,
+}: {
+	device: string;
+	disabled?: boolean;
+}) => {
+	const { t } = useTranslation();
+	const info = useDevice(device);
 	const active = useRawStreamStore((state) => state.active);
 	const error = useRawStreamStore((state) => state.error);
 	const setActive = useRawStreamStore((state) => state.setActive);
@@ -202,7 +255,11 @@ export const RawStreamToggle = ({ disabled }: { disabled?: boolean }) => {
 				control={
 					<Switch
 						checked={active}
-						disabled={disabled}
+						disabled={
+							disabled ||
+							info?.status !== "ready" ||
+							!supportsLiveValues(info.version)
+						}
 						onChange={(e) => {
 							if (e.target.checked) clear();
 							setActive(e.target.checked);
@@ -211,9 +268,12 @@ export const RawStreamToggle = ({ disabled }: { disabled?: boolean }) => {
 				}
 				label={t("inspector_raw_stream_toggle")}
 			/>
+			<DeviceCompatibility device={device} live />
 			{error && (
 				<Alert severity="warning" sx={{ my: 1 }}>
-					{t("inspector_raw_stream_error", { error })}
+					{t(`compat_stream_${error}`, {
+						defaultValue: t("inspector_raw_stream_error", { error }),
+					})}
 				</Alert>
 			)}
 		</>
@@ -239,7 +299,7 @@ const RawValues = ({ device }: { device: string }) => {
 					{t("inspector_raw_stream_hint")}
 				</Alert>
 			)}
-			<RawStreamToggle disabled={!initialized} />
+			<RawStreamToggle device={device} disabled={!initialized} />
 			{active && rows.length === 0 && (
 				<Typography color="text.secondary">
 					{t("inspector_raw_stream_waiting")}

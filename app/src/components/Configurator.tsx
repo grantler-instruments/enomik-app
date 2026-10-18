@@ -20,7 +20,13 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import { useDevice } from "../hooks/useDevice";
 import { useAppStore } from "../store/app";
+import {
+	supportsInspection,
+	supportsLiveValues,
+	useDeviceStore,
+} from "../store/device";
 import { findDuplicatePins, useIOStore } from "../store/io";
 import {
 	beginWaitForConfigLoad,
@@ -60,6 +66,7 @@ const Configurator = () => {
 	const selectedOutputId = useMIDIStore(
 		(state) => state.selectedConfiguratorOutputDevice,
 	);
+	const deviceInfo = useDevice(selectedOutputId || "-1");
 	const setSelectedOutputId = useMIDIStore(
 		(state) => state.setSelectedConfiguratorOutputDevice,
 	);
@@ -144,9 +151,18 @@ const Configurator = () => {
 
 		setDeploying(true);
 		try {
-			const { resetAck, sysexErrors } = await deployConfiguration(rawOut);
+			const { resetAck, sysexErrors, nameSkipped, globalsSkipped } =
+				await deployConfiguration(rawOut);
 			// Only resume if the user is still on the Configurator.
-			if (wasStreaming && mountedRef.current) {
+			if (
+				wasStreaming &&
+				resetAck &&
+				sysexErrors.length === 0 &&
+				mountedRef.current &&
+				useMIDIStore.getState().selectedConfiguratorOutputDevice === rawOut &&
+				useDeviceStore.getState().devices[rawOut]?.status === "ready" &&
+				supportsLiveValues(useDeviceStore.getState().devices[rawOut]?.version)
+			) {
 				rawStream.clear();
 				rawStream.setActive(true);
 			}
@@ -162,6 +178,10 @@ const Configurator = () => {
 					err.failedRequest === ENOMIK_COMMAND_SET_NAME,
 			);
 
+			if (globalsSkipped) {
+				toastGlobals.midiLoopback = t("compat_unavailable");
+				toastGlobals.powerSave = t("compat_unavailable");
+			}
 			let summary: string;
 			if (isBroadcast) {
 				summary = t("deploy_toast_summary", toastGlobals);
@@ -185,6 +205,17 @@ const Configurator = () => {
 						version: `${nameUnsupported.major}.${nameUnsupported.minor}`,
 					})}`,
 				);
+			} else if (nameSkipped || globalsSkipped) {
+				setDeployToastSeverity("warning");
+				setDeployToast(
+					[
+						summary,
+						globalsSkipped && t("compat_globals_skipped"),
+						nameSkipped && t("compat_name_skipped"),
+					]
+						.filter(Boolean)
+						.join(" "),
+				);
 			} else if (isBroadcast || resetAck) {
 				setDeployToastSeverity("success");
 				setDeployToast(summary);
@@ -192,6 +223,15 @@ const Configurator = () => {
 				setDeployToastSeverity("warning");
 				setDeployToast(summary);
 			}
+		} catch (error) {
+			setDeployToastSeverity("error");
+			setDeployToast(
+				t(
+					error instanceof Error && error.message.startsWith("compat_")
+						? error.message
+						: "compat_deploy_failed",
+				),
+			);
 		} finally {
 			setDeploying(false);
 		}
@@ -244,6 +284,22 @@ const Configurator = () => {
 			return;
 		}
 
+		if (deviceInfo?.status !== "ready") {
+			setDeployToastSeverity("warning");
+			setDeployToast(
+				t(
+					deviceInfo?.status && deviceInfo.status !== "checking"
+						? `compat_${deviceInfo.status}`
+						: "compat_checking",
+				),
+			);
+			return;
+		}
+		if (!supportsInspection(deviceInfo.version)) {
+			setDeployToastSeverity("warning");
+			setDeployToast(t("compat_inspection_unsupported"));
+			return;
+		}
 		setLoadingFromDevice(true);
 		try {
 			const waitPromise = beginWaitForConfigLoad(rawOut, 5000);
@@ -256,6 +312,11 @@ const Configurator = () => {
 			sendMessage(msg, rawOut);
 
 			const result = await waitPromise;
+			if (
+				useMIDIStore.getState().selectedConfiguratorOutputDevice !== rawOut ||
+				!mountedRef.current
+			)
+				return;
 			if (!result) {
 				setDeployToastSeverity("warning");
 				setDeployToast(t("load_from_device_toast_timeout"));
@@ -268,16 +329,16 @@ const Configurator = () => {
 					typeof loadFromFile
 				>[0]["outputs"],
 				peers: result.peers,
-				midiLoopback: result.midiLoopback,
-				powerSave: result.powerSave,
+				midiLoopback: result.midiLoopback ?? useIOStore.getState().midiLoopback,
+				powerSave: result.powerSave ?? useIOStore.getState().powerSave,
 				name: result.name ?? "",
 			});
 			syncSectionOpen({
 				inputsCount: result.inputs.length,
 				outputsCount: result.outputs.length,
 				peersCount: result.peers.length,
-				midiLoopback: result.midiLoopback,
-				powerSave: result.powerSave,
+				midiLoopback: result.midiLoopback ?? useIOStore.getState().midiLoopback,
+				powerSave: result.powerSave ?? useIOStore.getState().powerSave,
 				name: result.name ?? "",
 			});
 			setDeployToastSeverity("success");
@@ -285,8 +346,20 @@ const Configurator = () => {
 				t("load_from_device_toast_ok", {
 					pinConfigs: result.inputs.length + result.outputs.length,
 					peerCount: result.peers.length,
-					midiLoopback: t(result.midiLoopback ? "state_on" : "state_off"),
-					powerSave: t(result.powerSave ? "state_on" : "state_off"),
+					midiLoopback: t(
+						result.midiLoopback === null
+							? "compat_unavailable"
+							: result.midiLoopback
+								? "state_on"
+								: "state_off",
+					),
+					powerSave: t(
+						result.powerSave === null
+							? "compat_unavailable"
+							: result.powerSave
+								? "state_on"
+								: "state_off",
+					),
 				}),
 			);
 		} finally {

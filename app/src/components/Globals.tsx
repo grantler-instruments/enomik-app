@@ -7,12 +7,21 @@ import {
 	Typography,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import { useDevice } from "../hooks/useDevice";
+import { supportsGlobals, supportsLiveValues } from "../store/device";
 import { useIOStore } from "../store/io";
+import { useMIDIStore } from "../store/midi";
 import { ENOMIK_MAX_NAME_LENGTH } from "../store/midi.config";
 import InfoWithTooltip from "./InfoWithTooltip";
 
 const Globals = () => {
 	const { t } = useTranslation();
+	const device = useMIDIStore(
+		(state) => state.selectedConfiguratorOutputDevice,
+	);
+	const info = useDevice(device || "-1");
+	const oldGlobals = info?.status === "ready" && !supportsGlobals(info.version);
+	const oldName = info?.status === "ready" && !supportsLiveValues(info.version);
 	const midiLoopback = useIOStore((state) => state.midiLoopback);
 	const setMidiLoopback = useIOStore((state) => state.setMidiLoopback);
 	const powerSave = useIOStore((state) => state.powerSave);
@@ -32,6 +41,7 @@ const Globals = () => {
 				<TextField
 					size="small"
 					label={t("client_name")}
+					disabled={oldName}
 					placeholder={t("client_name_placeholder")}
 					value={name}
 					onChange={(e) => setName(e.target.value)}
@@ -57,6 +67,7 @@ const Globals = () => {
 						<Checkbox
 							size="small"
 							checked={midiLoopback}
+							disabled={oldGlobals}
 							onChange={(e) => setMidiLoopback(e.target.checked)}
 						/>
 					}
@@ -71,6 +82,7 @@ const Globals = () => {
 						<Checkbox
 							size="small"
 							checked={powerSave}
+							disabled={oldGlobals}
 							onChange={(e) => setPowerSave(e.target.checked)}
 						/>
 					}

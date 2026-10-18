@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { ThresholdUnit } from "../../store/device";
 import {
 	type InputPinConfig,
 	type OutputPinConfig,
@@ -161,6 +162,7 @@ interface PinRowProps {
 	index: number;
 	/** Inspector: plain text instead of fields, no row menu. */
 	readOnly?: boolean;
+	thresholdUnit?: ThresholdUnit;
 	/** Live value shown on a full-width line below the row (inputs only). */
 	live?: ReactNode;
 	/** Table has a threshold column (see hasTouchInput). */
@@ -174,6 +176,7 @@ const PinRow = ({
 	type,
 	index,
 	readOnly = false,
+	thresholdUnit,
 	live,
 	showThreshold = false,
 	showPwmRange = false,
@@ -220,6 +223,14 @@ const PinRow = ({
 	const modeLabel = modes.find((m) => m.value === config.mode)?.label ?? "";
 	const hasConflict = conflictingPins.has(config.pin);
 	const isTouch = isInput && config.mode === sysexPinModeTouch;
+	const displayedUnit =
+		(config as InputPinConfig).thresholdUnit ?? thresholdUnit;
+	const touchDescription =
+		displayedUnit === "percent"
+			? t("pin_mode_touch_desc")
+			: t(
+					displayedUnit === "raw" ? "compat_touch_raw" : "compat_touch_unknown",
+				);
 	const isPwm = !isInput && config.mode === sysexPinModePWMOut;
 	const isPitchBend = config.midiType === MIDI_PITCH_BEND;
 	const ccOrNoteKey =
@@ -269,7 +280,9 @@ const PinRow = ({
 
 	const modeCell = (
 		<Tooltip
-			title={t(MODE_DESCRIPTION_KEYS[config.mode] ?? "")}
+			title={
+				isTouch ? touchDescription : t(MODE_DESCRIPTION_KEYS[config.mode] ?? "")
+			}
 			placement="top"
 			enterDelay={600}
 			arrow
@@ -298,18 +311,21 @@ const PinRow = ({
 	const thresholdCell = !isTouch ? (
 		<Box />
 	) : readOnly ? (
-		<ReadOnly>{config.threshold ?? 0}%</ReadOnly>
+		<ReadOnly>
+			{config.threshold ?? 0}
+			{displayedUnit === "percent" ? "%" : ""}
+		</ReadOnly>
 	) : (
 		<TextField
 			label={label(t("threshold"))}
 			value={config.threshold != null ? String(Number(config.threshold)) : ""}
 			onChange={(e) => {
-				// Touch threshold is % change from baseline: 0 = continuous, 1–127 = on/off
+				// Both protocols use a 7-bit byte; its meaning depends on firmware.
 				const n = Math.round(Number(e.target.value));
-				onChange(
-					"threshold",
-					Number.isNaN(n) ? 0 : Math.max(0, Math.min(127, n)),
-				);
+				updateInput(config.uuid, {
+					threshold: Number.isNaN(n) ? 0 : Math.max(0, Math.min(127, n)),
+					thresholdUnit: displayedUnit,
+				});
 			}}
 			size="small"
 			fullWidth
@@ -317,7 +333,15 @@ const PinRow = ({
 			slotProps={{
 				...numberProps(t("threshold")),
 				input: {
-					endAdornment: <InputAdornment position="end">%</InputAdornment>,
+					endAdornment: (
+						<InputAdornment position="end">
+							{displayedUnit === "percent"
+								? "%"
+								: displayedUnit === "raw"
+									? t("raw")
+									: "?"}
+						</InputAdornment>
+					),
 				},
 			}}
 		/>

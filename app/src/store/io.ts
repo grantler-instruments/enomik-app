@@ -2,6 +2,13 @@ import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import {
+	supportsGlobals,
+	supportsLiveValues,
+	type ThresholdUnit,
+	thresholdUnit,
+	useDeviceStore,
+} from "./device";
+import {
 	beginSysexErrorCollection,
 	beginWaitForResetAck,
 	type MidiMessage,
@@ -29,7 +36,7 @@ import {
 	type sysexPinModeDigitalInPullup,
 	type sysexPinModeDigitalOut,
 	type sysexPinModePWMOut,
-	type sysexPinModeTouch,
+	sysexPinModeTouch,
 } from "./midi.config";
 
 export type MidiType =
@@ -64,6 +71,7 @@ export interface InputPinConfig {
 	controller?: number;
 	note?: number;
 	threshold?: number;
+	thresholdUnit?: ThresholdUnit;
 }
 
 export interface OutputPinConfig {
@@ -124,9 +132,25 @@ interface IOState {
 		name?: string;
 	}) => void;
 
-	deploy: (
-		deviceId: string,
-	) => Promise<{ resetAck: boolean; sysexErrors: SysexErrorEvent[] }>;
+	deploy: (deviceId: string) => Promise<{
+		resetAck: boolean;
+		sysexErrors: SysexErrorEvent[];
+		nameSkipped: boolean;
+		globalsSkipped: boolean;
+	}>;
+}
+
+/** Nonzero thresholds cannot be silently reinterpreted across firmware generations. */
+export function thresholdsNeedReview(
+	inputs: Pick<InputPinConfig, "mode" | "threshold" | "thresholdUnit">[],
+	unit?: ThresholdUnit,
+) {
+	return inputs.some(
+		(input) =>
+			input.mode === sysexPinModeTouch &&
+			!!input.threshold &&
+			(!unit || input.thresholdUnit !== unit),
+	);
 }
 
 /**
@@ -319,8 +343,25 @@ export const useIOStore = create<IOState>()(
 
 				deploy: async (deviceId: string) => {
 					const outputId = !deviceId || deviceId === "" ? "-1" : deviceId;
-					beginSysexErrorCollection();
+					const info = useDeviceStore.getState().devices[outputId];
+					if (info?.status === "incompatible")
+						throw new Error("compat_incompatible");
+					if (
+						thresholdsNeedReview(
+							get().inputs,
+							info?.status === "ready"
+								? thresholdUnit(info.version)
+								: undefined,
+						)
+					)
+						throw new Error("compat_threshold_review");
+					beginSysexErrorCollection(outputId);
 
+					// Register before sending: USB devices can acknowledge synchronously.
+					const resetWait =
+						outputId !== "-1"
+							? beginWaitForResetAck(outputId, 5000)
+							: Promise.resolve(true);
 					// first reset — firmware sends RESET_RESPONSE (0x49) when done
 					const resetMessage: MidiMessage = {
 						id: uuidv4(),
@@ -330,10 +371,7 @@ export const useIOStore = create<IOState>()(
 					};
 					useMIDIStore.getState().sendMessage(resetMessage, outputId);
 
-					let resetAck = true;
-					if (outputId !== "-1") {
-						resetAck = await beginWaitForResetAck(outputId, 5000);
-					}
+					const resetAck = await resetWait;
 
 					const mapPitchBendTo7Bit = (value: number) => {
 						// Clamp value to valid pitch bend range
@@ -414,8 +452,11 @@ export const useIOStore = create<IOState>()(
 						useMIDIStore.getState().sendMessage(msg, outputId);
 					});
 
+					// Only send global settings when the selected firmware supports them.
+					const globalsSkipped =
+						info?.status === "ready" && !supportsGlobals(info.version);
 					// MIDI loopback (RESET clears it on device — must re-apply)
-					{
+					if (!globalsSkipped) {
 						const msg: MidiMessage = {
 							id: uuidv4(),
 							timestamp: Date.now(),
@@ -428,7 +469,7 @@ export const useIOStore = create<IOState>()(
 					}
 
 					// Power save (RESET clears it on device — must re-apply)
-					{
+					if (!globalsSkipped) {
 						const msg: MidiMessage = {
 							id: uuidv4(),
 							timestamp: Date.now(),
@@ -440,8 +481,11 @@ export const useIOStore = create<IOState>()(
 						useMIDIStore.getState().sendMessage(msg, outputId);
 					}
 
-					// Client name (RESET drops the override — re-apply; empty keeps the firmware's name)
-					if (get().name) {
+					// Client name requires confirmed firmware support.
+					const nameSkipped =
+						!!get().name &&
+						!(info?.status === "ready" && supportsLiveValues(info.version));
+					if (get().name && !nameSkipped) {
 						const msg: MidiMessage = {
 							id: uuidv4(),
 							timestamp: Date.now(),
@@ -457,8 +501,7 @@ export const useIOStore = create<IOState>()(
 					// Allow async 0x7F replies (e.g. unknown_command on older firmware)
 					await new Promise((resolve) => setTimeout(resolve, 400));
 					const sysexErrors = takeSysexErrors();
-
-					return { resetAck, sysexErrors };
+					return { resetAck, sysexErrors, nameSkipped, globalsSkipped };
 				},
 			}),
 			{ name: "IOStore" },

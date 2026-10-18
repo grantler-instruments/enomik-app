@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { supportsLiveValues, useDeviceStore } from "../store/device";
 import { type MidiMessage, useMIDIStore } from "../store/midi";
 import {
 	buildEnomikSysex,
@@ -7,12 +8,29 @@ import {
 	ENOMIK_RAW_STREAM_ALL_PINS,
 } from "../store/midi.config";
 import { useRawStreamStore } from "../store/rawStream";
-
-/** Firmware stops the stream after 10 s without SysEx from the host. */
-const KEEPALIVE_INTERVAL_MS = 4000;
+import { startRawStreamSession } from "../utils/rawStreamSession";
+import { useDevice } from "./useDevice";
 
 /** SET_RAW_STREAM for every configured input pin. */
 export const sendRawStream = (deviceId: string, enable: boolean) => {
+	const info = useDeviceStore.getState().devices[deviceId];
+	if (
+		enable &&
+		(info?.status !== "ready" || !supportsLiveValues(info.version))
+	) {
+		useRawStreamStore.getState().setActive(false);
+		return;
+	}
+	if (
+		!deviceId ||
+		deviceId === "-1" ||
+		!useMIDIStore
+			.getState()
+			.outputs.some(
+				(out) => out.id === deviceId && out.state !== "disconnected",
+			)
+	)
+		return;
 	const msg: MidiMessage = {
 		id: uuidv4(),
 		type: 240,
@@ -25,7 +43,10 @@ export const sendRawStream = (deviceId: string, enable: boolean) => {
 		]),
 		timestamp: Date.now(),
 	};
-	useMIDIStore.getState().sendMessage(msg, deviceId);
+	if (!useMIDIStore.getState().sendMessage(msg, deviceId) && enable) {
+		useRawStreamStore.getState().setError("connection");
+		useRawStreamStore.getState().setActive(false);
+	}
 };
 
 /**
@@ -34,30 +55,30 @@ export const sendRawStream = (deviceId: string, enable: boolean) => {
  * Unmounting the caller switches the stream off.
  */
 export const useRawStream = (device: string) => {
+	const info = useDevice(device);
 	const active = useRawStreamStore((state) => state.active);
 	const setActive = useRawStreamStore((state) => state.setActive);
-
+	const supported =
+		info?.status === "ready" && supportsLiveValues(info.version);
 	useEffect(() => {
-		if (!active) return;
-		sendRawStream(device, true);
-		const timer = setInterval(
-			() => sendRawStream(device, true),
-			KEEPALIVE_INTERVAL_MS,
+		if (!active || !useRawStreamStore.getState().active) return;
+		if (!supported) {
+			setActive(false);
+			return;
+		}
+		const stop = startRawStreamSession(device, (enable) =>
+			sendRawStream(device, enable),
 		);
-		return () => {
-			clearInterval(timer);
-			sendRawStream(device, false);
+		const onPageHide = () => {
+			stop();
+			setActive(false);
 		};
-	}, [active, device]);
-
-	// Closing or reloading the page unmounts nothing: stop the stream explicitly.
-	useEffect(() => {
-		if (!active) return;
-		const stop = () => sendRawStream(device, false);
-		window.addEventListener("pagehide", stop);
-		return () => window.removeEventListener("pagehide", stop);
-	}, [active, device]);
-
-	// Leaving the page (Inspector, Configurator) switches the stream off.
+		window.addEventListener("pagehide", onPageHide);
+		return () => {
+			stop();
+			setActive(false);
+			window.removeEventListener("pagehide", onPageHide);
+		};
+	}, [active, device, supported, setActive]);
 	useEffect(() => () => setActive(false), [setActive]);
 };

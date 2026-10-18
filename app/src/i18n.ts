@@ -15,6 +15,50 @@ i18n.use(initReactI18next).init({
 	resources: {
 		en: {
 			translation: {
+				compat_inspection_unsupported:
+					"Reading configuration from the device requires firmware 0.13 or newer. You can still edit, save and deploy pin and peer configurations.",
+				compat_globals_skipped:
+					"Pin and peer configurations were sent. This firmware does not support MIDI loopback or power-save settings, so those settings were skipped.",
+
+				compat_name_skipped:
+					"Client name was not applied because firmware support could not be confirmed.",
+				compat_select_device:
+					"Select one connected device to inspect firmware and stream values.",
+				compat_checking: "Checking firmware support…",
+				compat_timeout:
+					"The device did not report its firmware version. Newer features remain unavailable; ordinary MIDI still works.",
+				compat_incompatible:
+					"This firmware protocol is not supported. Inspection and configuration are unavailable; ordinary MIDI remains available.",
+				compat_unpaired:
+					"The MIDI input cannot be matched uniquely to this device. If several boards share a name, connect only the board you want to inspect.",
+				compat_live_unsupported:
+					"Live values require firmware 0.19 or newer. Basic configuration remains available.",
+				compat_retry: "Retry",
+				compat_syncing: "Reading device configuration…",
+				compat_sync_failed:
+					"Configuration could not be read completely. Any values shown may be incomplete. Check the connection and sync again.",
+				compat_unavailable: "Unavailable",
+				compat_stream_timeout:
+					"The device did not acknowledge live streaming. Streaming has stopped; check firmware support and the USB connection.",
+				compat_stream_no_readings:
+					"No recent input readings received. Streaming has stopped. Check the connection and whether input pins are configured on the device.",
+				compat_stream_unknown_command:
+					"This firmware does not support live streaming. Inspection and ordinary MIDI remain available.",
+				compat_stream_connection:
+					"The device could not be reached. Streaming has stopped.",
+				compat_stream_pin_not_found:
+					"No matching input pins are configured on the device. Streaming has stopped.",
+				compat_threshold_review:
+					"Review touch thresholds before deploying. Firmware before 0.19 uses raw readings; 0.19+ uses percentages. These values have different or unknown units. Select a device, then explicitly keep the numbers in its units or load its configuration.",
+				compat_use_raw: "Keep numbers as raw thresholds",
+				compat_use_percent: "Keep numbers as percentages",
+				compat_touch_raw:
+					"Legacy touch input: a nonzero threshold is a raw sensor reading, not a percentage. 0 = continuous value.",
+				compat_touch_unknown:
+					"Touch threshold units depend on firmware. Select a device to check its version before deploying.",
+				compat_deploy_failed:
+					"Deployment failed. Check the device connection before retrying.",
+
 				console: "Console",
 				home_create_midi_devices_easily: "Create MIDI Devices Easily",
 				home_no_coding_required: "No Coding Required.",
@@ -289,6 +333,50 @@ i18n.use(initReactI18next).init({
 		},
 		de: {
 			translation: {
+				compat_inspection_unsupported:
+					"Das Auslesen der Gerätekonfiguration benötigt Firmware 0.13 oder neuer. PINs und Peers lassen sich weiterhin bearbeiten, speichern und deployen.",
+				compat_globals_skipped:
+					"PIN- und Peer-Konfigurationen wurden gesendet. Diese Firmware unterstützt weder MIDI-Loopback noch Energiespareinstellungen; diese wurden übersprungen.",
+
+				compat_name_skipped:
+					"Der Client-Name wurde nicht angewendet, da die Firmware-Unterstützung nicht bestätigt werden konnte.",
+				compat_select_device:
+					"Wähle ein verbundenes Gerät, um die Firmware zu prüfen und Live-Werte zu sehen.",
+				compat_checking: "Firmware-Unterstützung wird geprüft…",
+				compat_timeout:
+					"Das Gerät hat keine Firmware-Version gemeldet. Neuere Funktionen bleiben deaktiviert; normales MIDI funktioniert weiterhin.",
+				compat_incompatible:
+					"Dieses Firmware-Protokoll wird nicht unterstützt. Inspektion und Konfiguration sind nicht verfügbar; normales MIDI bleibt verfügbar.",
+				compat_unpaired:
+					"Der MIDI-Eingang lässt sich diesem Gerät nicht eindeutig zuordnen. Haben mehrere Boards denselben Namen, verbinde nur das gewünschte Board.",
+				compat_live_unsupported:
+					"Live-Werte benötigen Firmware 0.19 oder neuer. Die grundlegende Konfiguration bleibt verfügbar.",
+				compat_retry: "Erneut prüfen",
+				compat_syncing: "Gerätekonfiguration wird gelesen…",
+				compat_sync_failed:
+					"Die Konfiguration konnte nicht vollständig gelesen werden. Angezeigte Werte können unvollständig sein. Prüfe die Verbindung und synchronisiere erneut.",
+				compat_unavailable: "Nicht verfügbar",
+				compat_stream_timeout:
+					"Das Gerät hat den Live-Stream nicht bestätigt. Der Stream wurde gestoppt. Prüfe Firmware-Unterstützung und USB-Verbindung.",
+				compat_stream_no_readings:
+					"Keine aktuellen Eingangswerte empfangen. Der Stream wurde gestoppt. Prüfe die Verbindung und ob Eingangs-PINs auf dem Gerät konfiguriert sind.",
+				compat_stream_unknown_command:
+					"Diese Firmware unterstützt keine Live-Werte. Inspektion und normales MIDI bleiben verfügbar.",
+				compat_stream_connection:
+					"Das Gerät ist nicht erreichbar. Der Stream wurde gestoppt.",
+				compat_stream_pin_not_found:
+					"Auf dem Gerät sind keine passenden Eingangs-PINs konfiguriert. Der Stream wurde gestoppt.",
+				compat_threshold_review:
+					"Prüfe die Touch-Schwellenwerte vor dem Deploy. Firmware vor 0.19 nutzt Rohwerte, ab 0.19 gelten Prozentwerte. Die Einheit dieser Werte ist anders oder unbekannt. Wähle ein Gerät und übernimm die Zahlen ausdrücklich in dessen Einheit oder lade seine Konfiguration.",
+				compat_use_raw: "Zahlen als Rohwerte übernehmen",
+				compat_use_percent: "Zahlen als Prozentwerte übernehmen",
+				compat_touch_raw:
+					"Touch-Eingang älterer Firmware: Ein Schwellenwert größer 0 ist ein Sensor-Rohwert, kein Prozentwert. 0 = kontinuierlicher Wert.",
+				compat_touch_unknown:
+					"Die Einheit des Touch-Schwellenwerts hängt von der Firmware ab. Wähle ein Gerät, um die Version vor dem Deploy zu prüfen.",
+				compat_deploy_failed:
+					"Deploy fehlgeschlagen. Prüfe die Geräteverbindung vor einem erneuten Versuch.",
+
 				console: "Konsole",
 				home_create_midi_devices_easily: "MIDI-Geräte einfach erstellen",
 				home_no_coding_required: "Keine Programmierung erforderlich.",
@@ -568,6 +656,50 @@ i18n.use(initReactI18next).init({
 		},
 		es: {
 			translation: {
+				compat_inspection_unsupported:
+					"Leer la configuración del dispositivo requiere firmware 0.13 o posterior. Puedes seguir editando, guardando y desplegando configuraciones de pines y pares.",
+				compat_globals_skipped:
+					"Se enviaron las configuraciones de pines y pares. Este firmware no admite ajustes de bucle MIDI ni de ahorro de energía, por lo que se omitieron.",
+
+				compat_name_skipped:
+					"No se aplicó el nombre porque no se pudo confirmar la compatibilidad del firmware.",
+				compat_select_device:
+					"Selecciona un dispositivo conectado para consultar el firmware y ver valores en vivo.",
+				compat_checking: "Comprobando compatibilidad del firmware…",
+				compat_timeout:
+					"El dispositivo no respondió con su versión. Las funciones nuevas quedan desactivadas; MIDI sigue funcionando.",
+				compat_incompatible:
+					"Este protocolo de firmware no es compatible. Inspección y configuración no disponibles; MIDI sigue disponible.",
+				compat_unpaired:
+					"No se puede identificar una entrada MIDI única. Si varias placas tienen el mismo nombre, conecta solo la que deseas inspeccionar.",
+				compat_live_unsupported:
+					"Los valores en vivo requieren firmware 0.19 o posterior. La configuración básica sigue disponible.",
+				compat_retry: "Reintentar",
+				compat_syncing: "Leyendo configuración del dispositivo…",
+				compat_sync_failed:
+					"No se pudo leer toda la configuración. Los valores mostrados pueden estar incompletos. Comprueba la conexión y sincroniza de nuevo.",
+				compat_unavailable: "No disponible",
+				compat_stream_timeout:
+					"El dispositivo no confirmó la transmisión. Se ha detenido; comprueba el firmware y la conexión USB.",
+				compat_stream_no_readings:
+					"No se recibieron lecturas recientes. Se detuvo la transmisión. Comprueba la conexión y los pines de entrada configurados.",
+				compat_stream_unknown_command:
+					"Este firmware no admite valores en vivo. Inspección y MIDI siguen disponibles.",
+				compat_stream_connection:
+					"No se pudo contactar con el dispositivo. Se detuvo la transmisión.",
+				compat_stream_pin_not_found:
+					"El dispositivo no tiene pines de entrada coincidentes configurados. Se detuvo la transmisión.",
+				compat_threshold_review:
+					"Revisa los umbrales táctiles antes de desplegar. Firmware anterior a 0.19 usa valores brutos; 0.19+ usa porcentajes. Estos valores tienen unidades distintas o desconocidas. Selecciona un dispositivo y confirma sus unidades o carga su configuración.",
+				compat_use_raw: "Usar números como umbrales brutos",
+				compat_use_percent: "Usar números como porcentajes",
+				compat_touch_raw:
+					"Entrada táctil antigua: un umbral distinto de cero es una lectura bruta, no un porcentaje. 0 = valor continuo.",
+				compat_touch_unknown:
+					"Las unidades del umbral dependen del firmware. Selecciona un dispositivo para comprobar la versión antes de desplegar.",
+				compat_deploy_failed:
+					"Falló el despliegue. Comprueba la conexión antes de reintentar.",
+
 				console: "Consola",
 				home_create_midi_devices_easily: "Crea dispositivos MIDI fácilmente",
 				home_no_coding_required: "No se requiere codificación.",
@@ -844,6 +976,46 @@ i18n.use(initReactI18next).init({
 		},
 		zh: {
 			translation: {
+				compat_inspection_unsupported:
+					"从设备读取配置需要固件 0.13 或更新版本。仍可编辑、保存和部署引脚与对等设备配置。",
+				compat_globals_skipped:
+					"已发送引脚与对等设备配置。此固件不支持 MIDI 回环或省电设置，已跳过这些设置。",
+
+				compat_name_skipped: "无法确认固件支持，未应用客户端名称。",
+				compat_select_device:
+					"请选择一个已连接的设备以检查固件并查看实时数值。",
+				compat_checking: "正在检查固件支持…",
+				compat_timeout:
+					"设备未报告固件版本。新功能暂不可用，普通 MIDI 仍可使用。",
+				compat_incompatible:
+					"不支持此固件协议。检查和配置不可用，普通 MIDI 仍可使用。",
+				compat_unpaired:
+					"无法唯一匹配此设备的 MIDI 输入。如多个板名称相同，请仅连接要检查的板。",
+				compat_live_unsupported:
+					"实时数值需要固件 0.19 或更新版本。基本配置仍可使用。",
+				compat_retry: "重试",
+				compat_syncing: "正在读取设备配置…",
+				compat_sync_failed:
+					"无法完整读取配置。显示的数值可能不完整。请检查连接并重新同步。",
+				compat_unavailable: "不可用",
+				compat_stream_timeout:
+					"设备未确认实时传输。传输已停止，请检查固件支持和 USB 连接。",
+				compat_stream_no_readings:
+					"未收到最新输入读数。传输已停止，请检查连接和设备上的输入引脚配置。",
+				compat_stream_unknown_command:
+					"此固件不支持实时传输。检查和普通 MIDI 仍可使用。",
+				compat_stream_connection: "无法连接设备。传输已停止。",
+				compat_stream_pin_not_found: "设备上未配置匹配的输入引脚。传输已停止。",
+				compat_threshold_review:
+					"部署前请检查触摸阈值。0.19 之前的固件使用原始读数，0.19 及更新版本使用百分比。这些值的单位不同或未知。请选择设备，明确按其单位保留数值，或加载其配置。",
+				compat_use_raw: "按原始阈值保留数值",
+				compat_use_percent: "按百分比保留数值",
+				compat_touch_raw:
+					"旧版触摸输入：非零阈值为传感器原始读数，而非百分比。0 = 连续值。",
+				compat_touch_unknown:
+					"触摸阈值单位取决于固件。部署前请选择设备以检查版本。",
+				compat_deploy_failed: "部署失败。重试前请检查设备连接。",
+
 				console: "控制台",
 				home_create_midi_devices_easily: "轻松创建 MIDI 设备",
 				home_no_coding_required: "无需编程。",

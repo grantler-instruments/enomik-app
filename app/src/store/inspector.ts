@@ -1,13 +1,16 @@
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { devtools } from "zustand/middleware";
 import type { InputPinConfig, OutputPinConfig } from "./io";
 
 interface InspectorState {
+	deviceId: string | null;
+	syncing: boolean;
+	syncError: boolean;
 	peers: string[];
 	inputPinConfigs: InputPinConfig[];
 	outputPinConfigs: OutputPinConfig[];
-	midiLoopback: boolean;
-	powerSave: boolean;
+	midiLoopback: boolean | null;
+	powerSave: boolean | null;
 	macAddress: string | null;
 	protocolVersion: string | null;
 	name: string | null;
@@ -25,73 +28,75 @@ interface InspectorState {
 
 export const useInspectorStore = create<InspectorState>()(
 	devtools(
-		persist(
-			(set) => ({
-				peers: [],
-				inputPinConfigs: [],
-				outputPinConfigs: [],
-				midiLoopback: false,
-				powerSave: false,
-				macAddress: null,
-				protocolVersion: null,
-				name: null,
-				setPeers: (newPeers: string[]) =>
-					set(() => ({
-						peers: newPeers,
-					})),
+		(set) => ({
+			deviceId: null,
+			syncing: false,
+			syncError: false,
+			peers: [],
+			inputPinConfigs: [],
+			outputPinConfigs: [],
+			midiLoopback: null,
+			powerSave: null,
+			macAddress: null,
+			protocolVersion: null,
+			name: null,
+			setPeers: (newPeers: string[]) =>
+				set(() => ({
+					peers: newPeers,
+				})),
 
-				addPeer: (mac: string) =>
-					set((state) => {
-						const normalized = mac.toUpperCase();
-						if (state.peers.includes(normalized)) return state;
-						return { peers: [...state.peers, normalized] };
-					}),
+			addPeer: (mac: string) =>
+				set((state) => {
+					const normalized = mac.toUpperCase();
+					if (state.peers.includes(normalized)) return state;
+					return { peers: [...state.peers, normalized] };
+				}),
 
-				addInputPinConfig: (config: InputPinConfig) =>
-					set((state) => ({
-						inputPinConfigs: [
-							...state.inputPinConfigs.filter((c) => c.pin !== config.pin),
-							config,
-						],
-					})),
+			addInputPinConfig: (config: InputPinConfig) =>
+				set((state) => ({
+					inputPinConfigs: [
+						...state.inputPinConfigs.filter((c) => c.pin !== config.pin),
+						config,
+					],
+				})),
 
-				addOutputPinConfig: (config: OutputPinConfig) =>
-					set((state) => ({
-						outputPinConfigs: [
-							...state.outputPinConfigs.filter((c) => c.pin !== config.pin),
-							config,
-						],
-					})),
+			addOutputPinConfig: (config: OutputPinConfig) =>
+				set((state) => ({
+					outputPinConfigs: [
+						...state.outputPinConfigs.filter((c) => c.pin !== config.pin),
+						config,
+					],
+				})),
 
-				setMidiLoopback: (enabled: boolean) =>
-					set(() => ({ midiLoopback: enabled })),
+			setMidiLoopback: (enabled: boolean) =>
+				set(() => ({ midiLoopback: enabled })),
 
-				setPowerSave: (enabled: boolean) => set(() => ({ powerSave: enabled })),
+			setPowerSave: (enabled: boolean) => set(() => ({ powerSave: enabled })),
 
-				setMacAddress: (mac: string) =>
-					set(() => ({ macAddress: mac.toUpperCase() })),
+			setMacAddress: (mac: string) =>
+				set(() => ({ macAddress: mac.toUpperCase() })),
 
-				setProtocolVersion: (version: string) =>
-					set(() => ({ protocolVersion: version })),
+			setProtocolVersion: (version: string) =>
+				set(() => ({ protocolVersion: version })),
 
-				setName: (name: string) => set(() => ({ name })),
+			setName: (name: string) => set(() => ({ name })),
 
-				clear: () => {
-					set({
-						peers: [],
-						inputPinConfigs: [],
-						outputPinConfigs: [],
-						midiLoopback: false,
-						powerSave: false,
-						macAddress: null,
-						protocolVersion: null,
-						name: null,
-					});
-				},
-			}),
-			{
-				name: "InspectorStore",
+			clear: () => {
+				set({
+					deviceId: null,
+					syncing: false,
+					syncError: false,
+					peers: [],
+					inputPinConfigs: [],
+					outputPinConfigs: [],
+					midiLoopback: null,
+					powerSave: null,
+					macAddress: null,
+					protocolVersion: null,
+					name: null,
+				});
 			},
-		),
+		}),
+		{ name: "InspectorStore" },
 	),
 );

@@ -22,6 +22,11 @@ export interface RawValue {
 
 interface RawStreamState {
 	active: boolean;
+	deviceId: string | null;
+	confirmed: boolean;
+	lastFrameAt: number | null;
+	begin: (deviceId: string) => void;
+	acknowledge: () => void;
 	values: Record<number, RawValue>;
 	error: string | null;
 	setActive: (active: boolean) => void;
@@ -33,11 +38,39 @@ interface RawStreamState {
 // Not persisted and no devtools: frames arrive at up to 50 Hz per pin.
 export const useRawStreamStore = create<RawStreamState>()((set) => ({
 	active: false,
+	deviceId: null,
+	confirmed: false,
+	lastFrameAt: null,
+	begin: (deviceId) =>
+		set({
+			deviceId,
+			confirmed: false,
+			lastFrameAt: null,
+			values: {},
+			error: null,
+		}),
+	acknowledge: () => set({ confirmed: true }),
 	values: {},
 	error: null,
-	setActive: (active: boolean) => set(() => ({ active })),
+	setActive: (active: boolean) =>
+		set(() =>
+			active
+				? { active }
+				: { active, values: {}, confirmed: false, lastFrameAt: null },
+		),
 	setValue: (value: RawValue) =>
-		set((state) => ({ values: { ...state.values, [value.pin]: value } })),
+		set((state) => ({
+			values: {
+				...Object.fromEntries(
+					Object.entries(state.values).filter(
+						([, previous]) => value.timestamp - previous.timestamp < 5000,
+					),
+				),
+				[value.pin]: value,
+			},
+			confirmed: true,
+			lastFrameAt: value.timestamp,
+		})),
 	setError: (error: string | null) => set(() => ({ error })),
 	clear: () => set(() => ({ values: {}, error: null })),
 }));
