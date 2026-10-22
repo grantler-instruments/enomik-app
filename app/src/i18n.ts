@@ -154,6 +154,7 @@ i18n.use(initReactI18next).init({
 				port_kind_not_found: "No {{kind}} port found. Keeping {{port}}.",
 				port_kind_not_found_none:
 					"No {{kind}} port found. Connect one or pick a port.",
+				open_tester: "Board tester",
 				device_kind: "Device type",
 				device_kind_client: "Client",
 				device_kind_dongle: "Dongle",
@@ -493,6 +494,7 @@ i18n.use(initReactI18next).init({
 					"Kein {{kind}}-Port gefunden. {{port}} bleibt ausgewählt.",
 				port_kind_not_found_none:
 					"Kein {{kind}}-Port gefunden. Schließe einen an oder wähle einen Port.",
+				open_tester: "Board-Tester",
 				device_kind: "Gerätetyp",
 				device_kind_client: "Client",
 				device_kind_dongle: "Dongle",
@@ -832,6 +834,7 @@ i18n.use(initReactI18next).init({
 					"No se encontró ningún puerto {{kind}}. Se mantiene {{port}}.",
 				port_kind_not_found_none:
 					"No se encontró ningún puerto {{kind}}. Conecta uno o elige un puerto.",
+				open_tester: "Probador de placas",
 				device_kind: "Tipo de dispositivo",
 				device_kind_client: "Cliente",
 				device_kind_dongle: "Dongle",
@@ -1154,6 +1157,7 @@ i18n.use(initReactI18next).init({
 				port_kind_not_found: "未找到 {{kind}} 端口，保留 {{port}}。",
 				port_kind_not_found_none:
 					"未找到 {{kind}} 端口。请连接一个或选择端口。",
+				open_tester: "开发板测试",
 				device_kind: "设备类型",
 				device_kind_client: "客户端",
 				device_kind_dongle: "Dongle",
