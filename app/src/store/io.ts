@@ -147,6 +147,22 @@ interface IOState {
 	}>;
 }
 
+export type ConfigFile = Parameters<IOState["loadFromFile"]>[0];
+
+/**
+ * What an imported file loads into the `kind` config, or the kind the file
+ * belongs to when it is the other one. Files without `kind` predate separate
+ * configs and import as before; a dongle only takes the peers.
+ */
+export function configFromFile(
+	json: ConfigFile,
+	kind: DeviceKind,
+): { config: ConfigFile } | { mismatch: DeviceKind } {
+	if ((json.kind === "client" || json.kind === "dongle") && json.kind !== kind)
+		return { mismatch: json.kind };
+	return { config: kind === "dongle" ? { peers: json.peers } : json };
+}
+
 /** Nonzero thresholds cannot be silently reinterpreted across firmware generations. */
 export function thresholdsNeedReview(
 	inputs: Pick<InputPinConfig, "mode" | "threshold" | "thresholdUnit">[],

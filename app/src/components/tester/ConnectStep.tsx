@@ -10,33 +10,26 @@ import {
 } from "@mui/material";
 import {
 	BUTTON_PINS,
-	macFromString,
+	boardInfoText,
 	type Port,
 	parsePins,
 	pinError,
 } from "../../utils/tester";
+import type { BoardInfoState } from "./useBoardInfo";
 import { AUTO, NONE, type Role } from "./usePorts";
 
 export type Settings = Record<Role, string> & {
-	dongleMac: string;
 	ledPin: number;
 	touchText: string;
 };
 
 /** Validation messages per field, "" when valid. */
-export function settingsErrors({ dongleMac, ledPin, touchText }: Settings) {
-	let mac = "";
-	try {
-		if (dongleMac.trim()) macFromString(dongleMac);
-	} catch (error) {
-		mac = (error as Error).message;
-	}
+export function settingsErrors({ ledPin, touchText }: Settings) {
 	const touchPins = parsePins(touchText);
 	const taken = (pin: number, i: number) =>
 		BUTTON_PINS.includes(pin) || pin === ledPin || touchPins.indexOf(pin) !== i;
 	const badPin = touchPins.find((pin) => pinError(pin));
 	return {
-		mac,
 		led:
 			pinError(ledPin) ||
 			(BUTTON_PINS.includes(ledPin) ? "used by a button" : ""),
@@ -55,6 +48,8 @@ const ConnectStep = ({
 	outputs,
 	client,
 	dongle,
+	clientInfo,
+	dongleInfo,
 	busy,
 	failed,
 	onSetup,
@@ -65,6 +60,8 @@ const ConnectStep = ({
 	outputs: MIDIOutput[];
 	client: Port | null;
 	dongle: Port | null;
+	clientInfo: BoardInfoState;
+	dongleInfo: BoardInfoState;
 	busy: boolean;
 	/** Setup ran with failures: offer to go on anyway. */
 	failed: boolean;
@@ -73,6 +70,7 @@ const ConnectStep = ({
 }) => {
 	const errors = settingsErrors(settings);
 	const invalid = Object.values(errors).some(Boolean);
+	const reading = (client && !clientInfo) || (dongle && !dongleInfo);
 	return (
 		<>
 			<Box
@@ -108,17 +106,6 @@ const ConnectStep = ({
 				))}
 				<TextField
 					size="small"
-					label="Dongle MAC"
-					placeholder="84:F7:03:F2:54:62"
-					value={settings.dongleMac}
-					disabled={busy}
-					error={!!errors.mac}
-					helperText={errors.mac || "added as peer on setup, blank skips"}
-					onChange={(e) => update({ dongleMac: e.target.value })}
-					sx={{ width: 240 }}
-				/>
-				<TextField
-					size="small"
 					type="number"
 					label="LED pin"
 					value={settings.ledPin}
@@ -142,25 +129,42 @@ const ConnectStep = ({
 			<Box mt={1}>
 				{(
 					[
-						["Client", client, "Client port not found"],
-						["Dongle", dongle, "Dongle port not found, wireless not checked"],
+						["Client", client, clientInfo, "Client port not found"],
+						[
+							"Dongle",
+							dongle,
+							dongleInfo,
+							"Dongle port not found, wireless not checked",
+						],
 					] as const
-				).map(([label, port, missing]) => (
+				).map(([label, port, info, missing]) => (
 					<Typography
 						key={label}
 						variant="body2"
-						color={port ? "text.secondary" : "error"}
+						color={
+							!port
+								? "error"
+								: info && !info.mac
+									? "warning.main"
+									: "text.secondary"
+						}
 					>
 						{port
-							? `${label}: out ${port.output.name} / in ${port.input.name}`
+							? `${label}: out ${port.output.name} / in ${port.input.name} · ${boardInfoText(info)}`
 							: missing}
 					</Typography>
 				))}
+				{dongle && dongleInfo && !dongleInfo.mac && (
+					<Typography variant="body2" color="warning.main">
+						The dongle did not report its MAC (dongle firmware before 0.19?), so
+						it can't be added as a peer: wireless presses won't arrive.
+					</Typography>
+				)}
 			</Box>
 			<Box display="flex" gap={1} mt={2}>
 				<Button
 					variant="contained"
-					disabled={!client || busy || invalid}
+					disabled={!client || busy || invalid || !!reading}
 					onClick={onSetup}
 				>
 					Set up and continue

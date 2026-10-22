@@ -27,6 +27,8 @@ i18n.use(initReactI18next).init({
 				compat_checking: "Checking firmware support…",
 				compat_timeout:
 					"The device did not report its firmware version. Newer features remain unavailable; ordinary MIDI still works.",
+				compat_dongle_unsupported:
+					"This dongle does not answer configuration requests. Update the dongle firmware to 0.19 or newer.",
 				compat_incompatible:
 					"This firmware protocol is not supported. Inspection and configuration are unavailable; ordinary MIDI remains available.",
 				compat_unpaired:
@@ -148,6 +150,10 @@ i18n.use(initReactI18next).init({
 					"Loaded {{pinConfigs}} pin configs, {{peerCount}} wireless MIDI addresses, MIDI loopback {{midiLoopback}}, and safe power mode {{powerSave}} from device.",
 				load_from_file_kind_mismatch:
 					"This is a {{file}} config, but {{selected}} is selected. Switch to {{file}} to import it.",
+				port_switched: "MIDI port changed to {{port}}.",
+				port_kind_not_found: "No {{kind}} port found. Keeping {{port}}.",
+				port_kind_not_found_none:
+					"No {{kind}} port found. Connect one or pick a port.",
 				device_kind: "Device type",
 				device_kind_client: "Client",
 				device_kind_dongle: "Dongle",
@@ -356,6 +362,8 @@ i18n.use(initReactI18next).init({
 				compat_checking: "Firmware-Unterstützung wird geprüft…",
 				compat_timeout:
 					"Das Gerät hat keine Firmware-Version gemeldet. Neuere Funktionen bleiben deaktiviert; normales MIDI funktioniert weiterhin.",
+				compat_dongle_unsupported:
+					"Dieser Dongle beantwortet keine Konfigurationsanfragen. Aktualisiere die Dongle-Firmware auf 0.19 oder neuer.",
 				compat_incompatible:
 					"Dieses Firmware-Protokoll wird nicht unterstützt. Inspektion und Konfiguration sind nicht verfügbar; normales MIDI bleibt verfügbar.",
 				compat_unpaired:
@@ -480,6 +488,11 @@ i18n.use(initReactI18next).init({
 					"{{pinConfigs}} Pin-Konfigurationen, {{peerCount}} drahtlose MIDI-Adressen, MIDI-Loopback {{midiLoopback}} und Energiesparmodus {{powerSave}} vom Gerät geladen.",
 				load_from_file_kind_mismatch:
 					"Das ist eine {{file}}-Konfiguration, ausgewählt ist aber {{selected}}. Wechsle zu {{file}}, um sie zu importieren.",
+				port_switched: "MIDI-Port zu {{port}} gewechselt.",
+				port_kind_not_found:
+					"Kein {{kind}}-Port gefunden. {{port}} bleibt ausgewählt.",
+				port_kind_not_found_none:
+					"Kein {{kind}}-Port gefunden. Schließe einen an oder wähle einen Port.",
 				device_kind: "Gerätetyp",
 				device_kind_client: "Client",
 				device_kind_dongle: "Dongle",
@@ -690,6 +703,8 @@ i18n.use(initReactI18next).init({
 				compat_checking: "Comprobando compatibilidad del firmware…",
 				compat_timeout:
 					"El dispositivo no respondió con su versión. Las funciones nuevas quedan desactivadas; MIDI sigue funcionando.",
+				compat_dongle_unsupported:
+					"Este dongle no responde a las solicitudes de configuración. Actualiza el firmware del dongle a 0.19 o posterior.",
 				compat_incompatible:
 					"Este protocolo de firmware no es compatible. Inspección y configuración no disponibles; MIDI sigue disponible.",
 				compat_unpaired:
@@ -812,6 +827,11 @@ i18n.use(initReactI18next).init({
 					"Se cargaron {{pinConfigs}} configuraciones de pin, {{peerCount}} direcciones MIDI inalámbricas, MIDI loopback {{midiLoopback}} y modo de ahorro de energía {{powerSave}} desde el dispositivo.",
 				load_from_file_kind_mismatch:
 					"Esta es una configuración de {{file}}, pero está seleccionado {{selected}}. Cambia a {{file}} para importarla.",
+				port_switched: "Puerto MIDI cambiado a {{port}}.",
+				port_kind_not_found:
+					"No se encontró ningún puerto {{kind}}. Se mantiene {{port}}.",
+				port_kind_not_found_none:
+					"No se encontró ningún puerto {{kind}}. Conecta uno o elige un puerto.",
 				device_kind: "Tipo de dispositivo",
 				device_kind_client: "Cliente",
 				device_kind_dongle: "Dongle",
@@ -1020,6 +1040,8 @@ i18n.use(initReactI18next).init({
 				compat_checking: "正在检查固件支持…",
 				compat_timeout:
 					"设备未报告固件版本。新功能暂不可用，普通 MIDI 仍可使用。",
+				compat_dongle_unsupported:
+					"此 Dongle 不响应配置请求。请将 Dongle 固件更新到 0.19 或更高版本。",
 				compat_incompatible:
 					"不支持此固件协议。检查和配置不可用，普通 MIDI 仍可使用。",
 				compat_unpaired:
@@ -1128,6 +1150,10 @@ i18n.use(initReactI18next).init({
 					"已从设备加载 {{pinConfigs}} 个引脚配置、{{peerCount}} 个无线 MIDI 地址、MIDI 回环 {{midiLoopback}} 和安全省电模式 {{powerSave}}。",
 				load_from_file_kind_mismatch:
 					"这是 {{file}} 配置，但当前选择的是 {{selected}}。请切换到 {{file}} 后再导入。",
+				port_switched: "MIDI 端口已切换到 {{port}}。",
+				port_kind_not_found: "未找到 {{kind}} 端口，保留 {{port}}。",
+				port_kind_not_found_none:
+					"未找到 {{kind}} 端口。请连接一个或选择端口。",
 				device_kind: "设备类型",
 				device_kind_client: "客户端",
 				device_kind_dongle: "Dongle",

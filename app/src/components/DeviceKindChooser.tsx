@@ -10,8 +10,18 @@ import { useDeviceKind } from "../hooks/useDevice";
 import { type DeviceKind, useDeviceStore } from "../store/device";
 import { useMIDIStore } from "../store/midi";
 
-/** Client or dongle for the selected port: guessed from the port name, user can override. */
-const DeviceKindChooser = ({ deviceId }: { deviceId: string }) => {
+/**
+ * Client or dongle for the selected port: guessed from the port name, user can
+ * override. With `onChange` the caller handles a change (and may pick a port),
+ * so it also works before a port is selected.
+ */
+const DeviceKindChooser = ({
+	deviceId,
+	onChange,
+}: {
+	deviceId: string;
+	onChange?: (kind: DeviceKind) => void;
+}) => {
 	const { t } = useTranslation();
 	const initialized = useMIDIStore((state) => state.initialized);
 	const kind = useDeviceKind(deviceId);
@@ -26,7 +36,7 @@ const DeviceKindChooser = ({ deviceId }: { deviceId: string }) => {
 				{/* Sits on the outline like the port picker's label */}
 				<InputLabel
 					shrink
-					disabled={!hasPort}
+					disabled={!hasPort && !onChange}
 					sx={{ backgroundColor: "background.default", px: 0.5, ml: -0.5 }}
 				>
 					{t("device_kind")}
@@ -35,7 +45,7 @@ const DeviceKindChooser = ({ deviceId }: { deviceId: string }) => {
 					size="small"
 					exclusive
 					color="primary"
-					disabled={!hasPort}
+					disabled={!hasPort && !onChange}
 					value={hasPort ? kind : null}
 					// Filled like a contained button, so the active kind reads at a glance
 					sx={{
@@ -47,7 +57,9 @@ const DeviceKindChooser = ({ deviceId }: { deviceId: string }) => {
 							},
 					}}
 					onChange={(_, value: DeviceKind | null) => {
-						if (value) setKind(deviceId, value);
+						if (!value) return;
+						if (onChange) onChange(value);
+						else setKind(deviceId, value);
 					}}
 				>
 					<ToggleButton value="client">{t("device_kind_client")}</ToggleButton>

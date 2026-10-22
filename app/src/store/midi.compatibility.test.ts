@@ -382,6 +382,52 @@ describe("compatible configuration deployment", () => {
 		expect(result.sysexErrors).toEqual([]);
 		expect(result.nameSkipped).toBe(true);
 	});
+	it("blocks ambiguous or changed threshold units before sending RESET", async () => {
+		identify(0, [0, 19]);
+		const { useIOStore } = await import("./io");
+		for (const unit of [undefined, "raw"] as const) {
+			useIOStore
+				.getState()
+				.loadFromFile({ inputs: [{ ...touch, thresholdUnit: unit }] });
+			outputs[0].send.mockClear();
+			await expect(useIOStore.getState().deploy("out-A")).rejects.toThrow(
+				"compat_threshold_review",
+			);
+			expect(outputs[0].send).not.toHaveBeenCalled();
+		}
+	});
+	it("loads and retains percentage units from newer firmware", async () => {
+		identify(0, [0, 19]);
+		const pending = midi.beginWaitForConfigLoad("out-A", 5000);
+		receive(0, 0x44, [4, 5, 31, 1, 88, 10, 0, 127]);
+		receive(0, 0x4c);
+		const result = await pending;
+		const { useIOStore } = await import("./io");
+		useIOStore.getState().loadFromFile({
+			inputs: result?.inputs as Parameters<
+				ReturnType<typeof useIOStore.getState>["loadFromFile"]
+			>[0]["inputs"],
+		});
+		expect(useIOStore.getState().inputs[0]).toMatchObject({
+			threshold: 31,
+			thresholdUnit: "percent",
+		});
+	});
+});
+
+describe("dongle configuration and inspection", () => {
+	const touch = {
+		pin: 4,
+		mode: 5 as const,
+		threshold: 31,
+		thresholdUnit: "percent" as const,
+		channel: 1,
+		midiType: 176 as const,
+		midiMin: 0,
+		midiMax: 127,
+		pinMin: 0,
+		pinMax: 1023,
+	};
 	it("deploys only RESET and peers to a dongle", async () => {
 		identify(0, [0, 19]);
 		const { useIOStore } = await import("./io");
@@ -494,35 +540,390 @@ describe("compatible configuration deployment", () => {
 		receive(0, 0x4c);
 		expect((await result)?.inputs).toHaveLength(1);
 	});
-	it("blocks ambiguous or changed threshold units before sending RESET", async () => {
+	it("deploys every dongle peer and nothing else, even with client settings in its store", async () => {
 		identify(0, [0, 19]);
-		const { useIOStore } = await import("./io");
-		for (const unit of [undefined, "raw"] as const) {
-			useIOStore
-				.getState()
-				.loadFromFile({ inputs: [{ ...touch, thresholdUnit: unit }] });
-			outputs[0].send.mockClear();
-			await expect(useIOStore.getState().deploy("out-A")).rejects.toThrow(
-				"compat_threshold_review",
-			);
-			expect(outputs[0].send).not.toHaveBeenCalled();
+		const { useDongleIOStore } = await import("./io");
+		useDongleIOStore.getState().loadFromFile({
+			inputs: [{ ...touch, thresholdUnit: undefined }],
+			outputs: [{ ...touch, pin: 5, mode: 4 }],
+			peers: [
+				{ macAddress: "12:34:56:78:9A:BC" },
+				{ macAddress: "FF:FF:FF:FF:FF:FF" },
+			],
+			midiLoopback: true,
+			name: "ignored",
+		});
+		outputs[0].send.mockClear();
+		outputs[0].send.mockImplementation((packet: number[]) => {
+			if (packet[4] === 9) receive(0, 0x49);
+		});
+		// A client deploy would refuse the unknown threshold unit
+		const deployment = useDongleIOStore.getState().deploy("out-A", "dongle");
+		await vi.advanceTimersByTimeAsync(400);
+		expect((await deployment).resetAck).toBe(true);
+		const packets = outputs[0].send.mock.calls.map(
+			([packet]) => packet as number[],
+		);
+		expect(packets.map((packet) => packet[4])).toEqual([0x09, 0x07, 0x07]);
+		expect(packets[1].slice(5, -1)).toEqual([
+			1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+		]);
+		expect(packets[2].slice(5, -1)).toEqual(Array(12).fill(15));
+	});
+	it("still sends dongle peers when RESET is not acknowledged", async () => {
+		identify(0, [0, 19]);
+		const { useDongleIOStore } = await import("./io");
+		useDongleIOStore
+			.getState()
+			.loadFromFile({ peers: [{ macAddress: "12:34:56:78:9A:BC" }] });
+		outputs[0].send.mockClear();
+		const deployment = useDongleIOStore.getState().deploy("out-A", "dongle");
+		await vi.advanceTimersByTimeAsync(5400);
+		expect(await deployment).toMatchObject({
+			resetAck: false,
+			globalsSkipped: false,
+			nameSkipped: false,
+		});
+		expect(outputs[0].send.mock.calls.map(([packet]) => packet[4])).toEqual([
+			0x09, 0x07,
+		]);
+	});
+	it("drops the override when a newly connected enomik board is auto-selected", () => {
+		devices.useDeviceStore.getState().setKind("out-B", "client");
+		access.onstatechange?.({ port: outputs[1] as unknown as MockInput });
+		expect(midi.useMIDIStore.getState().selectedConfiguratorOutputDevice).toBe(
+			"out-B",
+		);
+		expect(devices.useDeviceStore.getState().kinds).toEqual({});
+	});
+	it("keeps the override when the same board is only redetected", () => {
+		devices.useDeviceStore.getState().setKind("out-A", "dongle");
+		identify(0, [0, 19]);
+		expect(devices.useDeviceStore.getState().kinds).toEqual({
+			"out-A": "dongle",
+		});
+	});
+	it("dedupes peers and ignores other boards and config ends in a peers-only load", async () => {
+		identify(0, [0, 19]);
+		identify(1, [0, 19]);
+		const result = midi.beginWaitForConfigLoad("out-A", 5000, "peers");
+		const entry = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+		receive(0, 0x48, entry);
+		receive(0, 0x48, [1, ...entry.slice(1)]);
+		receive(1, 0x48, [0, ...Array(12).fill(15)]);
+		receive(1, 0x48); // another board's stream end
+		receive(0, 0x4c); // not the end of a peers-only load
+		receive(0, 0x48);
+		expect((await result)?.peers).toEqual([
+			{ macAddress: "12:34:56:78:9A:BC" },
+		]);
+	});
+	it("times out a peers-only load without a stream end", async () => {
+		identify(0, [0, 19]);
+		const result = midi.beginWaitForConfigLoad("out-A", 5000, "peers");
+		receive(0, 0x48, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+		vi.advanceTimersByTime(5000);
+		expect(await result).toBeNull();
+	});
+	it("only takes NOT_READY for GET_CONFIG from the inspected board as a dongle", async () => {
+		identify(0, [0, 19]);
+		identify(1, [0, 19]);
+		const result = midi.beginWaitForConfigLoad("out-A", 5000);
+		receive(1, 0x7f, [0x0c, 0x05]); // another board
+		receive(0, 0x7f, [0x06, 0x05]); // another command
+		receive(0, 0x46, Array(12).fill(1));
+		receive(0, 0x7f, [0x0c, 0x05]);
+		expect(await result).toMatchObject({
+			firmware: "dongle",
+			inputs: [],
+			outputs: [],
+		});
+	});
+	it("fails a peers-only load when GET_CONFIG is rejected", async () => {
+		identify(0, [0, 19]);
+		const result = midi.beginWaitForConfigLoad("out-A", 5000, "peers");
+		receive(0, 0x7f, [0x0c, 0x05]);
+		expect(await result).toBeNull();
+	});
+	it("leaves firmware unset for a peers-only load", async () => {
+		identify(0, [0, 19]);
+		const result = midi.beginWaitForConfigLoad("out-A", 5000, "peers");
+		receive(0, 0x48);
+		expect((await result)?.firmware).toBeUndefined();
+	});
+	it("forgets the detected firmware when the inspector clears", () => {
+		inspector.useInspectorStore.setState({ firmware: "dongle" });
+		inspector.useInspectorStore.getState().clear();
+		expect(inspector.useInspectorStore.getState().firmware).toBeNull();
+	});
+	it("round-trips saved configs through import", async () => {
+		const { configFromFile, useDongleIOStore, useIOStore } = await import(
+			"./io"
+		);
+		const saved: string[] = [];
+		vi.stubGlobal("document", {
+			createElement: () => ({ click: vi.fn() }),
+		});
+		vi.stubGlobal("URL", {
+			createObjectURL: (blob: Blob) => {
+				blob.text().then((text) => saved.push(text));
+				return "blob:";
+			},
+			revokeObjectURL: vi.fn(),
+		});
+		useIOStore.getState().loadFromFile({
+			inputs: [touch],
+			peers: [{ macAddress: "12:34:56:78:9A:BC" }],
+			powerSave: true,
+			name: "board",
+		});
+		useDongleIOStore
+			.getState()
+			.loadFromFile({ peers: [{ macAddress: "AA:BB:CC:DD:EE:FF" }] });
+		useIOStore.getState().saveToFile();
+		useDongleIOStore.getState().saveToFile();
+		await vi.waitFor(() => expect(saved).toHaveLength(2));
+		const [clientFile, dongleFile] = saved.map((text) => JSON.parse(text));
+		useIOStore.getState().loadFromFile({});
+		useDongleIOStore.getState().loadFromFile({});
+		const client = configFromFile(clientFile, "client");
+		const dongle = configFromFile(dongleFile, "dongle");
+		if (!("config" in client) || !("config" in dongle))
+			throw new Error("kind mismatch");
+		useIOStore.getState().loadFromFile(client.config);
+		useDongleIOStore.getState().loadFromFile(dongle.config);
+		expect(useIOStore.getState()).toMatchObject({
+			inputs: [{ pin: 4 }],
+			peers: [{ macAddress: "12:34:56:78:9A:BC" }],
+			powerSave: true,
+			name: "board",
+		});
+		expect(useDongleIOStore.getState().peers).toMatchObject([
+			{ macAddress: "AA:BB:CC:DD:EE:FF" },
+		]);
+		expect(configFromFile(dongleFile, "client")).toEqual({
+			mismatch: "dongle",
+		});
+		expect(configFromFile(clientFile, "dongle")).toEqual({
+			mismatch: "client",
+		});
+	});
+});
+
+describe("old firmware", () => {
+	const peers = [{ macAddress: "12:34:56:78:9A:BC" }];
+	it("treats a dongle that never answers (before 0.19) as not configurable", async () => {
+		midi.inspectDeviceVersion("out-A");
+		vi.advanceTimersByTime(3000);
+		const info = devices.useDeviceStore.getState().devices["out-A"];
+		expect(info.status).toBe("timeout");
+		expect(devices.dongleConfigBlocker(info)).toBe("compat_dongle_unsupported");
+		// The store itself still copes: no throw, just no RESET ack
+		const { useDongleIOStore } = await import("./io");
+		useDongleIOStore.getState().loadFromFile({ peers });
+		const deployment = useDongleIOStore.getState().deploy("out-A", "dongle");
+		await vi.advanceTimersByTimeAsync(5400);
+		expect(await deployment).toMatchObject({
+			resetAck: false,
+			sysexErrors: [],
+		});
+		for (const until of ["config", "peers"] as const) {
+			const load = midi.beginWaitForConfigLoad("out-A", 5000, until);
+			vi.advanceTimersByTime(5000);
+			expect(await load).toBeNull();
 		}
 	});
-	it("loads and retains percentage units from newer firmware", async () => {
+	it("deploys only peers to an old 0.12 client set to Dongle by mistake", async () => {
+		outputs[0].send.mockImplementation((packet: number[]) => {
+			if (packet[4] === 6) receive(0, 6, Array(12).fill(0), 0, 12);
+			if (packet[4] === 9) receive(0, 0x49, [], 0, 12);
+		});
+		midi.inspectDeviceVersion("out-A");
+		vi.advanceTimersByTime(1500);
+		const { useDongleIOStore } = await import("./io");
+		useDongleIOStore.getState().loadFromFile({ peers });
+		outputs[0].send.mockClear();
+		const deployment = useDongleIOStore.getState().deploy("out-A", "dongle");
+		await vi.advanceTimersByTimeAsync(400);
+		expect((await deployment).resetAck).toBe(true);
+		expect(outputs[0].send.mock.calls.map(([packet]) => packet[4])).toEqual([
+			0x09, 0x07,
+		]);
+		// Too old to be called a configurable dongle
+		expect(
+			devices.dongleConfigBlocker(
+				devices.useDeviceStore.getState().devices["out-A"],
+			),
+		).toBe("compat_dongle_unsupported");
+	});
+	it.each([13, 15, 18])(
+		"detects a 0.%i client by its GET_CONFIG reply",
+		async (minor) => {
+			identify(0, [0, minor]);
+			const load = midi.beginWaitForConfigLoad("out-A", 5000);
+			receive(0, 0x44, [4, 5, 31, 1, 88, 10, 0, 127], 0, minor);
+			receive(0, 0x4c, [], 0, minor);
+			expect(await load).toMatchObject({
+				firmware: "client",
+				inputs: [{ pin: 4 }],
+			});
+		},
+	);
+	it("survives a client deploy to a dongle that rejects the client commands", async () => {
 		identify(0, [0, 19]);
-		const pending = midi.beginWaitForConfigLoad("out-A", 5000);
-		receive(0, 0x44, [4, 5, 31, 1, 88, 10, 0, 127]);
-		receive(0, 0x4c);
-		const result = await pending;
 		const { useIOStore } = await import("./io");
 		useIOStore.getState().loadFromFile({
-			inputs: result?.inputs as Parameters<
-				ReturnType<typeof useIOStore.getState>["loadFromFile"]
-			>[0]["inputs"],
+			outputs: [
+				{
+					pin: 5,
+					mode: 4,
+					threshold: 0,
+					channel: 1,
+					midiType: 176,
+					midiMin: 0,
+					midiMax: 127,
+					pinMin: 0,
+					pinMax: 1023,
+				},
+			],
+			peers,
+			name: "board",
 		});
-		expect(useIOStore.getState().inputs[0]).toMatchObject({
-			threshold: 31,
-			thresholdUnit: "percent",
+		outputs[0].send.mockImplementation((packet: number[]) => {
+			if (packet[4] === 9) receive(0, 0x49);
+			else if (packet[4] !== 7) receive(0, 0x7f, [packet[4], 0x05]);
 		});
+		const deployment = useIOStore.getState().deploy("out-A");
+		await vi.advanceTimersByTimeAsync(400);
+		const result = await deployment;
+		expect(result.resetAck).toBe(true);
+		expect(result.sysexErrors.map((err) => err.failedRequest)).toEqual([
+			0x01, 0x0d, 0x0f, 0x11,
+		]);
+	});
+	it("never throws on malformed or unexpected replies, old or new", async () => {
+		identify(0, [0, 19]);
+		identify(1, [0, 12]);
+		let seed = 1;
+		const byte = () => {
+			seed = (seed * 1103515245 + 12345) % 2 ** 31;
+			return seed % 128;
+		};
+		const feed = () => {
+			for (const header of [
+				[0, 10],
+				[0, 12],
+				[0, 19],
+				[0, 99],
+				[1, 0],
+			]) {
+				for (let command = 0; command < 128; command++) {
+					for (const length of [0, 1, 2, 3, 12, 13, 21, 40]) {
+						const payload = Array.from({ length }, byte);
+						for (const input of [0, 1]) {
+							receive(input, command, payload, header[0], header[1]);
+						}
+					}
+				}
+			}
+			for (const data of [
+				[0xf0],
+				[0xf0, 0x7d],
+				[0xf0, 0x7d, 0],
+				[0xf0, 0x7d, 0, 19],
+				[0xf0, 0x7d, 0, 19, 0x48],
+				[0xf0, 0x7d, 0, 19, 0x7f, 0xf7],
+				[0xf0, 0x7d, 0, 19, 0x4a, 0, 0xf7],
+				[],
+			]) {
+				inputs[0].onmidimessage?.({ data: new Uint8Array(data), timeStamp: 0 });
+			}
+		};
+		expect(feed).not.toThrow();
+		inspector.useInspectorStore.setState({ deviceId: "out-A", syncing: true });
+		raw.useRawStreamStore.getState().setActive(true);
+		raw.useRawStreamStore.getState().begin("out-A");
+		for (const until of ["config", "peers"] as const) {
+			const load = midi.beginWaitForConfigLoad("out-A", 5000, until);
+			expect(feed).not.toThrow();
+			vi.advanceTimersByTime(5000);
+			await load;
+		}
+		midi.inspectDeviceVersion("out-A", true);
+		expect(feed).not.toThrow();
+	});
+});
+
+describe("picking client or dongle picks a port", () => {
+	const port = (id: string, name: string, state = "connected") => ({
+		id,
+		name,
+		state,
+	});
+	const client = port("c", "enomik3000_client");
+	const dongle = port("d", "enomik3000_dongle");
+	const iac = port("iac", "IAC Driver Bus 1");
+	it("keeps a port whose name already fits", () => {
+		expect(midi.kindChange("dongle", "d", [client, dongle])).toEqual({
+			type: "keep",
+		});
+		expect(midi.kindChange("client", "c", [client, dongle])).toEqual({
+			type: "keep",
+		});
+	});
+	it("switches to the first fitting enomik port", () => {
+		const second = port("d2", "Enomik3000_Dongle 2");
+		expect(midi.kindChange("dongle", "c", [client, dongle, second])).toEqual({
+			type: "switch",
+			port: dongle,
+		});
+		expect(midi.kindChange("client", "d", [dongle, iac, client])).toEqual({
+			type: "switch",
+			port: client,
+		});
+	});
+	it("picks a port when none is selected yet", () => {
+		expect(midi.kindChange("dongle", undefined, [client, dongle])).toEqual({
+			type: "switch",
+			port: dongle,
+		});
+		expect(midi.kindChange("client", "-1", [dongle, client])).toEqual({
+			type: "switch",
+			port: client,
+		});
+	});
+	it("never picks other MIDI gear or disconnected ports", () => {
+		expect(midi.kindChange("client", "d", [dongle, iac])).toEqual({
+			type: "none",
+		});
+		expect(
+			midi.kindChange("dongle", "c", [
+				client,
+				port("x", "Some Dongle"),
+				port("d", "enomik3000_dongle", "disconnected"),
+			]),
+		).toEqual({ type: "none" });
+	});
+	it("does not keep a disconnected port", () => {
+		expect(
+			midi.kindChange("dongle", "d", [
+				port("d", "enomik3000_dongle", "disconnected"),
+				port("d2", "enomik3000_dongle"),
+			]),
+		).toMatchObject({ type: "switch", port: { id: "d2" } });
+	});
+	it("lands on the picked kind after switching", () => {
+		outputs[1].name = "enomik3000_dongle";
+		devices.useDeviceStore.getState().setKind("out-B", "client");
+		const change = midi.kindChange(
+			"dongle",
+			"out-A",
+			midi.useMIDIStore.getState().outputs,
+		);
+		expect(change).toMatchObject({ type: "switch", port: { id: "out-B" } });
+		midi.useMIDIStore.getState().setSelectedConfiguratorOutputDevice("out-B");
+		// The stale override is gone, so the name decides: dongle
+		expect(devices.useDeviceStore.getState().kinds["out-B"]).toBeUndefined();
+		expect(devices.guessDeviceKind(outputs[1].name)).toBe("dongle");
 	});
 });

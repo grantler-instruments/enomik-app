@@ -4,6 +4,7 @@ import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import { MIDI_STATUS } from "../utils/midi";
 import {
 	type DeviceKind,
+	guessDeviceKind,
 	isCompatibleFirmware,
 	pairedInputId,
 	thresholdUnit,
@@ -108,6 +109,35 @@ export const isEnomikPortName = (name: string | null | undefined) =>
 
 const findEnomikOutputId = (outputs: { id: string; name?: string | null }[]) =>
 	outputs.find((out) => isEnomikPortName(out.name))?.id;
+
+type OutputPort = { id: string; name?: string | null; state?: string };
+export type KindChange<P extends OutputPort> =
+	| { type: "keep" }
+	| { type: "switch"; port: P }
+	| { type: "none" };
+
+/**
+ * What picking `kind` in the Configurator does to the port: keep it when its
+ * name already suggests `kind`, otherwise switch to the first connected enomik
+ * port that does. `none`: no such port, keep the current one.
+ */
+export function kindChange<P extends OutputPort>(
+	kind: DeviceKind,
+	selectedId: string | undefined,
+	outputs: P[],
+): KindChange<P> {
+	const connected = outputs.filter((port) => port.state !== "disconnected");
+	const current = connected.find((port) => port.id === selectedId);
+	if (current && guessDeviceKind(current.name) === kind)
+		return { type: "keep" };
+	const port = connected.find(
+		(port) =>
+			port.id !== selectedId &&
+			isEnomikPortName(port.name) &&
+			guessDeviceKind(port.name) === kind,
+	);
+	return port ? { type: "switch", port } : { type: "none" };
+}
 
 /** Input/output pairing is deliberately conservative when multiple boards share names. */
 export function deviceInputId(outputId: string): string | undefined {

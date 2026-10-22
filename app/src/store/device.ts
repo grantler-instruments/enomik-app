@@ -28,6 +28,19 @@ export function supportsLiveValues(version?: Firmware): boolean {
 	return !!version && supportsInspection(version) && version.minor >= 19;
 }
 
+/**
+ * Why a dongle cannot be configured (an i18n key), or null if it can.
+ * Dongle firmware answers config SysEx since 0.19; older dongles never reply,
+ * so their version check times out.
+ */
+export function dongleConfigBlocker(info?: DeviceInfo): string | null {
+	if (!info || info.status === "checking") return "compat_checking";
+	if (info.status === "unpaired") return "compat_unpaired";
+	if (info.status === "incompatible") return "compat_incompatible";
+	if (info.status === "ready" && supportsLiveValues(info.version)) return null;
+	return "compat_dongle_unsupported";
+}
+
 export function thresholdUnit(version?: Firmware): ThresholdUnit | undefined {
 	if (!isCompatibleFirmware(version)) return undefined;
 	return supportsLiveValues(version) ? "percent" : "raw";

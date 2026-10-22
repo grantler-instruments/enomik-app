@@ -1,19 +1,23 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
 	ESP_NOW_VERSION_MAJOR,
 	ESP_NOW_VERSION_MINOR,
 	sysexManufacturerId,
 } from "../store/midi.config";
 import {
+	boardInfoText,
 	buttonEvent,
 	macFromString,
+	macToString,
 	noteDown,
 	type Port,
 	parsePins,
 	parseReply,
+	readBoardInfo,
 	request,
 	setMidiLoopback,
 	sysex,
+	versionToString,
 } from "./tester";
 
 const header = [
@@ -147,6 +151,111 @@ describe("tester", () => {
 				() => false,
 			),
 		).toMatchObject({ cmd: "error", failedRequest: 0x0d });
+	});
+});
+
+describe("board info", () => {
+	const mac = [8, 4, 15, 7, 0, 3, 15, 2, 5, 4, 0, 6];
+	const packet = (data: number[]) => [0xf0, ...data, 0xf7];
+	const from = (minor: number, cmd: number, payload: number[]) =>
+		packet([sysexManufacturerId, 0, minor, cmd, ...payload]);
+
+	it("parses MAC replies, including the pre-0.13 echo of GET_MAC", () => {
+		expect(parseReply(reply(0x46, mac))).toEqual({
+			cmd: "mac",
+			mac: [0x84, 0xf7, 0x03, 0xf2, 0x54, 0x06],
+			header: { major: ESP_NOW_VERSION_MAJOR, minor: ESP_NOW_VERSION_MINOR },
+		});
+		expect(
+			parseReply([sysexManufacturerId, 0, 12, 0x06, ...mac]),
+		).toMatchObject({ cmd: "mac", header: { major: 0, minor: 12 } });
+	});
+
+	it("ignores truncated or invalid MAC replies", () => {
+		expect(parseReply(reply(0x46, mac.slice(0, 11)))).toBeNull();
+		expect(parseReply(reply(0x46, [...mac.slice(0, 11), 16]))).toBeNull();
+	});
+
+	it("parses version replies with and without patch", () => {
+		expect(parseReply(reply(0x4a, [0, 18]))).toEqual({
+			cmd: "version",
+			version: { major: 0, minor: 18, patch: undefined },
+		});
+		expect(parseReply(reply(0x4a, [0, 19, 2]))).toMatchObject({
+			version: { major: 0, minor: 19, patch: 2 },
+		});
+		expect(parseReply(reply(0x4a, [0]))).toBeNull();
+	});
+
+	it("formats MACs and versions", () => {
+		expect(macToString([0x84, 0xf7, 0x03, 0xf2, 0x54, 0x06])).toBe(
+			"84:F7:03:F2:54:06",
+		);
+		expect(versionToString({ major: 0, minor: 19, patch: 0 })).toBe("0.19.0");
+		expect(versionToString({ major: 0, minor: 12 })).toBe("0.12");
+		expect(boardInfoText(null)).toBe("reading firmware and MAC…");
+		expect(
+			boardInfoText({
+				mac: [0, 1, 2, 3, 4, 255],
+				version: { major: 0, minor: 19, patch: 1 },
+			}),
+		).toBe("firmware 0.19.1 · MAC 00:01:02:03:04:FF");
+		expect(boardInfoText({ mac: null, version: null })).toBe(
+			"firmware unknown · MAC unknown",
+		);
+	});
+
+	it("reads MAC and version from a current board", async () => {
+		const port = fakePort([from(19, 0x46, mac), from(19, 0x4a, [0, 19, 0])]);
+		expect(await readBoardInfo(port)).toEqual({
+			mac: [0x84, 0xf7, 0x03, 0xf2, 0x54, 0x06],
+			version: { major: 0, minor: 19, patch: 0 },
+		});
+	});
+
+	it("takes the version from the MAC reply when GET_VERSION is unknown", async () => {
+		const port = fakePort([
+			from(12, 0x06, mac),
+			from(12, 0x7f, [0x0a, 0x02]), // GET_VERSION: unknown command
+		]);
+		expect(await readBoardInfo(port)).toEqual({
+			mac: [0x84, 0xf7, 0x03, 0xf2, 0x54, 0x06],
+			version: { major: 0, minor: 12 },
+		});
+	});
+
+	it("gives up on a board that never answers (dongle before 0.19)", async () => {
+		vi.useFakeTimers();
+		try {
+			const info = readBoardInfo(fakePort([]));
+			await vi.advanceTimersByTimeAsync(4000);
+			expect(await info).toEqual({ mac: null, version: null });
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it("keeps the MAC when only GET_VERSION times out", async () => {
+		vi.useFakeTimers();
+		try {
+			const info = readBoardInfo(fakePort([from(12, 0x06, mac)]));
+			await vi.advanceTimersByTimeAsync(1000);
+			expect(await info).toMatchObject({ version: { major: 0, minor: 12 } });
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it("ignores another board's or a garbled reply", async () => {
+		const port = fakePort([
+			packet([0x7e, 0, 19, 0x46, ...mac]), // other manufacturer
+			from(19, 0x46, [1, 2, 3]), // truncated
+			from(19, 0x46, mac),
+			from(19, 0x4a, [0, 19, 0]),
+		]);
+		expect((await readBoardInfo(port)).mac).toEqual([
+			0x84, 0xf7, 0x03, 0xf2, 0x54, 0x06,
+		]);
 	});
 });
 

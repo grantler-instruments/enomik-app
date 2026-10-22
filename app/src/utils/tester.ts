@@ -3,11 +3,16 @@
  * running the client sketch, and recognising the MIDI its pins send.
  */
 
+import type { Firmware } from "../store/device";
 import {
 	buildEnomikSysex,
 	ENOMIK_COMMAND_ADD_PEER,
 	ENOMIK_COMMAND_ADD_PEER_RESPONSE,
 	ENOMIK_COMMAND_ERROR_RESPONSE,
+	ENOMIK_COMMAND_GET_MAC,
+	ENOMIK_COMMAND_GET_MAC_RESPONSE,
+	ENOMIK_COMMAND_GET_VERSION,
+	ENOMIK_COMMAND_GET_VERSION_RESPONSE,
 	ENOMIK_COMMAND_SET_MIDI_LOOPBACK,
 	ENOMIK_COMMAND_SET_MIDI_LOOPBACK_RESPONSE,
 	ENOMIK_COMMAND_SET_PIN_CONFIG,
@@ -77,6 +82,8 @@ const pinConfig = (
 export const sysex = {
 	addPeer: (mac: number[]) =>
 		buildEnomikSysex(ENOMIK_COMMAND_ADD_PEER, macToNibbles(mac)),
+	getMac: () => buildEnomikSysex(ENOMIK_COMMAND_GET_MAC),
+	getVersion: () => buildEnomikSysex(ENOMIK_COMMAND_GET_VERSION),
 	/** Input pull-up sending <status> with note/CC <number> (default: the pin):
 	 * max value while pressed, min value when released. */
 	buttonConfig: (pin: number, status = MIDI_CONTROL_CHANGE, number = pin) =>
@@ -102,6 +109,9 @@ export type Reply =
 	| { cmd: "pin_config"; pin: number }
 	| { cmd: "add_peer_ok" }
 	| { cmd: "midi_loopback"; enabled: boolean }
+	/** `header`: the packet's protocol version, the firmware's major/minor. */
+	| { cmd: "mac"; mac: number[]; header: Firmware }
+	| { cmd: "version"; version: Firmware }
 	| { cmd: "error"; failedRequest: number; errorCode: number };
 
 /** Parse the inner data of an enomik SysEx reply, null if not one we use. */
@@ -118,6 +128,24 @@ export function parseReply(data: number[]): Reply | null {
 		return { cmd: "add_peer_ok" };
 	if (cmd === ENOMIK_COMMAND_SET_MIDI_LOOPBACK_RESPONSE && p.length >= 1)
 		return { cmd: "midi_loopback", enabled: p[0] !== 0 };
+	// Before 0.13 the MAC reply echoes the request command (0x06)
+	if (
+		(cmd === ENOMIK_COMMAND_GET_MAC_RESPONSE ||
+			cmd === ENOMIK_COMMAND_GET_MAC) &&
+		p.length >= 12 &&
+		p.slice(0, 12).every((nibble) => nibble < 16)
+	)
+		return {
+			cmd: "mac",
+			mac: Array.from({ length: 6 }, (_, i) => (p[2 * i] << 4) | p[2 * i + 1]),
+			header: { major: data[1], minor: data[2] },
+		};
+	// [major, minor] or, since 0.19, [major, minor, patch]
+	if (cmd === ENOMIK_COMMAND_GET_VERSION_RESPONSE && p.length >= 2)
+		return {
+			cmd: "version",
+			version: { major: p[0], minor: p[1], patch: p[2] },
+		};
 	if (cmd === ENOMIK_COMMAND_ERROR_RESPONSE && p.length >= 2)
 		return { cmd: "error", failedRequest: p[0], errorCode: p[1] };
 	return null;
@@ -168,6 +196,15 @@ export const parsePins = (text: string) =>
 /** Validation message for a pin number, "" when valid. */
 export const pinError = (pin: number) =>
 	Number.isInteger(pin) && pin >= 0 && pin <= PIN_MAX ? "" : `0 to ${PIN_MAX}`;
+
+export const macToString = (mac: number[]) =>
+	mac
+		.map((byte) => byte.toString(16).padStart(2, "0"))
+		.join(":")
+		.toUpperCase();
+
+export const versionToString = ({ major, minor, patch }: Firmware) =>
+	[major, minor, patch].filter((part) => part !== undefined).join(".");
 
 export function macFromString(text: string): number[] {
 	const parts = text.trim().replace(/-/g, ":").split(":");
@@ -249,4 +286,38 @@ export async function setMidiLoopback(port: Port, on: boolean) {
 		(r) => r.cmd === "midi_loopback",
 	);
 	return reply?.cmd === "midi_loopback" && reply.enabled === on;
+}
+
+export type BoardInfo = { mac: number[] | null; version: Firmware | null };
+
+/**
+ * MAC and firmware version of a board. A board before 0.13 may not answer
+ * GET_VERSION; its MAC reply header still carries major/minor. Dongles before
+ * 0.19 answer neither.
+ */
+export async function readBoardInfo(port: Port): Promise<BoardInfo> {
+	const macReply = await request(port, sysex.getMac(), (r) => r.cmd === "mac");
+	const mac = macReply?.cmd === "mac" ? macReply : null;
+	const versionReply = await request(
+		port,
+		sysex.getVersion(),
+		(r) => r.cmd === "version",
+		mac ? 1000 : 2000,
+	);
+	return {
+		mac: mac?.mac ?? null,
+		version:
+			versionReply?.cmd === "version"
+				? versionReply.version
+				: (mac?.header ?? null),
+	};
+}
+
+/** "firmware 0.19.0 · MAC 84:F7:…", or what is still missing. */
+export function boardInfoText(info: BoardInfo | null | undefined) {
+	if (!info) return "reading firmware and MAC…";
+	return [
+		`firmware ${info.version ? versionToString(info.version) : "unknown"}`,
+		`MAC ${info.mac ? macToString(info.mac) : "unknown"}`,
+	].join(" · ");
 }

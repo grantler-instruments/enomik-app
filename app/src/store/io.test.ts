@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findDuplicatePins, nextFreePin } from "./io";
+import { configFromFile, findDuplicatePins, nextFreePin } from "./io";
 
 describe("findDuplicatePins", () => {
 	it("flags a pin used twice within inputs", () => {
@@ -30,5 +30,51 @@ describe("nextFreePin", () => {
 	it("starts searching at `from`", () => {
 		expect(nextFreePin([{ pin: 4 }, { pin: 5 }], [], 5)).toBe(6);
 		expect(nextFreePin([{ pin: 4 }], [], 7)).toBe(7);
+	});
+});
+
+describe("configFromFile", () => {
+	const peers = [{ macAddress: "12:34:56:78:9A:BC" }];
+	const clientFile = {
+		kind: "client" as const,
+		inputs: [],
+		outputs: [],
+		peers,
+		powerSave: true,
+		name: "board",
+	};
+
+	it("loads a client file into the client config as is", () => {
+		expect(configFromFile(clientFile, "client")).toEqual({
+			config: clientFile,
+		});
+	});
+
+	it("loads only the peers of a dongle file", () => {
+		expect(configFromFile({ kind: "dongle", peers }, "dongle")).toEqual({
+			config: { peers },
+		});
+	});
+
+	it("refuses a file saved for the other kind", () => {
+		expect(configFromFile(clientFile, "dongle")).toEqual({
+			mismatch: "client",
+		});
+		expect(configFromFile({ kind: "dongle", peers }, "client")).toEqual({
+			mismatch: "dongle",
+		});
+	});
+
+	it("imports files without kind, taking only peers into a dongle", () => {
+		const { kind: _, ...legacy } = clientFile;
+		expect(configFromFile(legacy, "client")).toEqual({ config: legacy });
+		expect(configFromFile(legacy, "dongle")).toEqual({ config: { peers } });
+	});
+
+	it("treats an unknown kind like a file without kind", () => {
+		const file = { ...clientFile, kind: "mixer" } as unknown as Parameters<
+			typeof configFromFile
+		>[0];
+		expect(configFromFile(file, "dongle")).toEqual({ config: { peers } });
 	});
 });

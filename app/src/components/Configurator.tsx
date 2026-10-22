@@ -23,14 +23,22 @@ import { v4 as uuidv4 } from "uuid";
 import { useDevice, useDeviceKind } from "../hooks/useDevice";
 import { useAppStore } from "../store/app";
 import {
+	type DeviceKind,
+	dongleConfigBlocker,
 	supportsInspection,
 	supportsLiveValues,
 	useDeviceStore,
 } from "../store/device";
-import { findDuplicatePins, useDongleIOStore, useIOStore } from "../store/io";
+import {
+	configFromFile,
+	findDuplicatePins,
+	useDongleIOStore,
+	useIOStore,
+} from "../store/io";
 import {
 	beginWaitForConfigLoad,
 	isEnomikPortName,
+	kindChange,
 	type MidiMessage,
 	useMIDIStore,
 } from "../store/midi";
@@ -96,7 +104,7 @@ const Configurator = () => {
 	}, []);
 	const [deployToast, setDeployToast] = useState<string | null>(null);
 	const [deployToastSeverity, setDeployToastSeverity] = useState<
-		"success" | "warning" | "error"
+		"success" | "info" | "warning" | "error"
 	>("success");
 	const [deploying, setDeploying] = useState(false);
 	const [loadingFromDevice, setLoadingFromDevice] = useState(false);
@@ -128,7 +136,36 @@ const Configurator = () => {
 		setPeersOpen(cfg.peersCount > 0);
 	};
 
+	const setKind = useDeviceStore((state) => state.setKind);
+	// Picking a kind picks a matching port; picking a port sets the kind (store)
+	const handleKindChange = (kind: DeviceKind) => {
+		const change = kindChange(kind, selectedOutputId, midiOutputs);
+		if (change.type === "switch") {
+			setSelectedOutputId(change.port.id);
+			setDeployToastSeverity("info");
+			setDeployToast(t("port_switched", { port: change.port.name }));
+			return;
+		}
+		const current = midiOutputs.find((port) => port.id === selectedOutputId);
+		if (current) setKind(current.id, kind);
+		if (change.type === "none") {
+			setDeployToastSeverity("warning");
+			setDeployToast(
+				t(current ? "port_kind_not_found" : "port_kind_not_found_none", {
+					kind: t(`device_kind_${kind}`),
+					port: current?.name,
+				}),
+			);
+		}
+	};
+
 	const handleDeploy = async () => {
+		const dongleBlocker = isDongle ? dongleConfigBlocker(deviceInfo) : null;
+		if (dongleBlocker) {
+			setDeployToastSeverity("warning");
+			setDeployToast(t(dongleBlocker));
+			return;
+		}
 		// The firmware keeps one config per pin: a duplicate would silently overwrite another row.
 		const duplicatePins = isDongle
 			? new Set<number>()
@@ -260,31 +297,30 @@ const Configurator = () => {
 		const reader = new FileReader();
 		reader.onload = (event) => {
 			try {
-				const json = JSON.parse(event.target?.result as string);
-				// Files without `kind` predate separate configs: import as before
 				const kind = isDongle ? "dongle" : "client";
-				if (
-					(json.kind === "client" || json.kind === "dongle") &&
-					json.kind !== kind
-				) {
+				const loaded = configFromFile(
+					JSON.parse(event.target?.result as string),
+					kind,
+				);
+				if ("mismatch" in loaded) {
 					setDeployToastSeverity("warning");
 					setDeployToast(
 						t("load_from_file_kind_mismatch", {
-							file: t(`device_kind_${json.kind}`),
+							file: t(`device_kind_${loaded.mismatch}`),
 							selected: t(`device_kind_${kind}`),
 						}),
 					);
 					return;
 				}
-				// A dongle only has peers
-				loadFromFile(isDongle ? { peers: json.peers } : json);
+				const { config } = loaded;
+				loadFromFile(config);
 				syncSectionOpen({
-					inputsCount: json.inputs?.length ?? 0,
-					outputsCount: json.outputs?.length ?? 0,
-					peersCount: json.peers?.length ?? 0,
-					midiLoopback: json.midiLoopback ?? false,
-					powerSave: json.powerSave ?? false,
-					name: json.name ?? "",
+					inputsCount: config.inputs?.length ?? 0,
+					outputsCount: config.outputs?.length ?? 0,
+					peersCount: config.peers?.length ?? 0,
+					midiLoopback: config.midiLoopback ?? false,
+					powerSave: config.powerSave ?? false,
+					name: config.name ?? "",
 				});
 			} catch (err) {
 				console.error("Failed to load JSON", err);
@@ -313,6 +349,12 @@ const Configurator = () => {
 			return;
 		}
 
+		const dongleBlocker = isDongle ? dongleConfigBlocker(deviceInfo) : null;
+		if (dongleBlocker) {
+			setDeployToastSeverity("warning");
+			setDeployToast(t(dongleBlocker));
+			return;
+		}
 		if (deviceInfo?.status !== "ready") {
 			setDeployToastSeverity("warning");
 			setDeployToast(
@@ -469,7 +511,10 @@ const Configurator = () => {
 				</Tooltip>
 
 				<Box flex={1} />
-				<DeviceKindChooser deviceId={selectedOutputId || "-1"} />
+				<DeviceKindChooser
+					deviceId={selectedOutputId || "-1"}
+					onChange={handleKindChange}
+				/>
 				<MidiDeviceChooser
 					value={selectedOutputId || ""}
 					onChange={setSelectedOutputId}

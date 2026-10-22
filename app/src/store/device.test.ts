@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	dongleConfigBlocker,
 	guessDeviceKind,
 	isCompatibleFirmware,
 	pairedInputId,
@@ -7,6 +8,7 @@ import {
 	supportsInspection,
 	supportsLiveValues,
 	thresholdUnit,
+	useDeviceStore,
 } from "./device";
 
 describe("firmware compatibility", () => {
@@ -93,7 +95,58 @@ describe("device kind", () => {
 		["enomik3000_client", "client"],
 		["my custom board", "client"],
 		[undefined, "client"],
+		["", "client"],
+		[null, "client"],
 	])("guesses %s as %s", (name, kind) => {
 		expect(guessDeviceKind(name)).toBe(kind);
+	});
+
+	it("keeps overrides per port and clears one without the others", () => {
+		const store = useDeviceStore.getState();
+		store.setKind("out-A", "dongle");
+		store.setKind("out-B", "client");
+		store.setKind("out-A", "client");
+		expect(useDeviceStore.getState().kinds).toEqual({
+			"out-A": "client",
+			"out-B": "client",
+		});
+		useDeviceStore.getState().clearKind("out-A");
+		useDeviceStore.getState().clearKind("unknown");
+		expect(useDeviceStore.getState().kinds).toEqual({ "out-B": "client" });
+	});
+
+	it("does not touch detected device info when the kind changes", () => {
+		useDeviceStore.getState().setDevice("out-C", { status: "ready" });
+		useDeviceStore.getState().setKind("out-C", "dongle");
+		useDeviceStore.getState().clearKind("out-C");
+		expect(useDeviceStore.getState().devices["out-C"]).toEqual({
+			status: "ready",
+		});
+	});
+});
+
+describe("dongleConfigBlocker", () => {
+	it.each([
+		[undefined, "compat_checking"],
+		[{ status: "checking" }, "compat_checking"],
+		[{ status: "unpaired" }, "compat_unpaired"],
+		[
+			{ status: "incompatible", version: { major: 1, minor: 0 } },
+			"compat_incompatible",
+		],
+		[{ status: "timeout" }, "compat_dongle_unsupported"],
+		[
+			{ status: "ready", version: { major: 0, minor: 12 } },
+			"compat_dongle_unsupported",
+		],
+		[
+			{ status: "ready", version: { major: 0, minor: 18 } },
+			"compat_dongle_unsupported",
+		],
+		[{ status: "ready" }, "compat_dongle_unsupported"],
+		[{ status: "ready", version: { major: 0, minor: 19 } }, null],
+		[{ status: "ready", version: { major: 0, minor: 25, patch: 3 } }, null],
+	] as const)("%j -> %s", (info, blocker) => {
+		expect(dongleConfigBlocker(info)).toBe(blocker);
 	});
 });

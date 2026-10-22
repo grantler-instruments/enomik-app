@@ -21,7 +21,7 @@ import {
 	DEFAULT_TOUCH_PINS,
 	IO_CHANNEL,
 	MIDI_TYPES,
-	macFromString,
+	macToString,
 	parsePins,
 	setMidiLoopback,
 	sysex,
@@ -41,6 +41,7 @@ import ConnectStep, { type Settings } from "./tester/ConnectStep";
 import LoopbackStep from "./tester/LoopbackStep";
 import Results from "./tester/Results";
 import TouchStep from "./tester/TouchStep";
+import { useBoardInfo } from "./tester/useBoardInfo";
 import { AUTO, usePorts } from "./tester/usePorts";
 
 const STEPS = ["connect", "buttons", "loopback", "touch", "done"] as const;
@@ -49,24 +50,6 @@ type LogLine = { text: string; ok: boolean };
 
 /** Lets the last chip show and the button be released before moving on. */
 const AUTO_ADVANCE_MS = 800;
-
-const DONGLE_MAC_STORAGE_KEY = "enomik-tester-dongle-mac";
-
-const getStoredDongleMac = () => {
-	try {
-		return localStorage.getItem(DONGLE_MAC_STORAGE_KEY) ?? "";
-	} catch {
-		return "";
-	}
-};
-
-const storeDongleMac = (mac: string) => {
-	try {
-		localStorage.setItem(DONGLE_MAC_STORAGE_KEY, mac);
-	} catch {
-		// ignore persistence errors (e.g. storage disabled)
-	}
-};
 
 /**
  * Hidden page (not in the menu, open #/tester) for boards running the client
@@ -78,11 +61,12 @@ const Tester = () => {
 	const [settings, setSettings] = useState<Settings>(() => ({
 		client: AUTO,
 		dongle: AUTO,
-		dongleMac: getStoredDongleMac(),
 		ledPin: DEFAULT_LED_PIN,
 		touchText: DEFAULT_TOUCH_PINS.join(", "),
 	}));
 	const { client, dongle, outputs } = usePorts(settings);
+	const clientInfo = useBoardInfo(client);
+	const dongleInfo = useBoardInfo(dongle);
 	const [step, setStep] = useState<StepName>("connect");
 	const [state, dispatch] = useReducer(
 		testerReducer,
@@ -100,7 +84,6 @@ const Tester = () => {
 	);
 
 	const update = (patch: Partial<Settings>) => {
-		if (patch.dongleMac !== undefined) storeDongleMac(patch.dongleMac);
 		setSettings((prev) => ({ ...prev, ...patch }));
 	};
 
@@ -209,12 +192,14 @@ const Tester = () => {
 		autoAdvanced.current.clear();
 		dispatch({ type: "reset", ledPin: settings.ledPin, touchPins });
 		try {
-			const mac = settings.dongleMac.trim();
+			// The dongle's own MAC, read when its port was found
+			const mac = dongle && dongleInfo?.mac;
 			if (mac)
 				check(
-					`add dongle ${mac.toUpperCase()} as peer`,
-					await addPeer(client, macFromString(mac)),
+					`add dongle ${macToString(mac)} as peer`,
+					await addPeer(client, mac),
 				);
+			else if (dongle) check("dongle MAC unknown: not added as peer", false);
 			const firstType = MIDI_TYPES[0];
 			const cycleConfig = sysex.buttonConfig(CYCLE_PIN, firstType.status);
 			cyclePinSent.current = cycleConfig.join();
@@ -262,6 +247,8 @@ const Tester = () => {
 					outputs={outputs}
 					client={client}
 					dongle={dongle}
+					clientInfo={clientInfo}
+					dongleInfo={dongleInfo}
 					busy={busy}
 					failed={setupFailed}
 					onSetup={setup}
