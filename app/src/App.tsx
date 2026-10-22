@@ -13,7 +13,6 @@ import Modals from "./components/Modals";
 import NotFound from "./components/NotFound";
 import Sidebar from "./components/Sidebar";
 import Tester from "./components/Tester";
-import WIPBanner from "./components/WorkInProgress";
 import { darkTheme, lightTheme } from "./muiTheme.ts";
 import { useAppStore } from "./store/app";
 
@@ -52,7 +51,6 @@ function App() {
 				</Box>
 				<Footer></Footer>
 				<Modals></Modals>
-				<WIPBanner />
 			</Box>
 		</ThemeProvider>
 	);
