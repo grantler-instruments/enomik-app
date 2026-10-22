@@ -18,6 +18,7 @@ import {
 	setMidiLoopback,
 	sysex,
 	versionToString,
+	writeDefaultConfig,
 } from "./tester";
 
 const header = [
@@ -259,8 +260,96 @@ describe("board info", () => {
 	});
 });
 
+describe("default configuration", () => {
+	const ack = (cmd: number, payload: number[]) => [
+		0xf0,
+		...reply(cmd, payload),
+		0xf7,
+	];
+	const pinAck = (pin: number) => ack(0x41, [pin, 0, 0, 1, 0x58, pin, 0, 127]);
+	const answers = [
+		ack(0x49, []),
+		pinAck(16),
+		pinAck(17),
+		pinAck(15),
+		ack(0x4d, [1]),
+		ack(0x47, [1]),
+	];
+	const dongleMac = [0x84, 0xf7, 0x03, 0xf2, 0x54, 0x06];
+
+	it("resets, sets the buttons, the LED on CC 16, loopback and the dongle peer", async () => {
+		const sent: number[][] = [];
+		const lines = await writeDefaultConfig(fakePort(answers, sent), {
+			ledPin: 15,
+			dongleMac,
+		});
+		expect(lines.every((line) => line.ok)).toBe(true);
+		expect(sent.map((packet) => packet[4])).toEqual([
+			0x09, 0x01, 0x01, 0x01, 0x0d, 0x07,
+		]);
+		expect(sent[1]).toEqual(sysex.buttonConfig(16));
+		expect(sent[2]).toEqual(sysex.buttonConfig(17));
+		// pin 15, digital out, CC (0xB0 / 2) 16, values 0–127
+		expect(payload(sent[3])).toEqual([15, 0x01, 0, 1, 0x58, 16, 0, 127]);
+		expect(payload(sent[4])).toEqual([1]);
+		expect(payload(sent[5])).toEqual([8, 4, 15, 7, 0, 3, 15, 2, 5, 4, 0, 6]);
+	});
+
+	it("pairs no dongle when its MAC is unknown", async () => {
+		const sent: number[][] = [];
+		const lines = await writeDefaultConfig(fakePort(answers, sent), {
+			ledPin: 15,
+			dongleMac: null,
+		});
+		expect(lines).toHaveLength(5);
+		expect(sent.some((packet) => packet[4] === 0x07)).toBe(false);
+	});
+
+	it("uses the chosen LED pin", async () => {
+		const sent: number[][] = [];
+		await writeDefaultConfig(fakePort([...answers, pinAck(21)], sent), {
+			ledPin: 21,
+			dongleMac: null,
+		});
+		expect(payload(sent[3])[0]).toBe(21);
+	});
+
+	it("reports each unacknowledged step and still writes the rest", async () => {
+		vi.useFakeTimers();
+		try {
+			const sent: number[][] = [];
+			const write = writeDefaultConfig(
+				fakePort(
+					answers.filter((_, i) => i !== 0 && i !== 4),
+					sent,
+				),
+				{ ledPin: 15, dongleMac },
+			);
+			await vi.advanceTimersByTimeAsync(5000);
+			const lines = await write;
+			expect(lines.filter((line) => !line.ok).map((line) => line.text)).toEqual(
+				["reset: no pins, no peers", "MIDI loopback on"],
+			);
+			expect(sent).toHaveLength(6);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it("treats an already paired dongle as success", async () => {
+		const lines = await writeDefaultConfig(
+			fakePort([...answers.slice(0, 5), ack(0x7f, [0x07, 0x09])]),
+			{ ledPin: 15, dongleMac },
+		);
+		expect(lines.at(-1)).toEqual({
+			text: "add dongle 84:F7:03:F2:54:06 as peer",
+			ok: true,
+		});
+	});
+});
+
 /** Port whose input answers every send with these packets, in order. */
-function fakePort(answers: number[][]): Port {
+function fakePort(answers: number[][], sent: number[][] = []): Port {
 	const listeners = new Set<(event: MIDIMessageEvent) => void>();
 	const input = {
 		addEventListener: (_: string, l: (event: MIDIMessageEvent) => void) =>
@@ -270,7 +359,8 @@ function fakePort(answers: number[][]): Port {
 		open: async () => input,
 	};
 	const output = {
-		send: () => {
+		send: (data: number[]) => {
+			sent.push(data);
 			for (const data of answers)
 				for (const l of [...listeners])
 					l({ data: new Uint8Array(data) } as MIDIMessageEvent);

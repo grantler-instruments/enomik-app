@@ -26,6 +26,7 @@ import {
 	setMidiLoopback,
 	sysex,
 	TOUCH_THRESHOLD,
+	writeDefaultConfig,
 } from "../utils/tester";
 import {
 	buttonsPassed,
@@ -38,6 +39,7 @@ import {
 import InitMidi from "./InitMidi";
 import ButtonsStep from "./tester/ButtonsStep";
 import ConnectStep, { type Settings } from "./tester/ConnectStep";
+import DefaultConfig, { type DefaultConfigState } from "./tester/DefaultConfig";
 import LoopbackStep from "./tester/LoopbackStep";
 import Results from "./tester/Results";
 import TouchStep from "./tester/TouchStep";
@@ -78,6 +80,9 @@ const Tester = () => {
 	const [setupFailed, setSetupFailed] = useState(false);
 	/** Pins are set up: listen and keep pin 16 configured. */
 	const [configured, setConfigured] = useState(false);
+	const [defaultConfig, setDefaultConfig] = useState<DefaultConfigState>({
+		status: "ask",
+	});
 	const fail = useCallback(
 		(text: string) => setLog((prev) => [...prev, { text, ok: false }]),
 		[],
@@ -189,6 +194,7 @@ const Tester = () => {
 		setConfigured(false);
 		setSetupFailed(false);
 		setLog([]);
+		setDefaultConfig({ status: "ask" });
 		autoAdvanced.current.clear();
 		dispatch({ type: "reset", ledPin: settings.ledPin, touchPins });
 		try {
@@ -234,6 +240,23 @@ const Tester = () => {
 			setSetupFailed(lines.some((line) => !line.ok));
 			setBusy(false);
 		}
+	};
+
+	// The tested dongle stays a peer of the board
+	const dongleMac = (dongle && dongleInfo?.mac) || null;
+	const writeDefault = async () => {
+		if (!client) return;
+		setDefaultConfig({ status: "writing" });
+		// Stop following presses: pin 16 must not be reconfigured over the default
+		setConfigured(false);
+		await loopbackQueue.current;
+		const lines = await writeDefaultConfig(client, {
+			ledPin: settings.ledPin,
+			dongleMac,
+		}).catch((error: Error) => [
+			{ text: `stopped: ${error.message}`, ok: false },
+		]);
+		setDefaultConfig({ status: "done", lines });
 	};
 
 	const steps: { name: StepName; label: string; content: React.ReactNode }[] = [
@@ -329,7 +352,19 @@ const Tester = () => {
 						{ label: "LED loopback", passed: loopbackDone },
 						{ label: "Touch pins", passed: touchDone },
 					]}
-					onRestart={() => setStep("connect")}
+					onRestart={() => {
+						setDefaultConfig({ status: "ask" });
+						setStep("connect");
+					}}
+				/>
+			)}
+			{step === "done" && client && (
+				<DefaultConfig
+					state={defaultConfig}
+					ledPin={settings.ledPin}
+					dongleMac={dongleMac && macToString(dongleMac)}
+					onWrite={writeDefault}
+					onSkip={() => setDefaultConfig({ status: "skipped" })}
 				/>
 			)}
 			{log.length > 0 && (

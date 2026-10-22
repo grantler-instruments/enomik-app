@@ -13,6 +13,8 @@ import {
 	ENOMIK_COMMAND_GET_MAC_RESPONSE,
 	ENOMIK_COMMAND_GET_VERSION,
 	ENOMIK_COMMAND_GET_VERSION_RESPONSE,
+	ENOMIK_COMMAND_RESET,
+	ENOMIK_COMMAND_RESET_RESPONSE,
 	ENOMIK_COMMAND_SET_MIDI_LOOPBACK,
 	ENOMIK_COMMAND_SET_MIDI_LOOPBACK_RESPONSE,
 	ENOMIK_COMMAND_SET_PIN_CONFIG,
@@ -84,6 +86,8 @@ export const sysex = {
 		buildEnomikSysex(ENOMIK_COMMAND_ADD_PEER, macToNibbles(mac)),
 	getMac: () => buildEnomikSysex(ENOMIK_COMMAND_GET_MAC),
 	getVersion: () => buildEnomikSysex(ENOMIK_COMMAND_GET_VERSION),
+	/** No pin configs, no peers, loopback and power save off. */
+	reset: () => buildEnomikSysex(ENOMIK_COMMAND_RESET),
 	/** Input pull-up sending <status> with note/CC <number> (default: the pin):
 	 * max value while pressed, min value when released. */
 	buttonConfig: (pin: number, status = MIDI_CONTROL_CHANGE, number = pin) =>
@@ -100,14 +104,15 @@ export const sysex = {
 			MIDI_CONTROL_CHANGE,
 			pin,
 		),
-	/** Output switched by note on/off <pin>. */
-	ledConfig: (pin: number) =>
-		pinConfig(pin, sysexPinModeDigitalOut, 0, MIDI_NOTE_ON, pin),
+	/** Output switched by note on/off <number> (default: the pin), or by a CC. */
+	ledConfig: (pin: number, status = MIDI_NOTE_ON, number = pin) =>
+		pinConfig(pin, sysexPinModeDigitalOut, 0, status, number),
 };
 
 export type Reply =
 	| { cmd: "pin_config"; pin: number }
 	| { cmd: "add_peer_ok" }
+	| { cmd: "reset_ok" }
 	| { cmd: "midi_loopback"; enabled: boolean }
 	/** `header`: the packet's protocol version, the firmware's major/minor. */
 	| { cmd: "mac"; mac: number[]; header: Firmware }
@@ -126,6 +131,7 @@ export function parseReply(data: number[]): Reply | null {
 		return { cmd: "pin_config", pin: p[0] };
 	if (cmd === ENOMIK_COMMAND_ADD_PEER_RESPONSE && p[0] === 1)
 		return { cmd: "add_peer_ok" };
+	if (cmd === ENOMIK_COMMAND_RESET_RESPONSE) return { cmd: "reset_ok" };
 	if (cmd === ENOMIK_COMMAND_SET_MIDI_LOOPBACK_RESPONSE && p.length >= 1)
 		return { cmd: "midi_loopback", enabled: p[0] !== 0 };
 	// Before 0.13 the MAC reply echoes the request command (0x06)
@@ -320,4 +326,42 @@ export function boardInfoText(info: BoardInfo | null | undefined) {
 		`firmware ${info.version ? versionToString(info.version) : "unknown"}`,
 		`MAC ${info.mac ? macToString(info.mac) : "unknown"}`,
 	].join(" · ");
+}
+
+/** The LED follows this button through MIDI loopback in the default config. */
+export const DEFAULT_LED_SOURCE = 16;
+
+/**
+ * Config a tested board ships with: RESET, the buttons send CC <pin>, the LED
+ * follows CC 16 through MIDI loopback, and the tested dongle stays a peer.
+ * One line per request, ok when acknowledged.
+ */
+export async function writeDefaultConfig(
+	port: Port,
+	{ ledPin, dongleMac }: { ledPin: number; dongleMac: number[] | null },
+) {
+	const lines: { text: string; ok: boolean }[] = [];
+	const check = (text: string, ok: boolean) => lines.push({ text, ok });
+	const reset = await request(port, sysex.reset(), (r) => r.cmd === "reset_ok");
+	check("reset: no pins, no peers", reset?.cmd === "reset_ok");
+	for (const pin of BUTTON_PINS)
+		check(
+			`pin ${pin}: input pull-up → CC ${pin}`,
+			await configurePin(port, pin, sysex.buttonConfig(pin)),
+		);
+	check(
+		`pin ${ledPin}: output ← CC ${DEFAULT_LED_SOURCE} (LED)`,
+		await configurePin(
+			port,
+			ledPin,
+			sysex.ledConfig(ledPin, MIDI_CONTROL_CHANGE, DEFAULT_LED_SOURCE),
+		),
+	);
+	check("MIDI loopback on", await setMidiLoopback(port, true));
+	if (dongleMac)
+		check(
+			`add dongle ${macToString(dongleMac)} as peer`,
+			await addPeer(port, dongleMac),
+		);
+	return lines;
 }
