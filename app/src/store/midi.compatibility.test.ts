@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { buildEnomikSysex, ENOMIK_COMMAND_SET_RAW_STREAM } from "./midi.config";
 
 type MockInput = {
 	id: string;
@@ -124,9 +125,9 @@ describe("firmware replies and inspection", () => {
 		const count = outputs[0].send.mock.calls.length;
 		vi.advanceTimersByTime(10000);
 		expect(outputs[0].send).toHaveBeenCalledTimes(count);
-		expect(outputs[0].send).toHaveBeenLastCalledWith([
-			0xf0, 0x7d, 0, 14, 0x16, 127, 0, 0, 0xf7,
-		]);
+		expect(outputs[0].send).toHaveBeenLastCalledWith(
+			buildEnomikSysex(ENOMIK_COMMAND_SET_RAW_STREAM, [127, 0, 0]),
+		);
 		expect(outputs[1].send).not.toHaveBeenCalled();
 		expect(raw.useRawStreamStore.getState().active).toBe(false);
 	});
