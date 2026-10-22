@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import { MIDI_STATUS } from "../utils/midi";
 import {
+	type DeviceKind,
 	isCompatibleFirmware,
 	pairedInputId,
 	thresholdUnit,
@@ -34,6 +35,7 @@ import {
 	ENOMIK_COMMAND_SET_RAW_STREAM,
 	ENOMIK_COMMAND_SET_RAW_STREAM_RESPONSE,
 	ENOMIK_ERROR_NAMES,
+	ENOMIK_ERROR_NOT_READY,
 	ENOMIK_PEER_ENTRY_PAYLOAD_SIZE,
 	ENOMIK_PIN_CONFIG_PAYLOAD_SIZE,
 	ENOMIK_RAW_VALUE_PAYLOAD_SIZE,
@@ -302,11 +304,20 @@ export type LoadedDeviceConfig = {
 	powerSave: boolean | null;
 	/** Effective client name; null if the firmware predates GET_NAME. */
 	name: string | null;
+	/**
+	 * Set by a GET_CONFIG load: a client streams its config, a dongle answers
+	 * NOT_READY (it has no config handler). Unset for a peers-only load.
+	 */
+	firmware?: DeviceKind;
 };
+
+/** Which stream end finishes a load: GET_CONFIG (client) or GET_ALL_PEERS (dongle). */
+export type ConfigLoadEnd = "config" | "peers";
 
 type PendingConfigLoad = {
 	outputId: string;
 	inputId: string;
+	until: ConfigLoadEnd;
 	inputs: LoadedDeviceConfig["inputs"];
 	outputs: LoadedDeviceConfig["outputs"];
 	peers: string[];
@@ -325,6 +336,18 @@ function resolveConfigLoad(result: LoadedDeviceConfig | null) {
 	pendingConfigLoad = null;
 	clearTimeout(pending.timeoutId);
 	pending.finish(result);
+}
+
+function finishConfigLoad(pending: PendingConfigLoad, firmware?: DeviceKind) {
+	resolveConfigLoad({
+		firmware,
+		inputs: pending.inputs,
+		outputs: pending.outputs,
+		peers: pending.peers.map((macAddress) => ({ macAddress })),
+		midiLoopback: pending.midiLoopback,
+		powerSave: pending.powerSave,
+		name: pending.name,
+	});
 }
 
 export type SysexErrorEvent = {
@@ -351,10 +374,14 @@ export function takeSysexErrors(): SysexErrorEvent[] {
 	return errors;
 }
 
-/** Resolves when empty GET_CONFIG_RESPONSE (0x4C) arrives from the matching device. */
+/**
+ * Resolves when the matching device ends the stream: empty GET_CONFIG_RESPONSE
+ * (0x4C), or empty GET_ALL_PEERS_RESPONSE (0x48) with `until = "peers"`.
+ */
 export function beginWaitForConfigLoad(
 	outputId: string,
 	timeoutMs: number,
+	until: ConfigLoadEnd = "config",
 ): Promise<LoadedDeviceConfig | null> {
 	return new Promise((resolve) => {
 		if (!midiAccess || outputId === "-1") {
@@ -385,6 +412,7 @@ export function beginWaitForConfigLoad(
 		pendingConfigLoad = {
 			outputId,
 			inputId,
+			until,
 			inputs: [],
 			outputs: [],
 			peers: [],
@@ -580,7 +608,7 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 					}
 
 					// Peer entry: GET_ALL_PEERS / GET_PEER / GET_CONFIG stream (index + 12 nibbles)
-					// Empty 0x48 is the GET_ALL_PEERS stream-end marker — ignore.
+					// Empty 0x48 is the GET_ALL_PEERS stream-end marker: ends a peers-only load.
 					if (
 						command === ENOMIK_COMMAND_GET_ALL_PEERS_RESPONSE ||
 						command === ENOMIK_COMMAND_GET_PEER_RESPONSE
@@ -593,6 +621,13 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 									pendingConfigLoad.peers.push(macStr);
 								}
 							}
+						} else if (
+							command === ENOMIK_COMMAND_GET_ALL_PEERS_RESPONSE &&
+							payload.length === 0 &&
+							matchesPendingDevice(input.id) &&
+							pendingConfigLoad?.until === "peers"
+						) {
+							finishConfigLoad(pendingConfigLoad);
 						}
 					}
 
@@ -696,17 +731,11 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						command === ENOMIK_COMMAND_GET_CONFIG_RESPONSE &&
 						payload.length === 0
 					) {
-						if (matchesPendingDevice(input.id) && pendingConfigLoad) {
-							resolveConfigLoad({
-								inputs: pendingConfigLoad.inputs,
-								outputs: pendingConfigLoad.outputs,
-								peers: pendingConfigLoad.peers.map((macAddress) => ({
-									macAddress,
-								})),
-								midiLoopback: pendingConfigLoad.midiLoopback,
-								powerSave: pendingConfigLoad.powerSave,
-								name: pendingConfigLoad.name,
-							});
+						if (
+							matchesPendingDevice(input.id) &&
+							pendingConfigLoad?.until === "config"
+						) {
+							finishConfigLoad(pendingConfigLoad, "client");
 						}
 					}
 
@@ -809,9 +838,15 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						}
 						if (
 							matchesPendingDevice(input.id) &&
-							failedRequest === ENOMIK_COMMAND_GET_CONFIG
+							failedRequest === ENOMIK_COMMAND_GET_CONFIG &&
+							pendingConfigLoad
 						) {
-							resolveConfigLoad(null);
+							if (
+								errorCode === ENOMIK_ERROR_NOT_READY &&
+								pendingConfigLoad.until === "config"
+							)
+								finishConfigLoad(pendingConfigLoad, "dongle");
+							else resolveConfigLoad(null);
 						}
 					}
 
@@ -920,6 +955,7 @@ export const useMIDIStore = create<MonitorState>()(
 								event.port.state === "connected" &&
 								isEnomikPortName(event.port.name)
 							) {
+								useDeviceStore.getState().clearKind(event.port.id);
 								set({
 									selectedComposerOutputDevice: event.port.id,
 									selectedConfiguratorOutputDevice: event.port.id,
@@ -1069,6 +1105,8 @@ export const useMIDIStore = create<MonitorState>()(
 					}
 				},
 				setSelectedConfiguratorOutputDevice: (deviceId: string) => {
+					// A newly picked port starts with the kind its name suggests
+					useDeviceStore.getState().clearKind(deviceId);
 					useRawStreamStore.getState().setActive(false);
 					useRawStreamStore.getState().clear();
 					set({ selectedConfiguratorOutputDevice: deviceId });

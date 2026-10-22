@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import type { DeviceKind } from "./device";
 import type { InputPinConfig, OutputPinConfig } from "./io";
 
 interface InspectorState {
@@ -14,6 +15,8 @@ interface InspectorState {
 	macAddress: string | null;
 	protocolVersion: string | null;
 	name: string | null;
+	/** Detected from the sync replies, see LoadedDeviceConfig.firmware. */
+	firmware: DeviceKind | null;
 	clear: () => void;
 	setPeers: (newPeers: string[]) => void;
 	addPeer: (mac: string) => void;
@@ -40,6 +43,7 @@ export const useInspectorStore = create<InspectorState>()(
 			macAddress: null,
 			protocolVersion: null,
 			name: null,
+			firmware: null,
 			setPeers: (newPeers: string[]) =>
 				set(() => ({
 					peers: newPeers,
@@ -94,6 +98,7 @@ export const useInspectorStore = create<InspectorState>()(
 					macAddress: null,
 					protocolVersion: null,
 					name: null,
+					firmware: null,
 				});
 			},
 		}),

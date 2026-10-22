@@ -13,13 +13,10 @@ import { useDevice } from "../hooks/useDevice";
 import { useAppStore } from "../store/app";
 import { supportsInspection, thresholdUnit } from "../store/device";
 import { useInspectorStore } from "../store/inspector";
-import {
-	beginWaitForConfigLoad,
-	type MidiMessage,
-	useMIDIStore,
-} from "../store/midi";
+import { beginWaitForConfigLoad, useMIDIStore } from "../store/midi";
 import {
 	buildEnomikSysex,
+	ENOMIK_COMMAND_GET_ALL_PEERS,
 	ENOMIK_COMMAND_GET_CONFIG,
 	ENOMIK_COMMAND_GET_MAC,
 } from "../store/midi.config";
@@ -55,6 +52,8 @@ const Inspector = () => {
 	const syncing = useInspectorStore((state) => state.syncing);
 	const syncError = useInspectorStore((state) => state.syncError);
 	const name = useInspectorStore((state) => state.name);
+	const firmware = useInspectorStore((state) => state.firmware);
+	const isDongle = firmware === "dongle";
 	const clear = useInspectorStore((state) => state.clear);
 	const syncRequest = useRef(0);
 	useEffect(() => {
@@ -66,19 +65,29 @@ const Inspector = () => {
 	}, [clear]);
 	const showHints = useAppStore((state) => state.showHints);
 	return (
-		<Box display={"flex"} flexDirection="column" gap={2} padding={2}>
-			{showHints && (
-				<Alert severity="info" sx={{ mb: 2 }}>
-					{t("inspector_info")}
-				</Alert>
-			)}
-			<Box display={"flex"} flex={1} gap={2}>
+		<Box display={"flex"} flexDirection="column" marginBottom={2}>
+			<Box
+				display={"flex"}
+				alignItems={"center"}
+				gap={2}
+				mb={2}
+				pl={2}
+				pr={2}
+				py={2}
+				sx={{
+					position: "sticky",
+					top: 0,
+					zIndex: (theme) => theme.zIndex.appBar,
+					backgroundColor: "background.default",
+				}}
+			>
+				<Box flex={1} />
 				<MidiDeviceChooser
 					value={device || ""}
 					onChange={(e) => setDevice(e)}
 				></MidiDeviceChooser>
 				<Button
-					variant="outlined"
+					variant="contained"
 					color="primary"
 					disabled={
 						!initialized ||
@@ -91,109 +100,152 @@ const Inspector = () => {
 						const request = ++syncRequest.current;
 						clear();
 						useInspectorStore.setState({ deviceId: device, syncing: true });
-						const wait = beginWaitForConfigLoad(device, 5000);
-						for (const command of [
-							ENOMIK_COMMAND_GET_MAC,
-							ENOMIK_COMMAND_GET_CONFIG,
-						]) {
-							const msg: MidiMessage = {
-								id: uuidv4(),
-								type: 240,
-								channel: 1,
-								data: buildEnomikSysex(command),
-								timestamp: Date.now(),
-							};
-							sendMessage(msg, device);
-						}
-						const result = await wait;
-						if (
+						const current = () =>
 							request === syncRequest.current &&
-							useInspectorStore.getState().deviceId === device
-						) {
-							useInspectorStore.setState({
-								syncing: false,
-								syncError: result === null,
-							});
+							useInspectorStore.getState().deviceId === device;
+						const send = (command: number) =>
+							sendMessage(
+								{
+									id: uuidv4(),
+									type: 240,
+									channel: 1,
+									data: buildEnomikSysex(command),
+									timestamp: Date.now(),
+								},
+								device,
+							);
+						// A client answers GET_CONFIG, a dongle rejects it: then ask for its peers
+						const wait = beginWaitForConfigLoad(device, 5000);
+						send(ENOMIK_COMMAND_GET_MAC);
+						send(ENOMIK_COMMAND_GET_CONFIG);
+						let result = await wait;
+						if (!current()) return;
+						const firmware = result?.firmware ?? null;
+						useInspectorStore.setState({ firmware });
+						if (firmware === "dongle") {
+							const peersWait = beginWaitForConfigLoad(device, 5000, "peers");
+							send(ENOMIK_COMMAND_GET_ALL_PEERS);
+							result = await peersWait;
+							if (!current()) return;
 						}
+						useInspectorStore.setState({
+							syncing: false,
+							syncError: result === null,
+						});
 					}}
 				>
 					{t("inspector_sync")}
 				</Button>
 			</Box>
-			<DeviceCompatibility device={device || "-1"} inspection />
-			{syncing && <Typography>{t("compat_syncing")}</Typography>}
-			{syncError && <Alert severity="warning">{t("compat_sync_failed")}</Alert>}
-			<Box>
-				<Typography variant="h2">{t("inspector_global")}</Typography>
-				<Typography>
-					{t("client_name")}: {name ?? t("compat_unavailable")}
-				</Typography>
-				<Typography>
-					{t("inspector_mac_address")}: {macAddress ?? "–"}
-				</Typography>
-				<Typography>
-					{t("inspector_protocol_version")}: {protocolVersion ?? "–"}
-				</Typography>
-				<FormControlLabel
-					control={<Switch checked={midiLoopback ?? false} disabled />}
-					label={`${t("midi_loopback")}${midiLoopback === null ? `: ${t("compat_unavailable")}` : ""}`}
-				/>
-				<FormControlLabel
-					control={<Switch checked={powerSave ?? false} disabled />}
-					label={`${t("power_save")}${powerSave === null ? `: ${t("compat_unavailable")}` : ""}`}
-				/>
-			</Box>
-			<Box>
-				<Typography variant="h2">{t("inspector_input_to_midi")}</Typography>
-				{inputPinConfigs.length > 0 && (
-					<PinTableHeader
-						type="input"
-						showThreshold={hasTouchInput(inputPinConfigs)}
-					/>
+			<Box display={"flex"} flexDirection="column" gap={2} px={2}>
+				{showHints && (
+					<Alert severity="info" sx={{ mb: 2 }}>
+						{t("inspector_info")}
+					</Alert>
 				)}
-				{inputPinConfigs.map((config, index) => (
-					<PinRow
-						key={`input-${config.pin}`}
-						config={config}
-						type="input"
-						index={index}
-						showThreshold={hasTouchInput(inputPinConfigs)}
-						thresholdUnit={thresholdUnit(info?.version)}
-						readOnly
-					/>
-				))}
-			</Box>
-			{hasTouchInput(inputPinConfigs) && <RawValues device={device || "-1"} />}
-			<Box>
-				<Typography variant="h2">{t("inspector_midi_to_output")}</Typography>
-				{outputPinConfigs.length > 0 && (
-					<PinTableHeader
-						type="output"
-						showPwmRange={hasPwmOutput(outputPinConfigs)}
-					/>
+				<DeviceCompatibility device={device || "-1"} inspection />
+				{syncing && <Typography>{t("compat_syncing")}</Typography>}
+				{syncError && (
+					<Alert severity="warning">{t("compat_sync_failed")}</Alert>
 				)}
-				{outputPinConfigs.map((config, index) => (
-					<PinRow
-						key={`output-${config.pin}`}
-						config={config}
-						type="output"
-						index={index}
-						showPwmRange={hasPwmOutput(outputPinConfigs)}
-						thresholdUnit={thresholdUnit(info?.version)}
-						readOnly
-					/>
-				))}
-			</Box>
-			<Box>
-				<Typography variant="h2">{t("inspector_esp_now_midi")}</Typography>
-				{peers.map((peer) => (
-					<MacAddressInput
-						key={peer}
-						macAddress={peer}
-						disabled={true}
-						onMacAddressChange={() => {}}
-					></MacAddressInput>
-				))}
+				<Box>
+					<Typography variant="h2">{t("inspector_global")}</Typography>
+					{!isDongle && (
+						<Typography>
+							{t("client_name")}: {name ?? t("compat_unavailable")}
+						</Typography>
+					)}
+					<Typography>
+						{t("inspector_mac_address")}: {macAddress ?? "–"}
+					</Typography>
+					<Typography>
+						{t("inspector_firmware")}:{" "}
+						{firmware ? t(`device_kind_${firmware}`) : "–"}
+					</Typography>
+					<Typography>
+						{t("inspector_protocol_version")}: {protocolVersion ?? "–"}
+					</Typography>
+					{!isDongle && (
+						<>
+							<FormControlLabel
+								control={<Switch checked={midiLoopback ?? false} disabled />}
+								label={`${t("midi_loopback")}${midiLoopback === null ? `: ${t("compat_unavailable")}` : ""}`}
+							/>
+							<FormControlLabel
+								control={<Switch checked={powerSave ?? false} disabled />}
+								label={`${t("power_save")}${powerSave === null ? `: ${t("compat_unavailable")}` : ""}`}
+							/>
+						</>
+					)}
+				</Box>
+				{!isDongle && (
+					<>
+						<Box>
+							<Typography variant="h2">
+								{t("inspector_input_to_midi")}
+							</Typography>
+							{inputPinConfigs.length > 0 && (
+								<PinTableHeader
+									type="input"
+									showThreshold={hasTouchInput(inputPinConfigs)}
+								/>
+							)}
+							{inputPinConfigs.map((config, index) => (
+								<PinRow
+									key={`input-${config.pin}`}
+									config={config}
+									type="input"
+									index={index}
+									showThreshold={hasTouchInput(inputPinConfigs)}
+									thresholdUnit={thresholdUnit(info?.version)}
+									readOnly
+								/>
+							))}
+						</Box>
+						{hasTouchInput(inputPinConfigs) && (
+							<RawValues device={device || "-1"} />
+						)}
+						<Box>
+							<Typography variant="h2">
+								{t("inspector_midi_to_output")}
+							</Typography>
+							{outputPinConfigs.length > 0 && (
+								<PinTableHeader
+									type="output"
+									showPwmRange={hasPwmOutput(outputPinConfigs)}
+								/>
+							)}
+							{outputPinConfigs.map((config, index) => (
+								<PinRow
+									key={`output-${config.pin}`}
+									config={config}
+									type="output"
+									index={index}
+									showPwmRange={hasPwmOutput(outputPinConfigs)}
+									thresholdUnit={thresholdUnit(info?.version)}
+									readOnly
+								/>
+							))}
+						</Box>
+					</>
+				)}
+				<Box>
+					<Typography variant="h2">{t("inspector_esp_now_midi")}</Typography>
+					{peers.length === 0 && (
+						<Typography color="text.secondary">
+							{/* "No peers" only once a sync has answered */}
+							{firmware && !syncing ? t("inspector_no_peers") : "–"}
+						</Typography>
+					)}
+					{peers.map((peer) => (
+						<MacAddressInput
+							key={peer}
+							macAddress={peer}
+							disabled={true}
+							onMacAddressChange={() => {}}
+						></MacAddressInput>
+					))}
+				</Box>
 			</Box>
 		</Box>
 	);

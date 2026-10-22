@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export type ThresholdUnit = "raw" | "percent";
 export interface Firmware {
@@ -30,6 +31,13 @@ export function supportsLiveValues(version?: Firmware): boolean {
 export function thresholdUnit(version?: Firmware): ThresholdUnit | undefined {
 	if (!isCompatibleFirmware(version)) return undefined;
 	return supportsLiveValues(version) ? "percent" : "raw";
+}
+
+export type DeviceKind = "client" | "dongle";
+
+/** Default sketches name their USB port enomik3000_client / enomik3000_dongle. */
+export function guessDeviceKind(portName?: string | null): DeviceKind {
+	return /dongle/i.test(portName ?? "") ? "dongle" : "client";
 }
 
 type Port = { id: string; name?: string | null; state?: string };
@@ -82,16 +90,39 @@ export function pairedInputId(
 
 export const useDeviceStore = create<{
 	devices: Record<string, DeviceInfo>;
+	/** User-chosen kind per output port; unset ports fall back to guessDeviceKind. */
+	kinds: Record<string, DeviceKind>;
 	setDevice: (id: string, info: DeviceInfo) => void;
 	removeDevice: (id: string) => void;
-}>()((set) => ({
-	devices: {},
-	setDevice: (id, info) =>
-		set((state) => ({ devices: { ...state.devices, [id]: info } })),
-	removeDevice: (id) =>
-		set((state) => {
-			const devices = { ...state.devices };
-			delete devices[id];
-			return { devices };
+	setKind: (id: string, kind: DeviceKind) => void;
+	/** Back to guessing from the port name. */
+	clearKind: (id: string) => void;
+}>()(
+	persist(
+		(set) => ({
+			devices: {},
+			kinds: {},
+			setDevice: (id, info) =>
+				set((state) => ({ devices: { ...state.devices, [id]: info } })),
+			removeDevice: (id) =>
+				set((state) => {
+					const devices = { ...state.devices };
+					delete devices[id];
+					return { devices };
+				}),
+			setKind: (id, kind) =>
+				set((state) => ({ kinds: { ...state.kinds, [id]: kind } })),
+			clearKind: (id) =>
+				set((state) => {
+					const kinds = { ...state.kinds };
+					delete kinds[id];
+					return { kinds };
+				}),
 		}),
-}));
+		{
+			name: "DeviceStore",
+			storage: createJSONStorage(() => sessionStorage),
+			partialize: (state) => ({ kinds: state.kinds }),
+		},
+	),
+);

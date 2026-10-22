@@ -382,6 +382,118 @@ describe("compatible configuration deployment", () => {
 		expect(result.sysexErrors).toEqual([]);
 		expect(result.nameSkipped).toBe(true);
 	});
+	it("deploys only RESET and peers to a dongle", async () => {
+		identify(0, [0, 19]);
+		const { useIOStore } = await import("./io");
+		useIOStore.getState().loadFromFile({
+			inputs: [{ ...touch, thresholdUnit: "raw" }],
+			peers: [{ macAddress: "12:34:56:78:9A:BC" }],
+			midiLoopback: true,
+			powerSave: true,
+			name: "My board",
+		});
+		outputs[0].send.mockClear();
+		outputs[0].send.mockImplementation((packet: number[]) => {
+			if (packet[4] === 9) receive(0, 0x49);
+		});
+		const deployment = useIOStore.getState().deploy("out-A", "dongle");
+		await vi.advanceTimersByTimeAsync(400);
+		expect(await deployment).toMatchObject({
+			resetAck: true,
+			sysexErrors: [],
+			globalsSkipped: false,
+			nameSkipped: false,
+		});
+		expect(outputs[0].send.mock.calls.map(([packet]) => packet[4])).toEqual([
+			0x09, 0x07,
+		]);
+	});
+	it("drops a client/dongle override when a port is picked", () => {
+		const store = devices.useDeviceStore;
+		store.getState().setKind("out-A", "dongle");
+		midi.useMIDIStore.getState().setSelectedConfiguratorOutputDevice("out-A");
+		expect(store.getState().kinds).toEqual({});
+	});
+	it("keeps client and dongle configs apart", async () => {
+		const { useDongleIOStore, useIOStore } = await import("./io");
+		useIOStore
+			.getState()
+			.loadFromFile({ peers: [{ macAddress: "12:34:56:78:9A:BC" }] });
+		useDongleIOStore.getState().addPeer({ macAddress: "AA:BB:CC:DD:EE:FF" });
+		expect(useIOStore.getState().peers.map((p) => p.macAddress)).toEqual([
+			"12:34:56:78:9A:BC",
+		]);
+		expect(useDongleIOStore.getState().peers.map((p) => p.macAddress)).toEqual([
+			"AA:BB:CC:DD:EE:FF",
+		]);
+	});
+	it("saves client and dongle configs with their kind", async () => {
+		const { useDongleIOStore, useIOStore } = await import("./io");
+		const links: { download: string; href: string; click: () => void }[] = [];
+		vi.stubGlobal("document", {
+			createElement: () => {
+				const link = { download: "", href: "", click: vi.fn() };
+				links.push(link);
+				return link;
+			},
+		});
+		const blobs: Blob[] = [];
+		vi.stubGlobal("URL", {
+			createObjectURL: (blob: Blob) => {
+				blobs.push(blob);
+				return "blob:";
+			},
+			revokeObjectURL: vi.fn(),
+		});
+		useIOStore.getState().saveToFile();
+		useDongleIOStore.getState().saveToFile();
+		expect(links.map((link) => link.download)).toEqual([
+			"io-config-client.json",
+			"io-config-dongle.json",
+		]);
+		expect(JSON.parse(await blobs[0].text())).toMatchObject({
+			kind: "client",
+			inputs: [],
+		});
+		expect(JSON.parse(await blobs[1].text())).toEqual({
+			kind: "dongle",
+			peers: [],
+		});
+	});
+	it("ends a peers-only load at the GET_ALL_PEERS stream end", async () => {
+		identify(0, [0, 19]);
+		inspector.useInspectorStore.setState({ deviceId: "out-A", syncing: true });
+		const result = midi.beginWaitForConfigLoad("out-A", 5000, "peers");
+		receive(0, 0x48, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+		receive(0, 0x48);
+		expect(await result).toMatchObject({
+			inputs: [],
+			peers: [{ macAddress: "12:34:56:78:9A:BC" }],
+		});
+		expect(inspector.useInspectorStore.getState().peers).toEqual([
+			"12:34:56:78:9A:BC",
+		]);
+	});
+	it("tells client and dongle firmware apart by the GET_CONFIG reply", async () => {
+		identify(0, [0, 19]);
+		const client = midi.beginWaitForConfigLoad("out-A", 5000);
+		receive(0, 0x4c);
+		expect((await client)?.firmware).toBe("client");
+		const dongle = midi.beginWaitForConfigLoad("out-A", 5000);
+		receive(0, 0x7f, [0x0c, 0x05]); // GET_CONFIG: NOT_READY
+		expect((await dongle)?.firmware).toBe("dongle");
+		const failed = midi.beginWaitForConfigLoad("out-A", 5000);
+		receive(0, 0x7f, [0x0c, 0x02]); // GET_CONFIG: UNKNOWN_COMMAND
+		expect(await failed).toBeNull();
+	});
+	it("does not end a GET_CONFIG load at a peers stream end", async () => {
+		identify(0, [0, 19]);
+		const result = midi.beginWaitForConfigLoad("out-A", 5000);
+		receive(0, 0x48);
+		receive(0, 0x44, [4, 5, 31, 1, 88, 10, 0, 127]);
+		receive(0, 0x4c);
+		expect((await result)?.inputs).toHaveLength(1);
+	});
 	it("blocks ambiguous or changed threshold units before sending RESET", async () => {
 		identify(0, [0, 19]);
 		const { useIOStore } = await import("./io");

@@ -20,14 +20,14 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import { useDevice } from "../hooks/useDevice";
+import { useDevice, useDeviceKind } from "../hooks/useDevice";
 import { useAppStore } from "../store/app";
 import {
 	supportsInspection,
 	supportsLiveValues,
 	useDeviceStore,
 } from "../store/device";
-import { findDuplicatePins, useIOStore } from "../store/io";
+import { findDuplicatePins, useDongleIOStore, useIOStore } from "../store/io";
 import {
 	beginWaitForConfigLoad,
 	isEnomikPortName,
@@ -36,6 +36,7 @@ import {
 } from "../store/midi";
 import {
 	buildEnomikSysex,
+	ENOMIK_COMMAND_GET_ALL_PEERS,
 	ENOMIK_COMMAND_GET_CONFIG,
 	ENOMIK_COMMAND_SET_MIDI_LOOPBACK,
 	ENOMIK_COMMAND_SET_NAME,
@@ -43,6 +44,7 @@ import {
 	ENOMIK_ERROR_UNKNOWN_COMMAND,
 } from "../store/midi.config";
 import { useRawStreamStore } from "../store/rawStream";
+import DeviceKindChooser from "./DeviceKindChooser";
 import Globals from "./Globals";
 import Inputs from "./Inputs";
 import MidiDeviceChooser from "./MidiDeviceChooser";
@@ -53,29 +55,36 @@ import SectionHeader from "./SectionHeader";
 const Configurator = () => {
 	const { t } = useTranslation();
 	const showHints = useAppStore((state) => state.showHints);
-	const deployConfiguration = useIOStore((state) => state.deploy);
-	const inputs = useIOStore((state) => state.inputs);
-	const outputs = useIOStore((state) => state.outputs);
-	const peers = useIOStore((state) => state.peers);
-	const midiLoopback = useIOStore((state) => state.midiLoopback);
-	const powerSave = useIOStore((state) => state.powerSave);
+	const selectedOutputId = useMIDIStore(
+		(state) => state.selectedConfiguratorOutputDevice,
+	);
+	const isDongle = useDeviceKind(selectedOutputId || "-1") === "dongle";
+	// Client and dongle configs are separate stores. Both are zustand hooks,
+	// so swapping them keeps the hook order.
+	const useConfig: typeof useIOStore = isDongle ? useDongleIOStore : useIOStore;
+	const deployConfiguration = useConfig((state) => state.deploy);
+	const inputs = useConfig((state) => state.inputs);
+	const outputs = useConfig((state) => state.outputs);
+	const peers = useConfig((state) => state.peers);
+	const midiLoopback = useConfig((state) => state.midiLoopback);
+	const powerSave = useConfig((state) => state.powerSave);
 	const initialized = useMIDIStore((state) => state.initialized);
 	const sendMessage = useMIDIStore((state) => state.sendMessage);
 	const midiInputs = useMIDIStore((state) => state.inputs);
 	const midiOutputs = useMIDIStore((state) => state.outputs);
-	const selectedOutputId = useMIDIStore(
-		(state) => state.selectedConfiguratorOutputDevice,
-	);
 	const deviceInfo = useDevice(selectedOutputId || "-1");
 	const setSelectedOutputId = useMIDIStore(
 		(state) => state.setSelectedConfiguratorOutputDevice,
+	);
+	const hasSelectedOutput = midiOutputs.some(
+		(port) => port.id === selectedOutputId && port.state !== "disconnected",
 	);
 	const hasEnomikBoard = [...midiInputs, ...midiOutputs].some((port) =>
 		isEnomikPortName(port.name),
 	);
 
-	const saveToFile = useIOStore((state) => state.saveToFile);
-	const loadFromFile = useIOStore((state) => state.loadFromFile);
+	const saveToFile = useConfig((state) => state.saveToFile);
+	const loadFromFile = useConfig((state) => state.loadFromFile);
 
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const mountedRef = useRef(true);
@@ -92,17 +101,17 @@ const Configurator = () => {
 	const [deploying, setDeploying] = useState(false);
 	const [loadingFromDevice, setLoadingFromDevice] = useState(false);
 	const [globalOpen, setGlobalOpen] = useState(() => {
-		const s = useIOStore.getState();
+		const s = useConfig.getState();
 		return s.midiLoopback || s.powerSave || s.name !== "";
 	});
 	const [inputsOpen, setInputsOpen] = useState(
-		() => useIOStore.getState().inputs.length > 0,
+		() => useConfig.getState().inputs.length > 0,
 	);
 	const [outputsOpen, setOutputsOpen] = useState(
-		() => useIOStore.getState().outputs.length > 0,
+		() => useConfig.getState().outputs.length > 0,
 	);
 	const [peersOpen, setPeersOpen] = useState(
-		() => useIOStore.getState().peers.length > 0,
+		() => useConfig.getState().peers.length > 0,
 	);
 
 	const syncSectionOpen = (cfg: {
@@ -121,7 +130,9 @@ const Configurator = () => {
 
 	const handleDeploy = async () => {
 		// The firmware keeps one config per pin: a duplicate would silently overwrite another row.
-		const duplicatePins = findDuplicatePins(inputs, outputs);
+		const duplicatePins = isDongle
+			? new Set<number>()
+			: findDuplicatePins(inputs, outputs);
 		if (duplicatePins.size > 0) {
 			setDeployToastSeverity("error");
 			setDeployToast(
@@ -132,10 +143,10 @@ const Configurator = () => {
 			return;
 		}
 
-		const pinConfigs = inputs.length + outputs.length;
+		const pinConfigs = isDongle ? 0 : inputs.length + outputs.length;
 		const peerCount = peers.length;
-		const rawOut = selectedOutputId ?? "";
-		const isBroadcast = rawOut === "" || rawOut === "-1";
+		if (!selectedOutputId || !hasSelectedOutput) return;
+		const rawOut = selectedOutputId;
 		const toastGlobals = {
 			pinConfigs,
 			peerCount,
@@ -152,10 +163,11 @@ const Configurator = () => {
 		setDeploying(true);
 		try {
 			const { resetAck, sysexErrors, nameSkipped, globalsSkipped } =
-				await deployConfiguration(rawOut);
+				await deployConfiguration(rawOut, isDongle ? "dongle" : "client");
 			// Only resume if the user is still on the Configurator.
 			if (
 				wasStreaming &&
+				!isDongle &&
 				resetAck &&
 				sysexErrors.length === 0 &&
 				mountedRef.current &&
@@ -182,14 +194,13 @@ const Configurator = () => {
 				toastGlobals.midiLoopback = t("compat_unavailable");
 				toastGlobals.powerSave = t("compat_unavailable");
 			}
-			let summary: string;
-			if (isBroadcast) {
-				summary = t("deploy_toast_summary", toastGlobals);
-			} else if (resetAck) {
-				summary = t("deploy_toast_summary_reset_ok", toastGlobals);
-			} else {
-				summary = t("deploy_toast_summary_reset_timeout", toastGlobals);
-			}
+			const summaryKey = isDongle
+				? "deploy_toast_dongle_summary"
+				: "deploy_toast_summary";
+			const summary = t(
+				`${summaryKey}_${resetAck ? "reset_ok" : "reset_timeout"}`,
+				toastGlobals,
+			);
 
 			if (globalsUnsupported) {
 				setDeployToastSeverity("warning");
@@ -216,7 +227,7 @@ const Configurator = () => {
 						.filter(Boolean)
 						.join(" "),
 				);
-			} else if (isBroadcast || resetAck) {
+			} else if (resetAck) {
 				setDeployToastSeverity("success");
 				setDeployToast(summary);
 			} else {
@@ -243,12 +254,30 @@ const Configurator = () => {
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
+		// Lets the same file be picked again, e.g. after switching kind
+		e.target.value = "";
 		if (!file) return;
 		const reader = new FileReader();
 		reader.onload = (event) => {
 			try {
 				const json = JSON.parse(event.target?.result as string);
-				loadFromFile(json);
+				// Files without `kind` predate separate configs: import as before
+				const kind = isDongle ? "dongle" : "client";
+				if (
+					(json.kind === "client" || json.kind === "dongle") &&
+					json.kind !== kind
+				) {
+					setDeployToastSeverity("warning");
+					setDeployToast(
+						t("load_from_file_kind_mismatch", {
+							file: t(`device_kind_${json.kind}`),
+							selected: t(`device_kind_${kind}`),
+						}),
+					);
+					return;
+				}
+				// A dongle only has peers
+				loadFromFile(isDongle ? { peers: json.peers } : json);
 				syncSectionOpen({
 					inputsCount: json.inputs?.length ?? 0,
 					outputsCount: json.outputs?.length ?? 0,
@@ -302,12 +331,18 @@ const Configurator = () => {
 		}
 		setLoadingFromDevice(true);
 		try {
-			const waitPromise = beginWaitForConfigLoad(rawOut, 5000);
+			const waitPromise = beginWaitForConfigLoad(
+				rawOut,
+				5000,
+				isDongle ? "peers" : "config",
+			);
 			const msg: MidiMessage = {
 				id: uuidv4(),
 				timestamp: Date.now(),
 				type: 240,
-				data: buildEnomikSysex(ENOMIK_COMMAND_GET_CONFIG),
+				data: buildEnomikSysex(
+					isDongle ? ENOMIK_COMMAND_GET_ALL_PEERS : ENOMIK_COMMAND_GET_CONFIG,
+				),
 			};
 			sendMessage(msg, rawOut);
 
@@ -322,6 +357,17 @@ const Configurator = () => {
 				setDeployToast(t("load_from_device_toast_timeout"));
 				return;
 			}
+			if (isDongle) {
+				loadFromFile({ peers: result.peers });
+				setPeersOpen(result.peers.length > 0);
+				setDeployToastSeverity("success");
+				setDeployToast(
+					t("load_from_device_toast_dongle_ok", {
+						peerCount: result.peers.length,
+					}),
+				);
+				return;
+			}
 
 			loadFromFile({
 				inputs: result.inputs as Parameters<typeof loadFromFile>[0]["inputs"],
@@ -329,16 +375,16 @@ const Configurator = () => {
 					typeof loadFromFile
 				>[0]["outputs"],
 				peers: result.peers,
-				midiLoopback: result.midiLoopback ?? useIOStore.getState().midiLoopback,
-				powerSave: result.powerSave ?? useIOStore.getState().powerSave,
+				midiLoopback: result.midiLoopback ?? useConfig.getState().midiLoopback,
+				powerSave: result.powerSave ?? useConfig.getState().powerSave,
 				name: result.name ?? "",
 			});
 			syncSectionOpen({
 				inputsCount: result.inputs.length,
 				outputsCount: result.outputs.length,
 				peersCount: result.peers.length,
-				midiLoopback: result.midiLoopback ?? useIOStore.getState().midiLoopback,
-				powerSave: result.powerSave ?? useIOStore.getState().powerSave,
+				midiLoopback: result.midiLoopback ?? useConfig.getState().midiLoopback,
+				powerSave: result.powerSave ?? useConfig.getState().powerSave,
 				name: result.name ?? "",
 			});
 			setDeployToastSeverity("success");
@@ -423,6 +469,7 @@ const Configurator = () => {
 				</Tooltip>
 
 				<Box flex={1} />
+				<DeviceKindChooser deviceId={selectedOutputId || "-1"} />
 				<MidiDeviceChooser
 					value={selectedOutputId || ""}
 					onChange={setSelectedOutputId}
@@ -432,7 +479,7 @@ const Configurator = () => {
 					variant="contained"
 					color="primary"
 					onClick={handleDeploy}
-					disabled={!initialized || deploying}
+					disabled={!initialized || deploying || !hasSelectedOutput}
 				>
 					{t("deploy")}
 				</Button>
@@ -450,59 +497,63 @@ const Configurator = () => {
 						</Box>
 					</Box>
 				)}
+				{!isDongle && (
+					<>
+						<Accordion
+							expanded={globalOpen}
+							onChange={(_, open) => setGlobalOpen(open)}
+						>
+							<AccordionSummary
+								expandIcon={<ArrowDropDownIcon />}
+								aria-controls="global-content"
+							>
+								<SectionHeader
+									title={t("section_global")}
+									tooltipKey="tooltip_global"
+								/>
+							</AccordionSummary>
+							<AccordionDetails>
+								<Globals />
+							</AccordionDetails>
+						</Accordion>
+						<Accordion
+							expanded={inputsOpen}
+							onChange={(_, open) => setInputsOpen(open)}
+						>
+							<AccordionSummary
+								expandIcon={<ArrowDropDownIcon />}
+								aria-controls="inputs-content"
+							>
+								<SectionHeader
+									title={t("section_input_pin_to_midi")}
+									tooltipKey="tooltip_pin_to_midi"
+								/>
+							</AccordionSummary>
+							<AccordionDetails>
+								<Inputs></Inputs>
+							</AccordionDetails>
+						</Accordion>
+						<Accordion
+							expanded={outputsOpen}
+							onChange={(_, open) => setOutputsOpen(open)}
+						>
+							<AccordionSummary
+								expandIcon={<ArrowDropDown />}
+								aria-controls="outputs-content"
+							>
+								<SectionHeader
+									title={t("section_midi_to_output_pin")}
+									tooltipKey="tooltip_midi_to_pin"
+								/>
+							</AccordionSummary>
+							<AccordionDetails>
+								<Outputs></Outputs>
+							</AccordionDetails>
+						</Accordion>
+					</>
+				)}
 				<Accordion
-					expanded={globalOpen}
-					onChange={(_, open) => setGlobalOpen(open)}
-				>
-					<AccordionSummary
-						expandIcon={<ArrowDropDownIcon />}
-						aria-controls="global-content"
-					>
-						<SectionHeader
-							title={t("section_global")}
-							tooltipKey="tooltip_global"
-						/>
-					</AccordionSummary>
-					<AccordionDetails>
-						<Globals />
-					</AccordionDetails>
-				</Accordion>
-				<Accordion
-					expanded={inputsOpen}
-					onChange={(_, open) => setInputsOpen(open)}
-				>
-					<AccordionSummary
-						expandIcon={<ArrowDropDownIcon />}
-						aria-controls="inputs-content"
-					>
-						<SectionHeader
-							title={t("section_input_pin_to_midi")}
-							tooltipKey="tooltip_pin_to_midi"
-						/>
-					</AccordionSummary>
-					<AccordionDetails>
-						<Inputs></Inputs>
-					</AccordionDetails>
-				</Accordion>
-				<Accordion
-					expanded={outputsOpen}
-					onChange={(_, open) => setOutputsOpen(open)}
-				>
-					<AccordionSummary
-						expandIcon={<ArrowDropDown />}
-						aria-controls="outputs-content"
-					>
-						<SectionHeader
-							title={t("section_midi_to_output_pin")}
-							tooltipKey="tooltip_midi_to_pin"
-						/>
-					</AccordionSummary>
-					<AccordionDetails>
-						<Outputs></Outputs>
-					</AccordionDetails>
-				</Accordion>
-				<Accordion
-					expanded={peersOpen}
+					expanded={isDongle || peersOpen}
 					onChange={(_, open) => setPeersOpen(open)}
 				>
 					<AccordionSummary
@@ -515,7 +566,7 @@ const Configurator = () => {
 						/>
 					</AccordionSummary>
 					<AccordionDetails>
-						<Peers></Peers>
+						<Peers store={useConfig}></Peers>
 					</AccordionDetails>
 				</Accordion>
 			</Container>

@@ -1,5 +1,10 @@
 import { useEffect } from "react";
-import { pairedInputId, useDeviceStore } from "../store/device";
+import {
+	type DeviceKind,
+	guessDeviceKind,
+	pairedInputId,
+	useDeviceStore,
+} from "../store/device";
 import { inspectDeviceVersion, useMIDIStore } from "../store/midi";
 
 export function useDevice(deviceId: string) {
@@ -18,4 +23,12 @@ export function useDevice(deviceId: string) {
 		}
 	}, [deviceId, inputId, outputs, info?.status]);
 	return info;
+}
+
+export function useDeviceKind(deviceId: string): DeviceKind {
+	const portName = useMIDIStore(
+		(state) => state.outputs.find((port) => port.id === deviceId)?.name,
+	);
+	const kind = useDeviceStore((state) => state.kinds[deviceId]);
+	return kind ?? guessDeviceKind(portName);
 }

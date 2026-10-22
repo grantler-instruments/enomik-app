@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	guessDeviceKind,
 	isCompatibleFirmware,
 	pairedInputId,
 	supportsGlobals,
@@ -82,5 +83,17 @@ describe("MIDI device pairing", () => {
 		expect(
 			pairedInputId("-1", [{ id: "in", name: "enomik" }], outputs),
 		).toBeUndefined();
+	});
+});
+
+describe("device kind", () => {
+	it.each([
+		["enomik3000_dongle", "dongle"],
+		["Enomik3000_Dongle MIDI 1", "dongle"],
+		["enomik3000_client", "client"],
+		["my custom board", "client"],
+		[undefined, "client"],
+	])("guesses %s as %s", (name, kind) => {
+		expect(guessDeviceKind(name)).toBe(kind);
 	});
 });

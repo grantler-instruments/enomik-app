@@ -138,8 +138,6 @@ i18n.use(initReactI18next).init({
 					"In order to configure your enomik client devices, you need to flash the appropriate firmware onto them first. You can use the handy Firmware Uploader utility to upload the precompiled firmware to your ESP32-based client boards.",
 				state_on: "on",
 				state_off: "off",
-				deploy_toast_summary:
-					"Sent {{pinConfigs}} pin configs, {{peerCount}} wireless MIDI addresses, MIDI loopback {{midiLoopback}}, and safe power mode {{powerSave}}.",
 				deploy_toast_summary_reset_ok:
 					"Device reset confirmed. Sent {{pinConfigs}} pin configs, {{peerCount}} wireless MIDI addresses, MIDI loopback {{midiLoopback}}, and safe power mode {{powerSave}}.",
 				deploy_toast_summary_reset_timeout:
@@ -148,6 +146,19 @@ i18n.use(initReactI18next).init({
 					"Global settings require firmware 0.14+ (device reported {{version}}).",
 				load_from_device_toast_ok:
 					"Loaded {{pinConfigs}} pin configs, {{peerCount}} wireless MIDI addresses, MIDI loopback {{midiLoopback}}, and safe power mode {{powerSave}} from device.",
+				load_from_file_kind_mismatch:
+					"This is a {{file}} config, but {{selected}} is selected. Switch to {{file}} to import it.",
+				device_kind: "Device type",
+				device_kind_client: "Client",
+				device_kind_dongle: "Dongle",
+				tooltip_device_kind:
+					"Client or dongle. Guessed from the port name, change it if wrong.",
+				deploy_toast_dongle_summary_reset_ok:
+					"Device reset confirmed. Sent {{peerCount}} wireless MIDI addresses.",
+				deploy_toast_dongle_summary_reset_timeout:
+					"Reset confirmation not received (timed out). Sent {{peerCount}} wireless MIDI addresses. If this error persists, please update the dongle firmware to the latest version.",
+				load_from_device_toast_dongle_ok:
+					"Loaded {{peerCount}} wireless MIDI addresses from device.",
 				load_from_device_toast_timeout:
 					"Could not load configuration from device (timed out or no response). Select a device and ensure firmware supports GET_CONFIG.",
 				load_from_device_toast_no_device:
@@ -197,7 +208,6 @@ i18n.use(initReactI18next).init({
 				deploy: "Deploy",
 				init_midi: "Init MIDI",
 				midi_output: "MIDI Output",
-				all_outputs: "All outputs",
 				filter: "Filter",
 				filters_active: "({{count}} active)",
 				history: "History",
@@ -304,6 +314,8 @@ i18n.use(initReactI18next).init({
 				inspector_midi_to_output: "MIDI to Output PIN",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
 				inspector_global: "Global",
+				inspector_no_peers: "No wireless MIDI addresses added",
+				inspector_firmware: "Firmware",
 				inspector_mac_address: "MAC Address",
 				inspector_protocol_version: "Protocol Version",
 				inspector_raw_stream: "Live Values",
@@ -458,8 +470,6 @@ i18n.use(initReactI18next).init({
 					"Um deine enomik-Clientgeräte zu konfigurieren, musst du zuerst die entsprechende Firmware auf ihnen flashen. Du kannst das praktische Firmware-Uploader-Dienstprogramm verwenden, um die vorcompilierte Firmware auf deine ESP32-basierten Client-Boards hochzuladen.",
 				state_on: "an",
 				state_off: "aus",
-				deploy_toast_summary:
-					"{{pinConfigs}} Pin-Konfigurationen, {{peerCount}} drahtlose MIDI-Adressen, MIDI-Loopback {{midiLoopback}} und Energiesparmodus {{powerSave}} gesendet.",
 				deploy_toast_summary_reset_ok:
 					"Geräte-Reset bestätigt. {{pinConfigs}} Pin-Konfigurationen, {{peerCount}} drahtlose MIDI-Adressen, MIDI-Loopback {{midiLoopback}} und Energiesparmodus {{powerSave}} gesendet.",
 				deploy_toast_summary_reset_timeout:
@@ -468,6 +478,19 @@ i18n.use(initReactI18next).init({
 					"Globale Einstellungen erfordern Firmware 0.14+ (Gerät meldete {{version}}).",
 				load_from_device_toast_ok:
 					"{{pinConfigs}} Pin-Konfigurationen, {{peerCount}} drahtlose MIDI-Adressen, MIDI-Loopback {{midiLoopback}} und Energiesparmodus {{powerSave}} vom Gerät geladen.",
+				load_from_file_kind_mismatch:
+					"Das ist eine {{file}}-Konfiguration, ausgewählt ist aber {{selected}}. Wechsle zu {{file}}, um sie zu importieren.",
+				device_kind: "Gerätetyp",
+				device_kind_client: "Client",
+				device_kind_dongle: "Dongle",
+				tooltip_device_kind:
+					"Client oder Dongle. Aus dem Portnamen erraten, bei Bedarf ändern.",
+				deploy_toast_dongle_summary_reset_ok:
+					"Geräte-Reset bestätigt. {{peerCount}} drahtlose MIDI-Adressen gesendet.",
+				deploy_toast_dongle_summary_reset_timeout:
+					"Keine Reset-Bestätigung (Zeitüberschreitung). {{peerCount}} drahtlose MIDI-Adressen gesendet. Wenn dieser Fehler weiterhin auftritt, aktualisiere bitte die Dongle-Firmware auf die neueste Version.",
+				load_from_device_toast_dongle_ok:
+					"{{peerCount}} drahtlose MIDI-Adressen vom Gerät geladen.",
 				load_from_device_toast_timeout:
 					"Konfiguration konnte nicht vom Gerät geladen werden (Zeitüberschreitung oder keine Antwort). Wähle ein Gerät und stelle sicher, dass die Firmware GET_CONFIG unterstützt.",
 				load_from_device_toast_no_device:
@@ -518,7 +541,6 @@ i18n.use(initReactI18next).init({
 				deploy: "Bereitstellen",
 				init_midi: "MIDI initialisieren",
 				midi_output: "MIDI-Ausgang",
-				all_outputs: "Alle Ausgänge",
 				filter: "Filter",
 				filters_active: "({{count}} aktiv)",
 				history: "Verlauf",
@@ -626,6 +648,8 @@ i18n.use(initReactI18next).init({
 				inspector_midi_to_output: "MIDI zu Ausgangs-PIN",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
 				inspector_global: "Global",
+				inspector_no_peers: "Keine drahtlosen MIDI-Adressen hinzugefügt",
+				inspector_firmware: "Firmware",
 				inspector_mac_address: "MAC-Adresse",
 				inspector_protocol_version: "Protokollversion",
 				inspector_raw_stream: "Live-Werte",
@@ -778,8 +802,6 @@ i18n.use(initReactI18next).init({
 					"Para configurar tus dispositivos cliente enomik, primero debes flashear el firmware apropiado en ellos. Puedes usar la práctica utilidad Firmware Uploader para cargar el firmware precompilado en tus placas cliente basadas en ESP32.",
 				state_on: "activado",
 				state_off: "desactivado",
-				deploy_toast_summary:
-					"Enviadas {{pinConfigs}} configuraciones de pin, {{peerCount}} direcciones MIDI inalámbricas, MIDI loopback {{midiLoopback}} y modo de ahorro de energía {{powerSave}}.",
 				deploy_toast_summary_reset_ok:
 					"Reinicio del dispositivo confirmado. Enviadas {{pinConfigs}} configuraciones de pin, {{peerCount}} direcciones MIDI inalámbricas, MIDI loopback {{midiLoopback}} y modo de ahorro de energía {{powerSave}}.",
 				deploy_toast_summary_reset_timeout:
@@ -788,6 +810,19 @@ i18n.use(initReactI18next).init({
 					"Los ajustes globales requieren firmware 0.14+ (el dispositivo informó {{version}}).",
 				load_from_device_toast_ok:
 					"Se cargaron {{pinConfigs}} configuraciones de pin, {{peerCount}} direcciones MIDI inalámbricas, MIDI loopback {{midiLoopback}} y modo de ahorro de energía {{powerSave}} desde el dispositivo.",
+				load_from_file_kind_mismatch:
+					"Esta es una configuración de {{file}}, pero está seleccionado {{selected}}. Cambia a {{file}} para importarla.",
+				device_kind: "Tipo de dispositivo",
+				device_kind_client: "Cliente",
+				device_kind_dongle: "Dongle",
+				tooltip_device_kind:
+					"Cliente o dongle. Se deduce del nombre del puerto; cámbialo si no es correcto.",
+				deploy_toast_dongle_summary_reset_ok:
+					"Reinicio del dispositivo confirmado. Enviadas {{peerCount}} direcciones MIDI inalámbricas.",
+				deploy_toast_dongle_summary_reset_timeout:
+					"No se recibió confirmación de reinicio (tiempo agotado). Enviadas {{peerCount}} direcciones MIDI inalámbricas. Si este error persiste, actualiza el firmware del dongle a la última versión.",
+				load_from_device_toast_dongle_ok:
+					"Se cargaron {{peerCount}} direcciones MIDI inalámbricas desde el dispositivo.",
 				load_from_device_toast_timeout:
 					"No se pudo cargar la configuración del dispositivo (tiempo agotado o sin respuesta). Selecciona un dispositivo y asegúrate de que el firmware admite GET_CONFIG.",
 				load_from_device_toast_no_device:
@@ -837,7 +872,6 @@ i18n.use(initReactI18next).init({
 				deploy: "Desplegar",
 				init_midi: "Iniciar MIDI",
 				midi_output: "Salida MIDI",
-				all_outputs: "Todas las salidas",
 				filter: "Filtro",
 				filters_active: "({{count}} activos)",
 				history: "Historial",
@@ -945,6 +979,8 @@ i18n.use(initReactI18next).init({
 				inspector_midi_to_output: "MIDI a PIN de salida",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
 				inspector_global: "Global",
+				inspector_no_peers: "No se han añadido direcciones MIDI inalámbricas",
+				inspector_firmware: "Firmware",
 				inspector_mac_address: "Dirección MAC",
 				inspector_protocol_version: "Versión del protocolo",
 				inspector_raw_stream: "Valores en vivo",
@@ -1082,8 +1118,6 @@ i18n.use(initReactI18next).init({
 					"为了配置你的 enomik 客户端设备，你需要先将相应的固件刷写到它们上面。你可以使用便捷的固件上传器工具将预编译的固件上传到基于 ESP32 的客户端板。",
 				state_on: "开",
 				state_off: "关",
-				deploy_toast_summary:
-					"已发送 {{pinConfigs}} 个引脚配置、{{peerCount}} 个无线 MIDI 地址、MIDI 回环 {{midiLoopback}} 和安全省电模式 {{powerSave}}。",
 				deploy_toast_summary_reset_ok:
 					"设备重置已确认。已发送 {{pinConfigs}} 个引脚配置、{{peerCount}} 个无线 MIDI 地址、MIDI 回环 {{midiLoopback}} 和安全省电模式 {{powerSave}}。",
 				deploy_toast_summary_reset_timeout:
@@ -1092,6 +1126,20 @@ i18n.use(initReactI18next).init({
 					"全局设置需要固件 0.14+（设备报告为 {{version}}）。",
 				load_from_device_toast_ok:
 					"已从设备加载 {{pinConfigs}} 个引脚配置、{{peerCount}} 个无线 MIDI 地址、MIDI 回环 {{midiLoopback}} 和安全省电模式 {{powerSave}}。",
+				load_from_file_kind_mismatch:
+					"这是 {{file}} 配置，但当前选择的是 {{selected}}。请切换到 {{file}} 后再导入。",
+				device_kind: "设备类型",
+				device_kind_client: "客户端",
+				device_kind_dongle: "Dongle",
+				tooltip_device_kind:
+					"客户端或 Dongle。根据端口名称推测，如有误请更改。",
+				deploy_toast_dongle_summary: "已发送 {{peerCount}} 个无线 MIDI 地址。",
+				deploy_toast_dongle_summary_reset_ok:
+					"设备重置已确认。已发送 {{peerCount}} 个无线 MIDI 地址。",
+				deploy_toast_dongle_summary_reset_timeout:
+					"未收到重置确认（超时）。已发送 {{peerCount}} 个无线 MIDI 地址。如果此错误持续存在，请将 Dongle 固件更新到最新版本。",
+				load_from_device_toast_dongle_ok:
+					"已从设备加载 {{peerCount}} 个无线 MIDI 地址。",
 				load_from_device_toast_timeout:
 					"无法从设备加载配置（超时或无响应）。请选择设备并确保固件支持 GET_CONFIG。",
 				load_from_device_toast_no_device:
@@ -1141,7 +1189,6 @@ i18n.use(initReactI18next).init({
 				deploy: "部署",
 				init_midi: "初始化 MIDI",
 				midi_output: "MIDI 输出",
-				all_outputs: "所有输出",
 				filter: "筛选",
 				filters_active: "（{{count}} 个生效）",
 				history: "历史记录",
@@ -1244,6 +1291,8 @@ i18n.use(initReactI18next).init({
 				inspector_midi_to_output: "MIDI 到输出引脚",
 				inspector_esp_now_midi: "ESP-NOW MIDI",
 				inspector_global: "全局",
+				inspector_no_peers: "未添加无线 MIDI 地址",
+				inspector_firmware: "固件",
 				inspector_mac_address: "MAC 地址",
 				inspector_protocol_version: "协议版本",
 				inspector_raw_stream: "实时数值",
