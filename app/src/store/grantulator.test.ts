@@ -96,6 +96,18 @@ describe("grantulator MIDI mappings", () => {
 		expect(store().delayEnabled).toBe(false);
 	});
 
+	it("mutes from a note, and doesn't keep the mute for the next visit", () => {
+		store().setMapping("muted", { channel: 1, note: 48 });
+		store().handleNoteOn(1, 48);
+		expect(store().muted).toBe(true);
+		const saved = JSON.parse(
+			localStorage.getItem("grantulator-storage") as string,
+		);
+		expect(saved.state.muted).toBeUndefined();
+		store().handleNoteOn(1, 48);
+		expect(store().muted).toBe(false);
+	});
+
 	it("doesn't learn a note for a slider", () => {
 		store().setLearning("position");
 		store().handleNoteOn(1, 60);

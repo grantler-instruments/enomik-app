@@ -20,6 +20,7 @@ import { loadSample, saveSample } from "../utils/sampleStore";
 import Dropzone from "./grantulator/Dropzone";
 import EffectPanel from "./grantulator/EffectPanel";
 import IntervalSetSelect from "./grantulator/IntervalSetSelect";
+import MasterPanel from "./grantulator/MasterPanel";
 import ParamRows from "./grantulator/ParamRows";
 import InitMidi from "./InitMidi";
 
@@ -164,6 +165,7 @@ const Grantulator = () => {
 					switchId="reverbEnabled"
 					midi={midiInitialized}
 				/>
+				<MasterPanel midi={midiInitialized} />
 			</div>
 		</Box>
 	);

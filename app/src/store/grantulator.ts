@@ -22,12 +22,13 @@ export type GrantulatorParamId =
 	| "reverbDecay"
 	| "reverbSize"
 	| "reverbDamping"
-	| "reverbMix";
+	| "reverbMix"
+	| "volume";
 
-export type GrantulatorGroup = "grains" | "delay" | "reverb";
+export type GrantulatorGroup = "grains" | "delay" | "reverb" | "master";
 
-/** On/off switches of the effects. */
-export type SwitchId = "delayEnabled" | "reverbEnabled";
+/** On/off switches: the effects, and muting the output. */
+export type SwitchId = "delayEnabled" | "reverbEnabled" | "muted";
 
 /** What a control change can drive: a parameter or a switch. */
 export type MappingTarget = GrantulatorParamId | SwitchId;
@@ -232,6 +233,15 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 		step: 0.001,
 		defaultValue: 0.4,
 	},
+	{
+		id: "volume",
+		group: "master",
+		label: "Volume",
+		min: 0,
+		max: 1,
+		step: 0.001,
+		defaultValue: 0.8,
+	},
 ];
 
 /**
@@ -248,6 +258,8 @@ export interface GrantulatorState {
 	values: ParamValues;
 	delayEnabled: boolean;
 	reverbEnabled: boolean;
+	/** Silences the output; the patch keeps running. */
+	muted: boolean;
 	intervalSet: IntervalSetId;
 	mappings: Partial<Record<MappingTarget, MidiMapping>>;
 	/** Parameter waiting for the next control change to map it. */
@@ -274,12 +286,13 @@ const defaultValues = () =>
 		GRANTULATOR_PARAMS.map((p) => [p.id, p.defaultValue]),
 	) as ParamValues;
 
-const SWITCHES: SwitchId[] = ["delayEnabled", "reverbEnabled"];
+const SWITCHES: SwitchId[] = ["delayEnabled", "reverbEnabled", "muted"];
 
 const defaults = () => ({
 	values: defaultValues(),
 	delayEnabled: false,
 	reverbEnabled: true,
+	muted: false,
 	intervalSet: "fifths" as IntervalSetId,
 });
 
@@ -365,6 +378,7 @@ export const useGrantulatorStore = create<GrantulatorState>()(
 			}),
 			{
 				name: "grantulator-storage",
+				// Not `muted`: a page that comes back silent looks broken.
 				partialize: (state) => ({
 					values: state.values,
 					delayEnabled: state.delayEnabled,

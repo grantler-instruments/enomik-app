@@ -1,6 +1,6 @@
-import FirmwareUploader from "./FirmwareUploader"
+import FirmwareUploader from "./FirmwareUploader";
 
 const Sidebar = () => {
-    return <FirmwareUploader></FirmwareUploader>
-}
-export default Sidebar
+	return <FirmwareUploader></FirmwareUploader>;
+};
+export default Sidebar;

@@ -1,6 +1,10 @@
 import WebRenderer from "@elemaudio/web-renderer";
 import { useEffect, useRef, useState } from "react";
-import { useGrantulatorStore } from "../store/grantulator";
+import {
+	type GrantulatorParamId,
+	type GrantulatorState,
+	useGrantulatorStore,
+} from "../store/grantulator";
 import { coalesce } from "../utils/coalesce";
 import {
 	CENTER_SNAPSHOT,
@@ -35,7 +39,26 @@ export interface Swarm {
 interface Engine {
 	context: AudioContext;
 	core: WebRenderer;
+	/** Master volume and mute, after the patch: no render needed to move it. */
+	master: GainNode;
 }
+
+/** Output gain for the master settings; squared for an even-sounding fade. */
+const masterGain = ({ values, muted }: GrantulatorState) =>
+	muted ? 0 : values.volume ** 2;
+
+/** Sound settings changed, apart from the master volume, which the GainNode handles. */
+const patchChanged = (state: GrantulatorState, prev: GrantulatorState) =>
+	state.delayEnabled !== prev.delayEnabled ||
+	state.reverbEnabled !== prev.reverbEnabled ||
+	state.intervalSet !== prev.intervalSet ||
+	(state.values !== prev.values &&
+		Object.keys(state.values).some(
+			(id) =>
+				id !== "volume" &&
+				state.values[id as GrantulatorParamId] !==
+					prev.values[id as GrantulatorParamId],
+		));
 
 /**
  * Runs the Grantulator patch: one AudioContext with the Elementary renderer,
@@ -64,7 +87,10 @@ export function useGrantulatorEngine(sample: Sample | null) {
 			void context.close();
 			throw new Error("Grantulator unmounted while starting");
 		}
-		node.connect(context.destination);
+		const master = new GainNode(context, {
+			gain: masterGain(useGrantulatorStore.getState()),
+		});
+		node.connect(master).connect(context.destination);
 		core.on("snapshot", ({ source, data }) => {
 			if (source === CENTER_SNAPSHOT) {
 				swarm.current.center = data;
@@ -86,7 +112,7 @@ export function useGrantulatorEngine(sample: Sample | null) {
 			}
 			swarm.current.voices.set(report.voice, grain);
 		});
-		engine.current = { context, core };
+		engine.current = { context, core, master };
 		return engine.current;
 	};
 
@@ -166,16 +192,27 @@ export function useGrantulatorEngine(sample: Sample | null) {
 			);
 		request();
 		return useGrantulatorStore.subscribe((state, prev) => {
-			if (
-				state.values !== prev.values ||
-				state.delayEnabled !== prev.delayEnabled ||
-				state.reverbEnabled !== prev.reverbEnabled ||
-				state.intervalSet !== prev.intervalSet
-			) {
-				request();
-			}
+			if (patchChanged(state, prev)) request();
 		});
 	}, [running, sample, requestRender]);
+
+	// A short glide instead of a jump, so moving the volume or muting doesn't click.
+	useEffect(() => {
+		if (!running) return;
+		const glide = (state: GrantulatorState) => {
+			const master = engine.current?.master;
+			if (!master) return;
+			master.gain.setTargetAtTime(
+				masterGain(state),
+				master.context.currentTime,
+				0.01,
+			);
+		};
+		glide(useGrantulatorStore.getState());
+		return useGrantulatorStore.subscribe((state, prev) => {
+			if (masterGain(state) !== masterGain(prev)) glide(state);
+		});
+	}, [running]);
 
 	useEffect(() => {
 		unmounted.current = false;
