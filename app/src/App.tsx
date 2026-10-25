@@ -1,4 +1,5 @@
 import { Box, CssBaseline, ThemeProvider } from "@mui/material";
+import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import BrowserWarning from "./components/BrowserWarning";
 import Configurator from "./components/Configurator";
@@ -15,6 +16,9 @@ import Sidebar from "./components/Sidebar";
 import Tester from "./components/Tester";
 import { darkTheme, lightTheme } from "./muiTheme.ts";
 import { useAppStore } from "./store/app";
+
+// Elementary's inlined wasm is big: only load it on this page.
+const Grantulator = lazy(() => import("./components/Grantulator"));
 
 function App() {
 	const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
@@ -46,6 +50,14 @@ function App() {
 						<Route path="/uploader" element={<FirmwareUploader />} />
 						<Route path="/getting-started" element={<GettingStarted />} />
 						<Route path="/tester" element={<Tester />} />
+						<Route
+							path="/grantulator"
+							element={
+								<Suspense>
+									<Grantulator />
+								</Suspense>
+							}
+						/>
 						<Route path="*" element={<NotFound />} />
 					</Routes>
 				</Box>

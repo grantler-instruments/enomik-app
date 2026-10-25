@@ -73,11 +73,24 @@ const Debugger = () => {
 					<WebSerialMonitor />
 				</AccordionDetails>
 			</Accordion>
-			<Box>
-				<Button variant="outlined" component={NavLink} to={"/tester"}>
-					{t("open_tester")}
-				</Button>
-			</Box>
+			<Accordion defaultExpanded sx={{ mb: 2 }}>
+				<AccordionSummary expandIcon={<ExpandMore />}>
+					<SectionHeader
+						title={t("section_tools")}
+						tooltipKey="tooltip_tools"
+					/>
+				</AccordionSummary>
+				<AccordionDetails>
+					<Box display={"flex"} gap={1} flexWrap={"wrap"}>
+						<Button variant="outlined" component={NavLink} to={"/tester"}>
+							{t("open_tester")}
+						</Button>
+						<Button variant="outlined" component={NavLink} to={"/grantulator"}>
+							{t("open_grantulator")}
+						</Button>
+					</Box>
+				</AccordionDetails>
+			</Accordion>
 		</Box>
 	);
 };

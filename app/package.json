@@ -15,6 +15,8 @@
 		"prepare": "cd .. && ./app/node_modules/.bin/husky app/.husky"
 	},
 	"dependencies": {
+		"@elemaudio/core": "^4.0.1",
+		"@elemaudio/web-renderer": "^4.0.3",
 		"@emotion/react": "^11.14.0",
 		"@emotion/styled": "^11.14.1",
 		"@mui/icons-material": "^7.3.4",
@@ -34,6 +36,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.5",
+		"@elemaudio/offline-renderer": "^4.0.1",
 		"@eslint/js": "^9.36.0",
 		"@types/crypto-js": "^4.2.2",
 		"@types/node": "^24.6.0",
@@ -44,6 +47,7 @@
 		"eslint": "^9.36.0",
 		"eslint-plugin-react-hooks": "^5.2.0",
 		"eslint-plugin-react-refresh": "^0.4.22",
+		"fake-indexeddb": "^6.2.6",
 		"globals": "^16.4.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^17.2.0",

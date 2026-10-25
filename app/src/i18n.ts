@@ -132,6 +132,8 @@ i18n.use(initReactI18next).init({
 					"Load configuration from a device",
 				tooltip_midi_monitor:
 					"View incoming and outgoing MIDI messages for debugging purposes",
+				tooltip_tools:
+					"Further pages: test a board, or play the Grantulator synth",
 				tooltip_serial_monitor:
 					"View serial output from the connected microcontroller for debugging purposes",
 				tooltip_midi_composer:
@@ -155,6 +157,7 @@ i18n.use(initReactI18next).init({
 				port_kind_not_found_none:
 					"No {{kind}} port found. Connect one or pick a port.",
 				open_tester: "Board tester",
+				open_grantulator: "Grantulator",
 				device_kind: "Device type",
 				device_kind_client: "Client",
 				device_kind_dongle: "Dongle",
@@ -306,6 +309,7 @@ i18n.use(initReactI18next).init({
 				section_midi_composer: "MIDI Composer",
 				section_midi_monitor: "MIDI Monitor",
 				section_serial_monitor: "Serial Monitor",
+				section_tools: "Tools",
 				midi_loopback: "MIDI Loopback",
 				power_save: "Safe Power Mode",
 				client_name: "Client name",
@@ -471,6 +475,8 @@ i18n.use(initReactI18next).init({
 					"Konfiguration von einem Gerät laden",
 				tooltip_midi_monitor:
 					"Eingehende und ausgehende MIDI-Nachrichten zu Debugging-Zwecken anzeigen",
+				tooltip_tools:
+					"Weitere Seiten: ein Board testen oder den Grantulator-Synth spielen",
 				tooltip_serial_monitor:
 					"Serielle Ausgabe des verbundenen Mikrocontrollers zu Debugging-Zwecken anzeigen",
 				tooltip_midi_composer:
@@ -495,6 +501,7 @@ i18n.use(initReactI18next).init({
 				port_kind_not_found_none:
 					"Kein {{kind}}-Port gefunden. Schließe einen an oder wähle einen Port.",
 				open_tester: "Board-Tester",
+				open_grantulator: "Grantulator",
 				device_kind: "Gerätetyp",
 				device_kind_client: "Client",
 				device_kind_dongle: "Dongle",
@@ -648,6 +655,7 @@ i18n.use(initReactI18next).init({
 				section_midi_composer: "MIDI-Composer",
 				section_midi_monitor: "MIDI-Monitor",
 				section_serial_monitor: "Serieller Monitor",
+				section_tools: "Werkzeuge",
 				midi_loopback: "MIDI-Loopback",
 				power_save: "Energiesparmodus",
 				client_name: "Client-Name",
@@ -811,6 +819,8 @@ i18n.use(initReactI18next).init({
 					"Cargar configuración desde un dispositivo",
 				tooltip_midi_monitor:
 					"Ver mensajes MIDI entrantes y salientes para fines de depuración",
+				tooltip_tools:
+					"Más páginas: probar una placa o tocar el sintetizador Grantulator",
 				tooltip_serial_monitor:
 					"Ver la salida serial del microcontrolador conectado para fines de depuración",
 				tooltip_midi_composer:
@@ -835,6 +845,7 @@ i18n.use(initReactI18next).init({
 				port_kind_not_found_none:
 					"No se encontró ningún puerto {{kind}}. Conecta uno o elige un puerto.",
 				open_tester: "Probador de placas",
+				open_grantulator: "Grantulator",
 				device_kind: "Tipo de dispositivo",
 				device_kind_client: "Cliente",
 				device_kind_dongle: "Dongle",
@@ -987,6 +998,7 @@ i18n.use(initReactI18next).init({
 				section_midi_composer: "Compositor MIDI",
 				section_midi_monitor: "Monitor MIDI",
 				section_serial_monitor: "Monitor serial",
+				section_tools: "Herramientas",
 				midi_loopback: "MIDI Loopback",
 				power_save: "Modo de ahorro de energía",
 				client_name: "Nombre del cliente",
@@ -1137,6 +1149,7 @@ i18n.use(initReactI18next).init({
 				tooltip_clear_configuration: "清除当前配置",
 				tooltip_load_configuration_from_device: "从设备加载配置",
 				tooltip_midi_monitor: "查看传入和传出的 MIDI 消息以进行调试",
+				tooltip_tools: "更多页面：测试开发板，或演奏 Grantulator 合成器",
 				tooltip_serial_monitor: "查看已连接微控制器的串行输出以进行调试",
 				tooltip_midi_composer: "编写并向已连接设备发送自定义 MIDI 消息",
 				configurator_info:
@@ -1158,6 +1171,7 @@ i18n.use(initReactI18next).init({
 				port_kind_not_found_none:
 					"未找到 {{kind}} 端口。请连接一个或选择端口。",
 				open_tester: "开发板测试",
+				open_grantulator: "Grantulator",
 				device_kind: "设备类型",
 				device_kind_client: "客户端",
 				device_kind_dongle: "Dongle",
@@ -1306,6 +1320,7 @@ i18n.use(initReactI18next).init({
 				section_midi_composer: "MIDI 编辑器",
 				section_midi_monitor: "MIDI 监视器",
 				section_serial_monitor: "串行监视器",
+				section_tools: "工具",
 				midi_loopback: "MIDI 回环",
 				power_save: "安全省电模式",
 				client_name: "客户端名称",
