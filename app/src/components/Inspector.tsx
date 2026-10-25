@@ -28,6 +28,13 @@ import PinRow, {
 	hasTouchInput,
 	PinTableHeader,
 } from "./pinmapping/PinRow";
+import SectionHeader from "./SectionHeader";
+import {
+	GlobalIcon,
+	MidiToPinIcon,
+	PinToMidiIcon,
+	WirelessMidiIcon,
+} from "./SectionIcons";
 
 const Inspector = () => {
 	const { t } = useTranslation();
@@ -149,7 +156,7 @@ const Inspector = () => {
 					<Alert severity="warning">{t("compat_sync_failed")}</Alert>
 				)}
 				<Box>
-					<Typography variant="h2">{t("inspector_global")}</Typography>
+					<SectionHeader title={t("inspector_global")} icon={<GlobalIcon />} />
 					{!isDongle && (
 						<Typography>
 							{t("client_name")}: {name ?? t("compat_unavailable")}
@@ -181,9 +188,10 @@ const Inspector = () => {
 				{!isDongle && (
 					<>
 						<Box>
-							<Typography variant="h2">
-								{t("inspector_input_to_midi")}
-							</Typography>
+							<SectionHeader
+								title={t("inspector_input_to_midi")}
+								icon={<PinToMidiIcon />}
+							/>
 							{inputPinConfigs.length > 0 && (
 								<PinTableHeader
 									type="input"
@@ -206,9 +214,10 @@ const Inspector = () => {
 							<RawValues device={device || "-1"} />
 						)}
 						<Box>
-							<Typography variant="h2">
-								{t("inspector_midi_to_output")}
-							</Typography>
+							<SectionHeader
+								title={t("inspector_midi_to_output")}
+								icon={<MidiToPinIcon />}
+							/>
 							{outputPinConfigs.length > 0 && (
 								<PinTableHeader
 									type="output"
@@ -230,7 +239,10 @@ const Inspector = () => {
 					</>
 				)}
 				<Box>
-					<Typography variant="h2">{t("inspector_esp_now_midi")}</Typography>
+					<SectionHeader
+						title={t("inspector_esp_now_midi")}
+						icon={<WirelessMidiIcon />}
+					/>
 					{peers.length === 0 && (
 						<Typography color="text.secondary">
 							{/* "No peers" only once a sync has answered */}

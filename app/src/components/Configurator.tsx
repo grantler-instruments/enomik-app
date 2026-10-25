@@ -59,6 +59,12 @@ import MidiDeviceChooser from "./MidiDeviceChooser";
 import Outputs from "./Outputs";
 import Peers from "./Peers";
 import SectionHeader from "./SectionHeader";
+import {
+	GlobalIcon,
+	MidiToPinIcon,
+	PinToMidiIcon,
+	WirelessMidiIcon,
+} from "./SectionIcons";
 
 const Configurator = () => {
 	const { t } = useTranslation();
@@ -554,6 +560,7 @@ const Configurator = () => {
 							>
 								<SectionHeader
 									title={t("section_global")}
+									icon={<GlobalIcon />}
 									tooltipKey="tooltip_global"
 								/>
 							</AccordionSummary>
@@ -571,6 +578,7 @@ const Configurator = () => {
 							>
 								<SectionHeader
 									title={t("section_input_pin_to_midi")}
+									icon={<PinToMidiIcon />}
 									tooltipKey="tooltip_pin_to_midi"
 								/>
 							</AccordionSummary>
@@ -588,6 +596,7 @@ const Configurator = () => {
 							>
 								<SectionHeader
 									title={t("section_midi_to_output_pin")}
+									icon={<MidiToPinIcon />}
 									tooltipKey="tooltip_midi_to_pin"
 								/>
 							</AccordionSummary>
@@ -607,6 +616,7 @@ const Configurator = () => {
 					>
 						<SectionHeader
 							title={t("section_wireless_midi")}
+							icon={<WirelessMidiIcon />}
 							tooltipKey="tooltip_wireless_midi"
 						/>
 					</AccordionSummary>
