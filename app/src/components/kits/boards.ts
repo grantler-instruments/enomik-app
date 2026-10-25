@@ -1,5 +1,6 @@
 export type PinType =
 	| "touch"
+	| "button"
 	| "neopixel"
 	| "digital"
 	| "analog"
@@ -32,6 +33,8 @@ export interface BoardOutline {
 	height: number;
 	/** Parts on the board (not connectors) are drawn dashed. */
 	part?: boolean;
+	/** i18n key of a tooltip on the name explaining the connector. */
+	infoKey?: string;
 }
 
 /** Frame around pins that share a capability, labelled on one side. */
@@ -96,8 +99,14 @@ const T18 = [30.61, 33.15, 35.69, 38.23];
 const IDC = [11.11, 13.65, 16.19, 18.73, 21.27, 23.81, 26.35, 28.89];
 
 /** JST connector outline around 4 pads at y, with room for the labels above. */
-const jst = (name: string, x: number, y: number): BoardOutline => ({
+const jst = (
+	name: string,
+	x: number,
+	y: number,
+	infoKey?: string,
+): BoardOutline => ({
 	name,
+	infoKey,
 	x: x - 1.5,
 	y: y - 2.3,
 	width: 9,
@@ -146,20 +155,65 @@ export const BOARDS: Board[] = [
 				width: 20.4,
 				height: 25.5,
 				part: true,
+				infoKey: "kits_info_module",
 			},
-			{ name: "I2C", x: 12.9, y: 0.3, width: 10.2, height: 2.4 },
-			{ name: "POWER", x: 37.9, y: 0.4, width: 10.2, height: 5.2 },
-			jst("NEOPIXEL", 40, 8.8),
-			jst("TOUCH 1–4", 40, 15.8),
-			jst("TOUCH 5–8", 40, 22.8),
-			jst("I2C GROVE", 40, 29.8),
-			jst("I2C GROVE", 40, 36.8),
+			{
+				name: "I2C",
+				x: 12.9,
+				y: 0.3,
+				width: 10.2,
+				height: 2.4,
+				infoKey: "kits_info_i2c",
+			},
+			{
+				name: "POWER",
+				x: 37.9,
+				y: 0.4,
+				width: 10.2,
+				height: 5.2,
+				infoKey: "kits_info_power",
+			},
+			jst("NEOPIXEL", 40, 8.8, "kits_info_neopixel"),
+			jst("TOUCH 1–4", 40, 15.8, "kits_info_touch"),
+			jst("TOUCH 5–8", 40, 22.8, "kits_info_touch"),
+			jst("I2C GROVE", 40, 29.8, "kits_info_grove"),
+			jst("I2C GROVE", 40, 36.8, "kits_info_grove"),
 			jst("D1", 52, 15.8),
 			jst("D0", 52, 22.8),
 			jst("A1", 52, 29.8),
 			jst("A0", 52, 36.8),
-			{ name: "T1–8", x: 62.6, y: 29.3, width: 5.1, height: 10.2 },
-			{ name: "IDC16", x: 72.4, y: 9.8, width: 5.2, height: 20.4 },
+			{
+				name: "T1–8",
+				x: 62.6,
+				y: 29.3,
+				width: 5.1,
+				height: 10.2,
+				infoKey: "kits_info_touch_header",
+			},
+			{
+				name: "IDC16",
+				x: 72.4,
+				y: 9.8,
+				width: 5.2,
+				height: 20.4,
+				infoKey: "kits_info_idc",
+			},
+			{
+				name: "BUTTON A",
+				x: 9,
+				y: 34.2,
+				width: 6,
+				height: 3.6,
+				infoKey: "kits_info_button",
+			},
+			{
+				name: "BUTTON B",
+				x: 21,
+				y: 34.2,
+				width: 6,
+				height: 3.6,
+				infoKey: "kits_info_button",
+			},
 		],
 		groups: [
 			// JST D1/D0 and A1/A0
@@ -208,6 +262,8 @@ export const BOARDS: Board[] = [
 		],
 		pins: [
 			...row([14.19, 16.73, 19.27, 21.81], 1.5, [GND, VCC, SCL, SDA]),
+			// Tactile switches to GND, centered between their pads
+			...row([12, 24], 36, [gpio(16, "button"), gpio(17, "button")]),
 			...row([39.19, 41.73, 44.27, 46.81], 1.73, [VCC, VCC, V5, V5]),
 			...row([39.19, 41.73, 44.27, 46.81], 4.27, [
 				{ ...GND, label: "", labelSide: "bottom" },

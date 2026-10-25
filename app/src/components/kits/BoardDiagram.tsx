@@ -1,9 +1,25 @@
-import { Box, Chip, Tooltip, useTheme } from "@mui/material";
-import type { SVGProps } from "react";
+import TouchAppIcon from "@mui/icons-material/TouchApp";
+import { Alert, Box, Chip, Popover, Tooltip, useTheme } from "@mui/material";
+import { type SVGProps, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+	type InputPinConfig,
+	type OutputPinConfig,
+	useConflictingPins,
+	useIOStore,
+} from "../../store/io";
+import {
+	MIDI_CONTROL_CHANGE,
+	MIDI_NOTE_ON,
+	MIDI_TYPE_LABELS,
+} from "../../store/midi.config";
+import { INPUT_MODES, OUTPUT_MODES } from "../pinmapping/modes";
 import type { Board, BoardPin, LabelSide, PinGroup, PinType } from "./boards";
+import PinEditor, { isConfigurable } from "./PinEditor";
 
 const PAD_RADIUS = 0.7;
+/** Ring around pads that have a pin config. */
+const RING_RADIUS = PAD_RADIUS + 0.4;
 const LABEL_SIZE = 0.75;
 const NAME_SIZE = 0.8;
 const GROUP_LABEL_SIZE = 0.65;
@@ -13,6 +29,7 @@ const MARGIN = 3;
 /** Legend order. */
 const PIN_TYPES: PinType[] = [
 	"touch",
+	"button",
 	"neopixel",
 	"digital",
 	"analog",
@@ -28,6 +45,7 @@ const usePinColors = (): Record<PinType, string> => {
 	const { palette } = useTheme();
 	return {
 		touch: palette.info.main,
+		button: palette.success.dark,
 		neopixel: palette.warning.main,
 		digital: palette.success.main,
 		analog: palette.primary.main,
@@ -50,7 +68,7 @@ const labelPosition = (
 	anchor: "middle" | "start" | "end";
 	baseline: "auto" | "hanging" | "central";
 } => {
-	const gap = PAD_RADIUS + 0.4;
+	const gap = RING_RADIUS + 0.25;
 	switch (side) {
 		case "top":
 			return { x: pin.x, y: pin.y - gap, anchor: "middle", baseline: "auto" };
@@ -98,8 +116,59 @@ const groupLabelProps = (group: PinGroup): SVGProps<SVGTextElement> => {
 	}
 };
 
-const BoardDiagram = ({ board }: { board: Board }) => {
+/** One line per config, e.g. "INPUT_TOUCH · ch 1 · Control Change 20". */
+const configSummary = (config: InputPinConfig | OutputPinConfig) => {
+	const mode = [...INPUT_MODES, ...OUTPUT_MODES].find(
+		(m) => m.value === config.mode,
+	);
+	const number =
+		config.midiType === MIDI_CONTROL_CHANGE
+			? ` ${config.controller}`
+			: config.midiType === MIDI_NOTE_ON
+				? ` ${config.note ?? 60}`
+				: "";
+	return `${mode?.label ?? ""} · ch ${config.channel} · ${MIDI_TYPE_LABELS[config.midiType] ?? ""}${number}`;
+};
+
+/** Marks text that explains itself on hover or focus. */
+const InfoText = ({
+	info,
+	children,
+	...props
+}: SVGProps<SVGTextElement> & { info?: string }) => {
+	const theme = useTheme();
+	if (!info) return <text {...props}>{children}</text>;
+	return (
+		<Tooltip title={info} arrow enterTouchDelay={0}>
+			<text
+				{...props}
+				tabIndex={0}
+				aria-label={info}
+				style={{ cursor: "help" }}
+			>
+				{children}
+				<tspan fill={theme.palette.primary.main}> ⓘ</tspan>
+			</text>
+		</Tooltip>
+	);
+};
+
+const BoardDiagram = ({
+	board,
+	interactive = false,
+}: {
+	board: Board;
+	/** Show the configurator's pin configs and edit them on click. */
+	interactive?: boolean;
+}) => {
 	const { t } = useTranslation();
+	const inputs = useIOStore((state) => state.inputs);
+	const outputs = useIOStore((state) => state.outputs);
+	const conflictingPins = useConflictingPins();
+	const [editing, setEditing] = useState<{
+		anchor: Element;
+		pin: BoardPin & { gpio: number };
+	} | null>(null);
 	const theme = useTheme();
 	const colors = usePinColors();
 	const groupColors = { digital: colors.digital, analog: colors.analog };
@@ -109,12 +178,35 @@ const BoardDiagram = ({ board }: { board: Board }) => {
 
 	return (
 		<Box>
+			{interactive && (
+				<Alert severity="info" icon={<TouchAppIcon />} sx={{ mb: 2 }}>
+					{t("kits_click_to_configure")}
+				</Alert>
+			)}
 			<Box
 				component="svg"
 				viewBox={`${-MARGIN} ${-MARGIN} ${board.width + 2 * MARGIN} ${board.height + 2 * MARGIN}`}
 				role="img"
 				aria-label={t("kits_board_diagram", { name: board.name })}
-				sx={{ width: "100%", maxWidth: 960, display: "block" }}
+				sx={{
+					width: "100%",
+					maxWidth: 960,
+					display: "block",
+					// Default focus outline is a blurry blob on SVG: mark the pad instead
+					"& g[role=button]": { outline: "none" },
+					"& g[role=button]:focus-visible > circle": {
+						stroke: theme.palette.primary.main,
+						strokeWidth: 0.35,
+					},
+					// Assignable pads grow under the pointer
+					"& .pad": {
+						transformBox: "fill-box",
+						transformOrigin: "center",
+						transition: "transform 120ms",
+					},
+					"& g[data-editable]:hover .pad, & g[data-editable]:focus-visible .pad":
+						{ transform: "scale(1.35)" },
+				}}
 			>
 				<rect
 					width={board.width}
@@ -149,7 +241,8 @@ const BoardDiagram = ({ board }: { board: Board }) => {
 							strokeDasharray={outline.part ? "0.6 0.4" : undefined}
 						/>
 						{outline.name && (
-							<text
+							<InfoText
+								info={outline.infoKey && t(outline.infoKey)}
 								x={outline.x + outline.width / 2}
 								y={
 									outline.part
@@ -162,7 +255,7 @@ const BoardDiagram = ({ board }: { board: Board }) => {
 								fill={theme.palette.text.secondary}
 							>
 								{outline.name}
-							</text>
+							</InfoText>
 						)}
 					</g>
 				))}
@@ -178,7 +271,8 @@ const BoardDiagram = ({ board }: { board: Board }) => {
 							stroke="currentColor"
 							strokeWidth={0.15}
 						/>
-						<text
+						<InfoText
+							info={t(`kits_info_group_${group.kind}`)}
 							{...groupLabelProps(group)}
 							fontSize={GROUP_LABEL_SIZE}
 							fontWeight={600}
@@ -186,7 +280,7 @@ const BoardDiagram = ({ board }: { board: Board }) => {
 							fill="currentColor"
 						>
 							{t(`kits_group_${group.kind}`)}
-						</text>
+						</InfoText>
 					</g>
 				))}
 				{board.pins.map((pin) => {
@@ -195,10 +289,84 @@ const BoardDiagram = ({ board }: { board: Board }) => {
 						pin.gpio !== undefined ? `GPIO ${pin.gpio}` : pin.label,
 						t(`kits_pin_${pin.type}`),
 					].join(" · ");
+					const gpio = pin.gpio;
+					const editable = interactive && isConfigurable(pin);
+					const configs =
+						interactive && gpio !== undefined
+							? [
+									...inputs.filter((input) => input.pin === gpio),
+									...outputs.filter((output) => output.pin === gpio),
+								]
+							: [];
+					const openEditor = (anchor: Element) => {
+						if (editable && gpio !== undefined)
+							setEditing({ anchor, pin: { ...pin, gpio } });
+					};
 					return (
-						<Tooltip key={`${pin.x}-${pin.y}`} title={description} arrow>
-							<g tabIndex={0} aria-label={description}>
+						<Tooltip
+							key={`${pin.x}-${pin.y}`}
+							title={
+								<>
+									{description}
+									<Box sx={{ opacity: 0.8 }}>
+										{t(`kits_pin_${pin.type}_info`)}
+									</Box>
+									{configs.map((config) => (
+										<Box key={config.uuid}>{configSummary(config)}</Box>
+									))}
+								</>
+							}
+							arrow
+							enterTouchDelay={0}
+						>
+							{/* biome-ignore lint/a11y/useSemanticElements: no <button> inside SVG */}
+							<g
+								tabIndex={0}
+								aria-label={description}
+								role="button"
+								aria-disabled={!editable}
+								onClick={(e) => openEditor(e.currentTarget)}
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										e.preventDefault();
+										openEditor(e.currentTarget);
+									}
+								}}
+								data-editable={editable || undefined}
+								style={{
+									cursor: editable ? "pointer" : undefined,
+									// Fixed pins step back so assignable ones stand out
+									opacity: interactive && !editable ? 0.4 : undefined,
+								}}
+							>
+								{configs.length > 0 ? (
+									<circle
+										cx={pin.x}
+										cy={pin.y}
+										r={RING_RADIUS}
+										fill="none"
+										stroke={
+											gpio !== undefined && conflictingPins.has(gpio)
+												? theme.palette.error.main
+												: theme.palette.text.primary
+										}
+										strokeWidth={0.25}
+									/>
+								) : (
+									editable && (
+										<circle
+											cx={pin.x}
+											cy={pin.y}
+											r={RING_RADIUS}
+											fill="none"
+											stroke={theme.palette.primary.main}
+											strokeWidth={0.18}
+											strokeDasharray="0.35 0.25"
+										/>
+									)
+								)}
 								<circle
+									className="pad"
 									cx={pin.x}
 									cy={pin.y}
 									r={PAD_RADIUS}
@@ -243,7 +411,56 @@ const BoardDiagram = ({ board }: { board: Board }) => {
 						}
 					/>
 				))}
+				{interactive && (
+					<Chip
+						size="small"
+						variant="outlined"
+						label={t("kits_assignable")}
+						icon={
+							<Box
+								component="span"
+								sx={{
+									width: 10,
+									height: 10,
+									borderRadius: "50%",
+									border: 2,
+									borderStyle: "dashed",
+									borderColor: "primary.main",
+								}}
+							/>
+						}
+					/>
+				)}
+				{interactive && (
+					<Chip
+						size="small"
+						variant="outlined"
+						label={t("kits_configured")}
+						icon={
+							<Box
+								component="span"
+								sx={{
+									width: 10,
+									height: 10,
+									borderRadius: "50%",
+									border: 2,
+									borderColor: "text.primary",
+								}}
+							/>
+						}
+					/>
+				)}
 			</Box>
+
+			<Popover
+				open={editing !== null}
+				anchorEl={editing?.anchor}
+				onClose={() => setEditing(null)}
+				anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+				transformOrigin={{ vertical: "top", horizontal: "center" }}
+			>
+				{editing && <PinEditor pin={editing.pin} />}
+			</Popover>
 		</Box>
 	);
 };

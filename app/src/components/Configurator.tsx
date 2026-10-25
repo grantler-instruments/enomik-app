@@ -1,6 +1,7 @@
 import { ArrowDropDown } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ClearAllIcon from "@mui/icons-material/ClearAll";
+import DeveloperBoardIcon from "@mui/icons-material/DeveloperBoard";
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
@@ -56,6 +57,8 @@ import { useRawStreamStore } from "../store/rawStream";
 import DeviceKindChooser from "./DeviceKindChooser";
 import Globals from "./Globals";
 import Inputs from "./Inputs";
+import BoardDiagram from "./kits/BoardDiagram";
+import { BOARDS } from "./kits/boards";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import Outputs from "./Outputs";
 import Peers from "./Peers";
@@ -119,6 +122,7 @@ const Configurator = () => {
 		const s = useConfig.getState();
 		return s.midiLoopback || s.powerSave || s.name !== "";
 	});
+	const [boardOpen, setBoardOpen] = useState(false);
 	const [inputsOpen, setInputsOpen] = useState(
 		() => useConfig.getState().inputs.length > 0,
 	);
@@ -573,6 +577,24 @@ const Configurator = () => {
 							</AccordionSummary>
 							<AccordionDetails>
 								<Globals />
+							</AccordionDetails>
+						</Accordion>
+						<Accordion
+							expanded={boardOpen}
+							onChange={(_, open) => setBoardOpen(open)}
+							slotProps={{ transition: { unmountOnExit: true } }}
+						>
+							<AccordionSummary
+								expandIcon={<ArrowDropDownIcon />}
+								aria-controls="board-content"
+							>
+								<SectionHeader
+									title={`${t("section_board")}: ${BOARDS[0].name}`}
+									icon={<DeveloperBoardIcon />}
+								/>
+							</AccordionSummary>
+							<AccordionDetails>
+								<BoardDiagram board={BOARDS[0]} interactive />
 							</AccordionDetails>
 						</Accordion>
 						<Accordion

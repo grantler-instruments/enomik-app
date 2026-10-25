@@ -97,6 +97,7 @@ i18n.use(initReactI18next).init({
 					"Client board for the LOLIN S2 mini: 8 capacitive touch inputs, 2 digital and 2 analog inputs, a 5V NeoPixel output, two I2C Grove ports and an IDC16 connector with more GPIOs. Hover a pin for details.",
 				kits_board_diagram: "Pinout of {{name}}",
 				kits_pin_touch: "Capacitive touch",
+				kits_pin_button: "Button",
 				kits_pin_neopixel: "NeoPixel (5V)",
 				kits_pin_digital: "Digital",
 				kits_pin_analog: "Analog",
@@ -108,6 +109,52 @@ i18n.use(initReactI18next).init({
 				kits_pin_nc: "Not connected",
 				kits_group_digital: "Digital I/O",
 				kits_group_analog: "Analog in / digital I/O",
+				kits_info_module:
+					"ESP32-S2 module (LOLIN S2 mini). Plugs into these two sockets; flash the client firmware onto it.",
+				kits_info_i2c:
+					"I2C bus for sensors and displays, 3.3V. Same bus as the Grove ports and IDC16.",
+				kits_info_power:
+					"Power rails: +5V and 3.3V (VCC), each with GND. Use them to supply external sensors or LEDs.",
+				kits_info_neopixel:
+					"Addressable LEDs (WS2812): data on GPIO 40, level-shifted to 5V, plus +5V and GND. Needs the NeoPixel client firmware.",
+				kits_info_touch:
+					"Capacitive touch inputs. Connect a pad, foil or any conductive object. These pins also work as digital I/O or analog input.",
+				kits_info_grove:
+					"Grove I2C port (SCL, SDA, VCC, GND) for plug-in sensors. Shares the I2C bus.",
+				kits_info_touch_header:
+					"Pin header with the same touch inputs 1–8, e.g. to wire larger pads.",
+				kits_info_idc:
+					"16-pin ribbon connector for expansion boards: 10 GPIOs, I2C, 3.3V and GND.",
+				kits_info_button:
+					"Onboard push button wired to GND. Use as input with pull-up: pressed reads LOW.",
+				kits_info_group_digital:
+					"Digital I/O: input for buttons and switches, or output for LEDs and relays (on/off or PWM).",
+				kits_info_group_analog:
+					"Analog input for potentiometers and sensors (continuous values). Also works as digital I/O.",
+				kits_pin_touch_info: "Touch, analog input or digital I/O.",
+				kits_pin_button_info: "Hardwired button: input pull-up only.",
+				kits_pin_neopixel_info:
+					"NeoPixel data, 5V level. Output only (e.g. LED strip or 5V digital out).",
+				kits_pin_digital_info: "Digital input or output, PWM.",
+				kits_pin_analog_info: "Analog input or digital I/O.",
+				kits_pin_i2c_sda_info: "I2C data line, shared bus.",
+				kits_pin_i2c_scl_info: "I2C clock line, shared bus.",
+				kits_pin_power_5v_info: "5V supply.",
+				kits_pin_power_3v3_info: "3.3V supply.",
+				kits_pin_gnd_info: "Ground.",
+				kits_pin_nc_info: "Not connected.",
+				kits_pin_not_configured: "Not configured",
+				kits_input: "Input",
+				kits_output: "Output",
+				kits_add_input: "Add as input",
+				kits_add_output: "Add as output",
+				kits_configured: "Configured",
+				kits_click_to_configure:
+					"Pins with a dashed ring are free to assign: click one to use it as MIDI input or output. Faded pins (power, GND, I2C) are fixed.",
+				kits_assignable: "Click to assign",
+				kits_deploy_hint:
+					"Changes go to the configurator; deploy them from there.",
+				section_board: "Board",
 				home_esp_now_midi:
 					"to the rescue! It delivers fast, stable, low-latency wireless MIDI, ideal for live performances, instruments, and embedded systems.",
 				home_utilities: "Equipped with Utilities",
@@ -469,6 +516,7 @@ i18n.use(initReactI18next).init({
 					"Client-Board für den LOLIN S2 mini: 8 kapazitive Touch-Eingänge, 2 digitale und 2 analoge Eingänge, ein 5V-NeoPixel-Ausgang, zwei I2C-Grove-Anschlüsse und ein IDC16-Stecker mit weiteren GPIOs. Fahre über einen Pin für Details.",
 				kits_board_diagram: "Pinbelegung von {{name}}",
 				kits_pin_touch: "Kapazitiver Touch",
+				kits_pin_button: "Taster",
 				kits_pin_neopixel: "NeoPixel (5V)",
 				kits_pin_digital: "Digital",
 				kits_pin_analog: "Analog",
@@ -480,6 +528,53 @@ i18n.use(initReactI18next).init({
 				kits_pin_nc: "Nicht verbunden",
 				kits_group_digital: "Digital I/O",
 				kits_group_analog: "Analog-Eingang / Digital I/O",
+				kits_info_module:
+					"ESP32-S2-Modul (LOLIN S2 mini). Wird in diese beiden Buchsenleisten gesteckt; darauf die Client-Firmware flashen.",
+				kits_info_i2c:
+					"I2C-Bus für Sensoren und Displays, 3,3V. Gleicher Bus wie die Grove-Anschlüsse und IDC16.",
+				kits_info_power:
+					"Versorgung: +5V und 3,3V (VCC), jeweils mit GND. Zum Versorgen externer Sensoren oder LEDs.",
+				kits_info_neopixel:
+					"Adressierbare LEDs (WS2812): Daten auf GPIO 40, auf 5V angehoben, dazu +5V und GND. Benötigt die NeoPixel-Client-Firmware.",
+				kits_info_touch:
+					"Kapazitive Touch-Eingänge. Ein Pad, Folie oder ein leitfähiges Objekt anschließen. Die Pins funktionieren auch als Digital I/O oder Analog-Eingang.",
+				kits_info_grove:
+					"Grove-I2C-Anschluss (SCL, SDA, VCC, GND) für steckbare Sensoren. Teilt sich den I2C-Bus.",
+				kits_info_touch_header:
+					"Stiftleiste mit denselben Touch-Eingängen 1–8, z. B. für größere Pads.",
+				kits_info_idc:
+					"16-poliger Flachbandstecker für Erweiterungsboards: 10 GPIOs, I2C, 3,3V und GND.",
+				kits_info_button:
+					"Taster auf dem Board, mit GND verbunden. Als Eingang mit Pull-up nutzen: gedrückt = LOW.",
+				kits_info_group_digital:
+					"Digital I/O: Eingang für Taster und Schalter oder Ausgang für LEDs und Relais (an/aus oder PWM).",
+				kits_info_group_analog:
+					"Analog-Eingang für Potis und Sensoren (stufenlose Werte). Funktioniert auch als Digital I/O.",
+				kits_pin_touch_info: "Touch, Analog-Eingang oder Digital I/O.",
+				kits_pin_button_info:
+					"Fest verdrahteter Taster: nur Eingang mit Pull-up.",
+				kits_pin_neopixel_info:
+					"NeoPixel-Daten, 5V-Pegel. Nur Ausgang (z. B. LED-Streifen oder 5V-Digitalausgang).",
+				kits_pin_digital_info: "Digitaler Ein- oder Ausgang, PWM.",
+				kits_pin_analog_info: "Analog-Eingang oder Digital I/O.",
+				kits_pin_i2c_sda_info: "I2C-Datenleitung, gemeinsamer Bus.",
+				kits_pin_i2c_scl_info: "I2C-Taktleitung, gemeinsamer Bus.",
+				kits_pin_power_5v_info: "5V-Versorgung.",
+				kits_pin_power_3v3_info: "3,3V-Versorgung.",
+				kits_pin_gnd_info: "Masse.",
+				kits_pin_nc_info: "Nicht verbunden.",
+				kits_pin_not_configured: "Nicht konfiguriert",
+				kits_input: "Eingang",
+				kits_output: "Ausgang",
+				kits_add_input: "Als Eingang hinzufügen",
+				kits_add_output: "Als Ausgang hinzufügen",
+				kits_configured: "Konfiguriert",
+				kits_click_to_configure:
+					"Pins mit gestricheltem Ring sind frei belegbar: anklicken, um sie als MIDI-Eingang oder -Ausgang zu nutzen. Blasse Pins (Versorgung, GND, I2C) sind fest.",
+				kits_assignable: "Zum Belegen klicken",
+				kits_deploy_hint:
+					"Änderungen landen im Konfigurator; von dort aus deployen.",
+				section_board: "Board",
 				home_esp_now_midi:
 					"Zur Rettung! Es bietet schnelles, stabiles, latenzfreies drahtloses MIDI, ideal für Live-Performances, Instrumente und eingebettete Systeme.",
 				home_utilities: "Ausgestattet mit Utilities",
@@ -847,6 +942,7 @@ i18n.use(initReactI18next).init({
 					"Placa cliente para el LOLIN S2 mini: 8 entradas táctiles capacitivas, 2 entradas digitales y 2 analógicas, una salida NeoPixel de 5V, dos puertos I2C Grove y un conector IDC16 con más GPIOs. Pasa el ratón sobre un pin para ver detalles.",
 				kits_board_diagram: "Pinout de {{name}}",
 				kits_pin_touch: "Táctil capacitivo",
+				kits_pin_button: "Botón",
 				kits_pin_neopixel: "NeoPixel (5V)",
 				kits_pin_digital: "Digital",
 				kits_pin_analog: "Analógico",
@@ -858,6 +954,52 @@ i18n.use(initReactI18next).init({
 				kits_pin_nc: "No conectado",
 				kits_group_digital: "E/S digital",
 				kits_group_analog: "Entrada analógica / E/S digital",
+				kits_info_module:
+					"Módulo ESP32-S2 (LOLIN S2 mini). Se conecta en estos dos zócalos; carga en él el firmware cliente.",
+				kits_info_i2c:
+					"Bus I2C para sensores y pantallas, 3,3V. Mismo bus que los puertos Grove y el IDC16.",
+				kits_info_power:
+					"Alimentación: +5V y 3,3V (VCC), cada una con GND. Úsalas para alimentar sensores o LEDs externos.",
+				kits_info_neopixel:
+					"LEDs direccionables (WS2812): datos en GPIO 40, elevados a 5V, más +5V y GND. Requiere el firmware cliente NeoPixel.",
+				kits_info_touch:
+					"Entradas táctiles capacitivas. Conecta un pad, lámina o cualquier objeto conductor. Estos pines también sirven como E/S digital o entrada analógica.",
+				kits_info_grove:
+					"Puerto Grove I2C (SCL, SDA, VCC, GND) para sensores enchufables. Comparte el bus I2C.",
+				kits_info_touch_header:
+					"Tira de pines con las mismas entradas táctiles 1–8, p. ej. para cablear pads más grandes.",
+				kits_info_idc:
+					"Conector de cable plano de 16 pines para placas de expansión: 10 GPIOs, I2C, 3,3V y GND.",
+				kits_info_button:
+					"Pulsador en la placa conectado a GND. Úsalo como entrada con pull-up: pulsado = LOW.",
+				kits_info_group_digital:
+					"E/S digital: entrada para pulsadores e interruptores, o salida para LEDs y relés (encendido/apagado o PWM).",
+				kits_info_group_analog:
+					"Entrada analógica para potenciómetros y sensores (valores continuos). También funciona como E/S digital.",
+				kits_pin_touch_info: "Táctil, entrada analógica o E/S digital.",
+				kits_pin_button_info: "Pulsador cableado: solo entrada con pull-up.",
+				kits_pin_neopixel_info:
+					"Datos NeoPixel, nivel de 5V. Solo salida (p. ej. tira LED o salida digital de 5V).",
+				kits_pin_digital_info: "Entrada o salida digital, PWM.",
+				kits_pin_analog_info: "Entrada analógica o E/S digital.",
+				kits_pin_i2c_sda_info: "Línea de datos I2C, bus compartido.",
+				kits_pin_i2c_scl_info: "Línea de reloj I2C, bus compartido.",
+				kits_pin_power_5v_info: "Alimentación de 5V.",
+				kits_pin_power_3v3_info: "Alimentación de 3,3V.",
+				kits_pin_gnd_info: "Tierra.",
+				kits_pin_nc_info: "No conectado.",
+				kits_pin_not_configured: "Sin configurar",
+				kits_input: "Entrada",
+				kits_output: "Salida",
+				kits_add_input: "Añadir como entrada",
+				kits_add_output: "Añadir como salida",
+				kits_configured: "Configurado",
+				kits_click_to_configure:
+					"Los pines con anillo discontinuo se pueden asignar: haz clic en uno para usarlo como entrada o salida MIDI. Los pines atenuados (alimentación, GND, I2C) son fijos.",
+				kits_assignable: "Clic para asignar",
+				kits_deploy_hint:
+					"Los cambios van al configurador; despliégalos desde allí.",
+				section_board: "Placa",
 				home_utilities: "Equipado con utilidades",
 				home_utilities_description: "Monitor MIDI y cargador de firmware",
 				home_utilities_description_includes: "La aplicación incluye un",
@@ -1215,6 +1357,7 @@ i18n.use(initReactI18next).init({
 					"适用于 LOLIN S2 mini 的客户端板：8 个电容触摸输入、2 个数字和 2 个模拟输入、5V NeoPixel 输出、两个 I2C Grove 接口以及带更多 GPIO 的 IDC16 接口。将鼠标悬停在引脚上查看详情。",
 				kits_board_diagram: "{{name}} 引脚图",
 				kits_pin_touch: "电容触摸",
+				kits_pin_button: "按钮",
 				kits_pin_neopixel: "NeoPixel（5V）",
 				kits_pin_digital: "数字",
 				kits_pin_analog: "模拟",
@@ -1226,6 +1369,51 @@ i18n.use(initReactI18next).init({
 				kits_pin_nc: "未连接",
 				kits_group_digital: "数字 I/O",
 				kits_group_analog: "模拟输入 / 数字 I/O",
+				kits_info_module:
+					"ESP32-S2 模块（LOLIN S2 mini）。插入这两个插座；在其上烧录客户端固件。",
+				kits_info_i2c:
+					"用于传感器和显示屏的 I2C 总线，3.3V。与 Grove 接口和 IDC16 共用同一总线。",
+				kits_info_power:
+					"电源：+5V 和 3.3V（VCC），各带 GND。可为外部传感器或 LED 供电。",
+				kits_info_neopixel:
+					"可寻址 LED（WS2812）：数据在 GPIO 40，电平提升至 5V，另有 +5V 和 GND。需要 NeoPixel 客户端固件。",
+				kits_info_touch:
+					"电容触摸输入。连接触摸板、箔片或任何导电物体。这些引脚也可用作数字 I/O 或模拟输入。",
+				kits_info_grove:
+					"Grove I2C 接口（SCL、SDA、VCC、GND），用于即插即用传感器。共用 I2C 总线。",
+				kits_info_touch_header:
+					"引出相同触摸输入 1–8 的排针，例如用于连接更大的触摸板。",
+				kits_info_idc:
+					"用于扩展板的 16 针排线接口：10 个 GPIO、I2C、3.3V 和 GND。",
+				kits_info_button:
+					"板载按钮，连接到 GND。作为上拉输入使用：按下时为 LOW。",
+				kits_info_group_digital:
+					"数字 I/O：用于按钮和开关的输入，或用于 LED 和继电器的输出（开/关或 PWM）。",
+				kits_info_group_analog:
+					"用于电位器和传感器的模拟输入（连续值）。也可用作数字 I/O。",
+				kits_pin_touch_info: "触摸、模拟输入或数字 I/O。",
+				kits_pin_button_info: "固定连接的按钮：仅上拉输入。",
+				kits_pin_neopixel_info:
+					"NeoPixel 数据，5V 电平。仅输出（例如 LED 灯带或 5V 数字输出）。",
+				kits_pin_digital_info: "数字输入或输出，PWM。",
+				kits_pin_analog_info: "模拟输入或数字 I/O。",
+				kits_pin_i2c_sda_info: "I2C 数据线，共享总线。",
+				kits_pin_i2c_scl_info: "I2C 时钟线，共享总线。",
+				kits_pin_power_5v_info: "5V 电源。",
+				kits_pin_power_3v3_info: "3.3V 电源。",
+				kits_pin_gnd_info: "地。",
+				kits_pin_nc_info: "未连接。",
+				kits_pin_not_configured: "未配置",
+				kits_input: "输入",
+				kits_output: "输出",
+				kits_add_input: "添加为输入",
+				kits_add_output: "添加为输出",
+				kits_configured: "已配置",
+				kits_click_to_configure:
+					"带虚线圈的引脚可自由分配：点击即可将其用作 MIDI 输入或输出。淡化的引脚（电源、GND、I2C）为固定用途。",
+				kits_assignable: "点击分配",
+				kits_deploy_hint: "更改会进入配置器，请在那里部署。",
+				section_board: "电路板",
 				home_esp_now_midi:
 					"前来救场！它提供快速、稳定、低延迟的无线 MIDI，非常适合现场演出、乐器和嵌入式系统。",
 				home_utilities: "配备实用工具",

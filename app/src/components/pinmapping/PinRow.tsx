@@ -162,6 +162,8 @@ interface PinRowProps {
 	index: number;
 	/** Inspector: plain text instead of fields, no row menu. */
 	readOnly?: boolean;
+	/** Narrow container (e.g. a popover): always the wrapping mobile layout. */
+	compact?: boolean;
 	thresholdUnit?: ThresholdUnit;
 	/** Live value shown on a full-width line below the row (inputs only). */
 	live?: ReactNode;
@@ -176,13 +178,14 @@ const PinRow = ({
 	type,
 	index,
 	readOnly = false,
+	compact = false,
 	thresholdUnit,
 	live,
 	showThreshold = false,
 	showPwmRange = false,
 }: PinRowProps) => {
 	const { t } = useTranslation();
-	const wide = useWide();
+	const wide = useWide() && !compact;
 	const {
 		updateInput,
 		removeInput,

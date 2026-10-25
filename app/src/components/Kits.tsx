@@ -85,7 +85,20 @@ const Kits = () => {
 						<Typography variant="body1" sx={{ opacity: 0.9 }} mb={2}>
 							{t(board.descriptionKey)}
 						</Typography>
-						<BoardDiagram board={board} />
+						<BoardDiagram board={board} interactive />
+						<Box display="flex" alignItems="center" gap={2} mt={1}>
+							<Typography variant="body2" color="text.secondary">
+								{t("kits_deploy_hint")}
+							</Typography>
+							<Button
+								size="small"
+								variant="outlined"
+								component={NavLink}
+								to="/configurator"
+							>
+								{t("configurator")}
+							</Button>
+						</Box>
 					</Section>
 				))}
 			</Stack>
