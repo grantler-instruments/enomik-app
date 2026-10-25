@@ -36,34 +36,40 @@ function App() {
 				<Header></Header>
 				<BrowserWarning />
 				{isSidebarOpen && <Sidebar />}
+				{/* Footer scrolls with the page so it doesn't take screen space */}
 				<Box
 					paddingLeft={1}
 					paddingRight={1}
 					flex={1}
 					overflow="auto"
 					minHeight={0}
+					display="flex"
+					flexDirection="column"
 				>
-					<Routes>
-						<Route path="/" element={<Home />} />
-						<Route path="/configurator" element={<Configurator />} />
-						<Route path="/debugger" element={<Debugger />} />
-						<Route path="/inspector" element={<Inspector />} />
-						<Route path="/uploader" element={<FirmwareUploader />} />
-						<Route path="/getting-started" element={<GettingStarted />} />
-						<Route path="/tester" element={<Tester />} />
-						<Route path="/kits" element={<Kits />} />
-						<Route
-							path="/grantulator"
-							element={
-								<Suspense>
-									<Grantulator />
-								</Suspense>
-							}
-						/>
-						<Route path="*" element={<NotFound />} />
-					</Routes>
+					{/* Pages keep their height; the footer goes below */}
+					<Box flex="1 0 auto">
+						<Routes>
+							<Route path="/" element={<Home />} />
+							<Route path="/configurator" element={<Configurator />} />
+							<Route path="/debugger" element={<Debugger />} />
+							<Route path="/inspector" element={<Inspector />} />
+							<Route path="/uploader" element={<FirmwareUploader />} />
+							<Route path="/getting-started" element={<GettingStarted />} />
+							<Route path="/tester" element={<Tester />} />
+							<Route path="/kits" element={<Kits />} />
+							<Route
+								path="/grantulator"
+								element={
+									<Suspense>
+										<Grantulator />
+									</Suspense>
+								}
+							/>
+							<Route path="*" element={<NotFound />} />
+						</Routes>
+					</Box>
+					<Footer></Footer>
 				</Box>
-				<Footer></Footer>
 				<Modals></Modals>
 			</Box>
 		</ThemeProvider>
