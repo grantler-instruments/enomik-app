@@ -38,6 +38,7 @@ const PinEditor = ({ pin }: { pin: BoardPin & { gpio: number } }) => {
 	const addOutput = useIOStore((state) => state.addOutput);
 	const pinInputs = inputs.filter((input) => input.pin === pin.gpio);
 	const pinOutputs = outputs.filter((output) => output.pin === pin.gpio);
+	const configured = pinInputs.length + pinOutputs.length > 0;
 
 	const handleAddInput = () => {
 		const base = { ...MIDI_DEFAULTS, pin: pin.gpio, pinMin: 0, pinMax: 1023 };
@@ -68,11 +69,11 @@ const PinEditor = ({ pin }: { pin: BoardPin & { gpio: number } }) => {
 		});
 
 	return (
-		<Box sx={{ p: 2, width: 420, maxWidth: "calc(100vw - 32px)" }}>
+		<Box sx={{ p: 2, width: 760, maxWidth: "calc(100vw - 32px)" }}>
 			<Typography variant="subtitle1" fontWeight={600}>
 				GPIO {pin.gpio} · {t(`kits_pin_${pin.type}`)}
 			</Typography>
-			{pinInputs.length + pinOutputs.length === 0 && (
+			{!configured && (
 				<Typography variant="body2" color="text.secondary">
 					{t("kits_pin_not_configured")}
 				</Typography>
@@ -95,20 +96,23 @@ const PinEditor = ({ pin }: { pin: BoardPin & { gpio: number } }) => {
 					</Box>
 				))}
 			</Stack>
-			<Stack direction="row" spacing={1} mt={2}>
-				{/* NeoPixel data goes through a one-way 5V level shifter: output only */}
-				{pin.type !== "neopixel" && (
-					<Button size="small" variant="outlined" onClick={handleAddInput}>
-						{t("kits_add_input")}
-					</Button>
-				)}
-				{/* Buttons are wired to GND: input pull-up only */}
-				{pin.type !== "button" && (
-					<Button size="small" variant="outlined" onClick={handleAddOutput}>
-						{t("kits_add_output")}
-					</Button>
-				)}
-			</Stack>
+			{/* One config per pin: adding is only offered while the pin is free */}
+			{!configured && (
+				<Stack direction="row" spacing={1} mt={2}>
+					{/* NeoPixel data goes through a one-way 5V level shifter: output only */}
+					{pin.type !== "neopixel" && (
+						<Button size="small" variant="outlined" onClick={handleAddInput}>
+							{t("kits_add_input")}
+						</Button>
+					)}
+					{/* Buttons are wired to GND: input pull-up only */}
+					{pin.type !== "button" && (
+						<Button size="small" variant="outlined" onClick={handleAddOutput}>
+							{t("kits_add_output")}
+						</Button>
+					)}
+				</Stack>
+			)}
 		</Box>
 	);
 };
