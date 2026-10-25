@@ -10,6 +10,7 @@ import GettingStarted from "./components/GettingStarted";
 import Header from "./components/Header";
 import Home from "./components/Home";
 import Inspector from "./components/Inspector";
+import Kits from "./components/Kits";
 import Modals from "./components/Modals";
 import NotFound from "./components/NotFound";
 import Sidebar from "./components/Sidebar";
@@ -50,6 +51,7 @@ function App() {
 						<Route path="/uploader" element={<FirmwareUploader />} />
 						<Route path="/getting-started" element={<GettingStarted />} />
 						<Route path="/tester" element={<Tester />} />
+						<Route path="/kits" element={<Kits />} />
 						<Route
 							path="/grantulator"
 							element={

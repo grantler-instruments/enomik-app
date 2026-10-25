@@ -190,6 +190,15 @@ const Home = () => {
 							<Typography variant="body1" sx={{ opacity: 0.9 }}>
 								{t("home_kit_description")}
 							</Typography>
+							<Button
+								variant="outlined"
+								size="medium"
+								component={NavLink}
+								to="/kits"
+								sx={{ mt: 2 }}
+							>
+								{t("kits_title")}
+							</Button>
 						</Grid>
 					</Grid>
 				</Paper>

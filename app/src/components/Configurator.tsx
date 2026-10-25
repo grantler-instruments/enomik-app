@@ -4,6 +4,7 @@ import ClearAllIcon from "@mui/icons-material/ClearAll";
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
+import SettingsInputComponentIcon from "@mui/icons-material/SettingsInputComponent";
 import {
 	Alert,
 	Box,
@@ -514,6 +515,12 @@ const Configurator = () => {
 							<DevicesOtherIcon />
 						</IconButton>
 					</span>
+				</Tooltip>
+
+				<Tooltip title={t("tooltip_pin_modes")}>
+					<IconButton color="inherit" component={NavLink} to="/kits">
+						<SettingsInputComponentIcon />
+					</IconButton>
 				</Tooltip>
 
 				<Box flex={1} />

@@ -78,6 +78,36 @@ i18n.use(initReactI18next).init({
 				home_dongles_and_client_boards: "Dongles & Client Boards",
 				home_kit_description:
 					"Get started quickly with our custom hardware kits, including a compact wireless MIDI dongle and versatile client boards, everything you need to build your own MIDI devices with ease.",
+				kits_title: "Kits & Boards",
+				kits_intro:
+					"enomik 3000 works best with the Grantler Instruments kits: a wireless MIDI dongle and client boards with touch pads, NeoPixel and I2C connectors already broken out.",
+				kits_any_esp32:
+					"You don't need our hardware though. Any ESP32-S2 or ESP32-S3 based board works: flash the dongle and client firmware with the firmware uploader and configure the pins in the browser.",
+				kits_io_title: "Input and output types",
+				kits_io_intro:
+					"Every pin of a client can be configured as an input that sends MIDI, or as an output that reacts to incoming MIDI.",
+				kits_inputs: "Inputs",
+				kits_outputs: "Outputs",
+				kits_type_i2c_desc:
+					"Two-wire bus (SDA, SCL) for sensors such as the VL53L0X distance sensor. Use the I2C client firmware.",
+				kits_type_neopixel_desc:
+					"Addressable RGB LEDs (WS2812). The data pin is level-shifted to 5V on our boards so LED strips work reliably. Use the NeoPixel client firmware.",
+				kits_boards_title: "Our boards",
+				kits_board_client_desc:
+					"Client board for the LOLIN S2 mini: 8 capacitive touch inputs, 2 digital and 2 analog inputs, a 5V NeoPixel output, two I2C Grove ports and an IDC16 connector with more GPIOs. Hover a pin for details.",
+				kits_board_diagram: "Pinout of {{name}}",
+				kits_pin_touch: "Capacitive touch",
+				kits_pin_neopixel: "NeoPixel (5V)",
+				kits_pin_digital: "Digital",
+				kits_pin_analog: "Analog",
+				kits_pin_i2c_sda: "I2C SDA",
+				kits_pin_i2c_scl: "I2C SCL",
+				kits_pin_power_5v: "5V",
+				kits_pin_power_3v3: "3.3V",
+				kits_pin_gnd: "GND",
+				kits_pin_nc: "Not connected",
+				kits_group_digital: "Digital I/O",
+				kits_group_analog: "Analog in / digital I/O",
 				home_esp_now_midi:
 					"to the rescue! It delivers fast, stable, low-latency wireless MIDI, ideal for live performances, instruments, and embedded systems.",
 				home_utilities: "Equipped with Utilities",
@@ -130,6 +160,7 @@ i18n.use(initReactI18next).init({
 				tooltip_clear_configuration: "Clear current configuration",
 				tooltip_load_configuration_from_device:
 					"Load configuration from a device",
+				tooltip_pin_modes: "Pin modes and board pinouts",
 				tooltip_midi_monitor:
 					"View incoming and outgoing MIDI messages for debugging purposes",
 				tooltip_tools:
@@ -419,6 +450,36 @@ i18n.use(initReactI18next).init({
 				home_dongles_and_client_boards: "Dongles & Client Boards",
 				home_kit_description:
 					"Starte schnell mit unseren maßgeschneiderten Hardware-Kits, die einen kompakten drahtlosen MIDI-Dongle und vielseitige Client-Boards enthalten alles, was du brauchst, um deine eigenen MIDI-Geräte mühelos zu bauen.",
+				kits_title: "Kits & Boards",
+				kits_intro:
+					"enomik 3000 funktioniert am besten mit den Kits von Grantler Instruments: ein drahtloser MIDI-Dongle und Client-Boards mit Touch-Pads, NeoPixel- und I2C-Anschlüssen, bereits herausgeführt.",
+				kits_any_esp32:
+					"Unsere Hardware brauchst du aber nicht. Jedes Board mit ESP32-S2 oder ESP32-S3 funktioniert: Dongle- und Client-Firmware mit dem Firmware-Uploader flashen und die Pins im Browser konfigurieren.",
+				kits_io_title: "Eingangs- und Ausgangstypen",
+				kits_io_intro:
+					"Jeder Pin eines Clients kann als Eingang konfiguriert werden, der MIDI sendet, oder als Ausgang, der auf eingehendes MIDI reagiert.",
+				kits_inputs: "Eingänge",
+				kits_outputs: "Ausgänge",
+				kits_type_i2c_desc:
+					"Zweidraht-Bus (SDA, SCL) für Sensoren wie den VL53L0X-Abstandssensor. Nutze die I2C-Client-Firmware.",
+				kits_type_neopixel_desc:
+					"Adressierbare RGB-LEDs (WS2812). Der Daten-Pin wird auf unseren Boards auf 5V angehoben, damit LED-Streifen zuverlässig funktionieren. Nutze die NeoPixel-Client-Firmware.",
+				kits_boards_title: "Unsere Boards",
+				kits_board_client_desc:
+					"Client-Board für den LOLIN S2 mini: 8 kapazitive Touch-Eingänge, 2 digitale und 2 analoge Eingänge, ein 5V-NeoPixel-Ausgang, zwei I2C-Grove-Anschlüsse und ein IDC16-Stecker mit weiteren GPIOs. Fahre über einen Pin für Details.",
+				kits_board_diagram: "Pinbelegung von {{name}}",
+				kits_pin_touch: "Kapazitiver Touch",
+				kits_pin_neopixel: "NeoPixel (5V)",
+				kits_pin_digital: "Digital",
+				kits_pin_analog: "Analog",
+				kits_pin_i2c_sda: "I2C SDA",
+				kits_pin_i2c_scl: "I2C SCL",
+				kits_pin_power_5v: "5V",
+				kits_pin_power_3v3: "3,3V",
+				kits_pin_gnd: "GND",
+				kits_pin_nc: "Nicht verbunden",
+				kits_group_digital: "Digital I/O",
+				kits_group_analog: "Analog-Eingang / Digital I/O",
 				home_esp_now_midi:
 					"Zur Rettung! Es bietet schnelles, stabiles, latenzfreies drahtloses MIDI, ideal für Live-Performances, Instrumente und eingebettete Systeme.",
 				home_utilities: "Ausgestattet mit Utilities",
@@ -473,6 +534,7 @@ i18n.use(initReactI18next).init({
 				tooltip_clear_configuration: "Aktuelle Konfiguration löschen",
 				tooltip_load_configuration_from_device:
 					"Konfiguration von einem Gerät laden",
+				tooltip_pin_modes: "Pin-Modi und Pinbelegungen",
 				tooltip_midi_monitor:
 					"Eingehende und ausgehende MIDI-Nachrichten zu Debugging-Zwecken anzeigen",
 				tooltip_tools:
@@ -766,6 +828,36 @@ i18n.use(initReactI18next).init({
 				home_dongles_and_client_boards: "Dongles y placas cliente",
 				home_kit_description:
 					"Comienza rápidamente con nuestros kits de hardware personalizados, que incluyen un dongle MIDI inalámbrico compacto y placas cliente versátiles: todo lo que necesitas para construir tus propios dispositivos MIDI con facilidad.",
+				kits_title: "Kits y placas",
+				kits_intro:
+					"enomik 3000 funciona mejor con los kits de Grantler Instruments: un dongle MIDI inalámbrico y placas cliente con pads táctiles y conectores NeoPixel e I2C ya accesibles.",
+				kits_any_esp32:
+					"Aunque no necesitas nuestro hardware. Cualquier placa basada en ESP32-S2 o ESP32-S3 funciona: carga el firmware de dongle y cliente con el cargador de firmware y configura los pines en el navegador.",
+				kits_io_title: "Tipos de entrada y salida",
+				kits_io_intro:
+					"Cada pin de un cliente puede configurarse como entrada que envía MIDI o como salida que reacciona al MIDI entrante.",
+				kits_inputs: "Entradas",
+				kits_outputs: "Salidas",
+				kits_type_i2c_desc:
+					"Bus de dos hilos (SDA, SCL) para sensores como el sensor de distancia VL53L0X. Usa el firmware cliente I2C.",
+				kits_type_neopixel_desc:
+					"LEDs RGB direccionables (WS2812). En nuestras placas el pin de datos se eleva a 5V para que las tiras LED funcionen de forma fiable. Usa el firmware cliente NeoPixel.",
+				kits_boards_title: "Nuestras placas",
+				kits_board_client_desc:
+					"Placa cliente para el LOLIN S2 mini: 8 entradas táctiles capacitivas, 2 entradas digitales y 2 analógicas, una salida NeoPixel de 5V, dos puertos I2C Grove y un conector IDC16 con más GPIOs. Pasa el ratón sobre un pin para ver detalles.",
+				kits_board_diagram: "Pinout de {{name}}",
+				kits_pin_touch: "Táctil capacitivo",
+				kits_pin_neopixel: "NeoPixel (5V)",
+				kits_pin_digital: "Digital",
+				kits_pin_analog: "Analógico",
+				kits_pin_i2c_sda: "I2C SDA",
+				kits_pin_i2c_scl: "I2C SCL",
+				kits_pin_power_5v: "5V",
+				kits_pin_power_3v3: "3,3V",
+				kits_pin_gnd: "GND",
+				kits_pin_nc: "No conectado",
+				kits_group_digital: "E/S digital",
+				kits_group_analog: "Entrada analógica / E/S digital",
 				home_utilities: "Equipado con utilidades",
 				home_utilities_description: "Monitor MIDI y cargador de firmware",
 				home_utilities_description_includes: "La aplicación incluye un",
@@ -817,6 +909,7 @@ i18n.use(initReactI18next).init({
 				tooltip_clear_configuration: "Limpiar la configuración actual",
 				tooltip_load_configuration_from_device:
 					"Cargar configuración desde un dispositivo",
+				tooltip_pin_modes: "Modos de pin y pinouts de placas",
 				tooltip_midi_monitor:
 					"Ver mensajes MIDI entrantes y salientes para fines de depuración",
 				tooltip_tools:
@@ -1103,6 +1196,36 @@ i18n.use(initReactI18next).init({
 				home_dongles_and_client_boards: "适配器和客户端板",
 				home_kit_description:
 					"使用我们定制的硬件套件快速上手，包括小巧的无线 MIDI 适配器和多功能客户端板——轻松构建你自己的 MIDI 设备所需的一切。",
+				kits_title: "套件与电路板",
+				kits_intro:
+					"enomik 3000 与 Grantler Instruments 套件配合最佳：无线 MIDI 适配器和客户端板，已引出触摸板、NeoPixel 和 I2C 接口。",
+				kits_any_esp32:
+					"不过你并不需要我们的硬件。任何基于 ESP32-S2 或 ESP32-S3 的开发板都可以：用固件上传工具烧录适配器和客户端固件，然后在浏览器中配置引脚。",
+				kits_io_title: "输入和输出类型",
+				kits_io_intro:
+					"客户端的每个引脚都可以配置为发送 MIDI 的输入，或响应传入 MIDI 的输出。",
+				kits_inputs: "输入",
+				kits_outputs: "输出",
+				kits_type_i2c_desc:
+					"双线总线（SDA、SCL），用于 VL53L0X 距离传感器等传感器。请使用 I2C 客户端固件。",
+				kits_type_neopixel_desc:
+					"可寻址 RGB LED（WS2812）。我们的电路板将数据引脚电平提升到 5V，使 LED 灯带稳定工作。请使用 NeoPixel 客户端固件。",
+				kits_boards_title: "我们的电路板",
+				kits_board_client_desc:
+					"适用于 LOLIN S2 mini 的客户端板：8 个电容触摸输入、2 个数字和 2 个模拟输入、5V NeoPixel 输出、两个 I2C Grove 接口以及带更多 GPIO 的 IDC16 接口。将鼠标悬停在引脚上查看详情。",
+				kits_board_diagram: "{{name}} 引脚图",
+				kits_pin_touch: "电容触摸",
+				kits_pin_neopixel: "NeoPixel（5V）",
+				kits_pin_digital: "数字",
+				kits_pin_analog: "模拟",
+				kits_pin_i2c_sda: "I2C SDA",
+				kits_pin_i2c_scl: "I2C SCL",
+				kits_pin_power_5v: "5V",
+				kits_pin_power_3v3: "3.3V",
+				kits_pin_gnd: "GND",
+				kits_pin_nc: "未连接",
+				kits_group_digital: "数字 I/O",
+				kits_group_analog: "模拟输入 / 数字 I/O",
 				home_esp_now_midi:
 					"前来救场！它提供快速、稳定、低延迟的无线 MIDI，非常适合现场演出、乐器和嵌入式系统。",
 				home_utilities: "配备实用工具",
@@ -1148,6 +1271,7 @@ i18n.use(initReactI18next).init({
 				tooltip_load_configuration_from_file: "从文件加载配置",
 				tooltip_clear_configuration: "清除当前配置",
 				tooltip_load_configuration_from_device: "从设备加载配置",
+				tooltip_pin_modes: "引脚模式和电路板引脚图",
 				tooltip_midi_monitor: "查看传入和传出的 MIDI 消息以进行调试",
 				tooltip_tools: "更多页面：测试开发板，或演奏 Grantulator 合成器",
 				tooltip_serial_monitor: "查看已连接微控制器的串行输出以进行调试",
