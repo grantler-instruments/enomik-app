@@ -2,20 +2,10 @@ import TouchAppIcon from "@mui/icons-material/TouchApp";
 import { Alert, Box, Chip, Popover, Tooltip, useTheme } from "@mui/material";
 import { type SVGProps, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	type InputPinConfig,
-	type OutputPinConfig,
-	useConflictingPins,
-	useIOStore,
-} from "../../store/io";
-import {
-	MIDI_CONTROL_CHANGE,
-	MIDI_NOTE_ON,
-	MIDI_TYPE_LABELS,
-} from "../../store/midi.config";
-import { INPUT_MODES, OUTPUT_MODES } from "../pinmapping/modes";
+import { useConflictingPins, useIOStore } from "../../store/io";
+import { configSummary, isConfigurable } from "../../utils/pinout";
 import type { Board, BoardPin, LabelSide, PinGroup, PinType } from "./boards";
-import PinEditor, { isConfigurable } from "./PinEditor";
+import PinEditor from "./PinEditor";
 
 const PAD_RADIUS = 0.7;
 /** Ring around pads that have a pin config. */
@@ -114,20 +104,6 @@ const groupLabelProps = (group: PinGroup): SVGProps<SVGTextElement> => {
 			return { x, y: cy, transform: `rotate(90 ${x} ${cy})` };
 		}
 	}
-};
-
-/** One line per config, e.g. "INPUT_TOUCH · ch 1 · Control Change 20". */
-const configSummary = (config: InputPinConfig | OutputPinConfig) => {
-	const mode = [...INPUT_MODES, ...OUTPUT_MODES].find(
-		(m) => m.value === config.mode,
-	);
-	const number =
-		config.midiType === MIDI_CONTROL_CHANGE
-			? ` ${config.controller}`
-			: config.midiType === MIDI_NOTE_ON
-				? ` ${config.note ?? 60}`
-				: "";
-	return `${mode?.label ?? ""} · ch ${config.channel} · ${MIDI_TYPE_LABELS[config.midiType] ?? ""}${number}`;
 };
 
 /** Marks text that explains itself on hover or focus. */
