@@ -88,8 +88,9 @@ const GND = pin("GND", "gnd");
 const VCC = pin("VCC", "power_3v3");
 const V5 = pin("+5V", "power_5v");
 const NC = pin("NC", "nc");
-const SDA = pin("SDA", "i2c_sda");
-const SCL = pin("SCL", "i2c_scl");
+// I2C keeps its bus name as label; the GPIO shows in the tooltip
+const SDA: PinSpec = { ...pin("SDA", "i2c_sda"), gpio: 33 };
+const SCL: PinSpec = { ...pin("SCL", "i2c_scl"), gpio: 35 };
 
 // From the gerber files of enomik 3000 client v0.5 (EasyEDA), board origin top left.
 const JST_LEFT = [40, 42, 44, 46];

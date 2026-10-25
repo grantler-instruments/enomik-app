@@ -191,10 +191,16 @@ describe.each(BOARDS)("board $name", (board) => {
 		expect(new Set(spots).size).toBe(spots.length);
 	});
 
-	it("labels GPIO pads with their GPIO number", () => {
+	it("labels GPIO pads with their GPIO number, I2C with the bus line", () => {
 		for (const p of board.pins)
 			if (p.gpio !== undefined) {
-				expect(p.label).toBe(String(p.gpio));
+				expect(p.label).toBe(
+					p.type === "i2c_sda"
+						? "SDA"
+						: p.type === "i2c_scl"
+							? "SCL"
+							: String(p.gpio),
+				);
 				// ESP32-S2 GPIOs
 				expect(p.gpio).toBeGreaterThanOrEqual(0);
 				expect(p.gpio).toBeLessThanOrEqual(46);
@@ -253,5 +259,10 @@ describe("enomik 3000 client v0.5", () => {
 
 	it("has analog inputs on 9 and 10", () => {
 		expect(gpios("analog")).toEqual([9, 10]);
+	});
+
+	it("has I2C on SDA 33 and SCL 35", () => {
+		expect(gpios("i2c_sda")).toEqual([33]);
+		expect(gpios("i2c_scl")).toEqual([35]);
 	});
 });
