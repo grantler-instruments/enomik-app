@@ -99,6 +99,28 @@ const HEADER_3PIN = [62.46, 65, 67.54];
 const T18 = [30.61, 33.15, 35.69, 38.23];
 const IDC = [11.11, 13.65, 16.19, 18.73, 21.27, 23.81, 26.35, 28.89];
 
+// From the gerber files of enomik 3000 extender v0.5.1, board origin top left.
+const EXT_IDC = [7.239, 9.779, 12.319, 14.859, 17.399, 19.939, 22.479, 25.019];
+const EXT_ROWS = [6, 13, 20, 27];
+const EXT_I2C = [19.5, 21.5, 23.5, 25.5];
+const EXT_A = [31.5, 33.5, 35.5, 37.5];
+/** A2–A5: GPIO and row. */
+const EXT_ANALOG: [number, number][] = [
+	[11, 6],
+	[12, 13],
+	[13, 20],
+	[14, 27],
+];
+/** D2–D7: GPIO, first pad x and row. */
+const EXT_DIGITAL: [number, number, number][] = [
+	[34, 43.5, 6.096],
+	[36, 43.5, 13],
+	[37, 43.5, 20],
+	[38, 43.5, 27],
+	[39, 55.5, 13],
+	[40, 55.5, 20],
+];
+
 /** JST connector outline around 4 pads at y, with room for the labels above. */
 const jst = (
 	name: string,
@@ -334,6 +356,93 @@ export const BOARDS: Board[] = [
 					GND,
 				],
 				"right",
+			),
+		],
+	},
+	{
+		id: "extender_v0_5_1",
+		name: "enomik 3000 extender v0.5.1",
+		descriptionKey: "kits_board_extender_desc",
+		width: 64,
+		height: 32,
+		cornerRadius: 0,
+		mountingHoles: [
+			{ x: 3, y: 3, diameter: 3.1 },
+			{ x: 3, y: 29, diameter: 3.1 },
+			{ x: 61, y: 3, diameter: 3.1 },
+			{ x: 61, y: 29, diameter: 3.1 },
+		],
+		outlines: [
+			{
+				name: "IDC16",
+				x: 6.5,
+				y: 1.9,
+				width: 9.1,
+				height: 28.5,
+				infoKey: "kits_info_idc_extender",
+			},
+			...EXT_ROWS.map((y) =>
+				jst("I2C GROVE", EXT_I2C[0], y, "kits_info_grove"),
+			),
+			...EXT_ANALOG.map(([, y], i) => jst(`A${i + 2}`, EXT_A[0], y)),
+			...EXT_DIGITAL.map(([, x, y], i) => jst(`D${i + 2}`, x, y)),
+		],
+		groups: [
+			{
+				kind: "analog",
+				x: 29.5,
+				y: 3.1,
+				width: 9.8,
+				height: 26.6,
+				labelSide: "top",
+			},
+			{
+				kind: "digital",
+				x: 41.5,
+				y: 3.1,
+				width: 21.8,
+				height: 26.6,
+				labelSide: "top",
+			},
+		],
+		pins: [
+			// Mirror of the client's IDC16 through the ribbon cable
+			...sideColumn(
+				9.779,
+				EXT_IDC,
+				[
+					GND,
+					SDA,
+					gpio(11, "analog"),
+					gpio(13, "analog"),
+					gpio(34, "digital"),
+					gpio(37, "digital"),
+					gpio(39, "digital"),
+					VCC,
+				],
+				"left",
+			),
+			...sideColumn(
+				12.319,
+				EXT_IDC,
+				[
+					VCC,
+					SCL,
+					gpio(12, "analog"),
+					gpio(14, "analog"),
+					gpio(36, "digital"),
+					gpio(38, "digital"),
+					gpio(40, "digital"),
+					GND,
+				],
+				"right",
+			),
+			...EXT_ROWS.flatMap((y) => row(EXT_I2C, y, [SCL, SDA, VCC, GND])),
+			...EXT_ANALOG.flatMap(([n, y]) =>
+				row(EXT_A, y, [gpio(n, "analog"), NC, VCC, GND]),
+			),
+			...EXT_DIGITAL.flatMap(([n, x, y]) =>
+				row([x, x + 2, x + 4, x + 6], y, [gpio(n, "digital"), NC, VCC, GND]),
 			),
 		],
 	},

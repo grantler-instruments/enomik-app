@@ -266,3 +266,30 @@ describe("enomik 3000 client v0.5", () => {
 		expect(gpios("i2c_scl")).toEqual([35]);
 	});
 });
+
+describe("enomik 3000 extender v0.5.1", () => {
+	const client = BOARDS.find((b) => b.id === "client_v0_5");
+	const board = BOARDS.find((b) => b.id === "extender_v0_5_1");
+	const gpios = (type: PinType) =>
+		[
+			...new Set(board?.pins.filter((p) => p.type === type).map((p) => p.gpio)),
+		].sort((a, b) => (a ?? 0) - (b ?? 0));
+
+	it("has analog A2–A5 on 11–14 and digital D2–D7", () => {
+		expect(gpios("analog")).toEqual([11, 12, 13, 14]);
+		expect(gpios("digital")).toEqual([34, 36, 37, 38, 39, 40]);
+	});
+
+	it("has I2C on SDA 33 and SCL 35", () => {
+		expect(gpios("i2c_sda")).toEqual([33]);
+		expect(gpios("i2c_scl")).toEqual([35]);
+	});
+
+	it("only uses GPIOs the client's IDC16 carries", () => {
+		const idc = new Set(
+			client?.pins.filter((p) => p.x > 70).map((p) => p.gpio),
+		);
+		for (const p of board?.pins ?? [])
+			if (p.gpio !== undefined) expect(idc.has(p.gpio), p.label).toBe(true);
+	});
+});

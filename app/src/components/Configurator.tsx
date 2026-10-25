@@ -6,6 +6,7 @@ import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import SettingsInputComponentIcon from "@mui/icons-material/SettingsInputComponent";
+import TouchAppIcon from "@mui/icons-material/TouchApp";
 import {
 	Alert,
 	Box,
@@ -14,6 +15,7 @@ import {
 	IconButton,
 	Snackbar,
 	Tooltip,
+	Typography,
 } from "@mui/material";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -589,12 +591,33 @@ const Configurator = () => {
 								aria-controls="board-content"
 							>
 								<SectionHeader
-									title={`${t("section_board")}: ${BOARDS[0].name}`}
+									title={t("section_board")}
 									icon={<DeveloperBoardIcon />}
 								/>
 							</AccordionSummary>
 							<AccordionDetails>
-								<BoardDiagram board={BOARDS[0]} interactive />
+								<Alert severity="info" icon={<TouchAppIcon />} sx={{ mb: 2 }}>
+									{t("kits_click_to_configure")}
+								</Alert>
+								{/* Side by side, sized by board width; stacked on small screens */}
+								<Box
+									display="flex"
+									flexDirection={{ xs: "column", lg: "row" }}
+									gap={3}
+								>
+									{BOARDS.map((board) => (
+										<Box
+											key={board.id}
+											flex={`${board.width} 1 0`}
+											minWidth={0}
+										>
+											<Typography variant="subtitle1" fontWeight={600} mb={1}>
+												{board.name}
+											</Typography>
+											<BoardDiagram board={board} interactive hint={false} />
+										</Box>
+									))}
+								</Box>
 							</AccordionDetails>
 						</Accordion>
 						<Accordion

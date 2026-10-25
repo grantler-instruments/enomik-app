@@ -97,6 +97,8 @@ i18n.use(initReactI18next).init({
 				kits_boards_title: "Our boards",
 				kits_board_client_desc:
 					"Client board for the LOLIN S2 mini: 8 capacitive touch inputs, 2 digital and 2 analog inputs, a 5V NeoPixel output, two I2C Grove ports and an IDC16 connector with more GPIOs. Hover a pin for details.",
+				kits_board_extender_desc:
+					"Extender for the client board, connected with a ribbon cable to its IDC16 connector: 4 analog inputs, 6 digital I/Os and 4 I2C Grove ports on JST connectors.",
 				kits_board_diagram: "Pinout of {{name}}",
 				kits_pin_touch: "Capacitive touch",
 				kits_pin_button: "Button",
@@ -127,6 +129,8 @@ i18n.use(initReactI18next).init({
 					"Pin header with the same touch inputs 1–8, e.g. to wire larger pads.",
 				kits_info_idc:
 					"16-pin ribbon connector for expansion boards: 10 GPIOs, I2C, 3.3V and GND.",
+				kits_info_idc_extender:
+					"16-pin ribbon connector from the client board's IDC16: 10 GPIOs, I2C, 3.3V and GND.",
 				kits_info_button:
 					"Onboard push button wired to GND. Use as input with pull-up: pressed reads LOW.",
 				kits_info_group_digital:
@@ -518,6 +522,8 @@ i18n.use(initReactI18next).init({
 				kits_boards_title: "Unsere Boards",
 				kits_board_client_desc:
 					"Client-Board für den LOLIN S2 mini: 8 kapazitive Touch-Eingänge, 2 digitale und 2 analoge Eingänge, ein 5V-NeoPixel-Ausgang, zwei I2C-Grove-Anschlüsse und ein IDC16-Stecker mit weiteren GPIOs. Fahre über einen Pin für Details.",
+				kits_board_extender_desc:
+					"Erweiterung für das Client-Board, per Flachbandkabel an dessen IDC16-Stecker angeschlossen: 4 analoge Eingänge, 6 digitale I/Os und 4 I2C-Grove-Anschlüsse auf JST-Steckern.",
 				kits_board_diagram: "Pinbelegung von {{name}}",
 				kits_pin_touch: "Kapazitiver Touch",
 				kits_pin_button: "Taster",
@@ -548,6 +554,8 @@ i18n.use(initReactI18next).init({
 					"Stiftleiste mit denselben Touch-Eingängen 1–8, z. B. für größere Pads.",
 				kits_info_idc:
 					"16-poliger Flachbandstecker für Erweiterungsboards: 10 GPIOs, I2C, 3,3V und GND.",
+				kits_info_idc_extender:
+					"16-poliger Flachbandstecker vom IDC16 des Client-Boards: 10 GPIOs, I2C, 3,3V und GND.",
 				kits_info_button:
 					"Taster auf dem Board, mit GND verbunden. Als Eingang mit Pull-up nutzen: gedrückt = LOW.",
 				kits_info_group_digital:
@@ -946,6 +954,8 @@ i18n.use(initReactI18next).init({
 				kits_boards_title: "Nuestras placas",
 				kits_board_client_desc:
 					"Placa cliente para el LOLIN S2 mini: 8 entradas táctiles capacitivas, 2 entradas digitales y 2 analógicas, una salida NeoPixel de 5V, dos puertos I2C Grove y un conector IDC16 con más GPIOs. Pasa el ratón sobre un pin para ver detalles.",
+				kits_board_extender_desc:
+					"Ampliación para la placa cliente, conectada con un cable plano a su conector IDC16: 4 entradas analógicas, 6 E/S digitales y 4 puertos I2C Grove en conectores JST.",
 				kits_board_diagram: "Pinout de {{name}}",
 				kits_pin_touch: "Táctil capacitivo",
 				kits_pin_button: "Botón",
@@ -976,6 +986,8 @@ i18n.use(initReactI18next).init({
 					"Tira de pines con las mismas entradas táctiles 1–8, p. ej. para cablear pads más grandes.",
 				kits_info_idc:
 					"Conector de cable plano de 16 pines para placas de expansión: 10 GPIOs, I2C, 3,3V y GND.",
+				kits_info_idc_extender:
+					"Conector plano de 16 pines desde el IDC16 de la placa cliente: 10 GPIOs, I2C, 3,3V y GND.",
 				kits_info_button:
 					"Pulsador en la placa conectado a GND. Úsalo como entrada con pull-up: pulsado = LOW.",
 				kits_info_group_digital:
@@ -1363,6 +1375,8 @@ i18n.use(initReactI18next).init({
 				kits_boards_title: "我们的电路板",
 				kits_board_client_desc:
 					"适用于 LOLIN S2 mini 的客户端板：8 个电容触摸输入、2 个数字和 2 个模拟输入、5V NeoPixel 输出、两个 I2C Grove 接口以及带更多 GPIO 的 IDC16 接口。将鼠标悬停在引脚上查看详情。",
+				kits_board_extender_desc:
+					"客户端板的扩展板，通过排线连接到其 IDC16 接口：4 个模拟输入、6 个数字 I/O 和 4 个 JST 接口的 I2C Grove 端口。",
 				kits_board_diagram: "{{name}} 引脚图",
 				kits_pin_touch: "电容触摸",
 				kits_pin_button: "按钮",
@@ -1393,6 +1407,8 @@ i18n.use(initReactI18next).init({
 					"引出相同触摸输入 1–8 的排针，例如用于连接更大的触摸板。",
 				kits_info_idc:
 					"用于扩展板的 16 针排线接口：10 个 GPIO、I2C、3.3V 和 GND。",
+				kits_info_idc_extender:
+					"来自客户端板 IDC16 的 16 针排线接口：10 个 GPIO、I2C、3.3V 和 GND。",
 				kits_info_button:
 					"板载按钮，连接到 GND。作为上拉输入使用：按下时为 LOW。",
 				kits_info_group_digital:

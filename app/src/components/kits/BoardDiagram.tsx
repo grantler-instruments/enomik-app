@@ -132,10 +132,13 @@ const InfoText = ({
 const BoardDiagram = ({
 	board,
 	interactive = false,
+	hint = true,
 }: {
 	board: Board;
 	/** Show the configurator's pin configs and edit them on click. */
 	interactive?: boolean;
+	/** Explain how to assign pins; off when the parent shows it once. */
+	hint?: boolean;
 }) => {
 	const { t } = useTranslation();
 	const inputs = useIOStore((state) => state.inputs);
@@ -154,7 +157,7 @@ const BoardDiagram = ({
 
 	return (
 		<Box>
-			{interactive && (
+			{interactive && hint && (
 				<Alert severity="info" icon={<TouchAppIcon />} sx={{ mb: 2 }}>
 					{t("kits_click_to_configure")}
 				</Alert>
