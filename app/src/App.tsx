@@ -15,6 +15,7 @@ import Modals from "./components/Modals";
 import NotFound from "./components/NotFound";
 import Sidebar from "./components/Sidebar";
 import Tester from "./components/Tester";
+import UpdatePrompt from "./components/UpdatePrompt";
 import { darkTheme, lightTheme } from "./muiTheme.ts";
 import { useAppStore } from "./store/app";
 
@@ -71,6 +72,7 @@ function App() {
 					<Footer></Footer>
 				</Box>
 				<Modals></Modals>
+				<UpdatePrompt />
 			</Box>
 		</ThemeProvider>
 	);

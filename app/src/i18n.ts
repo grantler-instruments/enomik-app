@@ -36,6 +36,8 @@ i18n.use(initReactI18next).init({
 				compat_live_unsupported:
 					"Live values require firmware 0.19 or newer. Basic configuration remains available.",
 				compat_retry: "Retry",
+				pwa_update_available: "A new version is available.",
+				pwa_reload: "Reload",
 				compat_syncing: "Reading device configuration…",
 				compat_sync_failed:
 					"Configuration could not be read completely. Any values shown may be incomplete. Check the connection and sync again.",
@@ -454,6 +456,8 @@ i18n.use(initReactI18next).init({
 				compat_live_unsupported:
 					"Live-Werte benötigen Firmware 0.19 oder neuer. Die grundlegende Konfiguration bleibt verfügbar.",
 				compat_retry: "Erneut prüfen",
+				pwa_update_available: "Eine neue Version ist verfügbar.",
+				pwa_reload: "Neu laden",
 				compat_syncing: "Gerätekonfiguration wird gelesen…",
 				compat_sync_failed:
 					"Die Konfiguration konnte nicht vollständig gelesen werden. Angezeigte Werte können unvollständig sein. Prüfe die Verbindung und synchronisiere erneut.",
@@ -879,6 +883,8 @@ i18n.use(initReactI18next).init({
 				compat_live_unsupported:
 					"Los valores en vivo requieren firmware 0.19 o posterior. La configuración básica sigue disponible.",
 				compat_retry: "Reintentar",
+				pwa_update_available: "Hay una nueva versión disponible.",
+				pwa_reload: "Recargar",
 				compat_syncing: "Leyendo configuración del dispositivo…",
 				compat_sync_failed:
 					"No se pudo leer toda la configuración. Los valores mostrados pueden estar incompletos. Comprueba la conexión y sincroniza de nuevo.",
@@ -1299,6 +1305,8 @@ i18n.use(initReactI18next).init({
 				compat_live_unsupported:
 					"实时数值需要固件 0.19 或更新版本。基本配置仍可使用。",
 				compat_retry: "重试",
+				pwa_update_available: "有新版本可用。",
+				pwa_reload: "重新加载",
 				compat_syncing: "正在读取设备配置…",
 				compat_sync_failed:
 					"无法完整读取配置。显示的数值可能不完整。请检查连接并重新同步。",
