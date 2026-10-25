@@ -5,7 +5,7 @@ import {
 	Grid,
 	Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMIDIStore } from "../store/midi";
 import { MIDI_STATUS, typeToLabel } from "../utils/midi";
@@ -47,15 +47,22 @@ const Filter = ({
 		Array.from({ length: 16 }).map((_, i) => i + 1),
 	);
 
+	// The latest callbacks, without rerunning the effects when they change:
+	// a new device list re-selects all, a new callback shouldn't.
+	const onInputs = useRef(onActiveInputsChange);
+	onInputs.current = onActiveInputsChange;
+	const onOutputs = useRef(onActiveOutputsChange);
+	onOutputs.current = onActiveOutputsChange;
+
 	useEffect(() => {
 		const newActiveInputs = inputs.map((input) => input.id);
 		setActiveInputs(newActiveInputs);
-		onActiveInputsChange(newActiveInputs);
+		onInputs.current(newActiveInputs);
 	}, [inputs]);
 	useEffect(() => {
 		const newActiveOutputs = outputs.map((output) => output.id);
 		setActiveOutputs(newActiveOutputs);
-		onActiveOutputsChange(newActiveOutputs);
+		onOutputs.current(newActiveOutputs);
 	}, [outputs]);
 
 	const toggleInput = (id: string) => {
@@ -168,6 +175,7 @@ const Filter = ({
 				</Box>
 				<Box display={"flex"} flexDirection={"row"} gap={2}>
 					{Array.from({ length: 16 }, (_, i) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: fixed 16 channels
 						<Box key={i}>
 							<FormControlLabel
 								control={
@@ -192,6 +200,7 @@ const Filter = ({
 				</Box>
 				<Box display={"flex"} flexDirection={"row"} gap={2}>
 					{midiTypes.map((type, i) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: static type list
 						<Box key={i}>
 							<FormControlLabel
 								control={

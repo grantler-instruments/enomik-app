@@ -102,6 +102,7 @@ const Logo: React.FC<LogoProps> = ({ width = 64, height = 64 }) => {
 			width={width}
 			height={height}
 		>
+			<title>Grantler Instruments</title>
 			{/* Top circle */}
 			<circle
 				cx={circles.top.cx}
@@ -113,6 +114,7 @@ const Logo: React.FC<LogoProps> = ({ width = 64, height = 64 }) => {
 			/>
 			<g fill={mainColor}>
 				{getDots(circles.top).map((dot, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: fixed dots
 					<circle key={`top-${i}`} cx={dot.cx} cy={dot.cy} r={dot.r} />
 				))}
 			</g>
@@ -128,6 +130,7 @@ const Logo: React.FC<LogoProps> = ({ width = 64, height = 64 }) => {
 			/>
 			<g fill={mainColor}>
 				{getDots(circles.bottomLeft).map((dot, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: fixed dots
 					<circle key={`bl-${i}`} cx={dot.cx} cy={dot.cy} r={dot.r} />
 				))}
 			</g>
@@ -143,6 +146,7 @@ const Logo: React.FC<LogoProps> = ({ width = 64, height = 64 }) => {
 			/>
 			<g fill={mainColor}>
 				{getDots(circles.bottomRight).map((dot, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: fixed dots
 					<circle key={`br-${i}`} cx={dot.cx} cy={dot.cy} r={dot.r} />
 				))}
 			</g>

@@ -51,6 +51,7 @@ const GettingStarted = () => {
 			<List component={"ol"}>
 				{steps.map((step, index) => {
 					return (
+						// biome-ignore lint/suspicious/noArrayIndexKey: static steps
 						<ListItem key={`step-${index}`} sx={{ marginTop: 4 }}>
 							<Box display={"flex"} flexDirection="column" gap={1}>
 								<Typography variant="h4">{step.title}</Typography>
@@ -64,6 +65,7 @@ const GettingStarted = () => {
 									{step.actions.map((action, actionIndex) => (
 										<Button
 											variant="outlined"
+											// biome-ignore lint/suspicious/noArrayIndexKey: static actions
 											key={`step-${index}-action-${actionIndex}`}
 											component={NavLink}
 											to={action.link}

@@ -78,6 +78,7 @@ const MacAddressInput = ({
 			alignItems="center"
 		>
 			{Array.from({ length: 6 }, (_, index) => (
+				// biome-ignore lint/suspicious/noArrayIndexKey: fixed 6 fields
 				<Box key={index} display="flex" alignItems="center" gap={0.5}>
 					<TextField
 						inputRef={(el) => (inputRefs.current[index] = el)}
