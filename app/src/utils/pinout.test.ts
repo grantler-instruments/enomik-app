@@ -32,6 +32,7 @@ const ASSIGNABLE: PinType[] = [
 	"touch",
 	"button",
 	"neopixel",
+	"led",
 	"digital",
 	"analog",
 ];
@@ -74,6 +75,11 @@ describe("allowed directions", () => {
 	it("keeps the level-shifted NeoPixel pin output only", () => {
 		expect(canAddInput(pin("neopixel", 40))).toBe(false);
 		expect(canAddOutput(pin("neopixel", 40))).toBe(true);
+	});
+
+	it("keeps the onboard LED output only", () => {
+		expect(canAddInput(pin("led", 15))).toBe(false);
+		expect(canAddOutput(pin("led", 15))).toBe(true);
 	});
 
 	it("allows neither on fixed pins", () => {
@@ -255,6 +261,10 @@ describe("enomik 3000 client v0.5", () => {
 		expect(gpios("touch")).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
 		expect(gpios("button")).toEqual([16, 17]);
 		expect(gpios("neopixel")).toEqual([40]);
+	});
+
+	it("has the onboard LED on 15", () => {
+		expect(gpios("led")).toEqual([15]);
 	});
 
 	it("has analog inputs on 9 and 10", () => {

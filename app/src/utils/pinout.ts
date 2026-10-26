@@ -25,12 +25,16 @@ export const isConfigurable = (pin: BoardPin): pin is GpioPin =>
 	(pin.type === "touch" ||
 		pin.type === "button" ||
 		pin.type === "neopixel" ||
+		pin.type === "led" ||
 		pin.type === "digital" ||
 		pin.type === "analog");
 
-/** NeoPixel data goes through a one-way 5V level shifter: output only. */
+/**
+ * NeoPixel data goes through a one-way 5V level shifter and the onboard LED
+ * only lights up: output only.
+ */
 export const canAddInput = (pin: BoardPin) =>
-	isConfigurable(pin) && pin.type !== "neopixel";
+	isConfigurable(pin) && pin.type !== "neopixel" && pin.type !== "led";
 
 /** Buttons are wired to GND: input pull-up only. */
 export const canAddOutput = (pin: BoardPin) =>

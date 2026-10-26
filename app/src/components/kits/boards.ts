@@ -2,6 +2,7 @@ export type PinType =
 	| "touch"
 	| "button"
 	| "neopixel"
+	| "led"
 	| "digital"
 	| "analog"
 	| "i2c_sda"
@@ -285,6 +286,8 @@ export const BOARDS: Board[] = [
 		],
 		pins: [
 			...row([14.19, 16.73, 19.27, 21.81], 1.5, [GND, VCC, SCL, SDA]),
+			// Onboard LED of the LOLIN S2 mini, not on the client's gerber
+			{ ...gpio(15, "led", "right"), x: 17.9, y: 21 },
 			// Tactile switches to GND, centered between their pads
 			...row([12, 24], 36, [gpio(16, "button"), gpio(17, "button")]),
 			...row([39.19, 41.73, 44.27, 46.81], 1.73, [VCC, VCC, V5, V5]),

@@ -103,6 +103,7 @@ i18n.use(initReactI18next).init({
 				kits_pin_touch: "Capacitive touch",
 				kits_pin_button: "Button",
 				kits_pin_neopixel: "NeoPixel (5V)",
+				kits_pin_led: "Onboard LED",
 				kits_pin_digital: "Digital",
 				kits_pin_analog: "Analog",
 				kits_pin_i2c_sda: "I2C SDA",
@@ -141,6 +142,7 @@ i18n.use(initReactI18next).init({
 				kits_pin_button_info: "Hardwired button: input pull-up only.",
 				kits_pin_neopixel_info:
 					"NeoPixel data, 5V level. Output only (e.g. LED strip or 5V digital out).",
+				kits_pin_led_info: "LED on the LOLIN S2 mini module. Output only.",
 				kits_pin_digital_info: "Digital input or output, PWM.",
 				kits_pin_analog_info: "Analog input or digital I/O.",
 				kits_pin_i2c_sda_info: "I2C data line, shared bus.",
@@ -528,6 +530,7 @@ i18n.use(initReactI18next).init({
 				kits_pin_touch: "Kapazitiver Touch",
 				kits_pin_button: "Taster",
 				kits_pin_neopixel: "NeoPixel (5V)",
+				kits_pin_led: "Onboard-LED",
 				kits_pin_digital: "Digital",
 				kits_pin_analog: "Analog",
 				kits_pin_i2c_sda: "I2C SDA",
@@ -567,6 +570,7 @@ i18n.use(initReactI18next).init({
 					"Fest verdrahteter Taster: nur Eingang mit Pull-up.",
 				kits_pin_neopixel_info:
 					"NeoPixel-Daten, 5V-Pegel. Nur Ausgang (z. B. LED-Streifen oder 5V-Digitalausgang).",
+				kits_pin_led_info: "LED auf dem LOLIN-S2-mini-Modul. Nur Ausgang.",
 				kits_pin_digital_info: "Digitaler Ein- oder Ausgang, PWM.",
 				kits_pin_analog_info: "Analog-Eingang oder Digital I/O.",
 				kits_pin_i2c_sda_info: "I2C-Datenleitung, gemeinsamer Bus.",
@@ -960,6 +964,7 @@ i18n.use(initReactI18next).init({
 				kits_pin_touch: "Táctil capacitivo",
 				kits_pin_button: "Botón",
 				kits_pin_neopixel: "NeoPixel (5V)",
+				kits_pin_led: "LED integrado",
 				kits_pin_digital: "Digital",
 				kits_pin_analog: "Analógico",
 				kits_pin_i2c_sda: "I2C SDA",
@@ -998,6 +1003,7 @@ i18n.use(initReactI18next).init({
 				kits_pin_button_info: "Pulsador cableado: solo entrada con pull-up.",
 				kits_pin_neopixel_info:
 					"Datos NeoPixel, nivel de 5V. Solo salida (p. ej. tira LED o salida digital de 5V).",
+				kits_pin_led_info: "LED del módulo LOLIN S2 mini. Solo salida.",
 				kits_pin_digital_info: "Entrada o salida digital, PWM.",
 				kits_pin_analog_info: "Entrada analógica o E/S digital.",
 				kits_pin_i2c_sda_info: "Línea de datos I2C, bus compartido.",
@@ -1381,6 +1387,7 @@ i18n.use(initReactI18next).init({
 				kits_pin_touch: "电容触摸",
 				kits_pin_button: "按钮",
 				kits_pin_neopixel: "NeoPixel（5V）",
+				kits_pin_led: "板载 LED",
 				kits_pin_digital: "数字",
 				kits_pin_analog: "模拟",
 				kits_pin_i2c_sda: "I2C SDA",
@@ -1419,6 +1426,7 @@ i18n.use(initReactI18next).init({
 				kits_pin_button_info: "固定连接的按钮：仅上拉输入。",
 				kits_pin_neopixel_info:
 					"NeoPixel 数据，5V 电平。仅输出（例如 LED 灯带或 5V 数字输出）。",
+				kits_pin_led_info: "LOLIN S2 mini 模块上的 LED。仅输出。",
 				kits_pin_digital_info: "数字输入或输出，PWM。",
 				kits_pin_analog_info: "模拟输入或数字 I/O。",
 				kits_pin_i2c_sda_info: "I2C 数据线，共享总线。",
