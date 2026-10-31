@@ -164,6 +164,8 @@ interface PinRowProps {
 	readOnly?: boolean;
 	/** Narrow container (e.g. a popover): always the wrapping mobile layout. */
 	compact?: boolean;
+	/** Hide the row menu (duplicate/delete), e.g. when the parent offers its own delete. */
+	hideMenu?: boolean;
 	thresholdUnit?: ThresholdUnit;
 	/** Live value shown on a full-width line below the row (inputs only). */
 	live?: ReactNode;
@@ -179,6 +181,7 @@ const PinRow = ({
 	index,
 	readOnly = false,
 	compact = false,
+	hideMenu = false,
 	thresholdUnit,
 	live,
 	showThreshold = false,
@@ -473,7 +476,8 @@ const PinRow = ({
 		/>
 	) : null;
 
-	const menuCell = readOnly ? (
+	const showMenu = !readOnly && !hideMenu;
+	const menuCell = !showMenu ? (
 		<Box />
 	) : (
 		<IconButton
@@ -543,7 +547,7 @@ const PinRow = ({
 					{menuCell}
 				</>
 			)}
-			{!readOnly && (
+			{showMenu && (
 				<PinMappingMenu
 					anchorEl={anchorEl}
 					onClose={() => setAnchorEl(null)}

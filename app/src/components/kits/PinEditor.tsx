@@ -1,4 +1,12 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {
+	Box,
+	Button,
+	IconButton,
+	Stack,
+	Tooltip,
+	Typography,
+} from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useIOStore } from "../../store/io";
 import {
@@ -10,13 +18,38 @@ import {
 } from "../../utils/pinout";
 import PinRow from "../pinmapping/PinRow";
 
-/** Every config of one GPIO, plus buttons to add one. */
+/** Caption above a config, with a button that deletes it. */
+const ConfigHeader = ({
+	label,
+	onDelete,
+}: {
+	label: string;
+	onDelete: () => void;
+}) => {
+	const { t } = useTranslation();
+	return (
+		<Stack direction="row" alignItems="center" justifyContent="space-between">
+			<Typography variant="caption" color="text.secondary">
+				{label}
+			</Typography>
+			<Tooltip title={t("delete")}>
+				<IconButton size="small" aria-label={t("delete")} onClick={onDelete}>
+					<DeleteIcon fontSize="small" />
+				</IconButton>
+			</Tooltip>
+		</Stack>
+	);
+};
+
+/** Every config of one GPIO, plus buttons to add or delete one. */
 const PinEditor = ({ pin }: { pin: GpioPin }) => {
 	const { t } = useTranslation();
 	const inputs = useIOStore((state) => state.inputs);
 	const outputs = useIOStore((state) => state.outputs);
 	const addInput = useIOStore((state) => state.addInput);
 	const addOutput = useIOStore((state) => state.addOutput);
+	const removeInput = useIOStore((state) => state.removeInput);
+	const removeOutput = useIOStore((state) => state.removeOutput);
 	const pinInputs = inputs.filter((input) => input.pin === pin.gpio);
 	const pinOutputs = outputs.filter((output) => output.pin === pin.gpio);
 	const configured = pinInputs.length + pinOutputs.length > 0;
@@ -34,18 +67,32 @@ const PinEditor = ({ pin }: { pin: GpioPin }) => {
 			<Stack spacing={1} mt={1}>
 				{pinInputs.map((input, index) => (
 					<Box key={input.uuid}>
-						<Typography variant="caption" color="text.secondary">
-							{t("kits_input")}
-						</Typography>
-						<PinRow config={input} type="input" index={index} compact />
+						<ConfigHeader
+							label={t("kits_input")}
+							onDelete={() => removeInput(input.uuid)}
+						/>
+						<PinRow
+							config={input}
+							type="input"
+							index={index}
+							compact
+							hideMenu
+						/>
 					</Box>
 				))}
 				{pinOutputs.map((output, index) => (
 					<Box key={output.uuid}>
-						<Typography variant="caption" color="text.secondary">
-							{t("kits_output")}
-						</Typography>
-						<PinRow config={output} type="output" index={index} compact />
+						<ConfigHeader
+							label={t("kits_output")}
+							onDelete={() => removeOutput(output.uuid)}
+						/>
+						<PinRow
+							config={output}
+							type="output"
+							index={index}
+							compact
+							hideMenu
+						/>
 					</Box>
 				))}
 			</Stack>
