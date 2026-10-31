@@ -15,6 +15,7 @@ import Modals from "./components/Modals";
 import NotFound from "./components/NotFound";
 import Sidebar from "./components/Sidebar";
 import Tester from "./components/Tester";
+import Tutorial from "./components/Tutorial";
 import UpdatePrompt from "./components/UpdatePrompt";
 import { darkTheme, lightTheme } from "./muiTheme.ts";
 import { useAppStore } from "./store/app";
@@ -56,6 +57,8 @@ function App() {
 							<Route path="/inspector" element={<Inspector />} />
 							<Route path="/uploader" element={<FirmwareUploader />} />
 							<Route path="/getting-started" element={<GettingStarted />} />
+							<Route path="/tutorial" element={<Tutorial />} />
+							<Route path="/tutorial/:chapterId" element={<Tutorial />} />
 							<Route path="/tester" element={<Tester />} />
 							<Route path="/kits" element={<Kits />} />
 							<Route

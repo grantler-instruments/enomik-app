@@ -93,6 +93,15 @@ const Home = () => {
 					>
 						{t("getting_started")}
 					</Button>
+					<Button
+						variant="outlined"
+						size="large"
+						component={NavLink}
+						to="/tutorial"
+						sx={{ minWidth: { sm: 180 } }}
+					>
+						{t("tutorial")}
+					</Button>
 				</Stack>
 			</Box>
 

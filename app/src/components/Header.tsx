@@ -44,6 +44,7 @@ const Header: React.FC = () => {
 		{ label: t("debugger"), path: "/debugger" },
 		{ label: t("inspector"), path: "/inspector" },
 		{ label: t("firmware_uploader"), path: "/uploader" },
+		{ label: t("tutorial"), path: "/tutorial" },
 	];
 
 	const handleMobileMenuClose = () => {
