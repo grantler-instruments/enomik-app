@@ -128,7 +128,20 @@ const en = {
 		"Something else? Upload a .bin from the GitHub releases page, or open an issue.",
 	],
 
-	tutorial_pairing_title: "Example: wireless pairing",
+	tutorial_examples_title: "Examples",
+	tutorial_examples_text: [
+		"Small projects that show what a client can do. Configure the precompiled client firmware in the web app, or build your own firmware from code:",
+	],
+	tutorial_examples_webapp_title: "Via web app",
+	tutorial_examples_webapp_text: [
+		"These examples use the precompiled client firmware. Wire up the hardware and set everything up in the Configurator, no code needed:",
+	],
+	tutorial_examples_code_title: "Via code",
+	tutorial_examples_code_text: [
+		"These examples use sketches from the library that you build and upload with the Arduino IDE. Use them for hardware that needs its own driver code, such as I2C sensors:",
+	],
+
+	tutorial_pairing_title: "Wireless pairing",
 	tutorial_pairing_text: [
 		"A client sends to the MAC addresses in its peer list. Add the dongle's address once and the client finds the dongle after every reboot. The dongle learns the client as soon as the client sends its first message.",
 	],
@@ -150,7 +163,7 @@ const en = {
 	tutorial_pairing_tip:
 		"Several clients can share one dongle: repeat step 2 for every client.",
 
-	tutorial_button_title: "Example: button to note",
+	tutorial_button_title: "Button to note",
 	tutorial_button_text: [
 		"Your first controller: a push button that plays a note.",
 	],
@@ -168,7 +181,7 @@ const en = {
 	tutorial_button_tip:
 		"Want a switch or a sustain pedal? Choose Control Change instead: pressing sends the max value, releasing the min value.",
 
-	tutorial_knob_title: "Example: knob to CC",
+	tutorial_knob_title: "Knob to CC",
 	tutorial_knob_text: [
 		"A potentiometer gives you a continuous controller, e.g. for a filter cutoff.",
 	],
@@ -184,7 +197,7 @@ const en = {
 	tutorial_knob_tip:
 		"No potentiometer at hand? Choose INPUT_TOUCH on a touch capable pin and touch a wire or a piece of foil.",
 
-	tutorial_led_title: "Example: MIDI to LED",
+	tutorial_led_title: "MIDI to LED",
 	tutorial_led_text: [
 		"The other direction: MIDI from your computer switches the onboard LED on pin 15.",
 	],
@@ -201,6 +214,33 @@ const en = {
 		"Choose PWM (analog) to dim the LED instead: the velocity or controller value sets the brightness.",
 	tutorial_led_tip_loopback:
 		"Combine it with the button example and enable MIDI loopback under Global: the button on pin 16 (note 16) now lights the LED directly on the board, no computer involved.",
+
+	tutorial_i2c_title: "I2C distance sensor",
+	tutorial_i2c_text: [
+		"I2C is a two-wire bus for sensors and displays. In this example a VL53L0X time-of-flight sensor measures the distance to your hand and the client turns it into MIDI.",
+		"Unlike buttons and knobs, I2C sensors need their own driver code, so this example uses a dedicated sketch instead of the generic client firmware.",
+	],
+	tutorial_i2c_wiring:
+		"Every I2C sensor has four pins. Connect them to the board with jumper wires:",
+	tutorial_i2c_pins: [
+		"SDA (data) to the SDA pin of the board.",
+		"SCL (clock) to the SCL pin of the board.",
+		"GND to GND.",
+		"VCC to 3.3V (most breakout boards also accept 5V, check your sensor).",
+	],
+	tutorial_i2c_board_note:
+		"Using an enomik board? Check the board layout on the Kits & Boards page: the I2C bus is already broken out to the Grove ports, so you can plug the sensor in without jumper wires.",
+	tutorial_i2c_upload_title: "Upload",
+	tutorial_i2c_upload: [
+		"Open the VL53L0X example in the Arduino IDE: File → Examples → ESP-NOW MIDI → client_vl53l0x.",
+		"Select your board and port and click Upload, as described in the Arduino IDE firmware chapter.",
+		"Press RESET when the upload has finished.",
+	],
+	tutorial_i2c_upload_link: "Firmware via Arduino IDE",
+	tutorial_i2c_test:
+		"Open the MIDI monitor and move your hand above the sensor. The MIDI messages change with the distance.",
+	tutorial_i2c_tip:
+		"Several sensors can share one I2C bus as long as each has a different address. Sensors are connected in parallel: SDA to SDA, SCL to SCL.",
 
 	tutorial_next_steps_title: "Next steps",
 	tutorial_next_steps_text: [
@@ -342,7 +382,20 @@ const de: typeof en = {
 		"Etwas anderes? Lade eine .bin von der GitHub-Releases-Seite hoch oder eröffne ein Issue.",
 	],
 
-	tutorial_pairing_title: "Beispiel: kabellos koppeln",
+	tutorial_examples_title: "Beispiele",
+	tutorial_examples_text: [
+		"Kleine Projekte, die zeigen, was ein Client kann. Konfiguriere die vorkompilierte Client-Firmware in der Web-App oder baue deine eigene Firmware aus Code:",
+	],
+	tutorial_examples_webapp_title: "Über die Web-App",
+	tutorial_examples_webapp_text: [
+		"Diese Beispiele nutzen die vorkompilierte Client-Firmware. Verdrahte die Hardware und richte alles im Konfigurator ein, ganz ohne Code:",
+	],
+	tutorial_examples_code_title: "Über Code",
+	tutorial_examples_code_text: [
+		"Diese Beispiele nutzen Sketches aus der Bibliothek, die du mit der Arduino IDE baust und hochlädst. Nutze sie für Hardware, die eigenen Treibercode braucht, etwa I2C-Sensoren:",
+	],
+
+	tutorial_pairing_title: "Kabellos koppeln",
 	tutorial_pairing_text: [
 		"Ein Client sendet an die MAC-Adressen in seiner Peer-Liste. Trage die Adresse des Dongles einmal ein, und der Client findet den Dongle nach jedem Neustart. Der Dongle lernt den Client kennen, sobald dieser seine erste Nachricht sendet.",
 	],
@@ -364,7 +417,7 @@ const de: typeof en = {
 	tutorial_pairing_tip:
 		"Mehrere Clients können sich einen Dongle teilen: Schritt 2 für jeden Client wiederholen.",
 
-	tutorial_button_title: "Beispiel: Taster zu Note",
+	tutorial_button_title: "Taster zu Note",
 	tutorial_button_text: [
 		"Dein erster Controller: ein Taster, der eine Note spielt.",
 	],
@@ -382,7 +435,7 @@ const de: typeof en = {
 	tutorial_button_tip:
 		"Lieber ein Schalter oder Sustain-Pedal? Wähle stattdessen Control Change: Drücken sendet den Max-Wert, Loslassen den Min-Wert.",
 
-	tutorial_knob_title: "Beispiel: Drehregler zu CC",
+	tutorial_knob_title: "Drehregler zu CC",
 	tutorial_knob_text: [
 		"Ein Potentiometer ist ein stufenloser Controller, z. B. für die Filterfrequenz.",
 	],
@@ -398,7 +451,7 @@ const de: typeof en = {
 	tutorial_knob_tip:
 		"Kein Potentiometer zur Hand? Wähle INPUT_TOUCH auf einem touchfähigen Pin und berühre ein Kabel oder ein Stück Alufolie.",
 
-	tutorial_led_title: "Beispiel: MIDI zu LED",
+	tutorial_led_title: "MIDI zu LED",
 	tutorial_led_text: [
 		"Die andere Richtung: MIDI von deinem Computer schaltet die Onboard-LED an Pin 15.",
 	],
@@ -415,6 +468,33 @@ const de: typeof en = {
 		"Wähle PWM (analog), um die LED zu dimmen: Velocity oder Controller-Wert bestimmen die Helligkeit.",
 	tutorial_led_tip_loopback:
 		"Kombiniere es mit dem Taster-Beispiel und aktiviere MIDI-Loopback unter Global: Der Taster an Pin 16 (Note 16) schaltet die LED dann direkt auf dem Board, ganz ohne Computer.",
+
+	tutorial_i2c_title: "I2C-Abstandssensor",
+	tutorial_i2c_text: [
+		"I2C ist ein Zweidraht-Bus für Sensoren und Displays. In diesem Beispiel misst ein VL53L0X Time-of-Flight-Sensor den Abstand zu deiner Hand, und der Client macht daraus MIDI.",
+		"Anders als Taster und Potis brauchen I2C-Sensoren eigenen Treibercode. Deshalb nutzt dieses Beispiel einen eigenen Sketch statt der generischen Client-Firmware.",
+	],
+	tutorial_i2c_wiring:
+		"Jeder I2C-Sensor hat vier Pins. Verbinde sie mit Jumper-Kabeln mit dem Board:",
+	tutorial_i2c_pins: [
+		"SDA (Daten) an den SDA-Pin des Boards.",
+		"SCL (Takt) an den SCL-Pin des Boards.",
+		"GND an GND.",
+		"VCC an 3,3 V (die meisten Breakout-Boards vertragen auch 5 V, prüfe deinen Sensor).",
+	],
+	tutorial_i2c_board_note:
+		"Du nutzt ein enomik-Board? Prüfe das Board-Layout auf der Seite Kits & Boards: Der I2C-Bus ist bereits auf die Grove-Ports herausgeführt, du kannst den Sensor also ohne Jumper-Kabel anstecken.",
+	tutorial_i2c_upload_title: "Hochladen",
+	tutorial_i2c_upload: [
+		"Öffne das VL53L0X-Beispiel in der Arduino IDE: Datei → Beispiele → ESP-NOW MIDI → client_vl53l0x.",
+		"Wähle Board und Port und klicke auf Hochladen, wie im Kapitel zur Firmware über die Arduino IDE beschrieben.",
+		"Drücke RESET, wenn das Hochladen abgeschlossen ist.",
+	],
+	tutorial_i2c_upload_link: "Firmware über die Arduino IDE",
+	tutorial_i2c_test:
+		"Öffne den MIDI-Monitor und bewege deine Hand über dem Sensor. Die MIDI-Nachrichten ändern sich mit dem Abstand.",
+	tutorial_i2c_tip:
+		"Mehrere Sensoren können sich einen I2C-Bus teilen, solange jeder eine andere Adresse hat. Sensoren werden parallel angeschlossen: SDA an SDA, SCL an SCL.",
 
 	tutorial_next_steps_title: "Wie geht's weiter",
 	tutorial_next_steps_text: [
@@ -556,7 +636,20 @@ const es: typeof en = {
 		"¿Otra cosa? Sube un .bin desde la página de releases de GitHub o abre un issue.",
 	],
 
-	tutorial_pairing_title: "Ejemplo: emparejamiento inalámbrico",
+	tutorial_examples_title: "Ejemplos",
+	tutorial_examples_text: [
+		"Pequeños proyectos que muestran lo que puede hacer un cliente. Configura el firmware de cliente precompilado en la app web o crea tu propio firmware con código:",
+	],
+	tutorial_examples_webapp_title: "Con la app web",
+	tutorial_examples_webapp_text: [
+		"Estos ejemplos usan el firmware de cliente precompilado. Conecta el hardware y configúralo todo en el Configurador, sin código:",
+	],
+	tutorial_examples_code_title: "Con código",
+	tutorial_examples_code_text: [
+		"Estos ejemplos usan sketches de la biblioteca que compilas y subes con el Arduino IDE. Úsalos para hardware que necesita su propio código de driver, como sensores I2C:",
+	],
+
+	tutorial_pairing_title: "Emparejamiento inalámbrico",
 	tutorial_pairing_text: [
 		"Un cliente envía a las direcciones MAC de su lista de peers. Añade la dirección del dongle una vez y el cliente lo encontrará tras cada reinicio. El dongle conoce al cliente en cuanto este envía su primer mensaje.",
 	],
@@ -578,7 +671,7 @@ const es: typeof en = {
 	tutorial_pairing_tip:
 		"Varios clientes pueden compartir un dongle: repite el paso 2 para cada cliente.",
 
-	tutorial_button_title: "Ejemplo: botón a nota",
+	tutorial_button_title: "Botón a nota",
 	tutorial_button_text: [
 		"Tu primer controlador: un pulsador que toca una nota.",
 	],
@@ -596,7 +689,7 @@ const es: typeof en = {
 	tutorial_button_tip:
 		"¿Prefieres un interruptor o un pedal de sustain? Elige Control Change: pulsar envía el valor máx, soltar el mín.",
 
-	tutorial_knob_title: "Ejemplo: potenciómetro a CC",
+	tutorial_knob_title: "Potenciómetro a CC",
 	tutorial_knob_text: [
 		"Un potenciómetro te da un controlador continuo, p. ej. para el corte de un filtro.",
 	],
@@ -612,7 +705,7 @@ const es: typeof en = {
 	tutorial_knob_tip:
 		"¿No tienes potenciómetro? Elige INPUT_TOUCH en un pin táctil y toca un cable o un trozo de papel de aluminio.",
 
-	tutorial_led_title: "Ejemplo: MIDI a LED",
+	tutorial_led_title: "MIDI a LED",
 	tutorial_led_text: [
 		"La otra dirección: el MIDI de tu ordenador enciende el LED integrado en el pin 15.",
 	],
@@ -629,6 +722,33 @@ const es: typeof en = {
 		"Elige PWM (analog) para atenuar el LED: la velocidad o el valor del controlador fija el brillo.",
 	tutorial_led_tip_loopback:
 		"Combínalo con el ejemplo del botón y activa MIDI loopback en Global: el botón del pin 16 (nota 16) enciende el LED directamente en la placa, sin ordenador.",
+
+	tutorial_i2c_title: "Sensor de distancia I2C",
+	tutorial_i2c_text: [
+		"I2C es un bus de dos hilos para sensores y pantallas. En este ejemplo, un sensor time-of-flight VL53L0X mide la distancia a tu mano y el cliente la convierte en MIDI.",
+		"A diferencia de los botones y potenciómetros, los sensores I2C necesitan su propio código de driver, así que este ejemplo usa un sketch propio en lugar del firmware de cliente genérico.",
+	],
+	tutorial_i2c_wiring:
+		"Cada sensor I2C tiene cuatro pines. Conéctalos a la placa con cables jumper:",
+	tutorial_i2c_pins: [
+		"SDA (datos) al pin SDA de la placa.",
+		"SCL (reloj) al pin SCL de la placa.",
+		"GND a GND.",
+		"VCC a 3,3 V (la mayoría de módulos también aceptan 5 V, comprueba tu sensor).",
+	],
+	tutorial_i2c_board_note:
+		"¿Usas una placa enomik? Consulta el diseño de la placa en la página Kits y placas: el bus I2C ya está disponible en los puertos Grove, así que puedes conectar el sensor sin cables jumper.",
+	tutorial_i2c_upload_title: "Subir",
+	tutorial_i2c_upload: [
+		"Abre el ejemplo VL53L0X en el Arduino IDE: Archivo → Ejemplos → ESP-NOW MIDI → client_vl53l0x.",
+		"Selecciona la placa y el puerto y haz clic en Subir, como se describe en el capítulo de firmware con el Arduino IDE.",
+		"Pulsa RESET cuando termine la subida.",
+	],
+	tutorial_i2c_upload_link: "Firmware con el Arduino IDE",
+	tutorial_i2c_test:
+		"Abre el monitor MIDI y mueve la mano sobre el sensor. Los mensajes MIDI cambian con la distancia.",
+	tutorial_i2c_tip:
+		"Varios sensores pueden compartir un bus I2C siempre que cada uno tenga una dirección distinta. Los sensores se conectan en paralelo: SDA con SDA, SCL con SCL.",
 
 	tutorial_next_steps_title: "Próximos pasos",
 	tutorial_next_steps_text: [
@@ -770,7 +890,20 @@ const zh: typeof en = {
 		"其他问题？从 GitHub 发布页面上传 .bin 文件，或提交 issue。",
 	],
 
-	tutorial_pairing_title: "示例：无线配对",
+	tutorial_examples_title: "示例",
+	tutorial_examples_text: [
+		"展示客户端功能的小项目。可以在网页应用中配置预编译的客户端固件，也可以用代码构建自己的固件：",
+	],
+	tutorial_examples_webapp_title: "通过网页应用",
+	tutorial_examples_webapp_text: [
+		"这些示例使用预编译的客户端固件。连接好硬件，在配置器中完成所有设置，无需代码：",
+	],
+	tutorial_examples_code_title: "通过代码",
+	tutorial_examples_code_text: [
+		"这些示例使用库中的程序，用 Arduino IDE 编译并上传。适用于需要专门驱动代码的硬件，例如 I2C 传感器：",
+	],
+
+	tutorial_pairing_title: "无线配对",
 	tutorial_pairing_text: [
 		"客户端会向其对端列表中的 MAC 地址发送消息。添加一次适配器地址后，客户端每次重启都能找到适配器。客户端发送第一条消息后，适配器就会认识它。",
 	],
@@ -792,7 +925,7 @@ const zh: typeof en = {
 	tutorial_pairing_tip:
 		"多个客户端可以共用一个适配器：对每个客户端重复步骤 2。",
 
-	tutorial_button_title: "示例：按钮到音符",
+	tutorial_button_title: "按钮到音符",
 	tutorial_button_text: ["你的第一个控制器：一个演奏音符的按钮。"],
 	tutorial_button_wiring:
 		"enomik 客户端在引脚 16 和 17 上有两个按钮，已接到 GND。使用其他开发板时，将按钮接在 GPIO 16（和 17）与 GND 之间。无需电阻：内部上拉使引脚保持高电平，直到按钮将其拉低到地。",
@@ -808,7 +941,7 @@ const zh: typeof en = {
 	tutorial_button_tip:
 		"想要开关或延音踏板？改选 Control Change：按下发送最大值，松开发送最小值。",
 
-	tutorial_knob_title: "示例：旋钮到 CC",
+	tutorial_knob_title: "旋钮到 CC",
 	tutorial_knob_text: ["电位器提供连续控制，例如用于滤波器截止频率。"],
 	tutorial_knob_wiring:
 		"将两侧引脚接 3V3 和 GND，中间引脚（滑动端）接支持模拟输入的引脚。套件与电路板页面显示哪些引脚可以读取模拟值。",
@@ -822,7 +955,7 @@ const zh: typeof en = {
 	tutorial_knob_tip:
 		"手边没有电位器？在支持触摸的引脚上选择 INPUT_TOUCH，然后触摸一根导线或一片铝箔。",
 
-	tutorial_led_title: "示例：MIDI 到 LED",
+	tutorial_led_title: "MIDI 到 LED",
 	tutorial_led_text: ["另一个方向：来自电脑的 MIDI 控制引脚 15 上的板载 LED。"],
 	tutorial_led_wiring:
 		"无需接线：LOLIN S2 Mini 在 GPIO 15 上有板载 LED。无需额外元件。",
@@ -837,6 +970,33 @@ const zh: typeof en = {
 		"改选 PWM (analog) 可调节 LED 亮度：力度或控制器值决定亮度。",
 	tutorial_led_tip_loopback:
 		"与按钮示例结合，并在全局中启用 MIDI 回环：引脚 16 上的按钮（音符 16）将直接在开发板上点亮 LED，无需电脑。",
+
+	tutorial_i2c_title: "I2C 距离传感器",
+	tutorial_i2c_text: [
+		"I2C 是用于传感器和显示屏的双线总线。在本示例中，VL53L0X 飞行时间传感器测量到你手的距离，客户端将其转换为 MIDI。",
+		"与按钮和旋钮不同，I2C 传感器需要专门的驱动代码，因此本示例使用专用程序，而不是通用客户端固件。",
+	],
+	tutorial_i2c_wiring:
+		"每个 I2C 传感器有四个引脚。用杜邦线将它们连接到开发板：",
+	tutorial_i2c_pins: [
+		"SDA（数据）接开发板的 SDA 引脚。",
+		"SCL（时钟）接开发板的 SCL 引脚。",
+		"GND 接 GND。",
+		"VCC 接 3.3V（大多数模块也支持 5V，请查看你的传感器）。",
+	],
+	tutorial_i2c_board_note:
+		"使用 enomik 开发板？请在 套件与电路板 页面查看开发板布局：I2C 总线已引出到 Grove 接口，无需杜邦线即可直接插上传感器。",
+	tutorial_i2c_upload_title: "上传",
+	tutorial_i2c_upload: [
+		"在 Arduino IDE 中打开 VL53L0X 示例：文件 → 示例 → ESP-NOW MIDI → client_vl53l0x。",
+		"选择开发板和端口，然后点击 上传，具体见“通过 Arduino IDE”固件章节。",
+		"上传完成后按 RESET。",
+	],
+	tutorial_i2c_upload_link: "通过 Arduino IDE 上传固件",
+	tutorial_i2c_test:
+		"打开 MIDI 监视器，在传感器上方移动你的手。MIDI 消息会随距离变化。",
+	tutorial_i2c_tip:
+		"多个传感器可以共用一条 I2C 总线，只要每个传感器的地址不同。传感器并联连接：SDA 接 SDA，SCL 接 SCL。",
 
 	tutorial_next_steps_title: "下一步",
 	tutorial_next_steps_text: ["你已经制作了第一个无线 MIDI 设备。接下来可以："],

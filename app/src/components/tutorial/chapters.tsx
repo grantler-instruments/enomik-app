@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import type { FC, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 import {
 	CodeBlock,
 	Heading,
@@ -203,6 +204,21 @@ extern "C" void app_main(void)
 }
 `;
 
+/** Buttons to the subchapters of the current page. */
+const SectionLinks = ({ sections }: { sections: Chapter[] }) => {
+	const { t } = useTranslation();
+	const { pathname } = useLocation();
+	const base = pathname.replace(/\/$/, "");
+	return (
+		<LinkButtons
+			actions={sections.map((section) => ({
+				label: t(section.titleKey),
+				link: `${base}/${section.id}`,
+			}))}
+		/>
+	);
+};
+
 const LibraryLinks = () => {
 	const { t } = useTranslation();
 	return (
@@ -232,12 +248,7 @@ const Platforms = () => {
 
 			<Heading>{t("tutorial_platforms_code_title")}</Heading>
 			<Typography variant="body1">{t("tutorial_platforms_code")}</Typography>
-			<LinkButtons
-				actions={PLATFORM_SECTIONS.map((section) => ({
-					label: t(section.titleKey),
-					link: `/tutorial/platforms/${section.id}`,
-				}))}
-			/>
+			<SectionLinks sections={PLATFORM_SECTIONS} />
 			<LibraryLinks />
 		</>
 	);
@@ -300,20 +311,12 @@ const IdfPlatform = () => {
 	);
 };
 
-const Firmware = () => {
-	const { t } = useTranslation();
-	return (
-		<>
-			<Paragraphs i18nKey="tutorial_firmware_text" />
-			<LinkButtons
-				actions={FIRMWARE_SECTIONS.map((section) => ({
-					label: t(section.titleKey),
-					link: `/tutorial/firmware/${section.id}`,
-				}))}
-			/>
-		</>
-	);
-};
+const Firmware = () => (
+	<>
+		<Paragraphs i18nKey="tutorial_firmware_text" />
+		<SectionLinks sections={FIRMWARE_SECTIONS} />
+	</>
+);
 
 const FirmwareWeb = () => {
 	const { t } = useTranslation();
@@ -434,6 +437,57 @@ const LedExample = () => {
 	);
 };
 
+const I2cExample = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_i2c_text" />
+			<Heading>{t("tutorial_wiring")}</Heading>
+			<Typography variant="body1">{t("tutorial_i2c_wiring")}</Typography>
+			<Steps i18nKey="tutorial_i2c_pins" ordered={false} />
+			<Note>{t("tutorial_i2c_board_note")}</Note>
+			<LinkButtons actions={[{ label: t("kits_title"), link: "/kits" }]} />
+			<Heading>{t("tutorial_i2c_upload_title")}</Heading>
+			<Steps i18nKey="tutorial_i2c_upload" />
+			<LinkButtons
+				actions={[
+					{
+						label: t("tutorial_i2c_upload_link"),
+						link: "/tutorial/firmware/arduino",
+					},
+				]}
+			/>
+			<Heading>{t("tutorial_test")}</Heading>
+			<Typography variant="body1">{t("tutorial_i2c_test")}</Typography>
+			<LinkButtons
+				actions={[{ label: t("midi_monitor"), link: "/debugger" }]}
+			/>
+			<Note severity="success">{t("tutorial_i2c_tip")}</Note>
+		</>
+	);
+};
+
+const Examples = () => (
+	<>
+		<Paragraphs i18nKey="tutorial_examples_text" />
+		<SectionLinks sections={EXAMPLE_SECTIONS} />
+	</>
+);
+
+const WebappExamples = () => (
+	<>
+		<Paragraphs i18nKey="tutorial_examples_webapp_text" />
+		<SectionLinks sections={WEBAPP_EXAMPLES} />
+	</>
+);
+
+const CodeExamples = () => (
+	<>
+		<Paragraphs i18nKey="tutorial_examples_code_text" />
+		<SectionLinks sections={CODE_EXAMPLES} />
+	</>
+);
+
 const NextSteps = () => {
 	const { t } = useTranslation();
 	return (
@@ -462,6 +516,32 @@ export type Chapter = {
 	Content: FC;
 	sections?: Chapter[];
 };
+
+const WEBAPP_EXAMPLES: Chapter[] = [
+	{ id: "button", titleKey: "tutorial_button_title", Content: ButtonExample },
+	{ id: "knob", titleKey: "tutorial_knob_title", Content: KnobExample },
+	{ id: "led", titleKey: "tutorial_led_title", Content: LedExample },
+	{ id: "pairing", titleKey: "tutorial_pairing_title", Content: Pairing },
+];
+
+const CODE_EXAMPLES: Chapter[] = [
+	{ id: "i2c", titleKey: "tutorial_i2c_title", Content: I2cExample },
+];
+
+const EXAMPLE_SECTIONS: Chapter[] = [
+	{
+		id: "webapp",
+		titleKey: "tutorial_examples_webapp_title",
+		Content: WebappExamples,
+		sections: WEBAPP_EXAMPLES,
+	},
+	{
+		id: "code",
+		titleKey: "tutorial_examples_code_title",
+		Content: CodeExamples,
+		sections: CODE_EXAMPLES,
+	},
+];
 
 const FIRMWARE_SECTIONS: Chapter[] = [
 	{ id: "web", titleKey: "tutorial_firmware_web_title", Content: FirmwareWeb },
@@ -514,10 +594,12 @@ export const CHAPTERS: Chapter[] = [
 		Content: Firmware,
 		sections: FIRMWARE_SECTIONS,
 	},
-	{ id: "button", titleKey: "tutorial_button_title", Content: ButtonExample },
-	{ id: "knob", titleKey: "tutorial_knob_title", Content: KnobExample },
-	{ id: "led", titleKey: "tutorial_led_title", Content: LedExample },
-	{ id: "pairing", titleKey: "tutorial_pairing_title", Content: Pairing },
+	{
+		id: "examples",
+		titleKey: "tutorial_examples_title",
+		Content: Examples,
+		sections: EXAMPLE_SECTIONS,
+	},
 	{
 		id: "next-steps",
 		titleKey: "tutorial_next_steps_title",
@@ -533,17 +615,21 @@ export type TutorialPage = {
 	depth: number;
 };
 
-export const PAGES: TutorialPage[] = CHAPTERS.flatMap((chapter, index) => [
-	{
-		chapter,
-		path: `/tutorial/${chapter.id}`,
-		number: `${index + 1}`,
-		depth: 0,
-	},
-	...(chapter.sections ?? []).map((section, sectionIndex) => ({
-		chapter: section,
-		path: `/tutorial/${chapter.id}/${section.id}`,
-		number: `${index + 1}.${sectionIndex + 1}`,
-		depth: 1,
-	})),
-]);
+const flatten = (
+	chapters: Chapter[],
+	parentPath: string,
+	parentNumber: string,
+	depth: number,
+): TutorialPage[] =>
+	chapters.flatMap((chapter, index) => {
+		const path = `${parentPath}/${chapter.id}`;
+		const number = parentNumber
+			? `${parentNumber}.${index + 1}`
+			: `${index + 1}`;
+		return [
+			{ chapter, path, number, depth },
+			...flatten(chapter.sections ?? [], path, number, depth + 1),
+		];
+	});
+
+export const PAGES: TutorialPage[] = flatten(CHAPTERS, "/tutorial", "", 0);

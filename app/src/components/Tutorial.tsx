@@ -17,8 +17,8 @@ import { PAGES } from "./tutorial/chapters";
 
 const Tutorial = () => {
 	const { t } = useTranslation();
-	const { chapterId, sectionId } = useParams();
-	const path = ["/tutorial", chapterId, sectionId].filter(Boolean).join("/");
+	const { "*": rest = "" } = useParams();
+	const path = `/tutorial/${rest}`.replace(/\/+$/, "");
 	const index = PAGES.findIndex((page) => page.path === path);
 	const topRef = useRef<HTMLDivElement>(null);
 
