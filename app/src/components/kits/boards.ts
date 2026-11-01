@@ -450,3 +450,80 @@ export const BOARDS: Board[] = [
 		],
 	},
 ];
+
+// LOLIN S2 mini v1.0.0, top view, USB-C at the bottom. Size, mounting holes and
+// header grid from the wemos.cc dimension drawing (dim_s2_mini_v1.0.0.pdf) and
+// pinout (s2_mini_v1.0.0_4_16x9.jpg): two double 2.54 mm headers, the outer
+// columns 22.86 mm apart like the D1 mini.
+const S2_ROWS = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => 7.62 + i * 2.54);
+/** GPIO 1–10 are on ADC1, which still works while the radio is on. */
+const s2Gpio = (n: number, side: LabelSide) =>
+	gpio(n, n >= 1 && n <= 10 ? "analog" : "digital", side);
+
+export const LOLIN_S2_MINI: Board = {
+	id: "lolin_s2_mini",
+	name: "LOLIN S2 mini",
+	descriptionKey: "kits_board_s2_mini_desc",
+	width: 25.4,
+	height: 34.3,
+	cornerRadius: 1.5,
+	mountingHoles: [
+		{ x: 2.5, y: 3.2, diameter: 2 },
+		{ x: 22.9, y: 3.2, diameter: 2 },
+	],
+	outlines: [
+		{
+			name: "ESP32-S2",
+			x: 10.6,
+			y: 12.7,
+			width: 7.3,
+			height: 7.5,
+			part: true,
+		},
+		{ name: "USB-C", x: 8.1, y: 27, width: 9.2, height: 7.3 },
+		{ name: "RST", x: 1.4, y: 28.3, width: 3.2, height: 5 },
+		{ name: "BOOT", x: 22.2, y: 28.3, width: 3.2, height: 5 },
+	],
+	groups: [],
+	pins: [
+		...sideColumn(
+			1.27,
+			S2_ROWS,
+			[
+				pin("EN", "nc"),
+				...[3, 5, 7, 9, 11, 12].map((n) => s2Gpio(n, "left")),
+				pin("3V3", "power_3v3"),
+			],
+			"left",
+		),
+		...column(
+			3.81,
+			S2_ROWS,
+			[1, 2, 4, 6, 8, 10, 13, 14].map((n) => s2Gpio(n, "right")),
+		),
+		...column(21.59, S2_ROWS, [
+			...[40, 38, 36, 34, 21, 17].map((n) => s2Gpio(n, "left")),
+			{ ...GND, labelSide: "left" },
+			// Shared with the blue onboard LED
+			gpio(15, "led", "left"),
+		]),
+		...sideColumn(
+			24.13,
+			S2_ROWS,
+			[
+				...[39, 37, 35, 33, 18, 16].map((n) => s2Gpio(n, "right")),
+				GND,
+				pin("VBUS", "power_5v"),
+			],
+			"right",
+		),
+		// Onboard BOOT button to GND
+		{ ...gpio(0, "button", "left"), x: 23.8, y: 30.8 },
+	],
+};
+
+/** What the configurator can show: our kit, or a bare dev board. */
+export const BOARD_SETS: { id: string; name: string; boards: Board[] }[] = [
+	{ id: "enomik_3000", name: "enomik 3000 client + extender", boards: BOARDS },
+	{ id: "lolin_s2_mini", name: "LOLIN S2 mini", boards: [LOLIN_S2_MINI] },
+];

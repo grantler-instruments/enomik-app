@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { BOARDS, type BoardPin, type PinType } from "../components/kits/boards";
+import {
+	BOARDS,
+	type BoardPin,
+	LOLIN_S2_MINI,
+	type PinType,
+} from "../components/kits/boards";
 import type { InputPinConfig, OutputPinConfig } from "../store/io";
 import {
 	MIDI_CONTROL_CHANGE,
@@ -184,7 +189,7 @@ describe("configSummary", () => {
 	});
 });
 
-describe.each(BOARDS)("board $name", (board) => {
+describe.each([...BOARDS, LOLIN_S2_MINI])("board $name", (board) => {
 	const inside = (x: number, y: number) =>
 		x >= 0 && x <= board.width && y >= 0 && y <= board.height;
 
@@ -301,5 +306,31 @@ describe("enomik 3000 extender v0.5.1", () => {
 		);
 		for (const p of board?.pins ?? [])
 			if (p.gpio !== undefined) expect(idc.has(p.gpio), p.label).toBe(true);
+	});
+});
+
+describe("LOLIN S2 mini", () => {
+	const gpios = (type: PinType) =>
+		LOLIN_S2_MINI.pins
+			.filter((p) => p.type === type)
+			.map((p) => p.gpio)
+			.sort((a, b) => (a ?? 0) - (b ?? 0));
+
+	it("has 32 header pads and the BOOT button", () => {
+		expect(LOLIN_S2_MINI.pins).toHaveLength(33);
+		expect(gpios("button")).toEqual([0]);
+	});
+
+	it("has the onboard LED on 15 and analog on ADC1 (1–10)", () => {
+		expect(gpios("led")).toEqual([15]);
+		expect(gpios("analog")).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+	});
+
+	it("breaks out the 27 header GPIOs once each", () => {
+		const header = LOLIN_S2_MINI.pins
+			.filter((p) => p.gpio !== undefined && p.type !== "button")
+			.map((p) => p.gpio);
+		expect(new Set(header).size).toBe(27);
+		expect(header).toHaveLength(27);
 	});
 });

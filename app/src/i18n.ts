@@ -165,6 +165,9 @@ i18n.use(initReactI18next).init({
 				kits_deploy_hint:
 					"Changes go to the configurator; deploy them from there.",
 				section_board: "Board",
+				board_select: "Board",
+				kits_board_s2_mini_desc:
+					"The bare LOLIN S2 mini dev board. GPIO 1–10 read analog values (ADC1), GPIO 1–14 also work as capacitive touch inputs, GPIO 15 drives the onboard LED and GPIO 0 is the BOOT button.",
 				home_esp_now_midi:
 					"to the rescue! It delivers fast, stable, low-latency wireless MIDI, ideal for live performances, instruments, and embedded systems.",
 				home_utilities: "Equipped with Utilities",
@@ -594,6 +597,9 @@ i18n.use(initReactI18next).init({
 				kits_deploy_hint:
 					"Änderungen landen im Konfigurator; von dort aus deployen.",
 				section_board: "Board",
+				board_select: "Board",
+				kits_board_s2_mini_desc:
+					"Das nackte LOLIN S2 mini Dev-Board. GPIO 1–10 lesen analoge Werte (ADC1), GPIO 1–14 funktionieren auch als kapazitive Touch-Eingänge, GPIO 15 steuert die Onboard-LED und GPIO 0 ist der BOOT-Taster.",
 				home_esp_now_midi:
 					"Zur Rettung! Es bietet schnelles, stabiles, latenzfreies drahtloses MIDI, ideal für Live-Performances, Instrumente und eingebettete Systeme.",
 				home_utilities: "Ausgestattet mit Utilities",
@@ -1028,6 +1034,9 @@ i18n.use(initReactI18next).init({
 				kits_deploy_hint:
 					"Los cambios van al configurador; despliégalos desde allí.",
 				section_board: "Placa",
+				board_select: "Placa",
+				kits_board_s2_mini_desc:
+					"La placa de desarrollo LOLIN S2 mini sola. GPIO 1–10 leen valores analógicos (ADC1), GPIO 1–14 también sirven como entradas táctiles capacitivas, GPIO 15 controla el LED integrado y GPIO 0 es el botón BOOT.",
 				home_utilities: "Equipado con utilidades",
 				home_utilities_description: "Monitor MIDI y cargador de firmware",
 				home_utilities_description_includes: "La aplicación incluye un",
@@ -1451,6 +1460,9 @@ i18n.use(initReactI18next).init({
 				kits_assignable: "点击分配",
 				kits_deploy_hint: "更改会进入配置器，请在那里部署。",
 				section_board: "电路板",
+				board_select: "电路板",
+				kits_board_s2_mini_desc:
+					"单独的 LOLIN S2 mini 开发板。GPIO 1–10 可读取模拟值（ADC1），GPIO 1–14 也可用作电容触摸输入，GPIO 15 驱动板载 LED，GPIO 0 为 BOOT 按键。",
 				home_esp_now_midi:
 					"前来救场！它提供快速、稳定、低延迟的无线 MIDI，非常适合现场演出、乐器和嵌入式系统。",
 				home_utilities: "配备实用工具",

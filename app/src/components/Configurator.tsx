@@ -13,7 +13,9 @@ import {
 	Button,
 	Container,
 	IconButton,
+	MenuItem,
 	Snackbar,
+	TextField,
 	Tooltip,
 	Typography,
 } from "@mui/material";
@@ -25,7 +27,7 @@ import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useDevice, useDeviceKind } from "../hooks/useDevice";
-import { useAppStore } from "../store/app";
+import { useAccordionOpen, useAppStore } from "../store/app";
 import {
 	type DeviceKind,
 	dongleConfigBlocker,
@@ -60,7 +62,7 @@ import DeviceKindChooser from "./DeviceKindChooser";
 import Globals from "./Globals";
 import Inputs from "./Inputs";
 import BoardDiagram from "./kits/BoardDiagram";
-import { BOARDS } from "./kits/boards";
+import { BOARD_SETS } from "./kits/boards";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import Outputs from "./Outputs";
 import Peers from "./Peers";
@@ -72,9 +74,16 @@ import {
 	WirelessMidiIcon,
 } from "./SectionIcons";
 
+/** Largest drawing scale of a board diagram. */
+const BOARD_PX_PER_MM = 14;
+
 const Configurator = () => {
 	const { t } = useTranslation();
 	const showHints = useAppStore((state) => state.showHints);
+	const boardSetId = useAppStore((state) => state.configuratorBoard);
+	const setBoardSetId = useAppStore((state) => state.setConfiguratorBoard);
+	const boardSet =
+		BOARD_SETS.find((set) => set.id === boardSetId) ?? BOARD_SETS[0];
 	const selectedOutputId = useMIDIStore(
 		(state) => state.selectedConfiguratorOutputDevice,
 	);
@@ -120,18 +129,27 @@ const Configurator = () => {
 	>("success");
 	const [deploying, setDeploying] = useState(false);
 	const [loadingFromDevice, setLoadingFromDevice] = useState(false);
-	const [globalOpen, setGlobalOpen] = useState(() => {
-		const s = useConfig.getState();
-		return s.midiLoopback || s.powerSave || s.name !== "";
-	});
-	const [boardOpen, setBoardOpen] = useState(false);
-	const [inputsOpen, setInputsOpen] = useState(
-		() => useConfig.getState().inputs.length > 0,
+	const [globalOpen, setGlobalOpen] = useAccordionOpen(
+		"configurator_global",
+		() => {
+			const s = useConfig.getState();
+			return s.midiLoopback || s.powerSave || s.name !== "";
+		},
 	);
-	const [outputsOpen, setOutputsOpen] = useState(
-		() => useConfig.getState().outputs.length > 0,
+	const [boardOpen, setBoardOpen] = useAccordionOpen(
+		"configurator_board",
+		true,
 	);
-	const [peersOpen, setPeersOpen] = useState(
+	const [inputsOpen, setInputsOpen] = useAccordionOpen(
+		"configurator_inputs",
+		false,
+	);
+	const [outputsOpen, setOutputsOpen] = useAccordionOpen(
+		"configurator_outputs",
+		false,
+	);
+	const [peersOpen, setPeersOpen] = useAccordionOpen(
+		"configurator_peers",
 		() => useConfig.getState().peers.length > 0,
 	);
 
@@ -596,6 +614,20 @@ const Configurator = () => {
 								/>
 							</AccordionSummary>
 							<AccordionDetails>
+								<TextField
+									select
+									size="small"
+									label={t("board_select")}
+									value={boardSet.id}
+									onChange={(e) => setBoardSetId(e.target.value)}
+									sx={{ mb: 2, minWidth: 280 }}
+								>
+									{BOARD_SETS.map((set) => (
+										<MenuItem key={set.id} value={set.id}>
+											{set.name}
+										</MenuItem>
+									))}
+								</TextField>
 								<Alert severity="info" icon={<TouchAppIcon />} sx={{ mb: 2 }}>
 									{t("kits_click_to_configure")}
 								</Alert>
@@ -605,11 +637,13 @@ const Configurator = () => {
 									flexDirection={{ xs: "column", lg: "row" }}
 									gap={3}
 								>
-									{BOARDS.map((board) => (
+									{boardSet.boards.map((board) => (
 										<Box
 											key={board.id}
 											flex={`${board.width} 1 0`}
 											minWidth={0}
+											// Caps the scale so small boards don't fill the page
+											maxWidth={board.width * BOARD_PX_PER_MM}
 										>
 											<Typography variant="subtitle1" fontWeight={600} mb={1}>
 												{board.name}
