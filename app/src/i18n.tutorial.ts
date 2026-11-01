@@ -10,6 +10,7 @@ const en = {
 	tutorial_test: "Test",
 	tutorial_troubleshooting: "Troubleshooting",
 	tutorial_library_docs: "Library documentation",
+	tutorial_source_link: "{{path}} on GitHub",
 	tutorial_library_github: "Library on GitHub",
 
 	tutorial_intro_title: "Introduction",
@@ -38,7 +39,7 @@ const en = {
 
 	tutorial_architecture_title: "Architecture",
 	tutorial_architecture_text: [
-		"An enomik setup has three parts: a MIDI host, a dongle and one or more clients.",
+		"An enomik setup has three parts: a MIDI host, a dongle and one or more clients. The clients connect to your sensors and actuators. An optional extender adds more pins to a client. A client can also be plugged into the host directly via USB, without a dongle.",
 	],
 	tutorial_architecture_host: "MIDI host",
 	tutorial_architecture_host_desc:
@@ -48,12 +49,173 @@ const en = {
 	tutorial_architecture_clients: "Clients",
 	tutorial_architecture_client_desc:
 		"Read inputs and send MIDI. Receive MIDI and drive outputs.",
+	tutorial_architecture_extender: "Extender (optional)",
+	tutorial_architecture_extender_desc:
+		"More inputs and outputs, connected to the client with a ribbon cable.",
+	tutorial_architecture_pins: "Pins",
+	tutorial_architecture_sensors: "Sensors",
+	tutorial_architecture_sensors_desc:
+		"Inputs: the client reads them and sends MIDI.",
+	tutorial_architecture_sensors_examples: [
+		"Buttons",
+		"Knobs",
+		"Touch pads",
+		"Distance sensor (VL53L0X)",
+		"Motion sensor (MPU6500)",
+	],
+	tutorial_architecture_actuators: "Actuators",
+	tutorial_architecture_actuators_desc:
+		"Outputs: the client drives them from incoming MIDI.",
+	tutorial_architecture_actuators_examples: [
+		"LEDs",
+		"NeoPixels",
+		"Servos",
+		"Relays",
+		"DMX lights",
+	],
+	tutorial_architecture_usb_direct: "USB MIDI (wired, no dongle)",
 	tutorial_architecture_usb: "USB MIDI",
 	tutorial_architecture_details: [
 		"ESP-NOW is a connectionless protocol by Espressif that runs on the Wi-Fi radio. Boards talk to each other directly, addressed by their MAC address. There is no router, no network to join and no Bluetooth pairing, which keeps latency low.",
 		"The dongle forwards everything it receives over USB to its wireless peers, and everything from its peers back to USB. Your DAW only sees one ordinary MIDI device.",
 		"The client firmware is generic: it does nothing until you tell it which pins to read and which messages to send. The web app sends this configuration as MIDI SysEx over USB, and the board stores it in its flash memory. It survives reboots, so you configure once and then run the board from a battery or power bank.",
 		"Messages flow both ways. A client can be a controller (pin to MIDI), an instrument or actuator (MIDI to pin), or both at the same time.",
+	],
+
+	tutorial_electronics_title: "Basic electronics",
+	tutorial_electronics_text: [
+		"A few basics before you wire up your first project. This chapter explains the terms used throughout the tutorial and in the Configurator.",
+	],
+	tutorial_electronics_sensor_title: "What is a sensor?",
+	tutorial_electronics_sensor: [
+		"A sensor turns something from the physical world into an electrical signal the board can read: a press, a position, light, distance or motion.",
+		"Simple sensors such as buttons and potentiometers change the voltage on a pin. More complex ones, like distance or motion sensors, contain their own chip and send numbers over a bus such as I2C.",
+		"In enomik, sensors are inputs: the client reads them and sends MIDI. A button sends a note, a knob sends a control change.",
+	],
+	tutorial_electronics_actuator_title: "What is an actuator?",
+	tutorial_electronics_actuator: [
+		"An actuator does the opposite: it turns an electrical signal into something you can see, hear or feel. LEDs light up, servos and motors move, relays switch other devices on and off, solenoids strike.",
+		"In enomik, actuators are outputs: the client receives MIDI and drives them. A note switches an LED on, a controller value sets the angle of a servo.",
+	],
+	tutorial_electronics_digital_title: "What is digital?",
+	tutorial_electronics_switch_intro:
+		"Think of a light switch: the light is either off or on, there is nothing in between. A digital signal works the same way.",
+	tutorial_electronics_switch_off: "Off",
+	tutorial_electronics_switch_on: "On",
+	tutorial_electronics_switch_label: "A light switch, off and on",
+	tutorial_electronics_digital: [
+		"A digital signal knows only two states: on or off, HIGH or LOW. On ESP32 boards HIGH is 3.3 V and LOW is 0 V (GND).",
+		"A button is a typical digital input: pressed or not pressed. So that the pin does not float while the button is open, it uses a pull-up resistor: the pin reads HIGH until the button connects it to GND. That is why a pressed button often reads LOW.",
+		"Digital outputs switch something fully on or off, like an LED or a relay. In MIDI terms, digital fits note on and note off.",
+	],
+	tutorial_electronics_analog_title: "What is analog?",
+	tutorial_electronics_dimmer_intro:
+		"Now think of a dimmer: you can turn the light to any brightness between off and full. An analog signal works the same way, with any voltage between 0 V and 3.3 V. The client turns that voltage into a MIDI value from 0 to 127.",
+	tutorial_electronics_dimmer_label:
+		"A dimmer at off, half and full, with the matching voltage and MIDI value",
+	tutorial_electronics_analog: [
+		"An analog signal can take any value between two limits, for example any voltage between 0 V and 3.3 V. Potentiometers, light sensors and pressure sensors produce such a varying voltage.",
+		"The board measures it with an analog-to-digital converter (ADC), which turns the voltage into a number. The client scales that number to the MIDI range 0–127.",
+		"Only some pins can read analog values, so check the board layout. In MIDI terms, analog fits control change messages: a knob sends a stream of values as you turn it.",
+	],
+	tutorial_electronics_pwm_title: "What is PWM?",
+	tutorial_electronics_pwm: [
+		"Most microcontroller pins cannot output a real analog voltage. PWM (pulse-width modulation) fakes one: the pin switches on and off very fast, and the share of on-time, the duty cycle, sets the average power.",
+		"At 25 % duty cycle an LED glows dimly, at 100 % it is fully on. The pin switches thousands of times per second, so your eye sees a steady brightness instead of flicker.",
+		"Servos use a special kind of PWM: the length of each pulse sets the angle (see the servo example). In the Configurator, choose PWM for an output to dim an LED with the note velocity or a controller value.",
+	],
+	tutorial_electronics_actuator_note:
+		"A pin can only deliver a small current, around 20 mA. That is enough for an LED with a resistor, but not for motors, solenoids or long LED strips. Use a transistor, a driver board or a relay for those, and a separate power supply.",
+	tutorial_electronics_digital_note:
+		"ESP32 pins work with 3.3 V. Never connect a 5 V signal directly to a pin, it can damage the board.",
+	tutorial_photo_credit: "Photo",
+	tutorial_photo_button: "Push buttons",
+	tutorial_photo_potentiometer: "Potentiometer",
+	tutorial_photo_photoresistor: "Light sensors (photoresistors)",
+	tutorial_photo_motion: "Motion sensor (MPU-6050)",
+	tutorial_photo_leds: "LEDs",
+	tutorial_photo_neopixels: "Addressable LEDs (WS2812B)",
+	tutorial_photo_servo: "Servo (SG90)",
+	tutorial_photo_relay: "Relay module",
+	tutorial_electronics_pwm_dim: "25 % on: dim",
+	tutorial_electronics_pwm_bright: "75 % on: bright",
+
+	tutorial_midi_title: "MIDI basics",
+	tutorial_midi_text: [
+		"MIDI (Musical Instrument Digital Interface) is the language instruments, controllers and computers have used to talk to each other since 1983. enomik speaks it on both ends: over USB to your computer and wirelessly between boards.",
+		'MIDI does not carry sound. It carries messages like "play note 60 now, fairly loud" or "set the volume to 100". The synth, sampler or DAW that receives them decides what that sounds like.',
+	],
+	tutorial_midi_messages_title: "Messages",
+	tutorial_midi_messages: [
+		"Every MIDI message starts with a status byte that says what kind of message it is and which channel it is on. One or two data bytes follow. Data values always range from 0 to 127.",
+	],
+	tutorial_midi_status: "Status",
+	tutorial_midi_channel: "channel",
+	tutorial_midi_note: "Note",
+	tutorial_midi_velocity: "Velocity",
+	tutorial_midi_controller: "Controller",
+	tutorial_midi_value: "Value",
+	tutorial_midi_table_head: [
+		"Message",
+		"What it does",
+		"Values",
+		"Typical use",
+	],
+	tutorial_midi_table: [
+		[
+			"Note On / Note Off",
+			"Starts and stops a note",
+			"Note 0–127, velocity 0–127",
+			"Button press and release, LED on and off",
+		],
+		[
+			"Control Change (CC)",
+			"Changes a parameter",
+			"Controller 0–127, value 0–127",
+			"Knob, distance sensor, servo angle, LED brightness",
+		],
+		[
+			"Program Change",
+			"Switches to another sound or preset",
+			"Program 0–127",
+			"Switching presets with a button",
+		],
+		[
+			"Pitch Bend",
+			"Bends the pitch up or down",
+			"−8192 to 8191 (14 bit)",
+			"Tilting a motion sensor",
+		],
+		["Aftertouch", "Pressure while a note is held", "0–127", "Pressure sensor"],
+		[
+			"System Exclusive (SysEx)",
+			"Device-specific data",
+			"Any length",
+			"enomik sends the board configuration this way",
+		],
+	],
+	tutorial_midi_notes_title: "Notes and velocity",
+	tutorial_midi_notes: [
+		"Each note has a number from 0 to 127. Note 60 is middle C, which software calls C4 or C3 depending on the manufacturer. One octave up adds 12.",
+		"Velocity says how hard the note is played, from 1 (softest) to 127 (hardest). A note on with velocity 0 counts as note off.",
+	],
+	tutorial_midi_keyboard_label:
+		"One octave of a keyboard with MIDI note numbers 60 to 72, middle C highlighted",
+	tutorial_midi_keyboard_caption: "Middle C = note 60. One octave up = 72.",
+	tutorial_midi_cc_title: "Control change",
+	tutorial_midi_cc: [
+		"Control change messages move knobs and faders in your software. The controller number says which parameter, the value says where to set it.",
+		"Some numbers have a common meaning: 1 is the modulation wheel, 7 volume, 10 pan, 64 the sustain pedal. Most DAWs let you assign any other number with MIDI learn: click a parameter, move your knob, done.",
+	],
+	tutorial_midi_channels_title: "Channels",
+	tutorial_midi_channels: [
+		"A MIDI connection has 16 channels. Every message is sent on one of them, so several instruments can share one connection and each one listens only to its own channel.",
+		"With enomik, all clients share one connection through the dongle. Give each client or each sensor its own channel, or its own note and CC numbers, to keep them apart.",
+	],
+	tutorial_midi_enomik_title: "MIDI in enomik",
+	tutorial_midi_enomik: [
+		"The dongle shows up in your DAW as an ordinary USB MIDI device, just like a wired controller.",
+		"In the Configurator you pick for every pin which message it sends or reacts to: a button sends note on and note off, a knob sends a CC, an LED lights up on a note. Use the MIDI monitor to watch the messages live.",
 	],
 
 	tutorial_platforms_title: "Ways to use enomik",
@@ -75,6 +237,24 @@ const en = {
 		'Install the ESP32 boards: open Tools → Board → Boards Manager, search for "esp32" and install "esp32 by Espressif Systems" (version 3.3.0 or newer).',
 		'Install the library: open Sketch → Include Library → Manage Libraries, search for "ESP-NOW MIDI" and install it.',
 	],
+	tutorial_lightbox_previous: "Previous image",
+	tutorial_lightbox_next: "Next image",
+	tutorial_lightbox_close: "Close",
+	tutorial_screenshot_credit: "Screenshots",
+	tutorial_screenshot_cropped: "cropped",
+	tutorial_arduino_boards_1:
+		"Click the Boards Manager icon in the left sidebar.",
+	tutorial_arduino_boards_2:
+		'Type "esp32" into the search field and click Install on "esp32 by Espressif Systems".',
+	tutorial_arduino_boards_3: "When it is done, the package shows as installed.",
+	tutorial_arduino_library_1:
+		"Click the Library Manager icon in the left sidebar.",
+	tutorial_arduino_library_2:
+		'Type "ESP-NOW MIDI" into the search field and click Install.',
+	tutorial_arduino_library_3:
+		"When it is done, the library shows as installed.",
+	tutorial_arduino_screenshots_note:
+		'These screenshots come from the Arduino documentation and show a different board package and library. The steps are the same: just search for "esp32" and "ESP-NOW MIDI".',
 	tutorial_platforms_arduino_usage_title: "Usage",
 	tutorial_platforms_arduino:
 		"Open one of the library examples via File → Examples → ESP-NOW MIDI. The client example uses enomik::Client, the same code as the precompiled firmware, so your own sketch stays configurable from the web app.",
@@ -100,7 +280,7 @@ const en = {
 	],
 	tutorial_firmware_arduino_link: "Arduino installation",
 	tutorial_firmware_arduino_steps: [
-		"Open the example: File → Examples → ESP-NOW MIDI → client for client boards, or File → Examples → ESP-NOW MIDI → grantler → dongle for the dongle.",
+		"Open the example: File → Examples → ESP-NOW MIDI → client for client boards, or File → Examples → ESP-NOW MIDI → grantler_instruments → dongle for the dongle.",
 		"Select your board under Tools → Board → esp32, e.g. LOLIN S2 Mini or ESP32S3 Dev Module.",
 		"Put ESP32-S2 boards into bootloader mode: hold BOOT, press and release RESET, then release BOOT.",
 		"Select the port under Tools → Port and click Upload.",
@@ -215,10 +395,17 @@ const en = {
 	tutorial_led_tip_loopback:
 		"Combine it with the button example and enable MIDI loopback under Global: the button on pin 16 (note 16) now lights the LED directly on the board, no computer involved.",
 
-	tutorial_i2c_title: "I2C distance sensor",
+	tutorial_i2c_title: "I2C distance sensor (VL53L0X)",
 	tutorial_i2c_text: [
-		"I2C is a two-wire bus for sensors and displays. In this example a VL53L0X time-of-flight sensor measures the distance to your hand and the client turns it into MIDI.",
-		"Unlike buttons and knobs, I2C sensors need their own driver code, so this example uses a dedicated sketch instead of the generic client firmware.",
+		"In this example a VL53L0X time-of-flight sensor measures the distance to your hand, and the client turns it into MIDI. The sensor talks to the board over I2C.",
+	],
+	tutorial_i2c_about_title: "What is I2C?",
+	tutorial_i2c_about: [
+		'I2C (Inter-Integrated Circuit, spoken "I-squared-C") is a bus: a shared set of wires that lets the board talk to many chips over just two signal lines. The board is the controller and starts every conversation; sensors and displays answer as targets.',
+		"SDA (serial data) carries the bits back and forth. SCL (serial clock) is a steady pulse from the controller that tells every device when to read the next bit. Together with GND and VCC for power, an I2C device needs four wires.",
+		"Every device has a fixed address, the VL53L0X for example 0x29. The controller calls an address and only that device answers. That is why several sensors can hang on the same two wires, as long as each has a different address.",
+		"I2C is meant for short distances, on a board or over a few tens of centimeters of cable. Longer cables make the signal unreliable.",
+		"Many common parts speak I2C: distance sensors, accelerometers and gyroscopes, OLED displays, port expanders. Unlike a button or a knob, each of these chips has its own register layout and needs driver code, so this example uses a dedicated sketch instead of the generic client firmware.",
 	],
 	tutorial_i2c_wiring:
 		"Every I2C sensor has four pins. Connect them to the board with jumper wires:",
@@ -239,8 +426,38 @@ const en = {
 	tutorial_i2c_upload_link: "Firmware via Arduino IDE",
 	tutorial_i2c_test:
 		"Open the MIDI monitor and move your hand above the sensor. The MIDI messages change with the distance.",
-	tutorial_i2c_tip:
-		"Several sensors can share one I2C bus as long as each has a different address. Sensors are connected in parallel: SDA to SDA, SCL to SCL.",
+
+	tutorial_servo_title: "Servo motor",
+	tutorial_servo_text: [
+		"In this example the client receives MIDI and turns a hobby servo to a matching angle. Use it for moving parts in installations, puppets or mechanical instruments.",
+	],
+	tutorial_servo_about_title: "How a servo works",
+	tutorial_servo_about: [
+		"A hobby servo is a small motor with a gearbox and built-in position control. It turns to an angle, usually between 0° and 180°, and holds it.",
+		"The angle is set by a pulse on the signal wire, repeated about 50 times per second: roughly 1 ms means one end, 2 ms the other end, 1.5 ms the middle. The sketch generates these pulses and maps the incoming MIDI value to an angle.",
+	],
+	tutorial_servo_wiring: "A servo has three wires. Their colors vary by brand:",
+	tutorial_servo_pins: [
+		"Brown or black: GND to GND of the board.",
+		"Red: VCC to 5V.",
+		"Orange, yellow or white: signal to GPIO 40 (SERVO_PIN in the sketch).",
+	],
+	tutorial_servo_power:
+		"Servos draw a lot of current when they move, often more than the board's USB port can deliver, which can make the board reset. For larger servos or several at once, use a separate 5V supply and connect its GND to the board's GND.",
+	tutorial_servo_code_title: "Code",
+	tutorial_servo_code_before: "The whole sketch:",
+	tutorial_servo_code_after: [
+		"The sketch uses enomik::Client for the wireless MIDI part and the ESP32Servo library for the pulses. onControlChange ignores everything except CC 40 on channel 1 and maps the value 0–127 to 0–180°. The servo itself is moved in loop(), outside the ESP-NOW receive callback.",
+		"To use another pin, change SERVO_PIN; the CC number follows it. Set SERVO_CC_VALUE_IS_DEGREES to 1 if you prefer the CC value to be the angle directly (then only 0–127° are reachable).",
+	],
+	tutorial_servo_upload: [
+		'Install the ESP32Servo library: Sketch → Include Library → Manage Libraries, search for "ESP32Servo" and install it.',
+		"Open the servo example in the Arduino IDE: File → Examples → ESP-NOW MIDI → client_servo.",
+		"Select your board and port and click Upload, as described in the Arduino IDE firmware chapter.",
+		"Press RESET when the upload has finished.",
+	],
+	tutorial_servo_test:
+		"Send CC 40 on MIDI channel 1 from your DAW through the dongle. Value 0 turns the servo to 0°, 64 to about the middle, 127 to 180°.",
 
 	tutorial_next_steps_title: "Next steps",
 	tutorial_next_steps_text: [
@@ -264,6 +481,7 @@ const de: typeof en = {
 	tutorial_test: "Test",
 	tutorial_troubleshooting: "Fehlerbehebung",
 	tutorial_library_docs: "Dokumentation der Bibliothek",
+	tutorial_source_link: "{{path}} auf GitHub",
 	tutorial_library_github: "Bibliothek auf GitHub",
 
 	tutorial_intro_title: "Einführung",
@@ -292,7 +510,7 @@ const de: typeof en = {
 
 	tutorial_architecture_title: "Architektur",
 	tutorial_architecture_text: [
-		"Ein enomik-Setup besteht aus drei Teilen: einem MIDI-Host, einem Dongle und einem oder mehreren Clients.",
+		"Ein enomik-Setup besteht aus drei Teilen: einem MIDI-Host, einem Dongle und einem oder mehreren Clients. Die Clients verbinden sich mit deinen Sensoren und Aktoren. Eine optionale Erweiterung gibt einem Client weitere Pins. Ein Client kann auch direkt per USB am Host hängen, ganz ohne Dongle.",
 	],
 	tutorial_architecture_host: "MIDI-Host",
 	tutorial_architecture_host_desc:
@@ -302,12 +520,179 @@ const de: typeof en = {
 	tutorial_architecture_clients: "Clients",
 	tutorial_architecture_client_desc:
 		"Lesen Eingänge und senden MIDI. Empfangen MIDI und steuern Ausgänge.",
+	tutorial_architecture_extender: "Erweiterung (optional)",
+	tutorial_architecture_extender_desc:
+		"Mehr Ein- und Ausgänge, per Flachbandkabel mit dem Client verbunden.",
+	tutorial_architecture_pins: "Pins",
+	tutorial_architecture_sensors: "Sensoren",
+	tutorial_architecture_sensors_desc:
+		"Eingänge: Der Client liest sie und sendet MIDI.",
+	tutorial_architecture_sensors_examples: [
+		"Taster",
+		"Drehregler",
+		"Touch-Pads",
+		"Abstandssensor (VL53L0X)",
+		"Bewegungssensor (MPU6500)",
+	],
+	tutorial_architecture_actuators: "Aktoren",
+	tutorial_architecture_actuators_desc:
+		"Ausgänge: Der Client steuert sie per MIDI.",
+	tutorial_architecture_actuators_examples: [
+		"LEDs",
+		"NeoPixels",
+		"Servos",
+		"Relais",
+		"DMX-Licht",
+	],
+	tutorial_architecture_usb_direct: "USB-MIDI (Kabel, ohne Dongle)",
 	tutorial_architecture_usb: "USB-MIDI",
 	tutorial_architecture_details: [
 		"ESP-NOW ist ein verbindungsloses Protokoll von Espressif, das über das WLAN-Funkmodul läuft. Die Boards sprechen direkt miteinander, adressiert über ihre MAC-Adresse. Kein Router, kein Netzwerk, kein Bluetooth-Pairing, und dadurch geringe Latenz.",
 		"Der Dongle leitet alles, was über USB ankommt, an seine Funk-Peers weiter, und alles von den Peers zurück an USB. Deine DAW sieht nur ein gewöhnliches MIDI-Gerät.",
 		"Die Client-Firmware ist generisch: Sie tut nichts, bis du ihr sagst, welche Pins sie lesen und welche Nachrichten sie senden soll. Die Web-App schickt diese Konfiguration als MIDI-SysEx über USB, und das Board speichert sie im Flash. Sie übersteht Neustarts, du konfigurierst also einmal und betreibst das Board danach mit Akku oder Powerbank.",
 		"Nachrichten fließen in beide Richtungen. Ein Client kann Controller sein (Pin zu MIDI), Instrument oder Aktor (MIDI zu Pin), oder beides gleichzeitig.",
+	],
+
+	tutorial_electronics_title: "Elektronik-Grundlagen",
+	tutorial_electronics_text: [
+		"Ein paar Grundlagen, bevor du dein erstes Projekt verdrahtest. Dieses Kapitel erklärt die Begriffe, die im Tutorial und im Konfigurator vorkommen.",
+	],
+	tutorial_electronics_sensor_title: "Was ist ein Sensor?",
+	tutorial_electronics_sensor: [
+		"Ein Sensor macht aus etwas in der physischen Welt ein elektrisches Signal, das das Board lesen kann: einen Druck, eine Position, Licht, Abstand oder Bewegung.",
+		"Einfache Sensoren wie Taster und Potentiometer verändern die Spannung an einem Pin. Komplexere wie Abstands- oder Bewegungssensoren haben einen eigenen Chip und schicken Zahlen über einen Bus wie I2C.",
+		"Bei enomik sind Sensoren Eingänge: Der Client liest sie und sendet MIDI. Ein Taster sendet eine Note, ein Drehregler einen Control Change.",
+	],
+	tutorial_electronics_actuator_title: "Was ist ein Aktor?",
+	tutorial_electronics_actuator: [
+		"Ein Aktor macht das Gegenteil: Er macht aus einem elektrischen Signal etwas, das man sehen, hören oder fühlen kann. LEDs leuchten, Servos und Motoren bewegen sich, Relais schalten andere Geräte ein und aus, Hubmagnete schlagen an.",
+		"Bei enomik sind Aktoren Ausgänge: Der Client empfängt MIDI und steuert sie. Eine Note schaltet eine LED ein, ein Controller-Wert stellt den Winkel eines Servos ein.",
+	],
+	tutorial_electronics_digital_title: "Was ist digital?",
+	tutorial_electronics_switch_intro:
+		"Denk an einen Lichtschalter: Das Licht ist entweder aus oder an, dazwischen gibt es nichts. Ein digitales Signal funktioniert genauso.",
+	tutorial_electronics_switch_off: "Aus",
+	tutorial_electronics_switch_on: "An",
+	tutorial_electronics_switch_label: "Ein Lichtschalter, aus und an",
+	tutorial_electronics_digital: [
+		"Ein digitales Signal kennt nur zwei Zustände: an oder aus, HIGH oder LOW. Bei ESP32-Boards ist HIGH 3,3 V und LOW 0 V (GND).",
+		"Ein Taster ist ein typischer digitaler Eingang: gedrückt oder nicht gedrückt. Damit der Pin bei offenem Taster nicht in der Luft hängt, nutzt er einen Pull-up-Widerstand: Der Pin liest HIGH, bis der Taster ihn mit GND verbindet. Deshalb liest ein gedrückter Taster oft LOW.",
+		"Digitale Ausgänge schalten etwas ganz ein oder aus, etwa eine LED oder ein Relais. In MIDI passt digital zu Note On und Note Off.",
+	],
+	tutorial_electronics_analog_title: "Was ist analog?",
+	tutorial_electronics_dimmer_intro:
+		"Denk jetzt an einen Dimmer: Du kannst das Licht auf jede Helligkeit zwischen aus und voll drehen. Ein analoges Signal funktioniert genauso, mit jeder Spannung zwischen 0 V und 3,3 V. Der Client macht aus dieser Spannung einen MIDI-Wert von 0 bis 127.",
+	tutorial_electronics_dimmer_label:
+		"Ein Dimmer auf aus, halb und voll, mit passender Spannung und passendem MIDI-Wert",
+	tutorial_electronics_analog: [
+		"Ein analoges Signal kann jeden Wert zwischen zwei Grenzen annehmen, zum Beispiel jede Spannung zwischen 0 V und 3,3 V. Potentiometer, Lichtsensoren und Drucksensoren liefern so eine veränderliche Spannung.",
+		"Das Board misst sie mit einem Analog-Digital-Wandler (ADC), der die Spannung in eine Zahl umwandelt. Der Client rechnet diese Zahl auf den MIDI-Bereich 0–127 um.",
+		"Nur manche Pins können analoge Werte lesen, prüfe also das Board-Layout. In MIDI passt analog zu Control-Change-Nachrichten: Ein Drehregler sendet beim Drehen eine Folge von Werten.",
+	],
+	tutorial_electronics_pwm_title: "Was ist PWM?",
+	tutorial_electronics_pwm: [
+		"Die meisten Mikrocontroller-Pins können keine echte analoge Spannung ausgeben. PWM (Pulsweitenmodulation) täuscht eine vor: Der Pin schaltet sehr schnell ein und aus, und der Anteil der Einschaltzeit, das Tastverhältnis, bestimmt die mittlere Leistung.",
+		"Bei 25 % Tastverhältnis leuchtet eine LED schwach, bei 100 % voll. Der Pin schaltet tausende Male pro Sekunde, deshalb sieht dein Auge eine gleichmäßige Helligkeit statt Flackern.",
+		"Servos nutzen eine besondere Form von PWM: Die Länge jedes Impulses bestimmt den Winkel (siehe Servo-Beispiel). Wähle im Konfigurator PWM für einen Ausgang, um eine LED über die Anschlagstärke oder einen Controller-Wert zu dimmen.",
+	],
+	tutorial_electronics_actuator_note:
+		"Ein Pin liefert nur wenig Strom, etwa 20 mA. Das reicht für eine LED mit Vorwiderstand, aber nicht für Motoren, Hubmagnete oder lange LED-Streifen. Nutze dafür einen Transistor, ein Treiberboard oder ein Relais und ein eigenes Netzteil.",
+	tutorial_electronics_digital_note:
+		"ESP32-Pins arbeiten mit 3,3 V. Schließe nie ein 5-V-Signal direkt an einen Pin an, das kann das Board beschädigen.",
+	tutorial_photo_credit: "Foto",
+	tutorial_photo_button: "Taster",
+	tutorial_photo_potentiometer: "Potentiometer",
+	tutorial_photo_photoresistor: "Lichtsensoren (Fotowiderstände)",
+	tutorial_photo_motion: "Bewegungssensor (MPU-6050)",
+	tutorial_photo_leds: "LEDs",
+	tutorial_photo_neopixels: "Adressierbare LEDs (WS2812B)",
+	tutorial_photo_servo: "Servo (SG90)",
+	tutorial_photo_relay: "Relais-Modul",
+	tutorial_electronics_pwm_dim: "25 % an: schwach",
+	tutorial_electronics_pwm_bright: "75 % an: hell",
+
+	tutorial_midi_title: "MIDI-Grundlagen",
+	tutorial_midi_text: [
+		"MIDI (Musical Instrument Digital Interface) ist die Sprache, in der Instrumente, Controller und Computer seit 1983 miteinander sprechen. enomik spricht sie auf beiden Seiten: über USB mit deinem Computer und kabellos zwischen den Boards.",
+		'MIDI überträgt keinen Klang. Es überträgt Nachrichten wie "spiel jetzt Note 60, ziemlich laut" oder "stell die Lautstärke auf 100". Wie das klingt, entscheidet der Synth, Sampler oder die DAW, die sie empfängt.',
+	],
+	tutorial_midi_messages_title: "Nachrichten",
+	tutorial_midi_messages: [
+		"Jede MIDI-Nachricht beginnt mit einem Status-Byte, das sagt, welche Art Nachricht es ist und auf welchem Kanal sie liegt. Danach folgen ein oder zwei Daten-Bytes. Datenwerte reichen immer von 0 bis 127.",
+	],
+	tutorial_midi_status: "Status",
+	tutorial_midi_channel: "Kanal",
+	tutorial_midi_note: "Note",
+	tutorial_midi_velocity: "Anschlagstärke",
+	tutorial_midi_controller: "Controller",
+	tutorial_midi_value: "Wert",
+	tutorial_midi_table_head: [
+		"Nachricht",
+		"Was sie tut",
+		"Werte",
+		"Typische Nutzung",
+	],
+	tutorial_midi_table: [
+		[
+			"Note On / Note Off",
+			"Startet und stoppt eine Note",
+			"Note 0–127, Anschlagstärke 0–127",
+			"Taster drücken und loslassen, LED an und aus",
+		],
+		[
+			"Control Change (CC)",
+			"Ändert einen Parameter",
+			"Controller 0–127, Wert 0–127",
+			"Drehregler, Abstandssensor, Servo-Winkel, LED-Helligkeit",
+		],
+		[
+			"Program Change",
+			"Wechselt zu einem anderen Klang oder Preset",
+			"Programm 0–127",
+			"Presets per Taster umschalten",
+		],
+		[
+			"Pitch Bend",
+			"Verbiegt die Tonhöhe nach oben oder unten",
+			"−8192 bis 8191 (14 Bit)",
+			"Bewegungssensor kippen",
+		],
+		[
+			"Aftertouch",
+			"Druck, während eine Note gehalten wird",
+			"0–127",
+			"Drucksensor",
+		],
+		[
+			"System Exclusive (SysEx)",
+			"Gerätespezifische Daten",
+			"Beliebige Länge",
+			"So sendet enomik die Board-Konfiguration",
+		],
+	],
+	tutorial_midi_notes_title: "Noten und Anschlagstärke",
+	tutorial_midi_notes: [
+		"Jede Note hat eine Nummer von 0 bis 127. Note 60 ist das mittlere C, das Software je nach Hersteller C4 oder C3 nennt. Eine Oktave höher heißt plus 12.",
+		"Die Anschlagstärke (Velocity) sagt, wie stark die Note gespielt wird, von 1 (am leisesten) bis 127 (am stärksten). Ein Note On mit Anschlagstärke 0 gilt als Note Off.",
+	],
+	tutorial_midi_keyboard_label:
+		"Eine Oktave einer Klaviatur mit den MIDI-Notennummern 60 bis 72, mittleres C hervorgehoben",
+	tutorial_midi_keyboard_caption:
+		"Mittleres C = Note 60. Eine Oktave höher = 72.",
+	tutorial_midi_cc_title: "Control Change",
+	tutorial_midi_cc: [
+		"Control-Change-Nachrichten bewegen Regler und Fader in deiner Software. Die Controller-Nummer sagt, welcher Parameter, der Wert sagt, wohin.",
+		"Manche Nummern haben eine übliche Bedeutung: 1 ist das Modulationsrad, 7 die Lautstärke, 10 das Panorama, 64 das Haltepedal. In den meisten DAWs kannst du jede andere Nummer per MIDI Learn zuweisen: Parameter anklicken, Regler bewegen, fertig.",
+	],
+	tutorial_midi_channels_title: "Kanäle",
+	tutorial_midi_channels: [
+		"Eine MIDI-Verbindung hat 16 Kanäle. Jede Nachricht wird auf einem davon gesendet, so können sich mehrere Instrumente eine Verbindung teilen und jedes hört nur auf seinen Kanal.",
+		"Bei enomik teilen sich alle Clients über den Dongle eine Verbindung. Gib jedem Client oder jedem Sensor einen eigenen Kanal oder eigene Noten- und CC-Nummern, damit sie unterscheidbar bleiben.",
+	],
+	tutorial_midi_enomik_title: "MIDI bei enomik",
+	tutorial_midi_enomik: [
+		"Der Dongle erscheint in deiner DAW als gewöhnliches USB-MIDI-Gerät, genau wie ein Controller mit Kabel.",
+		"Im Konfigurator legst du für jeden Pin fest, welche Nachricht er sendet oder auf welche er reagiert: Ein Taster sendet Note On und Note Off, ein Drehregler einen CC, eine LED leuchtet bei einer Note. Mit dem MIDI-Monitor siehst du die Nachrichten live.",
 	],
 
 	tutorial_platforms_title: "Wege, enomik zu nutzen",
@@ -329,6 +714,24 @@ const de: typeof en = {
 		'ESP32-Boards installieren: Öffne Werkzeuge → Board → Boardverwalter, suche nach "esp32" und installiere "esp32 by Espressif Systems" (Version 3.3.0 oder neuer).',
 		'Bibliothek installieren: Öffne Sketch → Bibliothek einbinden → Bibliotheken verwalten, suche nach "ESP-NOW MIDI" und installiere sie.',
 	],
+	tutorial_lightbox_previous: "Vorheriges Bild",
+	tutorial_lightbox_next: "Nächstes Bild",
+	tutorial_lightbox_close: "Schließen",
+	tutorial_screenshot_credit: "Screenshots",
+	tutorial_screenshot_cropped: "zugeschnitten",
+	tutorial_arduino_boards_1:
+		"Klicke links in der Seitenleiste auf das Symbol für den Boardverwalter.",
+	tutorial_arduino_boards_2:
+		'Gib "esp32" ins Suchfeld ein und klicke bei "esp32 by Espressif Systems" auf Installieren.',
+	tutorial_arduino_boards_3: "Danach wird das Paket als installiert angezeigt.",
+	tutorial_arduino_library_1:
+		"Klicke links in der Seitenleiste auf das Symbol für die Bibliotheksverwaltung.",
+	tutorial_arduino_library_2:
+		'Gib "ESP-NOW MIDI" ins Suchfeld ein und klicke auf Installieren.',
+	tutorial_arduino_library_3:
+		"Danach wird die Bibliothek als installiert angezeigt.",
+	tutorial_arduino_screenshots_note:
+		'Diese Screenshots stammen aus der Arduino-Dokumentation und zeigen ein anderes Board-Paket und eine andere Bibliothek. Die Schritte sind dieselben: Suche einfach nach "esp32" und "ESP-NOW MIDI".',
 	tutorial_platforms_arduino_usage_title: "Verwendung",
 	tutorial_platforms_arduino:
 		"Öffne eines der Beispiele der Bibliothek über Datei → Beispiele → ESP-NOW MIDI. Das Client-Beispiel nutzt enomik::Client, denselben Code wie die vorkompilierte Firmware, dein eigener Sketch bleibt also über die Web-App konfigurierbar.",
@@ -354,7 +757,7 @@ const de: typeof en = {
 	],
 	tutorial_firmware_arduino_link: "Arduino-Installation",
 	tutorial_firmware_arduino_steps: [
-		"Beispiel öffnen: Datei → Beispiele → ESP-NOW MIDI → client für Client-Boards, oder Datei → Beispiele → ESP-NOW MIDI → grantler → dongle für den Dongle.",
+		"Beispiel öffnen: Datei → Beispiele → ESP-NOW MIDI → client für Client-Boards, oder Datei → Beispiele → ESP-NOW MIDI → grantler_instruments → dongle für den Dongle.",
 		"Wähle dein Board unter Werkzeuge → Board → esp32, z. B. LOLIN S2 Mini oder ESP32S3 Dev Module.",
 		"ESP32-S2-Boards in den Bootloader-Modus versetzen: BOOT halten, RESET drücken und loslassen, dann BOOT loslassen.",
 		"Wähle den Port unter Werkzeuge → Port und klicke auf Hochladen.",
@@ -469,10 +872,17 @@ const de: typeof en = {
 	tutorial_led_tip_loopback:
 		"Kombiniere es mit dem Taster-Beispiel und aktiviere MIDI-Loopback unter Global: Der Taster an Pin 16 (Note 16) schaltet die LED dann direkt auf dem Board, ganz ohne Computer.",
 
-	tutorial_i2c_title: "I2C-Abstandssensor",
+	tutorial_i2c_title: "I2C-Abstandssensor (VL53L0X)",
 	tutorial_i2c_text: [
-		"I2C ist ein Zweidraht-Bus für Sensoren und Displays. In diesem Beispiel misst ein VL53L0X Time-of-Flight-Sensor den Abstand zu deiner Hand, und der Client macht daraus MIDI.",
-		"Anders als Taster und Potis brauchen I2C-Sensoren eigenen Treibercode. Deshalb nutzt dieses Beispiel einen eigenen Sketch statt der generischen Client-Firmware.",
+		"In diesem Beispiel misst ein VL53L0X Time-of-Flight-Sensor den Abstand zu deiner Hand, und der Client macht daraus MIDI. Der Sensor spricht über I2C mit dem Board.",
+	],
+	tutorial_i2c_about_title: "Was ist I2C?",
+	tutorial_i2c_about: [
+		'I2C (Inter-Integrated Circuit, gesprochen "I-Quadrat-C") ist ein Bus: gemeinsame Leitungen, über die das Board mit vielen Chips über nur zwei Signalleitungen spricht. Das Board ist der Controller und beginnt jedes Gespräch; Sensoren und Displays antworten als Targets.',
+		"SDA (Serial Data) überträgt die Bits in beide Richtungen. SCL (Serial Clock) ist ein gleichmäßiger Takt vom Controller, der allen Geräten sagt, wann sie das nächste Bit lesen. Zusammen mit GND und VCC für die Versorgung braucht ein I2C-Gerät vier Leitungen.",
+		"Jedes Gerät hat eine feste Adresse, der VL53L0X zum Beispiel 0x29. Der Controller ruft eine Adresse auf und nur dieses Gerät antwortet. Deshalb können mehrere Sensoren an denselben zwei Leitungen hängen, solange jeder eine andere Adresse hat.",
+		"I2C ist für kurze Strecken gedacht, auf einer Platine oder über einige zehn Zentimeter Kabel. Längere Kabel machen das Signal unzuverlässig.",
+		"Viele gängige Bauteile sprechen I2C: Abstandssensoren, Beschleunigungs- und Drehratensensoren, OLED-Displays, Port-Expander. Anders als ein Taster oder Drehregler hat jeder dieser Chips eigene Register und braucht Treibercode. Deshalb nutzt dieses Beispiel einen eigenen Sketch statt der generischen Client-Firmware.",
 	],
 	tutorial_i2c_wiring:
 		"Jeder I2C-Sensor hat vier Pins. Verbinde sie mit Jumper-Kabeln mit dem Board:",
@@ -493,8 +903,39 @@ const de: typeof en = {
 	tutorial_i2c_upload_link: "Firmware über die Arduino IDE",
 	tutorial_i2c_test:
 		"Öffne den MIDI-Monitor und bewege deine Hand über dem Sensor. Die MIDI-Nachrichten ändern sich mit dem Abstand.",
-	tutorial_i2c_tip:
-		"Mehrere Sensoren können sich einen I2C-Bus teilen, solange jeder eine andere Adresse hat. Sensoren werden parallel angeschlossen: SDA an SDA, SCL an SCL.",
+
+	tutorial_servo_title: "Servomotor",
+	tutorial_servo_text: [
+		"In diesem Beispiel empfängt der Client MIDI und dreht einen Modellbau-Servo auf einen passenden Winkel. Ideal für bewegliche Teile in Installationen, Puppen oder mechanischen Instrumenten.",
+	],
+	tutorial_servo_about_title: "So funktioniert ein Servo",
+	tutorial_servo_about: [
+		"Ein Modellbau-Servo ist ein kleiner Motor mit Getriebe und eingebauter Positionsregelung. Er dreht auf einen Winkel, meist zwischen 0° und 180°, und hält ihn.",
+		"Der Winkel wird über einen Impuls auf der Signalleitung eingestellt, etwa 50-mal pro Sekunde wiederholt: rund 1 ms bedeutet ein Ende, 2 ms das andere Ende, 1,5 ms die Mitte. Der Sketch erzeugt diese Impulse und rechnet den eingehenden MIDI-Wert in einen Winkel um.",
+	],
+	tutorial_servo_wiring:
+		"Ein Servo hat drei Leitungen. Die Farben unterscheiden sich je nach Hersteller:",
+	tutorial_servo_pins: [
+		"Braun oder schwarz: GND an GND des Boards.",
+		"Rot: VCC an 5 V.",
+		"Orange, gelb oder weiß: Signal an GPIO 40 (SERVO_PIN im Sketch).",
+	],
+	tutorial_servo_power:
+		"Servos ziehen beim Bewegen viel Strom, oft mehr als der USB-Port des Boards liefern kann, was das Board neu starten lassen kann. Für größere oder mehrere Servos nutze ein eigenes 5-V-Netzteil und verbinde dessen GND mit dem GND des Boards.",
+	tutorial_servo_code_title: "Code",
+	tutorial_servo_code_before: "Der komplette Sketch:",
+	tutorial_servo_code_after: [
+		"Der Sketch nutzt enomik::Client für das kabellose MIDI und die Bibliothek ESP32Servo für die Impulse. onControlChange ignoriert alles außer CC 40 auf Kanal 1 und rechnet den Wert 0–127 in 0–180° um. Bewegt wird der Servo in loop(), außerhalb des ESP-NOW-Empfangs-Callbacks.",
+		"Für einen anderen Pin änderst du SERVO_PIN; die CC-Nummer folgt ihm. Setze SERVO_CC_VALUE_IS_DEGREES auf 1, wenn der CC-Wert direkt der Winkel sein soll (dann sind nur 0–127° erreichbar).",
+	],
+	tutorial_servo_upload: [
+		'Installiere die Bibliothek ESP32Servo: Sketch → Bibliothek einbinden → Bibliotheken verwalten, nach "ESP32Servo" suchen und installieren.',
+		"Öffne das Servo-Beispiel in der Arduino IDE: Datei → Beispiele → ESP-NOW MIDI → client_servo.",
+		"Wähle Board und Port und klicke auf Hochladen, wie im Kapitel zur Firmware über die Arduino IDE beschrieben.",
+		"Drücke RESET, wenn das Hochladen abgeschlossen ist.",
+	],
+	tutorial_servo_test:
+		"Sende CC 40 auf MIDI-Kanal 1 aus deiner DAW über den Dongle. Wert 0 dreht den Servo auf 0°, 64 etwa in die Mitte, 127 auf 180°.",
 
 	tutorial_next_steps_title: "Wie geht's weiter",
 	tutorial_next_steps_text: [
@@ -518,6 +959,7 @@ const es: typeof en = {
 	tutorial_test: "Prueba",
 	tutorial_troubleshooting: "Solución de problemas",
 	tutorial_library_docs: "Documentación de la biblioteca",
+	tutorial_source_link: "{{path}} en GitHub",
 	tutorial_library_github: "Biblioteca en GitHub",
 
 	tutorial_intro_title: "Introducción",
@@ -546,7 +988,7 @@ const es: typeof en = {
 
 	tutorial_architecture_title: "Arquitectura",
 	tutorial_architecture_text: [
-		"Un sistema enomik tiene tres partes: un host MIDI, un dongle y uno o más clientes.",
+		"Un sistema enomik tiene tres partes: un host MIDI, un dongle y uno o más clientes. Los clientes se conectan a tus sensores y actuadores. Una ampliación opcional añade más pines a un cliente. Un cliente también puede conectarse directamente al host por USB, sin dongle.",
 	],
 	tutorial_architecture_host: "Host MIDI",
 	tutorial_architecture_host_desc:
@@ -556,12 +998,175 @@ const es: typeof en = {
 	tutorial_architecture_clients: "Clientes",
 	tutorial_architecture_client_desc:
 		"Leen entradas y envían MIDI. Reciben MIDI y controlan salidas.",
+	tutorial_architecture_extender: "Ampliación (opcional)",
+	tutorial_architecture_extender_desc:
+		"Más entradas y salidas, conectada al cliente con un cable plano.",
+	tutorial_architecture_pins: "Pines",
+	tutorial_architecture_sensors: "Sensores",
+	tutorial_architecture_sensors_desc:
+		"Entradas: el cliente las lee y envía MIDI.",
+	tutorial_architecture_sensors_examples: [
+		"Botones",
+		"Potenciómetros",
+		"Pads táctiles",
+		"Sensor de distancia (VL53L0X)",
+		"Sensor de movimiento (MPU6500)",
+	],
+	tutorial_architecture_actuators: "Actuadores",
+	tutorial_architecture_actuators_desc:
+		"Salidas: el cliente las controla con el MIDI recibido.",
+	tutorial_architecture_actuators_examples: [
+		"LEDs",
+		"NeoPixels",
+		"Servos",
+		"Relés",
+		"Luces DMX",
+	],
+	tutorial_architecture_usb_direct: "USB MIDI (cable, sin dongle)",
 	tutorial_architecture_usb: "USB MIDI",
 	tutorial_architecture_details: [
 		"ESP-NOW es un protocolo sin conexión de Espressif que usa la radio Wi-Fi. Las placas se comunican directamente, direccionadas por su MAC. Sin router, sin red y sin emparejamiento Bluetooth, lo que mantiene la latencia baja.",
 		"El dongle reenvía todo lo que recibe por USB a sus peers inalámbricos, y todo lo que viene de ellos de vuelta a USB. Tu DAW solo ve un dispositivo MIDI normal.",
 		"El firmware de cliente es genérico: no hace nada hasta que le indicas qué pines leer y qué mensajes enviar. La app web envía esta configuración como SysEx MIDI por USB y la placa la guarda en su memoria flash. Sobrevive a los reinicios: configuras una vez y luego usas la placa con batería o power bank.",
 		"Los mensajes van en ambas direcciones. Un cliente puede ser controlador (pin a MIDI), instrumento o actuador (MIDI a pin), o ambos a la vez.",
+	],
+
+	tutorial_electronics_title: "Electrónica básica",
+	tutorial_electronics_text: [
+		"Algunos conceptos básicos antes de cablear tu primer proyecto. Este capítulo explica los términos que se usan en el tutorial y en el Configurador.",
+	],
+	tutorial_electronics_sensor_title: "¿Qué es un sensor?",
+	tutorial_electronics_sensor: [
+		"Un sensor convierte algo del mundo físico en una señal eléctrica que la placa puede leer: una pulsación, una posición, luz, distancia o movimiento.",
+		"Los sensores simples, como botones y potenciómetros, cambian la tensión en un pin. Los más complejos, como los sensores de distancia o de movimiento, tienen su propio chip y envían números por un bus como I2C.",
+		"En enomik, los sensores son entradas: el cliente los lee y envía MIDI. Un botón envía una nota, un potenciómetro un control change.",
+	],
+	tutorial_electronics_actuator_title: "¿Qué es un actuador?",
+	tutorial_electronics_actuator: [
+		"Un actuador hace lo contrario: convierte una señal eléctrica en algo que puedes ver, oír o sentir. Los LEDs se encienden, los servos y motores se mueven, los relés encienden y apagan otros aparatos, los solenoides golpean.",
+		"En enomik, los actuadores son salidas: el cliente recibe MIDI y los controla. Una nota enciende un LED, un valor de controlador fija el ángulo de un servo.",
+	],
+	tutorial_electronics_digital_title: "¿Qué es digital?",
+	tutorial_electronics_switch_intro:
+		"Piensa en un interruptor de la luz: la luz está apagada o encendida, no hay nada intermedio. Una señal digital funciona igual.",
+	tutorial_electronics_switch_off: "Apagado",
+	tutorial_electronics_switch_on: "Encendido",
+	tutorial_electronics_switch_label:
+		"Un interruptor de la luz, apagado y encendido",
+	tutorial_electronics_digital: [
+		"Una señal digital solo conoce dos estados: encendido o apagado, HIGH o LOW. En las placas ESP32, HIGH es 3,3 V y LOW es 0 V (GND).",
+		"Un botón es una entrada digital típica: pulsado o no pulsado. Para que el pin no quede flotando con el botón abierto, usa una resistencia pull-up: el pin lee HIGH hasta que el botón lo conecta a GND. Por eso un botón pulsado suele leer LOW.",
+		"Las salidas digitales encienden o apagan algo por completo, como un LED o un relé. En MIDI, lo digital encaja con note on y note off.",
+	],
+	tutorial_electronics_analog_title: "¿Qué es analógico?",
+	tutorial_electronics_dimmer_intro:
+		"Ahora piensa en un regulador de luz: puedes girar la luz a cualquier brillo entre apagado y máximo. Una señal analógica funciona igual, con cualquier tensión entre 0 V y 3,3 V. El cliente convierte esa tensión en un valor MIDI de 0 a 127.",
+	tutorial_electronics_dimmer_label:
+		"Un regulador de luz en apagado, medio y máximo, con la tensión y el valor MIDI correspondientes",
+	tutorial_electronics_analog: [
+		"Una señal analógica puede tomar cualquier valor entre dos límites, por ejemplo cualquier tensión entre 0 V y 3,3 V. Potenciómetros, sensores de luz y de presión producen una tensión así.",
+		"La placa la mide con un convertidor analógico-digital (ADC), que convierte la tensión en un número. El cliente escala ese número al rango MIDI 0–127.",
+		"Solo algunos pines pueden leer valores analógicos, así que consulta el diseño de la placa. En MIDI, lo analógico encaja con mensajes control change: un potenciómetro envía una serie de valores al girarlo.",
+	],
+	tutorial_electronics_pwm_title: "¿Qué es PWM?",
+	tutorial_electronics_pwm: [
+		"La mayoría de los pines de un microcontrolador no pueden dar una tensión analógica real. PWM (modulación por ancho de pulso) la simula: el pin se enciende y apaga muy rápido, y la proporción de tiempo encendido, el ciclo de trabajo, fija la potencia media.",
+		"Con un ciclo de trabajo del 25 % un LED brilla poco, con el 100 % brilla al máximo. El pin conmuta miles de veces por segundo, así que tu ojo ve un brillo constante en lugar de parpadeo.",
+		"Los servos usan un tipo especial de PWM: la duración de cada pulso fija el ángulo (ver el ejemplo del servo). En el Configurador, elige PWM para una salida y podrás regular un LED con la velocidad de la nota o un valor de controlador.",
+	],
+	tutorial_electronics_actuator_note:
+		"Un pin solo puede dar poca corriente, unos 20 mA. Basta para un LED con resistencia, pero no para motores, solenoides o tiras de LED largas. Para eso usa un transistor, una placa driver o un relé, y una fuente de alimentación aparte.",
+	tutorial_electronics_digital_note:
+		"Los pines del ESP32 funcionan a 3,3 V. Nunca conectes una señal de 5 V directamente a un pin, puede dañar la placa.",
+	tutorial_photo_credit: "Foto",
+	tutorial_photo_button: "Pulsadores",
+	tutorial_photo_potentiometer: "Potenciómetro",
+	tutorial_photo_photoresistor: "Sensores de luz (fotorresistencias)",
+	tutorial_photo_motion: "Sensor de movimiento (MPU-6050)",
+	tutorial_photo_leds: "LEDs",
+	tutorial_photo_neopixels: "LEDs direccionables (WS2812B)",
+	tutorial_photo_servo: "Servo (SG90)",
+	tutorial_photo_relay: "Módulo de relé",
+	tutorial_electronics_pwm_dim: "25 % encendido: tenue",
+	tutorial_electronics_pwm_bright: "75 % encendido: brillante",
+
+	tutorial_midi_title: "Conceptos básicos de MIDI",
+	tutorial_midi_text: [
+		"MIDI (Musical Instrument Digital Interface) es el lenguaje con el que instrumentos, controladores y ordenadores se comunican desde 1983. enomik lo habla en ambos extremos: por USB con tu ordenador y de forma inalámbrica entre placas.",
+		'MIDI no transporta sonido. Transporta mensajes como "toca ahora la nota 60, bastante fuerte" o "pon el volumen a 100". El sintetizador, sampler o DAW que los recibe decide cómo suena.',
+	],
+	tutorial_midi_messages_title: "Mensajes",
+	tutorial_midi_messages: [
+		"Cada mensaje MIDI empieza con un byte de estado que indica qué tipo de mensaje es y en qué canal va. Le siguen uno o dos bytes de datos. Los valores de datos siempre van de 0 a 127.",
+	],
+	tutorial_midi_status: "Estado",
+	tutorial_midi_channel: "canal",
+	tutorial_midi_note: "Nota",
+	tutorial_midi_velocity: "Velocidad",
+	tutorial_midi_controller: "Controlador",
+	tutorial_midi_value: "Valor",
+	tutorial_midi_table_head: ["Mensaje", "Qué hace", "Valores", "Uso típico"],
+	tutorial_midi_table: [
+		[
+			"Note On / Note Off",
+			"Inicia y detiene una nota",
+			"Nota 0–127, velocidad 0–127",
+			"Pulsar y soltar un botón, encender y apagar un LED",
+		],
+		[
+			"Control Change (CC)",
+			"Cambia un parámetro",
+			"Controlador 0–127, valor 0–127",
+			"Potenciómetro, sensor de distancia, ángulo de servo, brillo de LED",
+		],
+		[
+			"Program Change",
+			"Cambia a otro sonido o preset",
+			"Programa 0–127",
+			"Cambiar presets con un botón",
+		],
+		[
+			"Pitch Bend",
+			"Desplaza la afinación arriba o abajo",
+			"−8192 a 8191 (14 bits)",
+			"Inclinar un sensor de movimiento",
+		],
+		[
+			"Aftertouch",
+			"Presión mientras se mantiene una nota",
+			"0–127",
+			"Sensor de presión",
+		],
+		[
+			"System Exclusive (SysEx)",
+			"Datos específicos del dispositivo",
+			"Cualquier longitud",
+			"Así envía enomik la configuración a la placa",
+		],
+	],
+	tutorial_midi_notes_title: "Notas y velocidad",
+	tutorial_midi_notes: [
+		"Cada nota tiene un número de 0 a 127. La nota 60 es el do central, que el software llama C4 o C3 según el fabricante. Una octava más arriba suma 12.",
+		"La velocidad indica con qué fuerza se toca la nota, de 1 (más suave) a 127 (más fuerte). Un note on con velocidad 0 cuenta como note off.",
+	],
+	tutorial_midi_keyboard_label:
+		"Una octava de teclado con los números de nota MIDI 60 a 72, do central resaltado",
+	tutorial_midi_keyboard_caption:
+		"Do central = nota 60. Una octava más arriba = 72.",
+	tutorial_midi_cc_title: "Control change",
+	tutorial_midi_cc: [
+		"Los mensajes control change mueven potenciómetros y faders en tu software. El número de controlador indica qué parámetro y el valor dónde ponerlo.",
+		"Algunos números tienen un significado habitual: 1 es la rueda de modulación, 7 el volumen, 10 el panorama, 64 el pedal de sustain. La mayoría de DAWs permiten asignar cualquier otro número con MIDI learn: haz clic en un parámetro, mueve tu potenciómetro y listo.",
+	],
+	tutorial_midi_channels_title: "Canales",
+	tutorial_midi_channels: [
+		"Una conexión MIDI tiene 16 canales. Cada mensaje se envía por uno de ellos, así varios instrumentos pueden compartir una conexión y cada uno escucha solo su canal.",
+		"Con enomik, todos los clientes comparten una conexión a través del dongle. Da a cada cliente o sensor su propio canal, o sus propios números de nota y CC, para distinguirlos.",
+	],
+	tutorial_midi_enomik_title: "MIDI en enomik",
+	tutorial_midi_enomik: [
+		"El dongle aparece en tu DAW como un dispositivo USB MIDI normal, igual que un controlador con cable.",
+		"En el Configurador eliges para cada pin qué mensaje envía o a cuál reacciona: un botón envía note on y note off, un potenciómetro un CC, un LED se enciende con una nota. Usa el monitor MIDI para ver los mensajes en directo.",
 	],
 
 	tutorial_platforms_title: "Formas de usar enomik",
@@ -583,6 +1188,24 @@ const es: typeof en = {
 		'Instala las placas ESP32: abre Herramientas → Placa → Gestor de placas, busca "esp32" e instala "esp32 by Espressif Systems" (versión 3.3.0 o superior).',
 		'Instala la biblioteca: abre Programa → Incluir biblioteca → Administrar bibliotecas, busca "ESP-NOW MIDI" e instálala.',
 	],
+	tutorial_lightbox_previous: "Imagen anterior",
+	tutorial_lightbox_next: "Imagen siguiente",
+	tutorial_lightbox_close: "Cerrar",
+	tutorial_screenshot_credit: "Capturas",
+	tutorial_screenshot_cropped: "recortadas",
+	tutorial_arduino_boards_1:
+		"Haz clic en el icono del Gestor de placas en la barra lateral izquierda.",
+	tutorial_arduino_boards_2:
+		'Escribe "esp32" en el campo de búsqueda y haz clic en Instalar en "esp32 by Espressif Systems".',
+	tutorial_arduino_boards_3: "Al terminar, el paquete aparece como instalado.",
+	tutorial_arduino_library_1:
+		"Haz clic en el icono del Gestor de bibliotecas en la barra lateral izquierda.",
+	tutorial_arduino_library_2:
+		'Escribe "ESP-NOW MIDI" en el campo de búsqueda y haz clic en Instalar.',
+	tutorial_arduino_library_3:
+		"Al terminar, la biblioteca aparece como instalada.",
+	tutorial_arduino_screenshots_note:
+		'Estas capturas proceden de la documentación de Arduino y muestran otro paquete de placas y otra biblioteca. Los pasos son los mismos: busca "esp32" y "ESP-NOW MIDI".',
 	tutorial_platforms_arduino_usage_title: "Uso",
 	tutorial_platforms_arduino:
 		"Abre uno de los ejemplos de la biblioteca en Archivo → Ejemplos → ESP-NOW MIDI. El ejemplo client usa enomik::Client, el mismo código que el firmware precompilado, así que tu sketch sigue siendo configurable desde la app web.",
@@ -608,7 +1231,7 @@ const es: typeof en = {
 	],
 	tutorial_firmware_arduino_link: "Instalación de Arduino",
 	tutorial_firmware_arduino_steps: [
-		"Abre el ejemplo: Archivo → Ejemplos → ESP-NOW MIDI → client para placas cliente, o Archivo → Ejemplos → ESP-NOW MIDI → grantler → dongle para el dongle.",
+		"Abre el ejemplo: Archivo → Ejemplos → ESP-NOW MIDI → client para placas cliente, o Archivo → Ejemplos → ESP-NOW MIDI → grantler_instruments → dongle para el dongle.",
 		"Selecciona tu placa en Herramientas → Placa → esp32, p. ej. LOLIN S2 Mini o ESP32S3 Dev Module.",
 		"Pon las placas ESP32-S2 en modo bootloader: mantén BOOT, pulsa y suelta RESET y luego suelta BOOT.",
 		"Selecciona el puerto en Herramientas → Puerto y haz clic en Subir.",
@@ -723,10 +1346,17 @@ const es: typeof en = {
 	tutorial_led_tip_loopback:
 		"Combínalo con el ejemplo del botón y activa MIDI loopback en Global: el botón del pin 16 (nota 16) enciende el LED directamente en la placa, sin ordenador.",
 
-	tutorial_i2c_title: "Sensor de distancia I2C",
+	tutorial_i2c_title: "Sensor de distancia I2C (VL53L0X)",
 	tutorial_i2c_text: [
-		"I2C es un bus de dos hilos para sensores y pantallas. En este ejemplo, un sensor time-of-flight VL53L0X mide la distancia a tu mano y el cliente la convierte en MIDI.",
-		"A diferencia de los botones y potenciómetros, los sensores I2C necesitan su propio código de driver, así que este ejemplo usa un sketch propio en lugar del firmware de cliente genérico.",
+		"En este ejemplo, un sensor time-of-flight VL53L0X mide la distancia a tu mano y el cliente la convierte en MIDI. El sensor se comunica con la placa por I2C.",
+	],
+	tutorial_i2c_about_title: "¿Qué es I2C?",
+	tutorial_i2c_about: [
+		'I2C (Inter-Integrated Circuit, pronunciado "I-cuadrado-C") es un bus: un conjunto de cables compartidos que permite a la placa comunicarse con muchos chips usando solo dos líneas de señal. La placa es el controlador e inicia cada conversación; sensores y pantallas responden como targets.',
+		"SDA (serial data) transporta los bits en ambas direcciones. SCL (serial clock) es un pulso constante del controlador que indica a todos los dispositivos cuándo leer el siguiente bit. Junto con GND y VCC para la alimentación, un dispositivo I2C necesita cuatro cables.",
+		"Cada dispositivo tiene una dirección fija, el VL53L0X por ejemplo 0x29. El controlador llama a una dirección y solo ese dispositivo responde. Por eso varios sensores pueden compartir los mismos dos cables, siempre que cada uno tenga una dirección distinta.",
+		"I2C está pensado para distancias cortas, dentro de una placa o con unas decenas de centímetros de cable. Los cables más largos hacen que la señal sea poco fiable.",
+		"Muchos componentes comunes usan I2C: sensores de distancia, acelerómetros y giroscopios, pantallas OLED, expansores de puertos. A diferencia de un botón o un potenciómetro, cada uno de estos chips tiene sus propios registros y necesita código de driver, así que este ejemplo usa un sketch propio en lugar del firmware de cliente genérico.",
 	],
 	tutorial_i2c_wiring:
 		"Cada sensor I2C tiene cuatro pines. Conéctalos a la placa con cables jumper:",
@@ -747,8 +1377,39 @@ const es: typeof en = {
 	tutorial_i2c_upload_link: "Firmware con el Arduino IDE",
 	tutorial_i2c_test:
 		"Abre el monitor MIDI y mueve la mano sobre el sensor. Los mensajes MIDI cambian con la distancia.",
-	tutorial_i2c_tip:
-		"Varios sensores pueden compartir un bus I2C siempre que cada uno tenga una dirección distinta. Los sensores se conectan en paralelo: SDA con SDA, SCL con SCL.",
+
+	tutorial_servo_title: "Servomotor",
+	tutorial_servo_text: [
+		"En este ejemplo el cliente recibe MIDI y gira un servo de modelismo al ángulo correspondiente. Úsalo para partes móviles en instalaciones, marionetas o instrumentos mecánicos.",
+	],
+	tutorial_servo_about_title: "Cómo funciona un servo",
+	tutorial_servo_about: [
+		"Un servo de modelismo es un pequeño motor con reductora y control de posición integrado. Gira hasta un ángulo, normalmente entre 0° y 180°, y lo mantiene.",
+		"El ángulo se fija con un pulso en el cable de señal, repetido unas 50 veces por segundo: alrededor de 1 ms es un extremo, 2 ms el otro, 1,5 ms el centro. El sketch genera estos pulsos y convierte el valor MIDI recibido en un ángulo.",
+	],
+	tutorial_servo_wiring:
+		"Un servo tiene tres cables. Sus colores varían según el fabricante:",
+	tutorial_servo_pins: [
+		"Marrón o negro: GND a GND de la placa.",
+		"Rojo: VCC a 5 V.",
+		"Naranja, amarillo o blanco: señal a GPIO 40 (SERVO_PIN en el sketch).",
+	],
+	tutorial_servo_power:
+		"Los servos consumen mucha corriente al moverse, a menudo más de la que puede dar el puerto USB de la placa, lo que puede reiniciarla. Para servos grandes o varios a la vez, usa una fuente de 5 V aparte y conecta su GND al GND de la placa.",
+	tutorial_servo_code_title: "Código",
+	tutorial_servo_code_before: "El sketch completo:",
+	tutorial_servo_code_after: [
+		"El sketch usa enomik::Client para el MIDI inalámbrico y la biblioteca ESP32Servo para los pulsos. onControlChange ignora todo excepto el CC 40 en el canal 1 y convierte el valor 0–127 en 0–180°. El servo se mueve en loop(), fuera del callback de recepción de ESP-NOW.",
+		"Para usar otro pin, cambia SERVO_PIN; el número de CC lo sigue. Pon SERVO_CC_VALUE_IS_DEGREES a 1 si prefieres que el valor del CC sea directamente el ángulo (entonces solo se alcanzan 0–127°).",
+	],
+	tutorial_servo_upload: [
+		'Instala la biblioteca ESP32Servo: Programa → Incluir biblioteca → Administrar bibliotecas, busca "ESP32Servo" e instálala.',
+		"Abre el ejemplo del servo en el Arduino IDE: Archivo → Ejemplos → ESP-NOW MIDI → client_servo.",
+		"Selecciona la placa y el puerto y haz clic en Subir, como se describe en el capítulo de firmware con el Arduino IDE.",
+		"Pulsa RESET cuando termine la subida.",
+	],
+	tutorial_servo_test:
+		"Envía el CC 40 en el canal MIDI 1 desde tu DAW a través del dongle. El valor 0 gira el servo a 0°, 64 aproximadamente al centro, 127 a 180°.",
 
 	tutorial_next_steps_title: "Próximos pasos",
 	tutorial_next_steps_text: [
@@ -772,6 +1433,7 @@ const zh: typeof en = {
 	tutorial_test: "测试",
 	tutorial_troubleshooting: "故障排除",
 	tutorial_library_docs: "库文档",
+	tutorial_source_link: "GitHub 上的 {{path}}",
 	tutorial_library_github: "GitHub 上的库",
 
 	tutorial_intro_title: "简介",
@@ -800,7 +1462,7 @@ const zh: typeof en = {
 
 	tutorial_architecture_title: "架构",
 	tutorial_architecture_text: [
-		"一个 enomik 系统由三部分组成：MIDI 主机、适配器和一个或多个客户端。",
+		"一个 enomik 系统由三部分组成：MIDI 主机、适配器和一个或多个客户端。客户端连接你的传感器和执行器。可选的扩展板可为客户端增加更多引脚。客户端也可以通过 USB 直接连接到主机，无需适配器。",
 	],
 	tutorial_architecture_host: "MIDI 主机",
 	tutorial_architecture_host_desc:
@@ -810,12 +1472,166 @@ const zh: typeof en = {
 	tutorial_architecture_clients: "客户端",
 	tutorial_architecture_client_desc:
 		"读取输入并发送 MIDI；接收 MIDI 并驱动输出。",
+	tutorial_architecture_extender: "扩展板（可选）",
+	tutorial_architecture_extender_desc: "更多输入和输出，通过排线连接到客户端。",
+	tutorial_architecture_pins: "引脚",
+	tutorial_architecture_sensors: "传感器",
+	tutorial_architecture_sensors_desc: "输入：客户端读取并发送 MIDI。",
+	tutorial_architecture_sensors_examples: [
+		"按钮",
+		"旋钮",
+		"触摸板",
+		"距离传感器 (VL53L0X)",
+		"运动传感器 (MPU6500)",
+	],
+	tutorial_architecture_actuators: "执行器",
+	tutorial_architecture_actuators_desc:
+		"输出：客户端根据收到的 MIDI 驱动它们。",
+	tutorial_architecture_actuators_examples: [
+		"LED",
+		"NeoPixel",
+		"舵机",
+		"继电器",
+		"DMX 灯光",
+	],
+	tutorial_architecture_usb_direct: "USB MIDI（有线，无需适配器）",
 	tutorial_architecture_usb: "USB MIDI",
 	tutorial_architecture_details: [
 		"ESP-NOW 是乐鑫推出的无连接协议，运行在 Wi-Fi 射频上。开发板之间通过 MAC 地址直接通信，无需路由器、无需加入网络、也无需蓝牙配对，因此延迟很低。",
 		"适配器将通过 USB 收到的所有内容转发给无线对端，并将对端的消息转发回 USB。你的 DAW 只看到一个普通的 MIDI 设备。",
 		"客户端固件是通用的：在你告诉它读取哪些引脚、发送哪些消息之前，它什么也不做。网页应用通过 USB 以 MIDI SysEx 发送配置，开发板将其保存在闪存中。重启后配置依然保留，所以只需配置一次，之后即可用电池或充电宝供电运行。",
 		"消息双向流动。客户端可以是控制器（引脚到 MIDI）、乐器或执行器（MIDI 到引脚），也可以同时兼任。",
+	],
+
+	tutorial_electronics_title: "电子基础",
+	tutorial_electronics_text: [
+		"在连接第一个项目之前，先了解一些基础知识。本章解释教程和配置器中用到的术语。",
+	],
+	tutorial_electronics_sensor_title: "什么是传感器？",
+	tutorial_electronics_sensor: [
+		"传感器把物理世界中的事物转换为开发板可以读取的电信号：按压、位置、光线、距离或运动。",
+		"按钮和电位器等简单传感器会改变引脚上的电压。距离或运动传感器等复杂传感器自带芯片，通过 I2C 等总线发送数值。",
+		"在 enomik 中，传感器是输入：客户端读取它们并发送 MIDI。按钮发送音符，旋钮发送控制变化（CC）。",
+	],
+	tutorial_electronics_actuator_title: "什么是执行器？",
+	tutorial_electronics_actuator: [
+		"执行器的作用正好相反：它把电信号变成可以看到、听到或感觉到的东西。LED 发光，舵机和电机转动，继电器开关其他设备，电磁铁敲击。",
+		"在 enomik 中，执行器是输出：客户端接收 MIDI 并驱动它们。音符可以点亮 LED，控制器数值可以设置舵机角度。",
+	],
+	tutorial_electronics_digital_title: "什么是数字信号？",
+	tutorial_electronics_switch_intro:
+		"想想电灯开关：灯要么关，要么开，没有中间状态。数字信号也是这样。",
+	tutorial_electronics_switch_off: "关",
+	tutorial_electronics_switch_on: "开",
+	tutorial_electronics_switch_label: "电灯开关的关和开两种状态",
+	tutorial_electronics_digital: [
+		"数字信号只有两种状态：开或关，HIGH 或 LOW。在 ESP32 开发板上，HIGH 为 3.3 V，LOW 为 0 V（GND）。",
+		"按钮是典型的数字输入：按下或未按下。为了在按钮断开时引脚不处于悬空状态，会使用上拉电阻：引脚读数为 HIGH，直到按钮将其连接到 GND。因此按下的按钮通常读数为 LOW。",
+		"数字输出把设备完全打开或关闭，例如 LED 或继电器。在 MIDI 中，数字信号对应 note on 和 note off。",
+	],
+	tutorial_electronics_analog_title: "什么是模拟信号？",
+	tutorial_electronics_dimmer_intro:
+		"再想想调光器：你可以把灯调到关和最亮之间的任意亮度。模拟信号也是这样，电压可以是 0 V 到 3.3 V 之间的任意值。客户端把这个电压转换为 0 到 127 的 MIDI 值。",
+	tutorial_electronics_dimmer_label:
+		"调光器处于关、一半和最亮三种状态，并显示对应的电压和 MIDI 值",
+	tutorial_electronics_analog: [
+		"模拟信号可以取两个界限之间的任意值，例如 0 V 到 3.3 V 之间的任意电压。电位器、光线传感器和压力传感器都会产生这种变化的电压。",
+		"开发板用模数转换器（ADC）测量电压，并将其转换为数字。客户端再把这个数字换算到 MIDI 范围 0–127。",
+		"只有部分引脚可以读取模拟值，请查看开发板布局。在 MIDI 中，模拟信号对应控制变化（CC）消息：转动旋钮时会发送一连串数值。",
+	],
+	tutorial_electronics_pwm_title: "什么是 PWM？",
+	tutorial_electronics_pwm: [
+		"大多数微控制器引脚无法输出真正的模拟电压。PWM（脉冲宽度调制）用一种方式来模拟：引脚非常快速地开关，导通时间所占的比例（占空比）决定平均功率。",
+		"占空比为 25 % 时 LED 较暗，100 % 时最亮。引脚每秒切换数千次，因此人眼看到的是稳定的亮度，而不是闪烁。",
+		"舵机使用一种特殊的 PWM：每个脉冲的长度决定角度（见舵机示例）。在配置器中为输出选择 PWM，即可用音符力度或控制器数值调节 LED 亮度。",
+	],
+	tutorial_electronics_actuator_note:
+		"一个引脚只能提供很小的电流，约 20 mA。这足以驱动带限流电阻的 LED，但不足以驱动电机、电磁铁或长 LED 灯带。这些设备请使用晶体管、驱动板或继电器，并配备独立电源。",
+	tutorial_electronics_digital_note:
+		"ESP32 引脚工作电压为 3.3 V。切勿将 5 V 信号直接接到引脚上，否则可能损坏开发板。",
+	tutorial_photo_credit: "照片",
+	tutorial_photo_button: "按钮",
+	tutorial_photo_potentiometer: "电位器",
+	tutorial_photo_photoresistor: "光线传感器（光敏电阻）",
+	tutorial_photo_motion: "运动传感器 (MPU-6050)",
+	tutorial_photo_leds: "LED",
+	tutorial_photo_neopixels: "可寻址 LED (WS2812B)",
+	tutorial_photo_servo: "舵机 (SG90)",
+	tutorial_photo_relay: "继电器模块",
+	tutorial_electronics_pwm_dim: "25 % 导通：暗",
+	tutorial_electronics_pwm_bright: "75 % 导通：亮",
+
+	tutorial_midi_title: "MIDI 基础",
+	tutorial_midi_text: [
+		"MIDI（Musical Instrument Digital Interface，乐器数字接口）是乐器、控制器和计算机自 1983 年以来相互通信的语言。enomik 在两端都使用它：通过 USB 与计算机通信，并在开发板之间无线通信。",
+		"MIDI 不传输声音，而是传输消息，例如“现在演奏音符 60，力度较大”或“把音量设为 100”。声音由接收这些消息的合成器、采样器或 DAW 决定。",
+	],
+	tutorial_midi_messages_title: "消息",
+	tutorial_midi_messages: [
+		"每条 MIDI 消息都以状态字节开头，说明消息类型和所在通道，后面跟一个或两个数据字节。数据值的范围始终是 0 到 127。",
+	],
+	tutorial_midi_status: "状态",
+	tutorial_midi_channel: "通道",
+	tutorial_midi_note: "音符",
+	tutorial_midi_velocity: "力度",
+	tutorial_midi_controller: "控制器",
+	tutorial_midi_value: "值",
+	tutorial_midi_table_head: ["消息", "作用", "取值", "典型用途"],
+	tutorial_midi_table: [
+		[
+			"Note On / Note Off",
+			"开始和结束一个音符",
+			"音符 0–127，力度 0–127",
+			"按下和松开按钮，LED 开和关",
+		],
+		[
+			"Control Change (CC)",
+			"改变一个参数",
+			"控制器 0–127，值 0–127",
+			"旋钮、距离传感器、舵机角度、LED 亮度",
+		],
+		[
+			"Program Change",
+			"切换到另一个音色或预设",
+			"程序 0–127",
+			"用按钮切换预设",
+		],
+		[
+			"Pitch Bend",
+			"向上或向下弯音",
+			"−8192 到 8191（14 位）",
+			"倾斜运动传感器",
+		],
+		["Aftertouch", "按住音符时的压力", "0–127", "压力传感器"],
+		[
+			"System Exclusive (SysEx)",
+			"设备专用数据",
+			"任意长度",
+			"enomik 用它向开发板发送配置",
+		],
+	],
+	tutorial_midi_notes_title: "音符和力度",
+	tutorial_midi_notes: [
+		"每个音符都有一个 0 到 127 的编号。音符 60 是中央 C，不同厂商的软件称之为 C4 或 C3。升高一个八度就加 12。",
+		"力度表示演奏音符的力量，从 1（最轻）到 127（最重）。力度为 0 的 note on 等同于 note off。",
+	],
+	tutorial_midi_keyboard_label:
+		"一个八度的键盘，标有 MIDI 音符编号 60 到 72，中央 C 高亮显示",
+	tutorial_midi_keyboard_caption: "中央 C = 音符 60。高一个八度 = 72。",
+	tutorial_midi_cc_title: "控制变化（CC）",
+	tutorial_midi_cc: [
+		"控制变化消息用于调节软件中的旋钮和推子。控制器编号表示哪个参数，值表示调到哪里。",
+		"有些编号有通用含义：1 是调制轮，7 是音量，10 是声像，64 是延音踏板。大多数 DAW 支持 MIDI learn 来分配其他编号：点击参数，转动旋钮，完成。",
+	],
+	tutorial_midi_channels_title: "通道",
+	tutorial_midi_channels: [
+		"一个 MIDI 连接有 16 个通道。每条消息都在其中一个通道上发送，因此多个乐器可以共用一个连接，各自只监听自己的通道。",
+		"在 enomik 中，所有客户端都通过适配器共用一个连接。给每个客户端或每个传感器分配独立的通道，或独立的音符和 CC 编号，以便区分。",
+	],
+	tutorial_midi_enomik_title: "enomik 中的 MIDI",
+	tutorial_midi_enomik: [
+		"适配器在 DAW 中显示为普通的 USB MIDI 设备，和有线控制器一样。",
+		"在配置器中，你可以为每个引脚选择它发送或响应的消息：按钮发送 note on 和 note off，旋钮发送 CC，LED 在收到音符时点亮。用 MIDI 监视器可以实时查看消息。",
 	],
 
 	tutorial_platforms_title: "使用 enomik 的方式",
@@ -837,6 +1653,20 @@ const zh: typeof en = {
 		'安装 ESP32 开发板：打开 工具 → 开发板 → 开发板管理器，搜索 "esp32"，安装 "esp32 by Espressif Systems"（3.3.0 或更高版本）。',
 		'安装库：打开 项目 → 导入库 → 管理库，搜索 "ESP-NOW MIDI" 并安装。',
 	],
+	tutorial_lightbox_previous: "上一张",
+	tutorial_lightbox_next: "下一张",
+	tutorial_lightbox_close: "关闭",
+	tutorial_screenshot_credit: "截图",
+	tutorial_screenshot_cropped: "已裁剪",
+	tutorial_arduino_boards_1: "点击左侧边栏中的开发板管理器图标。",
+	tutorial_arduino_boards_2:
+		'在搜索框中输入 "esp32"，然后在 "esp32 by Espressif Systems" 上点击 安装。',
+	tutorial_arduino_boards_3: "完成后，该软件包显示为已安装。",
+	tutorial_arduino_library_1: "点击左侧边栏中的库管理器图标。",
+	tutorial_arduino_library_2: '在搜索框中输入 "ESP-NOW MIDI"，然后点击 安装。',
+	tutorial_arduino_library_3: "完成后，该库显示为已安装。",
+	tutorial_arduino_screenshots_note:
+		'这些截图来自 Arduino 官方文档，显示的是其他开发板软件包和库。步骤相同：只需搜索 "esp32" 和 "ESP-NOW MIDI"。',
 	tutorial_platforms_arduino_usage_title: "使用",
 	tutorial_platforms_arduino:
 		"通过 文件 → 示例 → ESP-NOW MIDI 打开库中的一个示例。client 示例使用 enomik::Client，与预编译固件代码相同，因此你自己的程序仍可通过网页应用配置。",
@@ -862,7 +1692,7 @@ const zh: typeof en = {
 	],
 	tutorial_firmware_arduino_link: "Arduino 安装",
 	tutorial_firmware_arduino_steps: [
-		"打开示例：客户端开发板选择 文件 → 示例 → ESP-NOW MIDI → client，适配器选择 文件 → 示例 → ESP-NOW MIDI → grantler → dongle。",
+		"打开示例：客户端开发板选择 文件 → 示例 → ESP-NOW MIDI → client，适配器选择 文件 → 示例 → ESP-NOW MIDI → grantler_instruments → dongle。",
 		"在 工具 → 开发板 → esp32 中选择你的开发板，例如 LOLIN S2 Mini 或 ESP32S3 Dev Module。",
 		"将 ESP32-S2 开发板置于引导模式：按住 BOOT，按下并松开 RESET，然后松开 BOOT。",
 		"在 工具 → 端口 中选择端口，然后点击 上传。",
@@ -971,10 +1801,17 @@ const zh: typeof en = {
 	tutorial_led_tip_loopback:
 		"与按钮示例结合，并在全局中启用 MIDI 回环：引脚 16 上的按钮（音符 16）将直接在开发板上点亮 LED，无需电脑。",
 
-	tutorial_i2c_title: "I2C 距离传感器",
+	tutorial_i2c_title: "I2C 距离传感器 (VL53L0X)",
 	tutorial_i2c_text: [
-		"I2C 是用于传感器和显示屏的双线总线。在本示例中，VL53L0X 飞行时间传感器测量到你手的距离，客户端将其转换为 MIDI。",
-		"与按钮和旋钮不同，I2C 传感器需要专门的驱动代码，因此本示例使用专用程序，而不是通用客户端固件。",
+		"在本示例中，VL53L0X 飞行时间传感器测量到你手的距离，客户端将其转换为 MIDI。传感器通过 I2C 与开发板通信。",
+	],
+	tutorial_i2c_about_title: "什么是 I2C？",
+	tutorial_i2c_about: [
+		'I2C（Inter-Integrated Circuit，读作 "I 方 C"）是一种总线：一组共用的导线，让开发板只用两根信号线就能与多个芯片通信。开发板是控制器，负责发起每次通信；传感器和显示屏作为目标设备应答。',
+		"SDA（串行数据）双向传输数据位。SCL（串行时钟）是控制器发出的稳定脉冲，告诉所有设备何时读取下一位。再加上供电用的 GND 和 VCC，一个 I2C 设备共需要四根线。",
+		"每个设备都有固定地址，例如 VL53L0X 的地址是 0x29。控制器呼叫某个地址，只有该设备会应答。因此只要地址各不相同，多个传感器就可以挂在同样的两根线上。",
+		"I2C 适用于短距离，即同一块电路板上或几十厘米的导线。导线过长会导致信号不可靠。",
+		"许多常见元件都使用 I2C：距离传感器、加速度计和陀螺仪、OLED 显示屏、端口扩展器。与按钮或旋钮不同，这些芯片各有自己的寄存器，需要驱动代码，因此本示例使用专用程序，而不是通用客户端固件。",
 	],
 	tutorial_i2c_wiring:
 		"每个 I2C 传感器有四个引脚。用杜邦线将它们连接到开发板：",
@@ -995,8 +1832,38 @@ const zh: typeof en = {
 	tutorial_i2c_upload_link: "通过 Arduino IDE 上传固件",
 	tutorial_i2c_test:
 		"打开 MIDI 监视器，在传感器上方移动你的手。MIDI 消息会随距离变化。",
-	tutorial_i2c_tip:
-		"多个传感器可以共用一条 I2C 总线，只要每个传感器的地址不同。传感器并联连接：SDA 接 SDA，SCL 接 SCL。",
+
+	tutorial_servo_title: "舵机",
+	tutorial_servo_text: [
+		"在本示例中，客户端接收 MIDI 并将舵机转到相应角度。适用于装置、木偶或机械乐器中的活动部件。",
+	],
+	tutorial_servo_about_title: "舵机的工作原理",
+	tutorial_servo_about: [
+		"舵机是带有减速齿轮和内置位置控制的小型电机。它会转到某个角度（通常在 0° 到 180° 之间）并保持住。",
+		"角度由信号线上的脉冲决定，每秒重复约 50 次：约 1 ms 对应一端，2 ms 对应另一端，1.5 ms 对应中间。程序生成这些脉冲，并将收到的 MIDI 值换算为角度。",
+	],
+	tutorial_servo_wiring: "舵机有三根线，颜色因品牌而异：",
+	tutorial_servo_pins: [
+		"棕色或黑色：GND 接开发板的 GND。",
+		"红色：VCC 接 5V。",
+		"橙色、黄色或白色：信号线接 GPIO 40（程序中的 SERVO_PIN）。",
+	],
+	tutorial_servo_power:
+		"舵机运动时电流较大，常常超过开发板 USB 口的供电能力，可能导致开发板重启。使用较大或多个舵机时，请使用独立的 5V 电源，并将其 GND 与开发板的 GND 相连。",
+	tutorial_servo_code_title: "代码",
+	tutorial_servo_code_before: "完整程序：",
+	tutorial_servo_code_after: [
+		"程序使用 enomik::Client 处理无线 MIDI，使用 ESP32Servo 库生成脉冲。onControlChange 只处理通道 1 上的 CC 40，并将 0–127 的值换算为 0–180°。舵机在 loop() 中转动，而不是在 ESP-NOW 接收回调中。",
+		"要使用其他引脚，修改 SERVO_PIN 即可，CC 编号会随之改变。如果希望 CC 值直接表示角度，将 SERVO_CC_VALUE_IS_DEGREES 设为 1（此时只能达到 0–127°）。",
+	],
+	tutorial_servo_upload: [
+		'安装 ESP32Servo 库：打开 项目 → 导入库 → 管理库，搜索 "ESP32Servo" 并安装。',
+		"在 Arduino IDE 中打开舵机示例：文件 → 示例 → ESP-NOW MIDI → client_servo。",
+		"选择开发板和端口，然后点击 上传，具体见“通过 Arduino IDE”固件章节。",
+		"上传完成后按 RESET。",
+	],
+	tutorial_servo_test:
+		"从 DAW 经由适配器在 MIDI 通道 1 上发送 CC 40。值 0 使舵机转到 0°，64 大约到中间，127 到 180°。",
 
 	tutorial_next_steps_title: "下一步",
 	tutorial_next_steps_text: ["你已经制作了第一个无线 MIDI 设备。接下来可以："],

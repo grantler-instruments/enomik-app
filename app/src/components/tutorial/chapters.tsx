@@ -1,12 +1,15 @@
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import DeveloperBoardIcon from "@mui/icons-material/DeveloperBoard";
-import LaptopIcon from "@mui/icons-material/Laptop";
-import UsbIcon from "@mui/icons-material/Usb";
+import GitHubIcon from "@mui/icons-material/GitHub";
 import {
 	Box,
+	Link,
 	Paper,
 	Stack,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
 	Typography,
 	useMediaQuery,
 	useTheme,
@@ -14,6 +17,7 @@ import {
 import type { FC, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
+import ArchitectureDiagram from "./ArchitectureDiagram";
 import {
 	CodeBlock,
 	Heading,
@@ -21,7 +25,17 @@ import {
 	Note,
 	Paragraphs,
 	Steps,
+	useList,
 } from "./blocks";
+import Dimmer from "./Dimmer";
+import LightSwitch from "./LightSwitch";
+import { Keyboard, MessageDiagram } from "./MidiGraphics";
+import PartPhotos from "./PartPhotos";
+import Screenshots, {
+	type Screenshot,
+	type ScreenshotSource,
+} from "./Screenshots";
+import Waveform from "./Waveform";
 
 const LIBRARY_REPO = "https://github.com/grantler-instruments/ESP-NOW-MIDI";
 const LIBRARY_DOCS = "https://grantler-instruments.github.io/ESP-NOW-MIDI/";
@@ -40,72 +54,142 @@ const Intro = () => {
 	);
 };
 
-const DiagramNode = ({
-	icon,
-	title,
-	description,
-}: {
-	icon: ReactNode;
-	title: string;
-	description: string;
-}) => (
-	<Paper
-		variant="outlined"
-		sx={{ p: 2, flex: 1, minWidth: 0, borderRadius: 2, textAlign: "center" }}
-	>
-		<Box color="secondary.main">{icon}</Box>
-		<Typography variant="subtitle1" fontWeight={600}>
-			{title}
-		</Typography>
-		<Typography variant="body2" color="text.secondary">
-			{description}
-		</Typography>
-	</Paper>
+const Architecture = () => (
+	<>
+		<Paragraphs i18nKey="tutorial_architecture_text" />
+		<ArchitectureDiagram />
+		<Paragraphs i18nKey="tutorial_architecture_details" />
+	</>
 );
 
-const DiagramLink = ({ label }: { label: string }) => {
-	const theme = useTheme();
-	const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-	return (
-		<Stack alignItems="center" justifyContent="center" sx={{ px: 1 }}>
-			<Typography variant="caption" color="text.secondary" noWrap>
-				{label}
-			</Typography>
-			{isMobile ? <ArrowDownwardIcon /> : <ArrowForwardIcon />}
-		</Stack>
-	);
-};
-
-const Architecture = () => {
+const Electronics = () => {
 	const { t } = useTranslation();
 	return (
 		<>
-			<Paragraphs i18nKey="tutorial_architecture_text" />
-			<Stack
-				direction={{ xs: "column", md: "row" }}
-				alignItems="stretch"
-				spacing={1}
-				sx={{ my: 3 }}
-			>
-				<DiagramNode
-					icon={<LaptopIcon fontSize="large" />}
-					title={t("tutorial_architecture_host")}
-					description={t("tutorial_architecture_host_desc")}
-				/>
-				<DiagramLink label={t("tutorial_architecture_usb")} />
-				<DiagramNode
-					icon={<UsbIcon fontSize="large" />}
-					title={t("device_kind_dongle")}
-					description={t("tutorial_architecture_dongle_desc")}
-				/>
-				<DiagramLink label="ESP-NOW" />
-				<DiagramNode
-					icon={<DeveloperBoardIcon fontSize="large" />}
-					title={t("tutorial_architecture_clients")}
-					description={t("tutorial_architecture_client_desc")}
-				/>
+			<Paragraphs i18nKey="tutorial_electronics_text" />
+			<Heading>{t("tutorial_electronics_sensor_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_electronics_sensor" />
+			<PartPhotos
+				ids={["button", "potentiometer", "photoresistor", "motion"]}
+			/>
+			<Heading>{t("tutorial_electronics_actuator_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_electronics_actuator" />
+			<PartPhotos ids={["leds", "neopixels", "servo", "relay"]} />
+			<Note severity="warning">{t("tutorial_electronics_actuator_note")}</Note>
+			<Heading>{t("tutorial_electronics_digital_title")}</Heading>
+			<Typography variant="body1">
+				{t("tutorial_electronics_switch_intro")}
+			</Typography>
+			<LightSwitch />
+			<Waveform kind="digital" />
+			<Paragraphs i18nKey="tutorial_electronics_digital" />
+			<Note severity="warning">{t("tutorial_electronics_digital_note")}</Note>
+			<Heading>{t("tutorial_electronics_analog_title")}</Heading>
+			<Typography variant="body1">
+				{t("tutorial_electronics_dimmer_intro")}
+			</Typography>
+			<Dimmer />
+			<Waveform kind="analog" />
+			<Paragraphs i18nKey="tutorial_electronics_analog" />
+			<LinkButtons actions={[{ label: t("kits_title"), link: "/kits" }]} />
+			<Heading>{t("tutorial_electronics_pwm_title")}</Heading>
+			<Waveform kind="pwm" />
+			<Paragraphs i18nKey="tutorial_electronics_pwm" />
+		</>
+	);
+};
+
+const MessageTable = () => {
+	const { t } = useTranslation();
+	const theme = useTheme();
+	const wide = useMediaQuery(theme.breakpoints.up("sm"));
+	const head = useList("tutorial_midi_table_head");
+	const value: unknown = t("tutorial_midi_table", { returnObjects: true });
+	const rows = Array.isArray(value) ? (value as string[][]) : [];
+
+	// Phones: one card per message instead of a cramped four-column table
+	if (!wide) {
+		return (
+			<Stack spacing={1.5} sx={{ my: 2 }}>
+				{rows.map((row) => (
+					<Paper
+						key={row[0]}
+						variant="outlined"
+						sx={{ p: 1.5, borderRadius: 2 }}
+					>
+						<Typography variant="subtitle2" fontWeight={600}>
+							{row[0]}
+						</Typography>
+						{row.slice(1).map((cell, index) => (
+							<Typography key={cell} variant="body2">
+								<Box component="span" sx={{ color: "text.secondary" }}>
+									{head[index + 1]}:
+								</Box>{" "}
+								{cell}
+							</Typography>
+						))}
+					</Paper>
+				))}
 			</Stack>
-			<Paragraphs i18nKey="tutorial_architecture_details" />
+		);
+	}
+
+	return (
+		<TableContainer sx={{ my: 2 }}>
+			<Table size="small">
+				<TableHead>
+					<TableRow>
+						{head.map((cell) => (
+							<TableCell key={cell} sx={{ fontWeight: 600 }}>
+								{cell}
+							</TableCell>
+						))}
+					</TableRow>
+				</TableHead>
+				<TableBody>
+					{rows.map((row) => (
+						<TableRow key={row[0]}>
+							{row.map((cell, index) => (
+								<TableCell
+									key={cell}
+									sx={index === 0 ? { fontWeight: 600 } : undefined}
+								>
+									{cell}
+								</TableCell>
+							))}
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+		</TableContainer>
+	);
+};
+
+const Midi = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_midi_text" />
+			<Heading>{t("tutorial_midi_messages_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_midi_messages" />
+			<MessageDiagram kind="note" />
+			<MessageDiagram kind="cc" />
+			<MessageTable />
+			<Heading>{t("tutorial_midi_notes_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_midi_notes" />
+			<Keyboard />
+			<Heading>{t("tutorial_midi_cc_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_midi_cc" />
+			<Heading>{t("tutorial_midi_channels_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_midi_channels" />
+			<Heading>{t("tutorial_midi_enomik_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_midi_enomik" />
+			<LinkButtons
+				actions={[
+					{ label: t("configurator"), link: "/configurator" },
+					{ label: t("midi_monitor"), link: "/debugger" },
+				]}
+			/>
 		</>
 	);
 };
@@ -219,6 +303,34 @@ const SectionLinks = ({ sections }: { sections: Chapter[] }) => {
 	);
 };
 
+/** Link to a file or folder in the library repository. */
+const SourceLink = ({ paths }: { paths: string[] }) => {
+	const { t } = useTranslation();
+	return (
+		<Stack spacing={0.5} sx={{ mt: -1, mb: 2 }}>
+			{paths.map((path) => (
+				<Link
+					key={path}
+					href={`${LIBRARY_REPO}/${/\.\w+$/.test(path) ? "blob" : "tree"}/main/${path}`}
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label={t("tutorial_source_link", { path })}
+					variant="body2"
+					sx={{
+						display: "inline-flex",
+						alignItems: "center",
+						alignSelf: "flex-start",
+						gap: 0.75,
+					}}
+				>
+					<GitHubIcon fontSize="small" />
+					{path}
+				</Link>
+			))}
+		</Stack>
+	);
+};
+
 const LibraryLinks = () => {
 	const { t } = useTranslation();
 	return (
@@ -254,19 +366,48 @@ const Platforms = () => {
 	);
 };
 
+const ARDUINO_DOCS: ScreenshotSource = {
+	author: "Arduino",
+	url: "https://docs.arduino.cc/software/ide-v2/tutorials/ide-v2-board-manager/",
+	license: "CC BY-SA 4.0",
+	licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+};
+
+const ARDUINO_LIBRARY_DOCS: ScreenshotSource = {
+	...ARDUINO_DOCS,
+	url: "https://docs.arduino.cc/software/ide-v2/tutorials/ide-v2-installing-a-library/",
+};
+
+const BOARDS_SCREENSHOTS: Screenshot[] = [1, 2, 3].map((n) => ({
+	file: `arduino/boards-${n}.webp`,
+	captionKey: `tutorial_arduino_boards_${n}`,
+}));
+
+const LIBRARY_SCREENSHOTS: Screenshot[] = [1, 2, 3].map((n) => ({
+	file: `arduino/library-${n}.webp`,
+	captionKey: `tutorial_arduino_library_${n}`,
+}));
+
 const ArduinoPlatform = () => {
 	const { t } = useTranslation();
+	const install = useList("tutorial_platforms_arduino_install");
 	return (
 		<>
 			<Heading>{t("tutorial_platforms_arduino_install_title")}</Heading>
-			<Steps i18nKey="tutorial_platforms_arduino_install" />
+			<Note>{t("tutorial_arduino_screenshots_note")}</Note>
+			<Typography variant="body1">{install[0]}</Typography>
+			<Screenshots items={BOARDS_SCREENSHOTS} source={ARDUINO_DOCS} />
+			<Typography variant="body1">{install[1]}</Typography>
+			<Screenshots items={LIBRARY_SCREENSHOTS} source={ARDUINO_LIBRARY_DOCS} />
 			<Heading>{t("tutorial_platforms_arduino_usage_title")}</Heading>
 			<Typography variant="body1">{t("tutorial_platforms_arduino")}</Typography>
 			<CodeBlock>{ARDUINO_CLIENT}</CodeBlock>
+			<SourceLink paths={["examples/client"]} />
 			<Typography variant="body1">
 				{t("tutorial_platforms_arduino_plain")}
 			</Typography>
 			<CodeBlock>{ARDUINO_PLAIN}</CodeBlock>
+			<SourceLink paths={["examples/plain_echo"]} />
 			<Note>{t("tutorial_platforms_arduino_s3")}</Note>
 			<LibraryLinks />
 		</>
@@ -281,6 +422,7 @@ const CircuitPythonPlatform = () => {
 				{t("tutorial_platforms_circuitpython")}
 			</Typography>
 			<CodeBlock>{CIRCUITPYTHON}</CodeBlock>
+			<SourceLink paths={["esp_now_midi.py", "examples/hello_midi.py"]} />
 			<LibraryLinks />
 		</>
 	);
@@ -294,6 +436,7 @@ const PlatformIOPlatform = () => {
 				{t("tutorial_platforms_platformio")}
 			</Typography>
 			<CodeBlock>{PLATFORMIO_INI}</CodeBlock>
+			<SourceLink paths={["examples/client/platformio.ini"]} />
 			<LibraryLinks />
 		</>
 	);
@@ -306,6 +449,7 @@ const IdfPlatform = () => {
 			<Typography variant="body1">{t("tutorial_platforms_idf")}</Typography>
 			<CodeBlock>{IDF_SETUP}</CodeBlock>
 			<CodeBlock>{IDF_MAIN}</CodeBlock>
+			<SourceLink paths={["examples_idf"]} />
 			<LibraryLinks />
 		</>
 	);
@@ -348,6 +492,9 @@ const FirmwareArduino = () => {
 				]}
 			/>
 			<Steps i18nKey="tutorial_firmware_arduino_steps" />
+			<SourceLink
+				paths={["examples/client", "examples/grantler_instruments/dongle"]}
+			/>
 			<Note>{t("tutorial_platforms_arduino_s3")}</Note>
 			<Note severity="success">{t("tutorial_firmware_arduino_tip")}</Note>
 			<LibraryLinks />
@@ -442,6 +589,8 @@ const I2cExample = () => {
 	return (
 		<>
 			<Paragraphs i18nKey="tutorial_i2c_text" />
+			<Heading>{t("tutorial_i2c_about_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_i2c_about" />
 			<Heading>{t("tutorial_wiring")}</Heading>
 			<Typography variant="body1">{t("tutorial_i2c_wiring")}</Typography>
 			<Steps i18nKey="tutorial_i2c_pins" ordered={false} />
@@ -449,6 +598,7 @@ const I2cExample = () => {
 			<LinkButtons actions={[{ label: t("kits_title"), link: "/kits" }]} />
 			<Heading>{t("tutorial_i2c_upload_title")}</Heading>
 			<Steps i18nKey="tutorial_i2c_upload" />
+			<SourceLink paths={["examples/client_vl53l0x"]} />
 			<LinkButtons
 				actions={[
 					{
@@ -462,7 +612,6 @@ const I2cExample = () => {
 			<LinkButtons
 				actions={[{ label: t("midi_monitor"), link: "/debugger" }]}
 			/>
-			<Note severity="success">{t("tutorial_i2c_tip")}</Note>
 		</>
 	);
 };
@@ -473,6 +622,133 @@ const Examples = () => (
 		<SectionLinks sections={EXAMPLE_SECTIONS} />
 	</>
 );
+
+const SERVO_SKETCH = `
+/*
+  Servo client: MIDI control change (ESP-NOW) -> hobby servo angle.
+
+  Based on the Arduino "Sweep" tutorial (BARRAGAN / Scott Fitzgerald / John Bennett,
+  public domain) and ESP32Servo usage patterns — see
+  https://www.arduino.cc/en/Tutorial/Sweep
+
+  Dependency: ESP32Servo (Library Manager or https://github.com/madhephaestus/ESP32Servo)
+
+  Typical hobby servos expect ~50 Hz with pulse widths roughly 500–2500 µs for 0–180°;
+  adjust attach() min/max if your servo stops short or binds.
+
+  Power: servos draw significant current — use VBat or an external 5 V supply with
+  common ground; do not rely on the 3.3 V logic rail for motor power.
+
+  Dongle: run examples/print_mac and set peerMacAddress below (or rely on stored peers).
+
+  CC scaling (SERVO_CC_VALUE_IS_DEGREES):
+  - 1 (default): CC value is the angle in degrees (e.g. value 90 → 90°). MIDI is 7-bit,
+    so you can only command 0–127° unless you use scaling below.
+  - 0: map CC 0–127 across 0–180° (then value 90 → ~127°, not 90°).
+
+  Incoming CC is handled inside the ESP-NOW receive path; the servo is updated from
+  loop() so PWM writes stay off the WiFi callback stack.
+*/
+
+#include "enomik_client.h"
+#include <ESP32Servo.h>
+
+// GPIO for servo signal (PWM-capable pin for your board)
+#define SERVO_PIN 40
+
+// MIDI routing — match your DAW / dongle
+#define SERVO_CC SERVO_PIN
+#define MIDI_CHANNEL 1
+
+// 1 = CC value == degrees (90 → 90°). 0 = map 0–127 → 0–180°
+#define SERVO_CC_VALUE_IS_DEGREES 0
+
+// on the dongle: run the print_mac firmware and paste it here
+// uint8_t peerMacAddress[6] = { 0x84, 0xF7, 0x03, 0xF2, 0x54, 0x62 };
+
+enomik::Client _client;
+Servo _servo;
+bool _isDirty = false;
+
+static portMUX_TYPE _servoMux = portMUX_INITIALIZER_UNLOCKED;
+static volatile int _servoAnglePending = 90;
+
+void onControlChange(byte channel, byte control, byte value) {
+  Serial.println(channel);
+  Serial.println(control);
+  if (channel != MIDI_CHANNEL) {
+    return;
+  }
+  if (control != SERVO_CC) {
+    return;
+  }
+  int angle;
+#if SERVO_CC_VALUE_IS_DEGREES
+  angle = constrain((int)value, 0, 180);
+#else
+  angle = (int)map(value, 0, 127, 0, 180);
+  angle = constrain(angle, 0, 180);
+#endif
+
+  _servoAnglePending = angle;
+  _isDirty = true;
+}
+
+void setup() {
+  Serial.begin(115200);
+  ESP32PWM::allocateTimer(3);
+  _servo.setPeriodHertz(50);
+  _servo.attach(SERVO_PIN, 500, 2400);
+  _servo.write(90);
+
+  _client.setName("client_servo"); // optional
+  _client.begin();
+  // _client.addPeer(peerMacAddress);
+  _client.setHandleControlChange(onControlChange);
+}
+
+void loop() {
+  _client.loop();
+
+  if (_isDirty) {
+    _servo.write(_servoAnglePending);
+    Serial.println(_servoAnglePending);
+    _isDirty = false;
+  }
+}
+`;
+
+const ServoExample = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_servo_text" />
+			<Heading>{t("tutorial_servo_about_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_servo_about" />
+			<Heading>{t("tutorial_wiring")}</Heading>
+			<Typography variant="body1">{t("tutorial_servo_wiring")}</Typography>
+			<Steps i18nKey="tutorial_servo_pins" ordered={false} />
+			<Note severity="warning">{t("tutorial_servo_power")}</Note>
+			<Heading>{t("tutorial_servo_code_title")}</Heading>
+			<Typography variant="body1">{t("tutorial_servo_code_before")}</Typography>
+			<CodeBlock>{SERVO_SKETCH}</CodeBlock>
+			<SourceLink paths={["examples/client_servo/client_servo.ino"]} />
+			<Paragraphs i18nKey="tutorial_servo_code_after" />
+			<Heading>{t("tutorial_i2c_upload_title")}</Heading>
+			<Steps i18nKey="tutorial_servo_upload" />
+			<LinkButtons
+				actions={[
+					{
+						label: t("tutorial_i2c_upload_link"),
+						link: "/tutorial/firmware/arduino",
+					},
+				]}
+			/>
+			<Heading>{t("tutorial_test")}</Heading>
+			<Typography variant="body1">{t("tutorial_servo_test")}</Typography>
+		</>
+	);
+};
 
 const WebappExamples = () => (
 	<>
@@ -526,6 +802,7 @@ const WEBAPP_EXAMPLES: Chapter[] = [
 
 const CODE_EXAMPLES: Chapter[] = [
 	{ id: "i2c", titleKey: "tutorial_i2c_title", Content: I2cExample },
+	{ id: "servo", titleKey: "tutorial_servo_title", Content: ServoExample },
 ];
 
 const EXAMPLE_SECTIONS: Chapter[] = [
@@ -582,6 +859,12 @@ export const CHAPTERS: Chapter[] = [
 		titleKey: "tutorial_architecture_title",
 		Content: Architecture,
 	},
+	{
+		id: "electronics",
+		titleKey: "tutorial_electronics_title",
+		Content: Electronics,
+	},
+	{ id: "midi", titleKey: "tutorial_midi_title", Content: Midi },
 	{
 		id: "platforms",
 		titleKey: "tutorial_platforms_title",
