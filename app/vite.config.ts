@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -29,6 +30,10 @@ export default defineConfig({
 		}),
 	],
 	base: "/enomik-app",
+	test: {
+		// Environment stays node; component tests opt into jsdom per file.
+		setupFiles: ["./src/test/setup.ts"],
+	},
 	// Only the lazy grantulator route imports these: pre-bundle them so the
 	// dev server doesn't re-optimize (504 Outdated Optimize Dep) on first visit.
 	optimizeDeps: {

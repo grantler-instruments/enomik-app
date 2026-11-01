@@ -1,15 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// The store persists to localStorage, which node doesn't have.
-vi.hoisted(() => {
-	const items = new Map<string, string>();
-	globalThis.localStorage = {
-		getItem: (key: string) => items.get(key) ?? null,
-		setItem: (key: string, value: string) => items.set(key, value),
-		removeItem: (key: string) => items.delete(key),
-	} as unknown as Storage;
-});
-
 import {
 	activeConfigs,
 	configFromFile,
@@ -170,8 +160,8 @@ describe("deploy with muted rows", () => {
 	// SysEx layout: F0, manufacturer, version major, version minor, command, payload…, F7
 	const pinConfigPins = () =>
 		sent
-			.filter((m) => m.data[4] === ENOMIK_COMMAND_SET_PIN_CONFIG)
-			.map((m) => m.data[5]);
+			.filter((m) => m.data?.[4] === ENOMIK_COMMAND_SET_PIN_CONFIG)
+			.map((m) => m.data?.[5]);
 
 	const deploy = async () => {
 		// Broadcast: no reset ack to wait for, only the trailing error window.
