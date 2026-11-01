@@ -478,6 +478,18 @@ const FirmwareWeb = () => {
 	);
 };
 
+const ARDUINO_UPLOAD_DOCS: ScreenshotSource = {
+	author: "Arduino",
+	url: "https://docs.arduino.cc/software/ide-v2/tutorials/getting-started/ide-v2-uploading-a-sketch/",
+	license: "CC BY-SA 4.0",
+	licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+};
+
+const UPLOAD_SCREENSHOTS: Screenshot[] = [1, 2, 3, 4].map((n) => ({
+	file: `arduino/upload-${n}.webp`,
+	captionKey: `tutorial_firmware_arduino_shot_${n}`,
+}));
+
 const FirmwareArduino = () => {
 	const { t } = useTranslation();
 	return (
@@ -495,6 +507,8 @@ const FirmwareArduino = () => {
 			<SourceLink
 				paths={["examples/client", "examples/grantler_instruments/dongle"]}
 			/>
+			<Note>{t("tutorial_firmware_arduino_shots_note")}</Note>
+			<Screenshots items={UPLOAD_SCREENSHOTS} source={ARDUINO_UPLOAD_DOCS} />
 			<Note>{t("tutorial_platforms_arduino_s3")}</Note>
 			<Note severity="success">{t("tutorial_firmware_arduino_tip")}</Note>
 			<LibraryLinks />

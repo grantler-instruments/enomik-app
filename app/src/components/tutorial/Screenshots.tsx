@@ -39,7 +39,10 @@ const Screenshots = ({
 			<Box
 				sx={{
 					display: "grid",
-					gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+					gridTemplateColumns: {
+						xs: "1fr",
+						sm: `repeat(${items.length % 3 === 0 ? 3 : 2}, 1fr)`,
+					},
 					gap: 2,
 				}}
 			>
@@ -65,6 +68,9 @@ const Screenshots = ({
 									sx={{
 										display: "block",
 										width: "100%",
+										aspectRatio: "3 / 2",
+										objectFit: "cover",
+										objectPosition: "top left",
 										borderRadius: 1.5,
 										border: 1,
 										borderColor: "divider",

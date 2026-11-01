@@ -3,6 +3,7 @@
 
 const en = {
 	tutorial: "Tutorial",
+	work_in_progress: "WORK IN PROGRESS",
 	tutorial_chapters: "Chapters",
 	tutorial_chapter_n: "Chapter {{n}}",
 	tutorial_wiring: "Wiring",
@@ -286,6 +287,16 @@ const en = {
 		"Select the port under Tools → Port and click Upload.",
 		"Press RESET when the upload has finished. The board now runs the new firmware.",
 	],
+	tutorial_firmware_arduino_shot_1:
+		"Open the example via File → Examples → ESP-NOW MIDI.",
+	tutorial_firmware_arduino_shot_2:
+		"Pick board and port in the drop-down next to the Upload button, or via Tools → Board and Tools → Port.",
+	tutorial_firmware_arduino_shot_3:
+		"Click the arrow button to compile and upload.",
+	tutorial_firmware_arduino_shot_4:
+		'"Done uploading" means the firmware is on the board.',
+	tutorial_firmware_arduino_shots_note:
+		"The screenshots come from the Arduino documentation and show an Arduino board. With an ESP32 board the names in the menus are different, the steps are the same.",
 	tutorial_firmware_arduino_tip:
 		"The client example uses the same code as the precompiled client firmware, so the board stays configurable from the web app.",
 	tutorial_firmware_web_text: [
@@ -474,6 +485,7 @@ const en = {
 
 const de: typeof en = {
 	tutorial: "Tutorial",
+	work_in_progress: "IN ARBEIT",
 	tutorial_chapters: "Kapitel",
 	tutorial_chapter_n: "Kapitel {{n}}",
 	tutorial_wiring: "Verkabelung",
@@ -763,6 +775,16 @@ const de: typeof en = {
 		"Wähle den Port unter Werkzeuge → Port und klicke auf Hochladen.",
 		"Drücke RESET, wenn das Hochladen abgeschlossen ist. Das Board läuft jetzt mit der neuen Firmware.",
 	],
+	tutorial_firmware_arduino_shot_1:
+		"Öffne das Beispiel über Datei → Beispiele → ESP-NOW MIDI.",
+	tutorial_firmware_arduino_shot_2:
+		"Wähle Board und Port im Auswahlfeld neben dem Hochladen-Knopf oder über Werkzeuge → Board und Werkzeuge → Port.",
+	tutorial_firmware_arduino_shot_3:
+		"Klicke auf den Pfeil-Knopf, um zu kompilieren und hochzuladen.",
+	tutorial_firmware_arduino_shot_4:
+		'"Hochladen abgeschlossen" heißt: Die Firmware ist auf dem Board.',
+	tutorial_firmware_arduino_shots_note:
+		"Die Screenshots stammen aus der Arduino-Dokumentation und zeigen ein Arduino-Board. Mit einem ESP32-Board heißen die Einträge in den Menüs anders, die Schritte sind dieselben.",
 	tutorial_firmware_arduino_tip:
 		"Das Client-Beispiel nutzt denselben Code wie die vorkompilierte Client-Firmware, das Board bleibt also über die Web-App konfigurierbar.",
 	tutorial_firmware_web_text: [
@@ -952,6 +974,7 @@ const de: typeof en = {
 
 const es: typeof en = {
 	tutorial: "Tutorial",
+	work_in_progress: "EN CONSTRUCCIÓN",
 	tutorial_chapters: "Capítulos",
 	tutorial_chapter_n: "Capítulo {{n}}",
 	tutorial_wiring: "Cableado",
@@ -1237,6 +1260,16 @@ const es: typeof en = {
 		"Selecciona el puerto en Herramientas → Puerto y haz clic en Subir.",
 		"Pulsa RESET cuando termine la subida. La placa ya ejecuta el nuevo firmware.",
 	],
+	tutorial_firmware_arduino_shot_1:
+		"Abre el ejemplo en Archivo → Ejemplos → ESP-NOW MIDI.",
+	tutorial_firmware_arduino_shot_2:
+		"Elige placa y puerto en el desplegable junto al botón Subir, o en Herramientas → Placa y Herramientas → Puerto.",
+	tutorial_firmware_arduino_shot_3:
+		"Haz clic en el botón de flecha para compilar y subir.",
+	tutorial_firmware_arduino_shot_4:
+		'"Subida completada" significa que el firmware ya está en la placa.',
+	tutorial_firmware_arduino_shots_note:
+		"Las capturas proceden de la documentación de Arduino y muestran una placa Arduino. Con una placa ESP32 los nombres en los menús son distintos, los pasos son los mismos.",
 	tutorial_firmware_arduino_tip:
 		"El ejemplo client usa el mismo código que el firmware de cliente precompilado, así que la placa sigue siendo configurable desde la app web.",
 	tutorial_firmware_web_text: [
@@ -1426,6 +1459,7 @@ const es: typeof en = {
 
 const zh: typeof en = {
 	tutorial: "教程",
+	work_in_progress: "正在开发中",
 	tutorial_chapters: "章节",
 	tutorial_chapter_n: "第 {{n}} 章",
 	tutorial_wiring: "接线",
@@ -1698,6 +1732,14 @@ const zh: typeof en = {
 		"在 工具 → 端口 中选择端口，然后点击 上传。",
 		"上传完成后按 RESET。开发板现在运行新固件。",
 	],
+	tutorial_firmware_arduino_shot_1:
+		"通过 文件 → 示例 → ESP-NOW MIDI 打开示例。",
+	tutorial_firmware_arduino_shot_2:
+		"在上传按钮旁的下拉菜单中选择开发板和端口，或通过 工具 → 开发板 和 工具 → 端口 选择。",
+	tutorial_firmware_arduino_shot_3: "点击箭头按钮进行编译和上传。",
+	tutorial_firmware_arduino_shot_4: "出现“上传完成”表示固件已写入开发板。",
+	tutorial_firmware_arduino_shots_note:
+		"这些截图来自 Arduino 官方文档，显示的是 Arduino 开发板。使用 ESP32 开发板时菜单中的名称不同，但步骤相同。",
 	tutorial_firmware_arduino_tip:
 		"client 示例与预编译的客户端固件使用相同代码，因此开发板仍可通过网页应用配置。",
 	tutorial_firmware_web_text: [

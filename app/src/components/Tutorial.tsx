@@ -14,6 +14,7 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, NavLink, useParams } from "react-router-dom";
 import { PAGES } from "./tutorial/chapters";
+import WIPBanner from "./WorkInProgress";
 
 const Tutorial = () => {
 	const { t } = useTranslation();
@@ -38,6 +39,7 @@ const Tutorial = () => {
 
 	return (
 		<Container ref={topRef} maxWidth="lg" sx={{ my: 4 }}>
+			<WIPBanner />
 			<Typography variant="h1" gutterBottom>
 				{t("tutorial")}
 			</Typography>
