@@ -305,6 +305,21 @@ const Firmware = () => {
 	return (
 		<>
 			<Paragraphs i18nKey="tutorial_firmware_text" />
+			<LinkButtons
+				actions={FIRMWARE_SECTIONS.map((section) => ({
+					label: t(section.titleKey),
+					link: `/tutorial/firmware/${section.id}`,
+				}))}
+			/>
+		</>
+	);
+};
+
+const FirmwareWeb = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_firmware_web_text" />
 			<Steps i18nKey="tutorial_firmware_steps" />
 			<Note severity="warning">{t("tutorial_firmware_nvs")}</Note>
 			<LinkButtons
@@ -312,6 +327,27 @@ const Firmware = () => {
 			/>
 			<Heading>{t("tutorial_troubleshooting")}</Heading>
 			<Steps i18nKey="tutorial_firmware_troubleshooting" ordered={false} />
+		</>
+	);
+};
+
+const FirmwareArduino = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_firmware_arduino_text" />
+			<LinkButtons
+				actions={[
+					{
+						label: t("tutorial_firmware_arduino_link"),
+						link: "/tutorial/platforms/arduino",
+					},
+				]}
+			/>
+			<Steps i18nKey="tutorial_firmware_arduino_steps" />
+			<Note>{t("tutorial_platforms_arduino_s3")}</Note>
+			<Note severity="success">{t("tutorial_firmware_arduino_tip")}</Note>
+			<LibraryLinks />
 		</>
 	);
 };
@@ -427,6 +463,15 @@ export type Chapter = {
 	sections?: Chapter[];
 };
 
+const FIRMWARE_SECTIONS: Chapter[] = [
+	{ id: "web", titleKey: "tutorial_firmware_web_title", Content: FirmwareWeb },
+	{
+		id: "arduino",
+		titleKey: "tutorial_firmware_arduino_title",
+		Content: FirmwareArduino,
+	},
+];
+
 const PLATFORM_SECTIONS: Chapter[] = [
 	{
 		id: "arduino",
@@ -463,7 +508,12 @@ export const CHAPTERS: Chapter[] = [
 		Content: Platforms,
 		sections: PLATFORM_SECTIONS,
 	},
-	{ id: "firmware", titleKey: "tutorial_firmware_title", Content: Firmware },
+	{
+		id: "firmware",
+		titleKey: "tutorial_firmware_title",
+		Content: Firmware,
+		sections: FIRMWARE_SECTIONS,
+	},
 	{ id: "button", titleKey: "tutorial_button_title", Content: ButtonExample },
 	{ id: "knob", titleKey: "tutorial_knob_title", Content: KnobExample },
 	{ id: "led", titleKey: "tutorial_led_title", Content: LedExample },

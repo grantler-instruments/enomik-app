@@ -91,6 +91,24 @@ const en = {
 
 	tutorial_firmware_title: "Uploading firmware",
 	tutorial_firmware_text: [
+		"Every board needs firmware: once for the dongle and once for every client. There are two ways to upload it. The web uploader needs nothing but a browser. The Arduino IDE builds the firmware from the library examples, so you can change the code.",
+	],
+	tutorial_firmware_web_title: "Via web uploader",
+	tutorial_firmware_arduino_title: "Via Arduino IDE",
+	tutorial_firmware_arduino_text: [
+		"Build and upload the firmware yourself from the library examples. First install the ESP32 boards and the ESP-NOW MIDI library as described in the Arduino chapter.",
+	],
+	tutorial_firmware_arduino_link: "Arduino installation",
+	tutorial_firmware_arduino_steps: [
+		"Open the example: File → Examples → ESP-NOW MIDI → client for client boards, or File → Examples → ESP-NOW MIDI → grantler → dongle for the dongle.",
+		"Select your board under Tools → Board → esp32, e.g. LOLIN S2 Mini or ESP32S3 Dev Module.",
+		"Put ESP32-S2 boards into bootloader mode: hold BOOT, press and release RESET, then release BOOT.",
+		"Select the port under Tools → Port and click Upload.",
+		"Press RESET when the upload has finished. The board now runs the new firmware.",
+	],
+	tutorial_firmware_arduino_tip:
+		"The client example uses the same code as the precompiled client firmware, so the board stays configurable from the web app.",
+	tutorial_firmware_web_text: [
 		"The Firmware Uploader flashes precompiled firmware right from the browser, no toolchain needed. Do this once for the dongle and once for every client.",
 	],
 	tutorial_firmware_steps: [
@@ -287,6 +305,24 @@ const de: typeof en = {
 
 	tutorial_firmware_title: "Firmware hochladen",
 	tutorial_firmware_text: [
+		"Jedes Board braucht Firmware: einmal für den Dongle und einmal für jeden Client. Es gibt zwei Wege, sie hochzuladen. Der Web-Uploader braucht nur einen Browser. Die Arduino IDE baut die Firmware aus den Beispielen der Bibliothek, so kannst du den Code anpassen.",
+	],
+	tutorial_firmware_web_title: "Über den Web-Uploader",
+	tutorial_firmware_arduino_title: "Über die Arduino IDE",
+	tutorial_firmware_arduino_text: [
+		"Baue die Firmware selbst aus den Beispielen der Bibliothek und lade sie hoch. Installiere zuerst die ESP32-Boards und die ESP-NOW-MIDI-Bibliothek wie im Arduino-Kapitel beschrieben.",
+	],
+	tutorial_firmware_arduino_link: "Arduino-Installation",
+	tutorial_firmware_arduino_steps: [
+		"Beispiel öffnen: Datei → Beispiele → ESP-NOW MIDI → client für Client-Boards, oder Datei → Beispiele → ESP-NOW MIDI → grantler → dongle für den Dongle.",
+		"Wähle dein Board unter Werkzeuge → Board → esp32, z. B. LOLIN S2 Mini oder ESP32S3 Dev Module.",
+		"ESP32-S2-Boards in den Bootloader-Modus versetzen: BOOT halten, RESET drücken und loslassen, dann BOOT loslassen.",
+		"Wähle den Port unter Werkzeuge → Port und klicke auf Hochladen.",
+		"Drücke RESET, wenn das Hochladen abgeschlossen ist. Das Board läuft jetzt mit der neuen Firmware.",
+	],
+	tutorial_firmware_arduino_tip:
+		"Das Client-Beispiel nutzt denselben Code wie die vorkompilierte Client-Firmware, das Board bleibt also über die Web-App konfigurierbar.",
+	tutorial_firmware_web_text: [
 		"Der Firmware Uploader flasht vorkompilierte Firmware direkt aus dem Browser, ganz ohne Toolchain. Einmal für den Dongle und einmal für jeden Client.",
 	],
 	tutorial_firmware_steps: [
@@ -483,6 +519,24 @@ const es: typeof en = {
 
 	tutorial_firmware_title: "Subir firmware",
 	tutorial_firmware_text: [
+		"Cada placa necesita firmware: una vez para el dongle y una vez para cada cliente. Hay dos formas de subirlo. El cargador web solo necesita un navegador. El Arduino IDE compila el firmware a partir de los ejemplos de la biblioteca, así puedes modificar el código.",
+	],
+	tutorial_firmware_web_title: "Con el cargador web",
+	tutorial_firmware_arduino_title: "Con el Arduino IDE",
+	tutorial_firmware_arduino_text: [
+		"Compila y sube el firmware tú mismo a partir de los ejemplos de la biblioteca. Primero instala las placas ESP32 y la biblioteca ESP-NOW MIDI como se describe en el capítulo de Arduino.",
+	],
+	tutorial_firmware_arduino_link: "Instalación de Arduino",
+	tutorial_firmware_arduino_steps: [
+		"Abre el ejemplo: Archivo → Ejemplos → ESP-NOW MIDI → client para placas cliente, o Archivo → Ejemplos → ESP-NOW MIDI → grantler → dongle para el dongle.",
+		"Selecciona tu placa en Herramientas → Placa → esp32, p. ej. LOLIN S2 Mini o ESP32S3 Dev Module.",
+		"Pon las placas ESP32-S2 en modo bootloader: mantén BOOT, pulsa y suelta RESET y luego suelta BOOT.",
+		"Selecciona el puerto en Herramientas → Puerto y haz clic en Subir.",
+		"Pulsa RESET cuando termine la subida. La placa ya ejecuta el nuevo firmware.",
+	],
+	tutorial_firmware_arduino_tip:
+		"El ejemplo client usa el mismo código que el firmware de cliente precompilado, así que la placa sigue siendo configurable desde la app web.",
+	tutorial_firmware_web_text: [
 		"El Cargador de Firmware flashea firmware precompilado directamente desde el navegador, sin toolchain. Hazlo una vez para el dongle y una vez para cada cliente.",
 	],
 	tutorial_firmware_steps: [
@@ -679,6 +733,24 @@ const zh: typeof en = {
 
 	tutorial_firmware_title: "上传固件",
 	tutorial_firmware_text: [
+		"每块开发板都需要固件：适配器烧录一次，每个客户端各烧录一次。有两种上传方式：网页上传器只需要浏览器；Arduino IDE 从库示例编译固件，你可以修改代码。",
+	],
+	tutorial_firmware_web_title: "通过网页上传器",
+	tutorial_firmware_arduino_title: "通过 Arduino IDE",
+	tutorial_firmware_arduino_text: [
+		"从库示例自行编译并上传固件。请先按照 Arduino 章节的说明安装 ESP32 开发板和 ESP-NOW MIDI 库。",
+	],
+	tutorial_firmware_arduino_link: "Arduino 安装",
+	tutorial_firmware_arduino_steps: [
+		"打开示例：客户端开发板选择 文件 → 示例 → ESP-NOW MIDI → client，适配器选择 文件 → 示例 → ESP-NOW MIDI → grantler → dongle。",
+		"在 工具 → 开发板 → esp32 中选择你的开发板，例如 LOLIN S2 Mini 或 ESP32S3 Dev Module。",
+		"将 ESP32-S2 开发板置于引导模式：按住 BOOT，按下并松开 RESET，然后松开 BOOT。",
+		"在 工具 → 端口 中选择端口，然后点击 上传。",
+		"上传完成后按 RESET。开发板现在运行新固件。",
+	],
+	tutorial_firmware_arduino_tip:
+		"client 示例与预编译的客户端固件使用相同代码，因此开发板仍可通过网页应用配置。",
+	tutorial_firmware_web_text: [
 		"固件上传器直接在浏览器中烧录预编译固件，无需工具链。适配器烧录一次，每个客户端各烧录一次。",
 	],
 	tutorial_firmware_steps: [
