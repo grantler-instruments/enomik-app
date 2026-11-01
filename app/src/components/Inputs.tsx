@@ -5,7 +5,12 @@ import { useDevice } from "../hooks/useDevice";
 import { useRawStream } from "../hooks/useRawStream";
 import { useAppStore } from "../store/app";
 import { thresholdUnit } from "../store/device";
-import { nextFreePin, thresholdsNeedReview, useIOStore } from "../store/io";
+import {
+	activeConfigs,
+	nextFreePin,
+	thresholdsNeedReview,
+	useIOStore,
+} from "../store/io";
 import { useMIDIStore } from "../store/midi";
 import {
 	MIDI_CONTROL_CHANGE,
@@ -28,7 +33,7 @@ const Inputs = () => {
 	const info = useDevice(device || "-1");
 	const unit =
 		info?.status === "ready" ? thresholdUnit(info.version) : undefined;
-	const needsReview = thresholdsNeedReview(inputs, unit);
+	const needsReview = thresholdsNeedReview(activeConfigs(inputs), unit);
 	const streaming = useRawStreamStore((state) => state.active);
 	const rawValues = useRawStreamStore((state) => state.values);
 	const [hovered, setHovered] = useState(false);
@@ -40,7 +45,9 @@ const Inputs = () => {
 		return value !== undefined && value.mode === input.mode ? value : null;
 	};
 	const showThreshold = hasTouchInput(inputs);
-	const anyUndeployed = inputs.some((input) => !deployedValue(input));
+	const anyUndeployed = activeConfigs(inputs).some(
+		(input) => !deployedValue(input),
+	);
 
 	// The stream needs one specific device; it can't run on broadcast.
 	const isBroadcast = !device || device === "-1";
@@ -120,6 +127,7 @@ const Inputs = () => {
 						thresholdUnit={unit}
 						live={
 							streaming &&
+							!input.muted &&
 							(value ? (
 								<LiveCell
 									value={value}

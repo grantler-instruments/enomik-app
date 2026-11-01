@@ -474,6 +474,14 @@ const FirmwareWeb = () => {
 			/>
 			<Heading>{t("tutorial_troubleshooting")}</Heading>
 			<Steps i18nKey="tutorial_firmware_troubleshooting" ordered={false} />
+			<LinkButtons
+				actions={[
+					{
+						label: t("tutorial_troubleshooting_title"),
+						link: "/tutorial/troubleshooting",
+					},
+				]}
+			/>
 		</>
 	);
 };
@@ -778,6 +786,83 @@ const CodeExamples = () => (
 	</>
 );
 
+const DAWS = ["ableton", "bitwig", "logic", "reaper"];
+
+const DawSetup = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_daw_text" />
+			<Heading>{t("tutorial_daw_input_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_daw_input" />
+			{DAWS.map((daw) => (
+				<Box key={daw}>
+					<Typography variant="subtitle1" fontWeight={600} sx={{ mt: 2 }}>
+						{t(`tutorial_daw_${daw}_title`)}
+					</Typography>
+					<Steps i18nKey={`tutorial_daw_${daw}`} />
+				</Box>
+			))}
+			<Heading>{t("tutorial_daw_notes_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_daw_notes" />
+			<Heading>{t("tutorial_daw_learn_title")}</Heading>
+			<Steps i18nKey="tutorial_daw_learn" />
+			<Heading>{t("tutorial_daw_feedback_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_daw_feedback" />
+			<Note>{t("tutorial_daw_port_note")}</Note>
+			<LinkButtons actions={[{ label: t("debugger"), link: "/debugger" }]} />
+		</>
+	);
+};
+
+const Troubleshooting = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_troubleshooting_text" />
+			<Heading>{t("tutorial_troubleshooting_tools_title")}</Heading>
+			<Steps i18nKey="tutorial_troubleshooting_tools" ordered={false} />
+			<LinkButtons
+				actions={[
+					{ label: t("debugger"), link: "/debugger" },
+					{ label: t("inspector"), link: "/inspector" },
+					{ label: t("open_tester"), link: "/tester" },
+				]}
+			/>
+			{["board", "daw", "wireless", "knob", "button", "settings"].map(
+				(symptom) => (
+					<Box key={symptom}>
+						<Heading>{t(`tutorial_troubleshooting_${symptom}_title`)}</Heading>
+						<Steps
+							i18nKey={`tutorial_troubleshooting_${symptom}`}
+							ordered={false}
+						/>
+					</Box>
+				),
+			)}
+			<LinkButtons
+				actions={[
+					{
+						label: t("tutorial_firmware_title"),
+						link: "/tutorial/firmware/web",
+					},
+					{ label: t("tutorial_daw_title"), link: "/tutorial/daw" },
+					{ label: t("kits_title"), link: "/kits" },
+				]}
+			/>
+			<Paragraphs i18nKey="tutorial_troubleshooting_issue" />
+			<LinkButtons
+				actions={[
+					{
+						label: t("firmwareuploader_issue_tracker"),
+						link: "https://github.com/grantler-instruments/enomik-app/issues",
+					},
+				]}
+			/>
+		</>
+	);
+};
+
 const NextSteps = () => {
 	const { t } = useTranslation();
 	return (
@@ -896,6 +981,12 @@ export const CHAPTERS: Chapter[] = [
 		titleKey: "tutorial_examples_title",
 		Content: Examples,
 		sections: EXAMPLE_SECTIONS,
+	},
+	{ id: "daw", titleKey: "tutorial_daw_title", Content: DawSetup },
+	{
+		id: "troubleshooting",
+		titleKey: "tutorial_troubleshooting_title",
+		Content: Troubleshooting,
 	},
 	{
 		id: "next-steps",

@@ -36,6 +36,7 @@ import {
 	useDeviceStore,
 } from "../store/device";
 import {
+	activeConfigs,
 	configFromFile,
 	findDuplicatePins,
 	useDongleIOStore,
@@ -211,7 +212,9 @@ const Configurator = () => {
 			return;
 		}
 
-		const pinConfigs = isDongle ? 0 : inputs.length + outputs.length;
+		const pinConfigs = isDongle
+			? 0
+			: activeConfigs(inputs).length + activeConfigs(outputs).length;
 		const peerCount = peers.length;
 		if (!selectedOutputId || !hasSelectedOutput) return;
 		const rawOut = selectedOutputId;

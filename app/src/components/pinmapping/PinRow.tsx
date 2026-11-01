@@ -1,5 +1,7 @@
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
 	Box,
@@ -57,7 +59,8 @@ const CHANNEL = "minmax(64px, 0.8fr)";
 const MIDI_TYPE = "minmax(96px, 1.4fr)";
 const CC_NOTE = "minmax(72px, 0.9fr)";
 const RANGE = "minmax(64px, 0.8fr)";
-const MENU = "32px";
+// Mute toggle + row menu
+const MENU = "64px";
 const MIDI = [CHANNEL, MIDI_TYPE, CC_NOTE, RANGE, RANGE];
 const columns = (
 	type: RowType,
@@ -477,18 +480,44 @@ const PinRow = ({
 	) : null;
 
 	const showMenu = !readOnly && !hideMenu;
-	const menuCell = !showMenu ? (
-		<Box />
-	) : (
-		<IconButton
-			onClick={(e) => setAnchorEl(e.currentTarget)}
-			aria-label="more options"
-			size="small"
-			sx={{ opacity: 0.4, "&:hover": { opacity: 1 } }}
-		>
-			<MoreVertIcon fontSize="small" />
-		</IconButton>
+	const muted = !!config.muted;
+	const muteButton = readOnly ? null : (
+		<Tooltip title={t(muted ? "pin_row_unmute" : "pin_row_mute")} arrow>
+			<IconButton
+				onClick={() => onChange("muted", !muted)}
+				aria-label={t(muted ? "pin_row_unmute" : "pin_row_mute")}
+				aria-pressed={muted}
+				size="small"
+				color={muted ? "warning" : "default"}
+				sx={{ opacity: muted ? 1 : 0.4, "&:hover": { opacity: 1 } }}
+			>
+				{muted ? (
+					<VolumeOffIcon fontSize="small" />
+				) : (
+					<VolumeUpIcon fontSize="small" />
+				)}
+			</IconButton>
+		</Tooltip>
 	);
+	const menuCell = (
+		<Box className="pin-row-actions" display="flex" justifyContent="flex-end">
+			{muteButton}
+			{showMenu && (
+				<IconButton
+					onClick={(e) => setAnchorEl(e.currentTarget)}
+					aria-label="more options"
+					size="small"
+					sx={{ opacity: 0.4, "&:hover": { opacity: 1 } }}
+				>
+					<MoreVertIcon fontSize="small" />
+				</IconButton>
+			)}
+		</Box>
+	);
+	// Muted rows stay editable but read as inactive; the toggle stays fully visible.
+	const mutedSx = muted
+		? { "& > *:not(.pin-row-actions)": { opacity: 0.45 } }
+		: undefined;
 
 	const pinCells = (
 		<>
@@ -528,6 +557,7 @@ const PinRow = ({
 			paddingY={wide ? 0.5 : 1}
 			borderRadius={1}
 			bgcolor={rowBg(index)}
+			sx={mutedSx}
 		>
 			{isInput ? (
 				<>

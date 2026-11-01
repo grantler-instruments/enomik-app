@@ -73,6 +73,8 @@ export interface InputPinConfig {
 	note?: number;
 	threshold?: number;
 	thresholdUnit?: ThresholdUnit;
+	/** Kept in the configurator but not deployed to the device. */
+	muted?: boolean;
 }
 
 export interface OutputPinConfig {
@@ -89,6 +91,8 @@ export interface OutputPinConfig {
 	note?: number;
 	velocitySensitive?: boolean;
 	threshold?: number;
+	/** Kept in the configurator but not deployed to the device. */
+	muted?: boolean;
 }
 
 export interface PeerConfig {
@@ -176,17 +180,22 @@ export function thresholdsNeedReview(
 	);
 }
 
+/** Rows that get deployed: muted ones stay in the configurator only. */
+export const activeConfigs = <T extends { muted?: boolean }>(configs: T[]) =>
+	configs.filter((c) => !c.muted);
+
 /**
- * Pin numbers used by more than one config, inputs and outputs together.
+ * Pin numbers used by more than one deployed config, inputs and outputs together.
  * The firmware keeps one config per pin, so a second row would overwrite the first.
+ * Muted rows are not deployed and so never conflict.
  */
 export const findDuplicatePins = (
-	inputs: { pin: number }[],
-	outputs: { pin: number }[],
+	inputs: { pin: number; muted?: boolean }[],
+	outputs: { pin: number; muted?: boolean }[],
 ): Set<number> => {
 	const seen = new Set<number>();
 	const duplicates = new Set<number>();
-	for (const { pin } of [...inputs, ...outputs]) {
+	for (const { pin } of activeConfigs([...inputs, ...outputs])) {
 		if (seen.has(pin)) duplicates.add(pin);
 		seen.add(pin);
 	}
@@ -380,7 +389,7 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 						if (
 							!isDongle &&
 							thresholdsNeedReview(
-								get().inputs,
+								activeConfigs(get().inputs),
 								info?.status === "ready"
 									? thresholdUnit(info.version)
 									: undefined,
@@ -413,7 +422,7 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 						};
 
 						// set inputs
-						(isDongle ? [] : get().inputs).forEach((input) => {
+						(isDongle ? [] : activeConfigs(get().inputs)).forEach((input) => {
 							const msg: MidiMessage = {
 								id: uuidv4(),
 								timestamp: Date.now(),
@@ -440,7 +449,7 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 						});
 
 						// set outputs
-						(isDongle ? [] : get().outputs).forEach((output) => {
+						(isDongle ? [] : activeConfigs(get().outputs)).forEach((output) => {
 							const noteOrCC =
 								output.midiType === MIDI_CONTROL_CHANGE
 									? (output.controller ?? 0)

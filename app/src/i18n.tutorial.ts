@@ -470,6 +470,107 @@ const en = {
 	tutorial_servo_test:
 		"Send CC 40 on MIDI channel 1 from your DAW through the dongle. Value 0 turns the servo to 0°, 64 to about the middle, 127 to 180°.",
 
+	tutorial_daw_title: "DAW setup",
+	tutorial_daw_text: [
+		"Your DAW sees the dongle like any other USB MIDI keyboard: it is class compliant, so no driver is needed. The same goes for a client plugged in directly via USB.",
+		"It doesn't have to be a DAW: Max, Pure Data, plugdata, TouchDesigner, vvvv or anything else that speaks MIDI works the same way. Select the dongle as MIDI input (and output for feedback) in its MIDI settings. The steps below use DAWs as examples.",
+	],
+	tutorial_daw_input_title: "Enable the MIDI port",
+	tutorial_daw_input: [
+		"Plug in the dongle before you start the DAW. Its port name comes from the firmware; the Debugger shows the exact name if you are unsure.",
+	],
+	tutorial_daw_ableton_title: "Ableton Live",
+	tutorial_daw_ableton: [
+		"Open Settings → Link, Tempo & MIDI.",
+		"Under MIDI Ports, find the dongle in the In list and switch on Track (for notes) and Remote (for MIDI mapping).",
+		"Switch on Track in the Out list too if you want MIDI feedback to the client.",
+	],
+	tutorial_daw_bitwig_title: "Bitwig Studio",
+	tutorial_daw_bitwig: [
+		"Open Settings → Controllers and click Add Controller.",
+		"Choose Generic → MIDI Keyboard and select the dongle as input (and output for feedback).",
+	],
+	tutorial_daw_logic_title: "Logic Pro",
+	tutorial_daw_logic: [
+		"Logic Pro listens to all MIDI inputs by default, so the dongle works right away.",
+		"If nothing arrives, check Audio MIDI Setup → MIDI Studio: the dongle must be listed and not greyed out.",
+	],
+	tutorial_daw_reaper_title: "Reaper",
+	tutorial_daw_reaper: [
+		"Open Preferences → Audio → MIDI Inputs (MIDI Devices in older versions).",
+		"Right-click the dongle and choose Enable input. Enable it in MIDI Outputs too for feedback.",
+	],
+	tutorial_daw_notes_title: "Play notes",
+	tutorial_daw_notes: [
+		"Create an instrument track, set its MIDI input to the dongle (or All Inputs) and arm or monitor the track. The buttons from the Button example now play the instrument.",
+	],
+	tutorial_daw_learn_title: "MIDI-learn a knob",
+	tutorial_daw_learn: [
+		"Set up a knob as Control Change, as in the Knob example.",
+		"Enter your DAW's MIDI learn mode: Cmd/Ctrl+M in Ableton Live, right-click a parameter → Learn Controller Assignment in Bitwig, Cmd+L in Logic Pro, Param → Learn in Reaper.",
+		"Click the parameter you want to control, e.g. a filter cutoff.",
+		"Turn the knob. The DAW stores the controller number and channel.",
+		"Leave learn mode. The knob now moves the parameter.",
+	],
+	tutorial_daw_feedback_title: "Feedback to the client",
+	tutorial_daw_feedback: [
+		"MIDI also travels the other way. Route a MIDI track or clip to the dongle's output port and the dongle forwards the messages to its clients. With the MIDI to LED example, a note 16 on channel 1 lights the LED, e.g. to show that a clip is playing.",
+	],
+	tutorial_daw_port_note:
+		"On Windows, a MIDI port can only be used by one program at a time. Close the browser tab with the Debugger or Configurator before you open the DAW, or the DAW may not see the dongle.",
+
+	tutorial_troubleshooting_title: "Troubleshooting",
+	tutorial_troubleshooting_text: [
+		"Something doesn't work? Narrow it down step by step: does the board show up, do messages leave the client, do they reach the dongle, does the DAW listen? The app has a tool for each step.",
+	],
+	tutorial_troubleshooting_tools_title: "Tools in the app",
+	tutorial_troubleshooting_tools: [
+		"Debugger: the MIDI Monitor shows every message a device sends, the MIDI Composer sends test notes and CCs (e.g. to light an LED), and the Serial Monitor shows the board's log output.",
+		"Inspector: reads the configuration back from a board and shows its firmware version, MAC address and protocol version. Live Values streams raw input readings (firmware 0.19+, USB only).",
+		"Board tester: checks a freshly soldered board step by step.",
+	],
+	tutorial_troubleshooting_board_title: "The board doesn't show up",
+	tutorial_troubleshooting_board: [
+		"Use a Chromium-based browser such as Chrome or Edge. Safari doesn't support Web Serial or Web MIDI, Firefox doesn't support Web Serial.",
+		"Try another cable (many carry power only) and another USB port, ideally without a hub.",
+		"Does the board have firmware? A new board needs to be flashed first, see the Firmware chapter.",
+		"Click Init MIDI if the app asks you to, and allow MIDI access in the browser.",
+	],
+	tutorial_troubleshooting_daw_title: "Nothing arrives in the DAW",
+	tutorial_troubleshooting_daw: [
+		"Open the MIDI Monitor in the Debugger and select the dongle. If messages show up there, the hardware works and the problem is in the DAW settings, see the DAW setup chapter.",
+		"If nothing shows up, select the client via USB instead. Messages there but not at the dongle? Check the wireless pairing.",
+		"Check the channel: the DAW track or mapping must listen on the channel set in the Configurator (or on all channels).",
+	],
+	tutorial_troubleshooting_wireless_title:
+		"The client doesn't reach the dongle",
+	tutorial_troubleshooting_wireless: [
+		"Compare the dongle's MAC address in the Inspector with the peer entered on the client. A single wrong digit is enough.",
+		"Make sure you clicked Deploy after adding the peer, then read the configuration back with the Inspector.",
+		"Dongle and client need the same protocol version: check both in the Inspector and update the older one.",
+		"Check the client's power supply: some power banks switch off at low current. Move the boards closer together to rule out range problems.",
+	],
+	tutorial_troubleshooting_knob_title: "A knob jumps or reads wrong values",
+	tutorial_troubleshooting_knob: [
+		"Use an analog capable pin; Kits & Boards shows which ones.",
+		"Connect the outer legs to 3V3 and GND, not 5V. The middle leg goes to the pin.",
+		"Watch the raw readings in the Inspector's Live Values to see whether the problem is the wiring or the mapping. Narrow min and max if the ends of the range don't reach 0 or 127.",
+	],
+	tutorial_troubleshooting_button_title: "A button is stuck or inverted",
+	tutorial_troubleshooting_button: [
+		"Use mode INPUT_PULLUP and connect the button between pin and GND.",
+		"Avoid input-only and strapping pins; Kits & Boards marks them.",
+		"A loose wire on a breadboard reads like a pressed button. Check the connection with the Board tester.",
+	],
+	tutorial_troubleshooting_settings_title: "Strange behaviour after an update",
+	tutorial_troubleshooting_settings: [
+		"Read the configuration back with the Inspector and compare it with what you expect. Settings stay on the board across updates.",
+		"For a fresh start, flash again with Clear NVS checked. This erases all saved pins and peers.",
+	],
+	tutorial_troubleshooting_issue: [
+		"Still stuck? Open an issue on GitHub and include your board, firmware version and what the MIDI Monitor shows.",
+	],
+
 	tutorial_next_steps_title: "Next steps",
 	tutorial_next_steps_text: [
 		"You have built your first wireless MIDI device. Where to go from here:",
@@ -959,6 +1060,109 @@ const de: typeof en = {
 	tutorial_servo_test:
 		"Sende CC 40 auf MIDI-Kanal 1 aus deiner DAW über den Dongle. Wert 0 dreht den Servo auf 0°, 64 etwa in die Mitte, 127 auf 180°.",
 
+	tutorial_daw_title: "DAW einrichten",
+	tutorial_daw_text: [
+		"Deine DAW sieht den Dongle wie jedes andere USB-MIDI-Keyboard: Er ist class compliant, ein Treiber ist nicht nötig. Dasselbe gilt für einen Client, der direkt per USB angeschlossen ist.",
+		"Es muss keine DAW sein: Max, Pure Data, plugdata, TouchDesigner, vvvv oder alles andere, was MIDI spricht, funktioniert genauso. Wähle den Dongle in den MIDI-Einstellungen als MIDI-Eingang (und für Feedback als Ausgang). Die Schritte unten nutzen DAWs als Beispiel.",
+	],
+	tutorial_daw_input_title: "MIDI-Port aktivieren",
+	tutorial_daw_input: [
+		"Stecke den Dongle ein, bevor du die DAW startest. Der Portname kommt aus der Firmware; im Debugger siehst du den genauen Namen, falls du unsicher bist.",
+	],
+	tutorial_daw_ableton_title: "Ableton Live",
+	tutorial_daw_ableton: [
+		"Settings → Link, Tempo & MIDI öffnen.",
+		"Unter MIDI Ports den Dongle in der In-Liste suchen und Track (für Noten) und Remote (für MIDI-Mapping) einschalten.",
+		"Für MIDI-Feedback zum Client auch Track in der Out-Liste einschalten.",
+	],
+	tutorial_daw_bitwig_title: "Bitwig Studio",
+	tutorial_daw_bitwig: [
+		"Settings → Controllers öffnen und auf Add Controller klicken.",
+		"Generic → MIDI Keyboard wählen und den Dongle als Eingang (und für Feedback als Ausgang) auswählen.",
+	],
+	tutorial_daw_logic_title: "Logic Pro",
+	tutorial_daw_logic: [
+		"Logic Pro hört standardmäßig auf alle MIDI-Eingänge, der Dongle funktioniert also sofort.",
+		"Kommt nichts an, in Audio-MIDI-Setup → MIDI-Studio prüfen: Der Dongle muss dort erscheinen und darf nicht ausgegraut sein.",
+	],
+	tutorial_daw_reaper_title: "Reaper",
+	tutorial_daw_reaper: [
+		"Preferences → Audio → MIDI Inputs öffnen (in älteren Versionen MIDI Devices).",
+		"Rechtsklick auf den Dongle und Enable input wählen. Für Feedback auch unter MIDI Outputs aktivieren.",
+	],
+	tutorial_daw_notes_title: "Noten spielen",
+	tutorial_daw_notes: [
+		"Lege eine Instrumentenspur an, setze ihren MIDI-Eingang auf den Dongle (oder alle Eingänge) und schalte die Spur scharf oder auf Monitoring. Die Taster aus dem Beispiel „Taster zu Note“ spielen jetzt das Instrument.",
+	],
+	tutorial_daw_learn_title: "Einen Regler per MIDI Learn zuweisen",
+	tutorial_daw_learn: [
+		"Richte einen Regler als Control Change ein, wie im Drehregler-Beispiel.",
+		"Starte den MIDI-Learn-Modus deiner DAW: Cmd/Strg+M in Ableton Live, Rechtsklick auf einen Parameter → Learn Controller Assignment in Bitwig, Cmd+L in Logic Pro, Param → Learn in Reaper.",
+		"Klicke den Parameter an, den du steuern willst, z. B. die Cutoff-Frequenz eines Filters.",
+		"Dreh am Regler. Die DAW merkt sich Controller-Nummer und Kanal.",
+		"Verlasse den Learn-Modus. Der Regler bewegt jetzt den Parameter.",
+	],
+	tutorial_daw_feedback_title: "Feedback zum Client",
+	tutorial_daw_feedback: [
+		"MIDI geht auch in die andere Richtung. Leite eine MIDI-Spur oder einen Clip an den Ausgangsport des Dongles, und der Dongle reicht die Nachrichten an seine Clients weiter. Mit dem Beispiel „MIDI zu LED“ schaltet Note 16 auf Kanal 1 die LED ein, z. B. um anzuzeigen, dass ein Clip läuft.",
+	],
+	tutorial_daw_port_note:
+		"Unter Windows kann ein MIDI-Port nur von einem Programm gleichzeitig genutzt werden. Schließe den Browser-Tab mit Debugger oder Konfigurator, bevor du die DAW öffnest, sonst sieht die DAW den Dongle eventuell nicht.",
+
+	tutorial_troubleshooting_title: "Fehlerbehebung",
+	tutorial_troubleshooting_text: [
+		"Etwas funktioniert nicht? Grenze es Schritt für Schritt ein: Erscheint das Board, verlassen Nachrichten den Client, erreichen sie den Dongle, hört die DAW zu? Für jeden Schritt hat die App ein Werkzeug.",
+	],
+	tutorial_troubleshooting_tools_title: "Werkzeuge in der App",
+	tutorial_troubleshooting_tools: [
+		"Debugger: Der MIDI-Monitor zeigt jede Nachricht, die ein Gerät sendet, der MIDI-Composer schickt Testnoten und CCs (z. B. um eine LED einzuschalten), und der serielle Monitor zeigt die Log-Ausgaben des Boards.",
+		"Inspector: liest die Konfiguration vom Board zurück und zeigt Firmware-Version, MAC-Adresse und Protokollversion. Live-Werte streamt die rohen Messwerte der Eingänge (Firmware 0.19+, nur USB).",
+		"Board-Tester: prüft ein frisch gelötetes Board Schritt für Schritt.",
+	],
+	tutorial_troubleshooting_board_title: "Das Board erscheint nicht",
+	tutorial_troubleshooting_board: [
+		"Nutze einen Chromium-basierten Browser wie Chrome oder Edge. Safari unterstützt weder Web Serial noch Web MIDI, Firefox kein Web Serial.",
+		"Probiere ein anderes Kabel (viele laden nur) und einen anderen USB-Anschluss, am besten ohne Hub.",
+		"Hat das Board schon Firmware? Ein neues Board muss zuerst geflasht werden, siehe Kapitel Firmware.",
+		"Klicke auf MIDI initialisieren, wenn die App danach fragt, und erlaube den MIDI-Zugriff im Browser.",
+	],
+	tutorial_troubleshooting_daw_title: "In der DAW kommt nichts an",
+	tutorial_troubleshooting_daw: [
+		"Öffne den MIDI-Monitor im Debugger und wähle den Dongle. Erscheinen dort Nachrichten, funktioniert die Hardware und das Problem liegt in den DAW-Einstellungen, siehe Kapitel DAW einrichten.",
+		"Erscheint nichts, wähle stattdessen den Client per USB. Nachrichten dort, aber nicht am Dongle? Prüfe die kabellose Kopplung.",
+		"Prüfe den Kanal: Spur oder Mapping in der DAW müssen auf dem im Konfigurator eingestellten Kanal (oder auf allen Kanälen) hören.",
+	],
+	tutorial_troubleshooting_wireless_title:
+		"Der Client erreicht den Dongle nicht",
+	tutorial_troubleshooting_wireless: [
+		"Vergleiche die MAC-Adresse des Dongles im Inspector mit dem Peer, der auf dem Client eingetragen ist. Eine falsche Stelle reicht schon.",
+		"Stelle sicher, dass du nach dem Eintragen des Peers auf Bereitstellen geklickt hast, und lies die Konfiguration mit dem Inspector zurück.",
+		"Dongle und Client brauchen dieselbe Protokollversion: Prüfe beide im Inspector und aktualisiere den älteren.",
+		"Prüfe die Stromversorgung des Clients: Manche Powerbanks schalten bei geringem Strom ab. Bring die Boards näher zusammen, um Reichweitenprobleme auszuschließen.",
+	],
+	tutorial_troubleshooting_knob_title:
+		"Ein Drehregler springt oder liefert falsche Werte",
+	tutorial_troubleshooting_knob: [
+		"Nutze einen analogfähigen Pin; Kits & Boards zeigt, welche.",
+		"Schließe die äußeren Beinchen an 3V3 und GND an, nicht an 5V. Das mittlere Beinchen kommt an den Pin.",
+		"Beobachte die rohen Messwerte unter Live-Werte im Inspector, um zu sehen, ob das Problem in der Verkabelung oder im Mapping liegt. Grenze Min und Max ein, wenn die Enden des Bereichs 0 oder 127 nicht erreichen.",
+	],
+	tutorial_troubleshooting_button_title: "Ein Taster hängt oder ist invertiert",
+	tutorial_troubleshooting_button: [
+		"Nutze den Modus INPUT_PULLUP und schließe den Taster zwischen Pin und GND an.",
+		"Meide reine Eingangs- und Strapping-Pins; Kits & Boards markiert sie.",
+		"Ein lockerer Draht auf dem Steckbrett wirkt wie ein gedrückter Taster. Prüfe die Verbindung mit dem Board-Tester.",
+	],
+	tutorial_troubleshooting_settings_title:
+		"Seltsames Verhalten nach einem Update",
+	tutorial_troubleshooting_settings: [
+		"Lies die Konfiguration mit dem Inspector zurück und vergleiche sie mit deinen Erwartungen. Einstellungen bleiben bei Updates auf dem Board erhalten.",
+		"Für einen Neustart erneut flashen und dabei NVS löschen anhaken. Das löscht alle gespeicherten Pins und Peers.",
+	],
+	tutorial_troubleshooting_issue: [
+		"Kommst du nicht weiter? Eröffne ein Issue auf GitHub und gib dein Board, die Firmware-Version und die Ausgabe des MIDI-Monitors an.",
+	],
+
 	tutorial_next_steps_title: "Wie geht's weiter",
 	tutorial_next_steps_text: [
 		"Du hast dein erstes kabelloses MIDI-Gerät gebaut. Wie es weitergehen kann:",
@@ -1444,6 +1648,109 @@ const es: typeof en = {
 	tutorial_servo_test:
 		"Envía el CC 40 en el canal MIDI 1 desde tu DAW a través del dongle. El valor 0 gira el servo a 0°, 64 aproximadamente al centro, 127 a 180°.",
 
+	tutorial_daw_title: "Configurar la DAW",
+	tutorial_daw_text: [
+		"Tu DAW ve el dongle como cualquier otro teclado MIDI USB: es class compliant, así que no hace falta ningún driver. Lo mismo vale para un cliente conectado directamente por USB.",
+		"No tiene que ser una DAW: Max, Pure Data, plugdata, TouchDesigner, vvvv o cualquier otro programa que hable MIDI funciona igual. Selecciona el dongle como entrada MIDI (y como salida para el feedback) en sus ajustes MIDI. Los pasos de abajo usan DAWs como ejemplo.",
+	],
+	tutorial_daw_input_title: "Activa el puerto MIDI",
+	tutorial_daw_input: [
+		"Conecta el dongle antes de abrir la DAW. El nombre del puerto viene del firmware; si tienes dudas, el Depurador muestra el nombre exacto.",
+	],
+	tutorial_daw_ableton_title: "Ableton Live",
+	tutorial_daw_ableton: [
+		"Abre Settings → Link, Tempo & MIDI.",
+		"En MIDI Ports, busca el dongle en la lista In y activa Track (para notas) y Remote (para el mapeo MIDI).",
+		"Activa también Track en la lista Out si quieres enviar feedback MIDI al cliente.",
+	],
+	tutorial_daw_bitwig_title: "Bitwig Studio",
+	tutorial_daw_bitwig: [
+		"Abre Settings → Controllers y haz clic en Add Controller.",
+		"Elige Generic → MIDI Keyboard y selecciona el dongle como entrada (y como salida para el feedback).",
+	],
+	tutorial_daw_logic_title: "Logic Pro",
+	tutorial_daw_logic: [
+		"Logic Pro escucha por defecto todas las entradas MIDI, así que el dongle funciona al instante.",
+		"Si no llega nada, revisa Configuración de Audio MIDI → Estudio MIDI: el dongle debe aparecer y no estar en gris.",
+	],
+	tutorial_daw_reaper_title: "Reaper",
+	tutorial_daw_reaper: [
+		"Abre Preferences → Audio → MIDI Inputs (MIDI Devices en versiones antiguas).",
+		"Haz clic derecho en el dongle y elige Enable input. Actívalo también en MIDI Outputs para el feedback.",
+	],
+	tutorial_daw_notes_title: "Tocar notas",
+	tutorial_daw_notes: [
+		"Crea una pista de instrumento, pon su entrada MIDI en el dongle (o en todas las entradas) y arma la pista o activa la monitorización. Los botones del ejemplo «Botón a nota» ahora tocan el instrumento.",
+	],
+	tutorial_daw_learn_title: "Asignar un potenciómetro con MIDI Learn",
+	tutorial_daw_learn: [
+		"Configura un potenciómetro como Control Change, como en el ejemplo «Potenciómetro a CC».",
+		"Entra en el modo MIDI learn de tu DAW: Cmd/Ctrl+M en Ableton Live, clic derecho en un parámetro → Learn Controller Assignment en Bitwig, Cmd+L en Logic Pro, Param → Learn en Reaper.",
+		"Haz clic en el parámetro que quieres controlar, p. ej. el cutoff de un filtro.",
+		"Gira el potenciómetro. La DAW guarda el número de controlador y el canal.",
+		"Sal del modo learn. El potenciómetro ya mueve el parámetro.",
+	],
+	tutorial_daw_feedback_title: "Feedback al cliente",
+	tutorial_daw_feedback: [
+		"El MIDI también viaja en sentido contrario. Envía una pista o un clip MIDI al puerto de salida del dongle y el dongle reenvía los mensajes a sus clientes. Con el ejemplo «MIDI a LED», una nota 16 en el canal 1 enciende el LED, p. ej. para indicar que un clip está sonando.",
+	],
+	tutorial_daw_port_note:
+		"En Windows, un puerto MIDI solo puede usarlo un programa a la vez. Cierra la pestaña del navegador con el Depurador o el Configurador antes de abrir la DAW; si no, puede que la DAW no vea el dongle.",
+
+	tutorial_troubleshooting_title: "Solución de problemas",
+	tutorial_troubleshooting_text: [
+		"¿Algo no funciona? Acótalo paso a paso: ¿aparece la placa?, ¿salen mensajes del cliente?, ¿llegan al dongle?, ¿escucha la DAW? La app tiene una herramienta para cada paso.",
+	],
+	tutorial_troubleshooting_tools_title: "Herramientas de la app",
+	tutorial_troubleshooting_tools: [
+		"Depurador: el Monitor MIDI muestra cada mensaje que envía un dispositivo, el Compositor MIDI envía notas y CC de prueba (p. ej. para encender un LED) y el Monitor serial muestra el log de la placa.",
+		"Inspector: lee la configuración de vuelta desde la placa y muestra la versión de firmware, la dirección MAC y la versión del protocolo. Valores en vivo transmite las lecturas brutas de las entradas (firmware 0.19+, solo USB).",
+		"Probador de placas: comprueba paso a paso una placa recién soldada.",
+	],
+	tutorial_troubleshooting_board_title: "La placa no aparece",
+	tutorial_troubleshooting_board: [
+		"Usa un navegador basado en Chromium como Chrome o Edge. Safari no admite Web Serial ni Web MIDI, y Firefox no admite Web Serial.",
+		"Prueba otro cable (muchos solo cargan) y otro puerto USB, mejor sin hub.",
+		"¿Tiene firmware la placa? Una placa nueva hay que flashearla primero, consulta el capítulo de firmware.",
+		"Haz clic en Iniciar MIDI si la app lo pide y permite el acceso MIDI en el navegador.",
+	],
+	tutorial_troubleshooting_daw_title: "No llega nada a la DAW",
+	tutorial_troubleshooting_daw: [
+		"Abre el Monitor MIDI en el Depurador y selecciona el dongle. Si ahí aparecen mensajes, el hardware funciona y el problema está en la configuración de la DAW; consulta el capítulo Configurar la DAW.",
+		"Si no aparece nada, selecciona el cliente por USB. ¿Hay mensajes ahí pero no en el dongle? Revisa el emparejamiento inalámbrico.",
+		"Revisa el canal: la pista o el mapeo de la DAW debe escuchar en el canal configurado en el Configurador (o en todos).",
+	],
+	tutorial_troubleshooting_wireless_title: "El cliente no llega al dongle",
+	tutorial_troubleshooting_wireless: [
+		"Compara la dirección MAC del dongle en el Inspector con el peer introducido en el cliente. Basta con un dígito equivocado.",
+		"Asegúrate de haber hecho clic en Desplegar después de añadir el peer y vuelve a leer la configuración con el Inspector.",
+		"El dongle y el cliente necesitan la misma versión de protocolo: compruébala en ambos con el Inspector y actualiza el más antiguo.",
+		"Revisa la alimentación del cliente: algunas power banks se apagan con poco consumo. Acerca las placas para descartar problemas de alcance.",
+	],
+	tutorial_troubleshooting_knob_title:
+		"Un potenciómetro salta o da valores erróneos",
+	tutorial_troubleshooting_knob: [
+		"Usa un pin con capacidad analógica; Kits y placas muestra cuáles.",
+		"Conecta las patas exteriores a 3V3 y GND, no a 5V. La pata central va al pin.",
+		"Observa las lecturas brutas en Valores en vivo del Inspector para ver si el problema está en el cableado o en el mapeo. Ajusta min y max si los extremos no llegan a 0 o 127.",
+	],
+	tutorial_troubleshooting_button_title:
+		"Un botón se queda pulsado o está invertido",
+	tutorial_troubleshooting_button: [
+		"Usa el modo INPUT_PULLUP y conecta el botón entre el pin y GND.",
+		"Evita los pines solo de entrada y los pines de strapping; Kits y placas los marca.",
+		"Un cable suelto en la protoboard se lee como un botón pulsado. Comprueba la conexión con el Probador de placas.",
+	],
+	tutorial_troubleshooting_settings_title:
+		"Comportamiento extraño tras una actualización",
+	tutorial_troubleshooting_settings: [
+		"Lee la configuración con el Inspector y compárala con lo que esperas. Los ajustes se conservan en la placa al actualizar.",
+		"Para empezar de cero, vuelve a flashear con Borrar NVS marcado. Esto borra todos los pines y peers guardados.",
+	],
+	tutorial_troubleshooting_issue: [
+		"¿Sigues atascado? Abre un issue en GitHub e indica tu placa, la versión de firmware y lo que muestra el Monitor MIDI.",
+	],
+
 	tutorial_next_steps_title: "Próximos pasos",
 	tutorial_next_steps_text: [
 		"Has construido tu primer dispositivo MIDI inalámbrico. Cómo seguir:",
@@ -1906,6 +2213,106 @@ const zh: typeof en = {
 	],
 	tutorial_servo_test:
 		"从 DAW 经由适配器在 MIDI 通道 1 上发送 CC 40。值 0 使舵机转到 0°，64 大约到中间，127 到 180°。",
+
+	tutorial_daw_title: "设置 DAW",
+	tutorial_daw_text: [
+		"你的 DAW 会像识别其他 USB MIDI 键盘一样识别适配器：它是免驱（class compliant）设备，无需安装驱动。直接通过 USB 连接的客户端也是如此。",
+		"不一定非要用 DAW：Max、Pure Data、plugdata、TouchDesigner、vvvv 或任何支持 MIDI 的软件都可以同样使用。在其 MIDI 设置中将适配器选为 MIDI 输入（如需反馈，也选为输出）。下面的步骤以 DAW 为例。",
+	],
+	tutorial_daw_input_title: "启用 MIDI 端口",
+	tutorial_daw_input: [
+		"启动 DAW 之前先插入适配器。端口名称由固件决定；如果不确定，可以在调试器中查看准确名称。",
+	],
+	tutorial_daw_ableton_title: "Ableton Live",
+	tutorial_daw_ableton: [
+		"打开 Settings → Link, Tempo & MIDI。",
+		"在 MIDI Ports 的 In 列表中找到适配器，打开 Track（用于音符）和 Remote（用于 MIDI 映射）。",
+		"如果要向客户端发送 MIDI 反馈，也在 Out 列表中打开 Track。",
+	],
+	tutorial_daw_bitwig_title: "Bitwig Studio",
+	tutorial_daw_bitwig: [
+		"打开 Settings → Controllers，点击 Add Controller。",
+		"选择 Generic → MIDI Keyboard，并将适配器设为输入（如需反馈，也设为输出）。",
+	],
+	tutorial_daw_logic_title: "Logic Pro",
+	tutorial_daw_logic: [
+		"Logic Pro 默认监听所有 MIDI 输入，因此适配器可以直接使用。",
+		"如果没有收到任何消息，请检查“音频 MIDI 设置”→“MIDI 工作室”：适配器必须出现在列表中且不是灰色。",
+	],
+	tutorial_daw_reaper_title: "Reaper",
+	tutorial_daw_reaper: [
+		"打开 Preferences → Audio → MIDI Inputs（旧版本中为 MIDI Devices）。",
+		"右键点击适配器并选择 Enable input。如需反馈，也在 MIDI Outputs 中启用。",
+	],
+	tutorial_daw_notes_title: "演奏音符",
+	tutorial_daw_notes: [
+		"创建一条乐器轨道，将其 MIDI 输入设为适配器（或所有输入），并启用录音准备或监听。“按钮到音符”示例中的按钮现在就能演奏该乐器。",
+	],
+	tutorial_daw_learn_title: "用 MIDI Learn 映射旋钮",
+	tutorial_daw_learn: [
+		"按照“旋钮到 CC”示例，将旋钮设置为 Control Change。",
+		"进入 DAW 的 MIDI 学习模式：Ableton Live 中按 Cmd/Ctrl+M，Bitwig 中右键参数 → Learn Controller Assignment，Logic Pro 中按 Cmd+L，Reaper 中点击 Param → Learn。",
+		"点击要控制的参数，例如滤波器的截止频率。",
+		"转动旋钮。DAW 会记住控制器编号和通道。",
+		"退出学习模式。旋钮现在可以控制该参数。",
+	],
+	tutorial_daw_feedback_title: "向客户端发送反馈",
+	tutorial_daw_feedback: [
+		"MIDI 也可以反向传输。将 MIDI 轨道或片段路由到适配器的输出端口，适配器会把消息转发给它的客户端。配合“MIDI 到 LED”示例，通道 1 上的音符 16 会点亮 LED，例如用来显示某个片段正在播放。",
+	],
+	tutorial_daw_port_note:
+		"在 Windows 上，一个 MIDI 端口同一时间只能被一个程序使用。打开 DAW 之前，请关闭打开了调试器或配置器的浏览器标签页，否则 DAW 可能看不到适配器。",
+
+	tutorial_troubleshooting_title: "故障排除",
+	tutorial_troubleshooting_text: [
+		"有东西不工作？一步步缩小范围：开发板是否出现？客户端是否发出消息？消息是否到达适配器？DAW 是否在监听？应用为每一步都提供了工具。",
+	],
+	tutorial_troubleshooting_tools_title: "应用中的工具",
+	tutorial_troubleshooting_tools: [
+		"调试器：MIDI 监视器显示设备发送的每条消息，MIDI 编辑器发送测试音符和 CC（例如点亮 LED），串行监视器显示开发板的日志输出。",
+		"检查器：从开发板读回配置，并显示固件版本、MAC 地址和协议版本。实时数值会传输输入引脚的原始读数（固件 0.19+，仅限 USB）。",
+		"开发板测试：逐步检查刚焊好的开发板。",
+	],
+	tutorial_troubleshooting_board_title: "开发板没有出现",
+	tutorial_troubleshooting_board: [
+		"使用基于 Chromium 的浏览器，如 Chrome 或 Edge。Safari 不支持 Web Serial 和 Web MIDI，Firefox 不支持 Web Serial。",
+		"换一根数据线（很多线只能充电）和另一个 USB 接口，最好不要经过集线器。",
+		"开发板有固件吗？新开发板需要先烧录固件，参见固件章节。",
+		"如果应用提示，请点击“初始化 MIDI”，并在浏览器中允许 MIDI 访问。",
+	],
+	tutorial_troubleshooting_daw_title: "DAW 收不到任何消息",
+	tutorial_troubleshooting_daw: [
+		"在调试器中打开 MIDI 监视器并选择适配器。如果那里出现消息，说明硬件正常，问题出在 DAW 设置上，参见“设置 DAW”章节。",
+		"如果什么都没有，改为通过 USB 选择客户端。客户端有消息但适配器没有？请检查无线配对。",
+		"检查通道：DAW 中的轨道或映射必须监听配置器中设置的通道（或所有通道）。",
+	],
+	tutorial_troubleshooting_wireless_title: "客户端连不上适配器",
+	tutorial_troubleshooting_wireless: [
+		"将检查器中显示的适配器 MAC 地址与客户端上填写的对端地址进行比较。错一位就会失败。",
+		"确认添加对端后点击了“部署”，然后用检查器读回配置。",
+		"适配器和客户端需要相同的协议版本：在检查器中查看两者，并更新较旧的那个。",
+		"检查客户端的供电：有些充电宝在电流很小时会自动断电。把开发板放近一些，以排除距离问题。",
+	],
+	tutorial_troubleshooting_knob_title: "旋钮跳动或读数不对",
+	tutorial_troubleshooting_knob: [
+		"使用支持模拟输入的引脚；套件与电路板中有标注。",
+		"将两侧引脚接到 3V3 和 GND，不要接 5V。中间引脚接到 GPIO。",
+		"在检查器的实时数值中观察原始读数，判断问题出在接线还是映射上。如果范围两端达不到 0 或 127，请调整最小值和最大值。",
+	],
+	tutorial_troubleshooting_button_title: "按钮卡住或状态相反",
+	tutorial_troubleshooting_button: [
+		"使用 INPUT_PULLUP 模式，并将按钮接在引脚和 GND 之间。",
+		"避免使用仅输入引脚和启动配置（strapping）引脚；套件与电路板中有标注。",
+		"面包板上松动的导线会被读成按下的按钮。用开发板测试检查连接。",
+	],
+	tutorial_troubleshooting_settings_title: "更新后行为异常",
+	tutorial_troubleshooting_settings: [
+		"用检查器读回配置，并与预期进行比较。更新时设置会保留在开发板上。",
+		"如需从头开始，勾选“清除 NVS”后重新烧录。这会删除所有已保存的引脚和对端。",
+	],
+	tutorial_troubleshooting_issue: [
+		"仍然解决不了？在 GitHub 上提交 issue，并附上你的开发板、固件版本以及 MIDI 监视器显示的内容。",
+	],
 
 	tutorial_next_steps_title: "下一步",
 	tutorial_next_steps_text: ["你已经制作了第一个无线 MIDI 设备。接下来可以："],
