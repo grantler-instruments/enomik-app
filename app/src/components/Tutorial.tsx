@@ -13,27 +13,28 @@ import {
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, NavLink, useParams } from "react-router-dom";
-import { CHAPTERS } from "./tutorial/chapters";
+import { PAGES } from "./tutorial/chapters";
 
 const Tutorial = () => {
 	const { t } = useTranslation();
-	const { chapterId } = useParams();
-	const index = CHAPTERS.findIndex((chapter) => chapter.id === chapterId);
+	const { chapterId, sectionId } = useParams();
+	const path = ["/tutorial", chapterId, sectionId].filter(Boolean).join("/");
+	const index = PAGES.findIndex((page) => page.path === path);
 	const topRef = useRef<HTMLDivElement>(null);
 
 	// The page scrolls inside App's content box, not the window
 	useEffect(() => {
-		if (chapterId) topRef.current?.scrollIntoView();
-	}, [chapterId]);
+		if (path) topRef.current?.scrollIntoView();
+	}, [path]);
 
 	if (index === -1) {
-		return <Navigate to={`/tutorial/${CHAPTERS[0].id}`} replace />;
+		return <Navigate to={PAGES[0].path} replace />;
 	}
 
-	const chapter = CHAPTERS[index];
-	const previous = CHAPTERS[index - 1];
-	const next = CHAPTERS[index + 1];
-	const { Content } = chapter;
+	const page = PAGES[index];
+	const previous = PAGES[index - 1];
+	const next = PAGES[index + 1];
+	const { Content } = page.chapter;
 
 	return (
 		<Container ref={topRef} maxWidth="lg" sx={{ my: 4 }}>
@@ -48,13 +49,15 @@ const Tutorial = () => {
 							{t("tutorial_chapters")}
 						</Typography>
 						<List dense disablePadding>
-							{CHAPTERS.map((item, itemIndex) => (
+							{PAGES.map((item) => (
 								<ListItemButton
-									key={item.id}
+									key={item.path}
 									component={NavLink}
-									to={`/tutorial/${item.id}`}
+									to={item.path}
+									end
 									sx={{
 										borderRadius: 1,
+										pl: 2 + item.depth * 2,
 										"&.active": {
 											color: "primary.main",
 											"& .MuiListItemText-primary": { fontWeight: 600 },
@@ -62,7 +65,7 @@ const Tutorial = () => {
 									}}
 								>
 									<ListItemText
-										primary={`${itemIndex + 1}. ${t(item.titleKey)}`}
+										primary={`${item.number}. ${t(item.chapter.titleKey)}`}
 									/>
 								</ListItemButton>
 							))}
@@ -73,10 +76,10 @@ const Tutorial = () => {
 				<Grid size={{ xs: 12, md: 9 }} order={{ xs: 1, md: 2 }}>
 					<Box component="article">
 						<Typography variant="overline" color="text.secondary">
-							{t("tutorial_chapter_n", { n: index + 1 })}
+							{t("tutorial_chapter_n", { n: page.number })}
 						</Typography>
 						<Typography variant="h3" fontWeight={600} sx={{ mb: 3 }}>
-							{t(chapter.titleKey)}
+							{t(page.chapter.titleKey)}
 						</Typography>
 						<Content />
 					</Box>
@@ -90,10 +93,10 @@ const Tutorial = () => {
 						{previous ? (
 							<Button
 								component={NavLink}
-								to={`/tutorial/${previous.id}`}
+								to={previous.path}
 								startIcon={<ArrowBackIcon />}
 							>
-								{t(previous.titleKey)}
+								{t(previous.chapter.titleKey)}
 							</Button>
 						) : (
 							<Box />
@@ -102,10 +105,10 @@ const Tutorial = () => {
 							<Button
 								variant="contained"
 								component={NavLink}
-								to={`/tutorial/${next.id}`}
+								to={next.path}
 								endIcon={<ArrowForwardIcon />}
 							>
-								{t(next.titleKey)}
+								{t(next.chapter.titleKey)}
 							</Button>
 						)}
 					</Box>

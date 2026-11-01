@@ -63,8 +63,21 @@ const en = {
 	tutorial_platforms_webapp_title: "Web app (no code)",
 	tutorial_platforms_webapp:
 		"Flash precompiled firmware with the Firmware Uploader and map pins in the Configurator. Best for getting started, workshops and most controller projects. The rest of this tutorial follows this path.",
+	tutorial_platforms_code_title: "Your own code",
+	tutorial_platforms_code:
+		"Prefer to write code yourself? The library is available for several environments. Each one has its own subchapter:",
+	tutorial_platforms_arduino_title: "Arduino",
+	tutorial_platforms_circuitpython_title: "CircuitPython",
+	tutorial_platforms_platformio_title: "PlatformIO",
+	tutorial_platforms_idf_title: "ESP-IDF",
+	tutorial_platforms_arduino_install_title: "Installation",
+	tutorial_platforms_arduino_install: [
+		'Install the ESP32 boards: open Tools → Board → Boards Manager, search for "esp32" and install "esp32 by Espressif Systems" (version 3.3.0 or newer).',
+		'Install the library: open Sketch → Include Library → Manage Libraries, search for "ESP-NOW MIDI" and install it.',
+	],
+	tutorial_platforms_arduino_usage_title: "Usage",
 	tutorial_platforms_arduino:
-		'Install "ESP-NOW MIDI" from the Library Manager (requires the Arduino-ESP32 core 3.3.0 or newer) and open one of its examples. The client example uses enomik::Client, the same code as the precompiled firmware, so your own sketch stays configurable from the web app.',
+		"Open one of the library examples via File → Examples → ESP-NOW MIDI. The client example uses enomik::Client, the same code as the precompiled firmware, so your own sketch stays configurable from the web app.",
 	tutorial_platforms_arduino_plain:
 		"For full control, use the plain esp_now_midi class. Its API is similar to the Arduino MIDI library:",
 	tutorial_platforms_arduino_s3:
@@ -246,8 +259,21 @@ const de: typeof en = {
 	tutorial_platforms_webapp_title: "Web-App (ohne Code)",
 	tutorial_platforms_webapp:
 		"Vorkompilierte Firmware mit dem Firmware Uploader flashen und Pins im Konfigurator mappen. Ideal für den Einstieg, Workshops und die meisten Controller-Projekte. Der Rest dieses Tutorials folgt diesem Weg.",
+	tutorial_platforms_code_title: "Eigener Code",
+	tutorial_platforms_code:
+		"Lieber selbst programmieren? Die Bibliothek gibt es für mehrere Umgebungen. Jede hat ihr eigenes Unterkapitel:",
+	tutorial_platforms_arduino_title: "Arduino",
+	tutorial_platforms_circuitpython_title: "CircuitPython",
+	tutorial_platforms_platformio_title: "PlatformIO",
+	tutorial_platforms_idf_title: "ESP-IDF",
+	tutorial_platforms_arduino_install_title: "Installation",
+	tutorial_platforms_arduino_install: [
+		'ESP32-Boards installieren: Öffne Werkzeuge → Board → Boardverwalter, suche nach "esp32" und installiere "esp32 by Espressif Systems" (Version 3.3.0 oder neuer).',
+		'Bibliothek installieren: Öffne Sketch → Bibliothek einbinden → Bibliotheken verwalten, suche nach "ESP-NOW MIDI" und installiere sie.',
+	],
+	tutorial_platforms_arduino_usage_title: "Verwendung",
 	tutorial_platforms_arduino:
-		'Installiere "ESP-NOW MIDI" über den Bibliotheksverwalter (benötigt den Arduino-ESP32-Core 3.3.0 oder neuer) und öffne eines der Beispiele. Das Client-Beispiel nutzt enomik::Client, denselben Code wie die vorkompilierte Firmware, dein eigener Sketch bleibt also über die Web-App konfigurierbar.',
+		"Öffne eines der Beispiele der Bibliothek über Datei → Beispiele → ESP-NOW MIDI. Das Client-Beispiel nutzt enomik::Client, denselben Code wie die vorkompilierte Firmware, dein eigener Sketch bleibt also über die Web-App konfigurierbar.",
 	tutorial_platforms_arduino_plain:
 		"Für volle Kontrolle nutze die Klasse esp_now_midi direkt. Ihre API ähnelt der Arduino MIDI Library:",
 	tutorial_platforms_arduino_s3:
@@ -429,8 +455,21 @@ const es: typeof en = {
 	tutorial_platforms_webapp_title: "App web (sin código)",
 	tutorial_platforms_webapp:
 		"Flashea firmware precompilado con el Cargador de Firmware y asigna pines en el Configurador. Ideal para empezar, talleres y la mayoría de proyectos de controladores. El resto del tutorial sigue este camino.",
+	tutorial_platforms_code_title: "Tu propio código",
+	tutorial_platforms_code:
+		"¿Prefieres programar tú mismo? La biblioteca está disponible para varios entornos. Cada uno tiene su propio subcapítulo:",
+	tutorial_platforms_arduino_title: "Arduino",
+	tutorial_platforms_circuitpython_title: "CircuitPython",
+	tutorial_platforms_platformio_title: "PlatformIO",
+	tutorial_platforms_idf_title: "ESP-IDF",
+	tutorial_platforms_arduino_install_title: "Instalación",
+	tutorial_platforms_arduino_install: [
+		'Instala las placas ESP32: abre Herramientas → Placa → Gestor de placas, busca "esp32" e instala "esp32 by Espressif Systems" (versión 3.3.0 o superior).',
+		'Instala la biblioteca: abre Programa → Incluir biblioteca → Administrar bibliotecas, busca "ESP-NOW MIDI" e instálala.',
+	],
+	tutorial_platforms_arduino_usage_title: "Uso",
 	tutorial_platforms_arduino:
-		'Instala "ESP-NOW MIDI" desde el Gestor de Bibliotecas (requiere el core Arduino-ESP32 3.3.0 o superior) y abre uno de sus ejemplos. El ejemplo client usa enomik::Client, el mismo código que el firmware precompilado, así que tu sketch sigue siendo configurable desde la app web.',
+		"Abre uno de los ejemplos de la biblioteca en Archivo → Ejemplos → ESP-NOW MIDI. El ejemplo client usa enomik::Client, el mismo código que el firmware precompilado, así que tu sketch sigue siendo configurable desde la app web.",
 	tutorial_platforms_arduino_plain:
 		"Para control total, usa directamente la clase esp_now_midi. Su API es similar a la Arduino MIDI Library:",
 	tutorial_platforms_arduino_s3:
@@ -612,8 +651,21 @@ const zh: typeof en = {
 	tutorial_platforms_webapp_title: "网页应用（无需代码）",
 	tutorial_platforms_webapp:
 		"用固件上传器烧录预编译固件，在配置器中映射引脚。最适合入门、工作坊和大多数控制器项目。本教程其余部分都采用这种方式。",
+	tutorial_platforms_code_title: "自己编写代码",
+	tutorial_platforms_code:
+		"想自己写代码？该库支持多种开发环境，每种环境都有单独的小节：",
+	tutorial_platforms_arduino_title: "Arduino",
+	tutorial_platforms_circuitpython_title: "CircuitPython",
+	tutorial_platforms_platformio_title: "PlatformIO",
+	tutorial_platforms_idf_title: "ESP-IDF",
+	tutorial_platforms_arduino_install_title: "安装",
+	tutorial_platforms_arduino_install: [
+		'安装 ESP32 开发板：打开 工具 → 开发板 → 开发板管理器，搜索 "esp32"，安装 "esp32 by Espressif Systems"（3.3.0 或更高版本）。',
+		'安装库：打开 项目 → 导入库 → 管理库，搜索 "ESP-NOW MIDI" 并安装。',
+	],
+	tutorial_platforms_arduino_usage_title: "使用",
 	tutorial_platforms_arduino:
-		'在库管理器中安装 "ESP-NOW MIDI"（需要 Arduino-ESP32 核心 3.3.0 或更高版本），然后打开其中一个示例。client 示例使用 enomik::Client，与预编译固件代码相同，因此你自己的程序仍可通过网页应用配置。',
+		"通过 文件 → 示例 → ESP-NOW MIDI 打开库中的一个示例。client 示例使用 enomik::Client，与预编译固件代码相同，因此你自己的程序仍可通过网页应用配置。",
 	tutorial_platforms_arduino_plain:
 		"如需完全控制，可直接使用 esp_now_midi 类，其 API 与 Arduino MIDI Library 类似：",
 	tutorial_platforms_arduino_s3:

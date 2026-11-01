@@ -59,6 +59,10 @@ function App() {
 							<Route path="/getting-started" element={<GettingStarted />} />
 							<Route path="/tutorial" element={<Tutorial />} />
 							<Route path="/tutorial/:chapterId" element={<Tutorial />} />
+							<Route
+								path="/tutorial/:chapterId/:sectionId"
+								element={<Tutorial />}
+							/>
 							<Route path="/tester" element={<Tester />} />
 							<Route path="/kits" element={<Kits />} />
 							<Route

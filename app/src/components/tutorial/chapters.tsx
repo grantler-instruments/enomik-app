@@ -203,6 +203,18 @@ extern "C" void app_main(void)
 }
 `;
 
+const LibraryLinks = () => {
+	const { t } = useTranslation();
+	return (
+		<LinkButtons
+			actions={[
+				{ label: t("tutorial_library_docs"), link: LIBRARY_DOCS },
+				{ label: t("tutorial_library_github"), link: LIBRARY_REPO },
+			]}
+		/>
+	);
+};
+
 const Platforms = () => {
 	const { t } = useTranslation();
 	return (
@@ -218,7 +230,26 @@ const Platforms = () => {
 				]}
 			/>
 
-			<Heading>Arduino</Heading>
+			<Heading>{t("tutorial_platforms_code_title")}</Heading>
+			<Typography variant="body1">{t("tutorial_platforms_code")}</Typography>
+			<LinkButtons
+				actions={PLATFORM_SECTIONS.map((section) => ({
+					label: t(section.titleKey),
+					link: `/tutorial/platforms/${section.id}`,
+				}))}
+			/>
+			<LibraryLinks />
+		</>
+	);
+};
+
+const ArduinoPlatform = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Heading>{t("tutorial_platforms_arduino_install_title")}</Heading>
+			<Steps i18nKey="tutorial_platforms_arduino_install" />
+			<Heading>{t("tutorial_platforms_arduino_usage_title")}</Heading>
 			<Typography variant="body1">{t("tutorial_platforms_arduino")}</Typography>
 			<CodeBlock>{ARDUINO_CLIENT}</CodeBlock>
 			<Typography variant="body1">
@@ -226,30 +257,45 @@ const Platforms = () => {
 			</Typography>
 			<CodeBlock>{ARDUINO_PLAIN}</CodeBlock>
 			<Note>{t("tutorial_platforms_arduino_s3")}</Note>
+			<LibraryLinks />
+		</>
+	);
+};
 
-			<Heading>PlatformIO</Heading>
-			<Typography variant="body1">
-				{t("tutorial_platforms_platformio")}
-			</Typography>
-			<CodeBlock>{PLATFORMIO_INI}</CodeBlock>
-
-			<Heading>CircuitPython</Heading>
+const CircuitPythonPlatform = () => {
+	const { t } = useTranslation();
+	return (
+		<>
 			<Typography variant="body1">
 				{t("tutorial_platforms_circuitpython")}
 			</Typography>
 			<CodeBlock>{CIRCUITPYTHON}</CodeBlock>
+			<LibraryLinks />
+		</>
+	);
+};
 
-			<Heading>ESP-IDF</Heading>
+const PlatformIOPlatform = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Typography variant="body1">
+				{t("tutorial_platforms_platformio")}
+			</Typography>
+			<CodeBlock>{PLATFORMIO_INI}</CodeBlock>
+			<LibraryLinks />
+		</>
+	);
+};
+
+const IdfPlatform = () => {
+	const { t } = useTranslation();
+	return (
+		<>
 			<Typography variant="body1">{t("tutorial_platforms_idf")}</Typography>
 			<CodeBlock>{IDF_SETUP}</CodeBlock>
 			<CodeBlock>{IDF_MAIN}</CodeBlock>
-
-			<LinkButtons
-				actions={[
-					{ label: t("tutorial_library_docs"), link: LIBRARY_DOCS },
-					{ label: t("tutorial_library_github"), link: LIBRARY_REPO },
-				]}
-			/>
+			<LibraryLinks />
 		</>
 	);
 };
@@ -374,7 +420,35 @@ const NextSteps = () => {
 	);
 };
 
-export type Chapter = { id: string; titleKey: string; Content: FC };
+export type Chapter = {
+	id: string;
+	titleKey: string;
+	Content: FC;
+	sections?: Chapter[];
+};
+
+const PLATFORM_SECTIONS: Chapter[] = [
+	{
+		id: "arduino",
+		titleKey: "tutorial_platforms_arduino_title",
+		Content: ArduinoPlatform,
+	},
+	{
+		id: "circuitpython",
+		titleKey: "tutorial_platforms_circuitpython_title",
+		Content: CircuitPythonPlatform,
+	},
+	{
+		id: "platformio",
+		titleKey: "tutorial_platforms_platformio_title",
+		Content: PlatformIOPlatform,
+	},
+	{
+		id: "idf",
+		titleKey: "tutorial_platforms_idf_title",
+		Content: IdfPlatform,
+	},
+];
 
 export const CHAPTERS: Chapter[] = [
 	{ id: "introduction", titleKey: "tutorial_intro_title", Content: Intro },
@@ -383,7 +457,12 @@ export const CHAPTERS: Chapter[] = [
 		titleKey: "tutorial_architecture_title",
 		Content: Architecture,
 	},
-	{ id: "platforms", titleKey: "tutorial_platforms_title", Content: Platforms },
+	{
+		id: "platforms",
+		titleKey: "tutorial_platforms_title",
+		Content: Platforms,
+		sections: PLATFORM_SECTIONS,
+	},
 	{ id: "firmware", titleKey: "tutorial_firmware_title", Content: Firmware },
 	{ id: "button", titleKey: "tutorial_button_title", Content: ButtonExample },
 	{ id: "knob", titleKey: "tutorial_knob_title", Content: KnobExample },
@@ -395,3 +474,26 @@ export const CHAPTERS: Chapter[] = [
 		Content: NextSteps,
 	},
 ];
+
+/** A chapter or section as a page, in reading order (for numbering and prev/next). */
+export type TutorialPage = {
+	chapter: Chapter;
+	path: string;
+	number: string;
+	depth: number;
+};
+
+export const PAGES: TutorialPage[] = CHAPTERS.flatMap((chapter, index) => [
+	{
+		chapter,
+		path: `/tutorial/${chapter.id}`,
+		number: `${index + 1}`,
+		depth: 0,
+	},
+	...(chapter.sections ?? []).map((section, sectionIndex) => ({
+		chapter: section,
+		path: `/tutorial/${chapter.id}/${section.id}`,
+		number: `${index + 1}.${sectionIndex + 1}`,
+		depth: 1,
+	})),
+]);
