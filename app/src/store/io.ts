@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+import { controllerForPin } from "../utils/pinout";
+import { macFromString, macToNibbles } from "../utils/tester";
 import {
 	type DeviceKind,
 	supportsGlobals,
@@ -202,6 +204,23 @@ export const findDuplicatePins = (
 	return duplicates;
 };
 
+/** Bytes of a peer's MAC address, or null if it is not a complete address. */
+export const peerMacBytes = (macAddress: string): number[] | null => {
+	try {
+		return macFromString(macAddress);
+	} catch {
+		return null;
+	}
+};
+
+/**
+ * Peers whose MAC is not a complete address, e.g. half typed or from an edited file.
+ * Deploying one would send ADD_PEER with a short or NaN payload.
+ */
+export const findInvalidPeers = <T extends { macAddress: string }>(
+	peers: T[],
+): T[] => peers.filter((peer) => peerMacBytes(peer.macAddress) === null);
+
 /** Lowest pin >= `from` that no input or output uses yet. */
 export const nextFreePin = (
 	inputs: { pin: number }[],
@@ -254,10 +273,17 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 							const input = state.inputs.find((i) => i.uuid === uuid);
 							if (!input) return state;
 
+							const pin = nextFreePin(
+								state.inputs,
+								state.outputs,
+								input.pin + 1,
+							);
 							const newInput = {
 								...input,
 								uuid: uuidv4(),
-								pin: nextFreePin(state.inputs, state.outputs, input.pin + 1),
+								pin,
+								// Same rule as a new row: CC follows the pin it lands on.
+								controller: controllerForPin(pin),
 							};
 							return {
 								inputs: [...state.inputs, newInput],
@@ -287,10 +313,17 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 							const output = state.outputs.find((o) => o.uuid === uuid);
 							if (!output) return state;
 
+							const pin = nextFreePin(
+								state.inputs,
+								state.outputs,
+								output.pin + 1,
+							);
 							const newOutput = {
 								...output,
 								uuid: uuidv4(),
-								pin: nextFreePin(state.inputs, state.outputs, output.pin + 1),
+								pin,
+								// Same rule as a new row: CC follows the pin it lands on.
+								controller: controllerForPin(pin),
 							};
 							return {
 								outputs: [...state.outputs, newOutput],
@@ -396,6 +429,9 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 							)
 						)
 							throw new Error("compat_threshold_review");
+						// Before RESET: a bad peer must not leave the device wiped and half configured.
+						if (findInvalidPeers(get().peers).length > 0)
+							throw new Error("deploy_invalid_peer");
 						beginSysexErrorCollection(outputId);
 
 						// Register before sending: USB devices can acknowledge synchronously.
@@ -479,16 +515,16 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 
 						// set peers
 						get().peers.forEach((peer) => {
-							const macParts = peer.macAddress
-								.replace(/:/g, "") // Remove colons: "ABCDEF123456"
-								.split("") // Split into chars: ['A','B','C','D','E','F','1','2','3','4','5','6']
-								.map((digit) => parseInt(digit, 16)); // This converts strings to numbers!
-
+							const mac = peerMacBytes(peer.macAddress);
+							if (!mac) return; // checked before RESET, see invalid_peer below
 							const msg: MidiMessage = {
 								id: uuidv4(),
 								timestamp: Date.now(),
 								type: 240,
-								data: buildEnomikSysex(ENOMIK_COMMAND_ADD_PEER, macParts),
+								data: buildEnomikSysex(
+									ENOMIK_COMMAND_ADD_PEER,
+									macToNibbles(mac),
+								),
 							};
 							useMIDIStore.getState().sendMessage(msg, outputId);
 						});

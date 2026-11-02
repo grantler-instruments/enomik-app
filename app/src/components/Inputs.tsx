@@ -18,6 +18,7 @@ import {
 	sysexPinModeTouch,
 } from "../store/midi.config";
 import { useRawStreamStore } from "../store/rawStream";
+import { controllerForPin } from "../utils/pinout";
 import AddRowButton from "./AddRowButton";
 import { LiveCell, RawStreamToggle } from "./inspector/RawValues";
 import PinRow, { hasTouchInput, PinTableHeader } from "./pinmapping/PinRow";
@@ -154,8 +155,9 @@ const Inputs = () => {
 				<AddRowButton
 					visible={inputs.length === 0 || hovered}
 					onClick={() => {
+						const pin = nextFreePin(inputs, useIOStore.getState().outputs);
 						addInput({
-							pin: nextFreePin(inputs, useIOStore.getState().outputs),
+							pin,
 							mode: sysexPinModeAnalogIn,
 							channel: 1,
 							midiType: MIDI_CONTROL_CHANGE,
@@ -163,7 +165,7 @@ const Inputs = () => {
 							midiMax: 127,
 							pinMin: 0,
 							pinMax: 1023,
-							controller: 20,
+							controller: controllerForPin(pin),
 						});
 					}}
 				></AddRowButton>

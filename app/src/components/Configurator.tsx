@@ -39,6 +39,7 @@ import {
 	activeConfigs,
 	configFromFile,
 	findDuplicatePins,
+	findInvalidPeers,
 	useDongleIOStore,
 	useIOStore,
 } from "../store/io";
@@ -196,6 +197,17 @@ const Configurator = () => {
 		if (dongleBlocker) {
 			setDeployToastSeverity("warning");
 			setDeployToast(t(dongleBlocker));
+			return;
+		}
+		// ADD_PEER needs all six bytes; a half typed MAC would send garbage.
+		const invalidPeers = findInvalidPeers(peers);
+		if (invalidPeers.length > 0) {
+			setDeployToastSeverity("error");
+			setDeployToast(
+				t("deploy_toast_invalid_peer", {
+					macs: invalidPeers.map((peer) => peer.macAddress || "–").join(", "),
+				}),
+			);
 			return;
 		}
 		// The firmware keeps one config per pin: a duplicate would silently overwrite another row.

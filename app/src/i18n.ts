@@ -349,6 +349,10 @@ i18n.use(initReactI18next).init({
 				max: "Max",
 				deploy_toast_duplicate_pins:
 					"Not deployed: pin {{pins}} is used more than once. Each pin can only have one configuration.",
+				deploy_toast_invalid_peer:
+					"Not deployed: peer MAC address {{macs}} is incomplete. Enter all six bytes, e.g. 84:F7:03:F2:54:62.",
+				composer_sysex_incomplete: "Each byte needs two hex digits.",
+				composer_sysex_not_7bit: "SysEx data bytes must be between 00 and 7F.",
 				pin_conflict: "Pin {{pin}} is used more than once",
 				pin_mode_analog_desc:
 					"Read a continuous value (e.g. from a potentiometer or sensor).",
@@ -788,6 +792,11 @@ i18n.use(initReactI18next).init({
 				max: "Max",
 				deploy_toast_duplicate_pins:
 					"Nicht deployt: PIN {{pins}} wird mehrfach verwendet. Jeder PIN kann nur eine Konfiguration haben.",
+				deploy_toast_invalid_peer:
+					"Nicht deployt: Peer-MAC-Adresse {{macs}} ist unvollständig. Alle sechs Bytes eingeben, z. B. 84:F7:03:F2:54:62.",
+				composer_sysex_incomplete: "Jedes Byte braucht zwei Hex-Ziffern.",
+				composer_sysex_not_7bit:
+					"SysEx-Datenbytes müssen zwischen 00 und 7F liegen.",
 				pin_conflict: "PIN {{pin}} wird mehrfach verwendet",
 				pin_mode_analog_desc:
 					"Liest einen kontinuierlichen Wert (z. B. von einem Potentiometer oder Sensor).",
@@ -1224,6 +1233,12 @@ i18n.use(initReactI18next).init({
 				max: "Máx",
 				deploy_toast_duplicate_pins:
 					"No desplegado: el pin {{pins}} se usa más de una vez. Cada pin solo puede tener una configuración.",
+				deploy_toast_invalid_peer:
+					"No desplegado: la dirección MAC del peer {{macs}} está incompleta. Introduce los seis bytes, p. ej. 84:F7:03:F2:54:62.",
+				composer_sysex_incomplete:
+					"Cada byte necesita dos dígitos hexadecimales.",
+				composer_sysex_not_7bit:
+					"Los bytes de datos SysEx deben estar entre 00 y 7F.",
 				pin_conflict: "El pin {{pin}} se usa más de una vez",
 				pin_mode_analog_desc:
 					"Lee un valor continuo (p. ej. de un potenciómetro o sensor).",
@@ -1642,6 +1657,10 @@ i18n.use(initReactI18next).init({
 				max: "最大值",
 				deploy_toast_duplicate_pins:
 					"未部署：引脚 {{pins}} 被多次使用。每个引脚只能有一个配置。",
+				deploy_toast_invalid_peer:
+					"未部署：对等设备 MAC 地址 {{macs}} 不完整。请输入全部六个字节，例如 84:F7:03:F2:54:62。",
+				composer_sysex_incomplete: "每个字节需要两位十六进制数字。",
+				composer_sysex_not_7bit: "SysEx 数据字节必须在 00 到 7F 之间。",
 				pin_conflict: "引脚 {{pin}} 被多次使用",
 				pin_mode_analog_desc: "读取连续值（例如来自电位器或传感器）。",
 				pin_mode_digital_in_desc:

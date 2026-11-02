@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/app";
 import { nextFreePin, useIOStore } from "../store/io";
 import { MIDI_CONTROL_CHANGE, sysexPinModePWMOut } from "../store/midi.config";
+import { controllerForPin } from "../utils/pinout";
 import AddRowButton from "./AddRowButton";
 import PinRow, { hasPwmOutput, PinTableHeader } from "./pinmapping/PinRow";
 
@@ -41,8 +42,9 @@ const Outputs = () => {
 			<Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>
 				<AddRowButton
 					onClick={() => {
+						const pin = nextFreePin(useIOStore.getState().inputs, outputs);
 						addOutput({
-							pin: nextFreePin(useIOStore.getState().inputs, outputs),
+							pin,
 							mode: sysexPinModePWMOut,
 							pinMin: 0,
 							pinMax: 1024,
@@ -50,7 +52,7 @@ const Outputs = () => {
 							midiMax: 127,
 							channel: 1,
 							midiType: MIDI_CONTROL_CHANGE,
-							controller: 20,
+							controller: controllerForPin(pin),
 						});
 					}}
 					visible={outputs.length === 0 || hovered}

@@ -32,6 +32,7 @@ import {
 	sysexPinModePWMOut,
 	sysexPinModeTouch,
 } from "../../store/midi.config";
+import IntegerField from "../IntegerField";
 import MinMax from "../MinMax";
 import PinMappingMenu from "./Menu";
 import { INPUT_MODES, MODE_DESCRIPTION_KEYS, OUTPUT_MODES } from "./modes";
@@ -262,11 +263,10 @@ const PinRow = ({
 			title={hasConflict ? t("pin_conflict", { pin: config.pin }) : ""}
 			arrow
 		>
-			<TextField
+			<IntegerField
 				label={label(t("pin"))}
-				type="number"
-				value={config.pin != null ? String(Number(config.pin)) : ""}
-				onChange={(e) => onChange("pin", Number(e.target.value))}
+				value={config.pin}
+				onChange={(pin) => onChange("pin", pin)}
 				size="small"
 				fullWidth
 				error={hasConflict}
@@ -416,11 +416,11 @@ const PinRow = ({
 	) : readOnly ? (
 		<ReadOnly>{ccOrNoteValue}</ReadOnly>
 	) : (
-		<TextField
+		<IntegerField
 			label={label(t(ccOrNoteKey))}
-			type="number"
-			value={ccOrNoteValue != null ? String(Number(ccOrNoteValue)) : ""}
-			onChange={(e) => onChange(ccOrNoteKey, Number(e.target.value))}
+			value={ccOrNoteValue}
+			onChange={(n) => onChange(ccOrNoteKey, n)}
+			max={127}
 			size="small"
 			fullWidth
 			sx={fieldSx}

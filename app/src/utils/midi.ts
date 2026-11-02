@@ -109,3 +109,29 @@ export function isNoteOff(status: number, velocity: number): boolean {
 		(status === MIDI_STATUS.NOTE_ON && velocity === 0)
 	);
 }
+
+/** Hex digits only: separators, spaces and other characters dropped. */
+export const hexDigits = (text: string) =>
+	text.replace(/[^0-9A-Fa-f]/g, "").toUpperCase();
+
+/** "43 12 00" -> [0x43, 0x12, 0x00]: non-hex characters ignored, two hex digits per byte. */
+export function hexStringToBytes(hex: string): number[] {
+	const clean = hexDigits(hex);
+	const result: number[] = [];
+
+	for (let i = 0; i < clean.length; i += 2) {
+		result.push(parseInt(clean.slice(i, i + 2), 16));
+	}
+
+	return result;
+}
+
+/**
+ * Why hex text can't go into a SysEx message, or null if it can:
+ * every byte needs two digits, and data bytes are 7-bit (00–7F).
+ */
+export function sysexHexError(hex: string): "incomplete" | "not_7bit" | null {
+	if (hexDigits(hex).length % 2 !== 0) return "incomplete";
+	if (hexStringToBytes(hex).some((byte) => byte > 0x7f)) return "not_7bit";
+	return null;
+}

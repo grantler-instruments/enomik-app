@@ -45,12 +45,20 @@ const MIDI_DEFAULTS = {
 	midiType: MIDI_CONTROL_CHANGE,
 	midiMin: 0,
 	midiMax: 127,
-	controller: 20,
 } as const;
+
+/** A new row's CC is its pin number, so the two are easy to match up; editable later. */
+export const controllerForPin = (pin: number) =>
+	Math.min(127, Math.max(0, pin));
+
+const midiDefaults = (pin: GpioPin) => ({
+	...MIDI_DEFAULTS,
+	controller: controllerForPin(pin.gpio),
+});
 
 /** New input for the pin, its mode picked from what the pin is wired for. */
 export const defaultInput = (pin: GpioPin): Omit<InputPinConfig, "uuid"> => {
-	const base = { ...MIDI_DEFAULTS, pin: pin.gpio, pinMin: 0, pinMax: 1023 };
+	const base = { ...midiDefaults(pin), pin: pin.gpio, pinMin: 0, pinMax: 1023 };
 	if (pin.type === "touch")
 		return {
 			...base,
@@ -68,7 +76,7 @@ export const defaultInput = (pin: GpioPin): Omit<InputPinConfig, "uuid"> => {
 };
 
 export const defaultOutput = (pin: GpioPin): Omit<OutputPinConfig, "uuid"> => ({
-	...MIDI_DEFAULTS,
+	...midiDefaults(pin),
 	pin: pin.gpio,
 	mode: sysexPinModeDigitalOut,
 	pinMin: 0,

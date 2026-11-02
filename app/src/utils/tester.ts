@@ -58,7 +58,8 @@ export const MIDI_TYPES = [
 	{ status: MIDI_PITCH_BEND, label: "Pitch bend" },
 ];
 
-const macToNibbles = (mac: number[]) =>
+/** ADD_PEER payload: each MAC byte as two 4-bit SysEx data bytes. */
+export const macToNibbles = (mac: number[]) =>
 	mac.flatMap((byte) => [(byte >> 4) & 0x0f, byte & 0x0f]);
 
 /** SET_PIN_CONFIG on channel 1, MIDI values 0–127. */

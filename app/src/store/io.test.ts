@@ -4,11 +4,13 @@ import {
 	activeConfigs,
 	configFromFile,
 	findDuplicatePins,
+	findInvalidPeers,
 	nextFreePin,
 	useIOStore,
 } from "./io";
 import { type MidiMessage, useMIDIStore } from "./midi";
 import {
+	ENOMIK_COMMAND_ADD_PEER,
 	ENOMIK_COMMAND_SET_PIN_CONFIG,
 	MIDI_CONTROL_CHANGE,
 	sysexPinModeAnalogIn,
@@ -238,4 +240,102 @@ describe("deploy with muted rows", () => {
 		);
 		expect(sent).toEqual([]);
 	});
+});
+
+describe("findInvalidPeers", () => {
+	it.each([
+		"84:F7:03:F2:54:62",
+		"84-f7-03-f2-54-62",
+		" 84:F7:03:F2:54:62 ",
+		"4:F7:3:F2:54:62",
+	])("accepts %j", (macAddress) => {
+		expect(findInvalidPeers([{ macAddress }])).toEqual([]);
+	});
+
+	it.each([
+		["half typed", "AA:BB:::::"],
+		["empty", ""],
+		["five bytes", "84:F7:03:F2:54"],
+		["seven bytes", "84:F7:03:F2:54:62:00"],
+		["not hex", "GG:F7:03:F2:54:62"],
+		["three digits in a byte", "84F:F7:03:F2:54:62"],
+		["no separators", "84F703F25462"],
+	])("rejects %s", (_, macAddress) => {
+		expect(findInvalidPeers([{ macAddress }])).toEqual([{ macAddress }]);
+	});
+});
+
+describe("deploy peers", () => {
+	let sent: MidiMessage[];
+	let originalSend: ReturnType<typeof useMIDIStore.getState>["sendMessage"];
+
+	beforeEach(() => {
+		vi.useFakeTimers();
+		sent = [];
+		originalSend = useMIDIStore.getState().sendMessage;
+		useMIDIStore.setState({
+			sendMessage: (message: MidiMessage) => {
+				sent.push(message);
+				return true;
+			},
+		});
+	});
+
+	afterEach(() => {
+		useMIDIStore.setState({ sendMessage: originalSend });
+		useIOStore.getState().loadFromFile({});
+		vi.useRealTimers();
+	});
+
+	/** Payload between the command byte and F7. */
+	const addPeerPayloads = () =>
+		sent
+			.filter((m) => m.data?.[4] === ENOMIK_COMMAND_ADD_PEER)
+			.map((m) => m.data?.slice(5, -1));
+
+	it("sends each MAC byte as two nibbles", async () => {
+		useIOStore
+			.getState()
+			.loadFromFile({ peers: [{ macAddress: "84:F7:03:F2:54:62" }] });
+
+		const done = useIOStore.getState().deploy("-1");
+		await vi.runAllTimersAsync();
+		await done;
+
+		expect(addPeerPayloads()).toEqual([
+			[0x8, 0x4, 0xf, 0x7, 0x0, 0x3, 0xf, 0x2, 0x5, 0x4, 0x6, 0x2],
+		]);
+	});
+
+	it("pads single-digit bytes instead of shifting the rest", async () => {
+		useIOStore
+			.getState()
+			.loadFromFile({ peers: [{ macAddress: "4:F7:3:F2:54:62" }] });
+
+		const done = useIOStore.getState().deploy("-1");
+		await vi.runAllTimersAsync();
+		await done;
+
+		expect(addPeerPayloads()[0]).toEqual([
+			0x0, 0x4, 0xf, 0x7, 0x0, 0x3, 0xf, 0x2, 0x5, 0x4, 0x6, 0x2,
+		]);
+	});
+
+	it.each(["client", "dongle"] as const)(
+		"refuses an incomplete MAC before sending anything (%s)",
+		async (kind) => {
+			useIOStore.getState().loadFromFile({
+				peers: [
+					{ macAddress: "84:F7:03:F2:54:62" },
+					{ macAddress: "AA:BB:::::" },
+				],
+			});
+
+			await expect(useIOStore.getState().deploy("-1", kind)).rejects.toThrow(
+				"deploy_invalid_peer",
+			);
+			// Not even RESET: the device keeps its current config.
+			expect(sent).toEqual([]);
+		},
+	);
 });

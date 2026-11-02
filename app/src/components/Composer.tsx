@@ -13,7 +13,13 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
 import { type MidiMessage, useMIDIStore } from "../store/midi";
-import { MIDI_STATUS, typeToLabel } from "../utils/midi";
+import {
+	hexDigits,
+	hexStringToBytes,
+	MIDI_STATUS,
+	sysexHexError,
+	typeToLabel,
+} from "../utils/midi";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 
 const clamp = (value: number, min: number, max: number) =>
@@ -69,7 +75,7 @@ const Composer = () => {
 		setLocal(raw);
 		if (raw === "" || raw === "-") return;
 		const num = parseInt(raw, 10);
-		if (!isNaN(num)) setStore(clamp(num, min, max));
+		if (!Number.isNaN(num)) setStore(clamp(num, min, max));
 	};
 
 	const handleNumberBlur = (
@@ -80,7 +86,7 @@ const Composer = () => {
 		max: number,
 	) => {
 		const num = parseInt(local, 10);
-		const clamped = isNaN(num) ? min : clamp(num, min, max);
+		const clamped = Number.isNaN(num) ? min : clamp(num, min, max);
 		setStore(clamped);
 		setLocal(String(clamped));
 	};
@@ -91,6 +97,12 @@ const Composer = () => {
 	const setManufacturerId = useMIDIStore(
 		(state) => state.setComposerManufacturerId,
 	);
+
+	// SysEx data bytes are 7-bit: anything else is refused before it reaches Web MIDI.
+	const isSysex = type === MIDI_STATUS.SYSEX_START;
+	const manufacturerError = sysexHexError(manufacturerId);
+	const sysexError = sysexHexError(sysexData);
+	const sysexInvalid = isSysex && (!!manufacturerError || !!sysexError);
 
 	const types = [
 		{ value: MIDI_STATUS.NOTE_ON, label: typeToLabel(MIDI_STATUS.NOTE_ON) },
@@ -123,17 +135,6 @@ const Composer = () => {
 		{ value: MIDI_STATUS.STOP, label: typeToLabel(MIDI_STATUS.STOP) },
 		{ value: MIDI_STATUS.CONTINUE, label: typeToLabel(MIDI_STATUS.CONTINUE) },
 	];
-
-	const hexStringToArray = (hex: string): number[] => {
-		const clean = hex.replace(/\s+/g, "").toUpperCase();
-		const result: number[] = [];
-
-		for (let i = 0; i < clean.length; i += 2) {
-			result.push(parseInt(clean.slice(i, i + 2), 16));
-		}
-
-		return result;
-	};
 
 	return (
 		<Box>
@@ -185,17 +186,26 @@ const Composer = () => {
 						<TextField
 							label={t("composer_manufacturer_id")}
 							value={manufacturerId}
-							onChange={(e) => setManufacturerId(e.target.value)}
+							// One byte, or three for extended IDs (00 xx xx)
+							onChange={(e) =>
+								setManufacturerId(hexDigits(e.target.value).slice(0, 6))
+							}
 							placeholder="FD"
 							size="small"
+							error={!!manufacturerError}
+							helperText={
+								manufacturerError && t(`composer_sysex_${manufacturerError}`)
+							}
 							sx={{ width: { xs: "100%", sm: 140 } }}
 						/>
 						<TextField
 							label={t("composer_data_hex")}
-							value={sysexData.replace(/\s+/g, "").toUpperCase()}
-							onChange={(e) => setSysexData(e.target.value)}
+							value={hexDigits(sysexData)}
+							onChange={(e) => setSysexData(hexDigits(e.target.value))}
 							placeholder="43 12 00"
 							size="small"
+							error={!!sysexError}
+							helperText={sysexError && t(`composer_sysex_${sysexError}`)}
 							sx={{ width: { xs: "100%", sm: 240 } }}
 						/>
 						<TextField
@@ -324,7 +334,7 @@ const Composer = () => {
 					variant="contained"
 					startIcon={<Send />}
 					sx={{ width: { xs: "100%", sm: "auto" } }}
-					disabled={!hasSelectedOutput}
+					disabled={!hasSelectedOutput || sysexInvalid}
 					onClick={() => {
 						const msg: MidiMessage = {
 							id: uuidv4(),
@@ -350,8 +360,8 @@ const Composer = () => {
 								type === MIDI_STATUS.SYSEX_START
 									? [
 											0xf0,
-											...(manufacturerId ? [parseInt(manufacturerId, 16)] : []),
-											...hexStringToArray(sysexData),
+											...hexStringToBytes(manufacturerId),
+											...hexStringToBytes(sysexData),
 											0xf7,
 										]
 									: undefined,

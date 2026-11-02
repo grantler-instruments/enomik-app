@@ -15,6 +15,7 @@ import {
 	parsePins,
 	pinError,
 } from "../../utils/tester";
+import IntegerField from "../IntegerField";
 import type { BoardInfoState } from "./useBoardInfo";
 import { AUTO, NONE, type Role } from "./usePorts";
 
@@ -104,15 +105,14 @@ const ConnectStep = ({
 						</Select>
 					</FormControl>
 				))}
-				<TextField
+				<IntegerField
 					size="small"
-					type="number"
 					label="LED pin"
 					value={settings.ledPin}
 					disabled={busy}
 					error={!!errors.led}
 					helperText={errors.led || "onboard LED"}
-					onChange={(e) => update({ ledPin: Number(e.target.value) })}
+					onChange={(ledPin) => update({ ledPin })}
 					sx={{ width: 120 }}
 				/>
 				<TextField

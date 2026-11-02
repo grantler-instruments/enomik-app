@@ -19,6 +19,7 @@ import {
 	canAddInput,
 	canAddOutput,
 	configSummary,
+	controllerForPin,
 	defaultInput,
 	defaultOutput,
 	isConfigurable,
@@ -121,11 +122,11 @@ describe("defaultInput", () => {
 		},
 	);
 
-	it("sends CC 20 on channel 1 over the full MIDI range", () => {
+	it("sends the pin number as CC on channel 1 over the full MIDI range", () => {
 		expect(defaultInput({ ...pin("digital", 21), gpio: 21 })).toMatchObject({
 			channel: 1,
 			midiType: MIDI_CONTROL_CHANGE,
-			controller: 20,
+			controller: 21,
 			midiMin: 0,
 			midiMax: 127,
 		});
@@ -139,8 +140,25 @@ describe("defaultOutput", () => {
 			mode: sysexPinModeDigitalOut,
 			channel: 1,
 			midiType: MIDI_CONTROL_CHANGE,
-			controller: 20,
+			controller: 40,
 		});
+	});
+});
+
+describe("default controller", () => {
+	it("uses the pin number for touch and analog inputs too", () => {
+		expect(defaultInput({ ...pin("touch", 3), gpio: 3 }).controller).toBe(3);
+		expect(defaultInput({ ...pin("analog", 9), gpio: 9 }).controller).toBe(9);
+	});
+
+	it("uses CC 0 for GPIO 0", () => {
+		expect(defaultInput({ ...pin("digital", 0), gpio: 0 }).controller).toBe(0);
+	});
+
+	it("caps at CC 127 for pin numbers beyond MIDI's range", () => {
+		expect(
+			defaultOutput({ ...pin("digital", 200), gpio: 200 }).controller,
+		).toBe(127);
 	});
 });
 
@@ -332,5 +350,14 @@ describe("LOLIN S2 mini", () => {
 			.map((p) => p.gpio);
 		expect(new Set(header).size).toBe(27);
 		expect(header).toHaveLength(27);
+	});
+});
+
+describe("controllerForPin", () => {
+	it("is the pin number within MIDI's 0..127", () => {
+		expect(controllerForPin(0)).toBe(0);
+		expect(controllerForPin(17)).toBe(17);
+		expect(controllerForPin(127)).toBe(127);
+		expect(controllerForPin(128)).toBe(127);
 	});
 });
