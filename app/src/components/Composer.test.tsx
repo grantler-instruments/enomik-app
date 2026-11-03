@@ -105,6 +105,26 @@ describe("Composer send", () => {
 		});
 		expect(screen.getByRole("button", { name: "Send MIDI" })).toBeDisabled();
 	});
+
+	it("sends to a fixed output without showing the chooser", async () => {
+		const user = userEvent.setup();
+		useMIDIStore.setState({
+			outputs: [
+				{ id: OUTPUT, name: "Enomik", state: "connected" },
+				{ id: "nfc", name: "NFC board", state: "connected" },
+			],
+		});
+		renderWithProviders(<Composer outputId="nfc" />);
+		expect(screen.queryByLabelText("MIDI Output")).toBeNull();
+		await send(user);
+		expect(sent[0].outputId).toBe("nfc");
+	});
+
+	it("can be disabled", () => {
+		renderWithProviders(<Composer disabled />);
+		expect(screen.getByRole("button", { name: "Send MIDI" })).toBeDisabled();
+		expect(field("Note")).toBeDisabled();
+	});
 });
 
 describe("Composer fields", () => {

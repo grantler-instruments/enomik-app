@@ -12,6 +12,7 @@ import Home from "./components/Home";
 import Inspector from "./components/Inspector";
 import Kits from "./components/Kits";
 import Modals from "./components/Modals";
+import Nfc from "./components/Nfc";
 import NotFound from "./components/NotFound";
 import Sidebar from "./components/Sidebar";
 import Tester from "./components/Tester";
@@ -60,6 +61,7 @@ function App() {
 							<Route path="/tutorial/*" element={<Tutorial />} />
 							<Route path="/tester" element={<Tester />} />
 							<Route path="/kits" element={<Kits />} />
+							<Route path="/nfc" element={<Nfc />} />
 							<Route
 								path="/grantulator"
 								element={

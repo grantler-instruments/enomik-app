@@ -25,12 +25,20 @@ import MidiDeviceChooser from "./MidiDeviceChooser";
 const clamp = (value: number, min: number, max: number) =>
 	Math.min(max, Math.max(min, value));
 
-const Composer = () => {
+const Composer = ({
+	outputId,
+	disabled = false,
+}: {
+	/** Send here, without the output chooser (a page with its own). */
+	outputId?: string;
+	disabled?: boolean;
+} = {}) => {
 	const { t } = useTranslation();
 	const sendMessage = useMIDIStore((state) => state.sendMessage);
-	const selectedOutputId = useMIDIStore(
+	const composerOutputId = useMIDIStore(
 		(state) => state.selectedComposerOutputDevice,
 	);
+	const selectedOutputId = outputId ?? composerOutputId;
 	const setSelectedOutputId = useMIDIStore(
 		(state) => state.setSelectedComposerOutputDevice,
 	);
@@ -144,7 +152,11 @@ const Composer = () => {
 				alignItems={{ sm: "center" }}
 				width="100%"
 			>
-				<FormControl size="small" sx={{ width: { xs: "100%", sm: 120 } }}>
+				<FormControl
+					size="small"
+					disabled={disabled}
+					sx={{ width: { xs: "100%", sm: 120 } }}
+				>
 					<InputLabel>{t("channel")}</InputLabel>
 					<Select
 						value={channel}
@@ -159,7 +171,11 @@ const Composer = () => {
 					</Select>
 				</FormControl>
 
-				<FormControl size="small" sx={{ width: { xs: "100%", sm: 180 } }}>
+				<FormControl
+					size="small"
+					disabled={disabled}
+					sx={{ width: { xs: "100%", sm: 180 } }}
+				>
 					<InputLabel>{t("type")}</InputLabel>
 					<Select
 						value={type}
@@ -184,6 +200,7 @@ const Composer = () => {
 							sx={{ width: { xs: "100%", sm: 80 } }}
 						/>
 						<TextField
+							disabled={disabled}
 							label={t("composer_manufacturer_id")}
 							value={manufacturerId}
 							// One byte, or three for extended IDs (00 xx xx)
@@ -199,6 +216,7 @@ const Composer = () => {
 							sx={{ width: { xs: "100%", sm: 140 } }}
 						/>
 						<TextField
+							disabled={disabled}
 							label={t("composer_data_hex")}
 							value={hexDigits(sysexData)}
 							onChange={(e) => setSysexData(hexDigits(e.target.value))}
@@ -227,6 +245,7 @@ const Composer = () => {
 					<>
 						{type !== MIDI_STATUS.CHANNEL_PRESSURE && (
 							<TextField
+								disabled={disabled}
 								label={
 									type === MIDI_STATUS.NOTE_ON ||
 									type === MIDI_STATUS.NOTE_OFF ||
@@ -263,6 +282,7 @@ const Composer = () => {
 
 						{type !== MIDI_STATUS.PROGRAM_CHANGE && (
 							<TextField
+								disabled={disabled}
 								label={
 									type === MIDI_STATUS.NOTE_ON || type === MIDI_STATUS.NOTE_OFF
 										? t("composer_velocity")
@@ -297,6 +317,7 @@ const Composer = () => {
 
 				{type === MIDI_STATUS.PITCH_BEND && (
 					<TextField
+						disabled={disabled}
 						label={t("composer_pitch_bend")}
 						value={pitchBendInput}
 						onChange={(e) =>
@@ -325,16 +346,18 @@ const Composer = () => {
 
 				<Box sx={{ flexGrow: { sm: 1 } }} />
 
-				<MidiDeviceChooser
-					value={selectedOutputId || ""}
-					onChange={setSelectedOutputId}
-				/>
+				{outputId === undefined && (
+					<MidiDeviceChooser
+						value={selectedOutputId || ""}
+						onChange={setSelectedOutputId}
+					/>
+				)}
 
 				<Button
 					variant="contained"
 					startIcon={<Send />}
 					sx={{ width: { xs: "100%", sm: "auto" } }}
-					disabled={!hasSelectedOutput || sysexInvalid}
+					disabled={disabled || !hasSelectedOutput || sysexInvalid}
 					onClick={() => {
 						const msg: MidiMessage = {
 							id: uuidv4(),
