@@ -175,6 +175,7 @@ const Midi = () => {
 			<MessageDiagram kind="note" />
 			<MessageDiagram kind="cc" />
 			<MessageTable />
+			<Note>{t("tutorial_midi_table_note")}</Note>
 			<Heading>{t("tutorial_midi_notes_title")}</Heading>
 			<Paragraphs i18nKey="tutorial_midi_notes" />
 			<Keyboard />
@@ -250,11 +251,17 @@ lib_deps =
     https://github.com/FortySevenEffects/arduino_midi_library.git
 `;
 
-const CIRCUITPYTHON = `
+const MICROPYTHON = `
 import time
+import network
 from esp_now_midi import ESPNowMidi
 
 DONGLE_MAC = b"\\x84\\xF7\\x03\\xF2\\x54\\x62"
+
+# ESP-NOW needs Wi-Fi on, on the same channel as the dongle (6)
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.config(channel=6)
 
 midi = ESPNowMidi()
 midi.begin()
@@ -414,15 +421,15 @@ const ArduinoPlatform = () => {
 	);
 };
 
-const CircuitPythonPlatform = () => {
+const MicroPythonPlatform = () => {
 	const { t } = useTranslation();
 	return (
 		<>
 			<Typography variant="body1">
-				{t("tutorial_platforms_circuitpython")}
+				{t("tutorial_platforms_micropython")}
 			</Typography>
-			<CodeBlock>{CIRCUITPYTHON}</CodeBlock>
-			<SourceLink paths={["esp_now_midi.py", "examples/hello_midi.py"]} />
+			<CodeBlock>{MICROPYTHON}</CodeBlock>
+			<SourceLink paths={["esp_now_midi.py"]} />
 			<LibraryLinks />
 		</>
 	);
@@ -644,6 +651,155 @@ const Examples = () => (
 		<SectionLinks sections={EXAMPLE_SECTIONS} />
 	</>
 );
+
+const OWN_CLIENT_SKETCH = `
+/*
+  My first client: a potentiometer sends a control change,
+  a button plays a note. Both go wirelessly to the dongle.
+*/
+
+#include "enomik_client.h"
+
+// Pins for ESP32-S2/S3 boards such as the LOLIN S2 Mini.
+// On a classic ESP32 use e.g. 34 for the potentiometer and 4 for the button.
+#define POT_PIN 1
+#define BUTTON_PIN 2
+
+#define MIDI_CHANNEL 1
+#define POT_CC 1        // CC 1 = modulation wheel
+#define BUTTON_NOTE 60  // middle C
+
+enomik::Client _client;
+
+float _smoothed = 0;            // averaged potentiometer reading
+int _lastValue = -1;            // last CC value sent
+unsigned long _lastPotMs = 0;
+bool _lastPressed = false;      // last button state
+unsigned long _lastButtonMs = 0;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+  _client.setName("my_client");  // optional, shown in the web app
+  _client.begin();               // starts ESP-NOW, restores paired peers
+
+  // Not paired via the web app? Enter the dongle's MAC address here:
+  // uint8_t dongleMac[6] = { 0x84, 0xF7, 0x03, 0xF2, 0x54, 0x62 };
+  // _client.addPeer(dongleMac);
+}
+
+void loop() {
+  _client.loop();  // keep this first, and never block loop() with long delays
+  unsigned long now = millis();
+
+  // Potentiometer -> control change, read every 5 ms
+  if (now - _lastPotMs >= 5) {
+    _lastPotMs = now;
+    _smoothed += (analogRead(POT_PIN) - _smoothed) * 0.1f;  // average out noise
+    int value = (int)(_smoothed * 127.0f / 4095.0f + 0.5f); // 0–4095 -> 0–127
+    if (value != _lastValue) {                              // send changes only
+      _lastValue = value;
+      _client.sendControlChange(POT_CC, value, MIDI_CHANNEL);
+    }
+  }
+
+  // Button -> note on / note off, with 20 ms debounce
+  bool pressed = digitalRead(BUTTON_PIN) == LOW;  // pull-up: pressed reads LOW
+  if (pressed != _lastPressed && now - _lastButtonMs >= 20) {
+    _lastPressed = pressed;
+    _lastButtonMs = now;
+    if (pressed) {
+      _client.sendNoteOn(BUTTON_NOTE, 127, MIDI_CHANNEL);
+    } else {
+      _client.sendNoteOff(BUTTON_NOTE, 0, MIDI_CHANNEL);
+    }
+  }
+}
+`;
+
+const OWN_CLIENT_RECEIVE = `
+#define LED_PIN 15  // onboard LED of the LOLIN S2 Mini
+
+void onNoteOn(byte channel, byte note, byte velocity) {
+  if (note == BUTTON_NOTE) {
+    digitalWrite(LED_PIN, velocity > 0 ? HIGH : LOW);
+  }
+}
+
+void onNoteOff(byte channel, byte note, byte velocity) {
+  if (note == BUTTON_NOTE) {
+    digitalWrite(LED_PIN, LOW);
+  }
+}
+
+// in setup(), before _client.begin():
+pinMode(LED_PIN, OUTPUT);
+_client.setHandleNoteOn(onNoteOn);
+_client.setHandleNoteOff(onNoteOff);
+`;
+
+const OwnClientExample = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_own_client_text" />
+			<Heading>{t("tutorial_own_client_parts_title")}</Heading>
+			<Steps i18nKey="tutorial_own_client_parts" ordered={false} />
+			<Heading>{t("tutorial_wiring")}</Heading>
+			<Steps i18nKey="tutorial_own_client_pins" ordered={false} />
+			<Note>{t("tutorial_own_client_pins_note")}</Note>
+			<Heading>{t("tutorial_own_client_code_title")}</Heading>
+			<Typography variant="body1">
+				{t("tutorial_own_client_code_before")}
+			</Typography>
+			<CodeBlock>{OWN_CLIENT_SKETCH}</CodeBlock>
+			<Typography variant="body1">
+				{t("tutorial_own_client_based_on")}
+			</Typography>
+			<SourceLink
+				paths={[
+					"examples/client_hello_midi/client_hello_midi.ino",
+					"examples/client_buttons/client_buttons.ino",
+				]}
+			/>
+			<Steps i18nKey="tutorial_own_client_code_after" ordered={false} />
+			<Heading>{t("tutorial_own_client_pairing_title")}</Heading>
+			<Typography variant="body1">
+				{t("tutorial_own_client_pairing")}
+			</Typography>
+			<LinkButtons
+				actions={[
+					{
+						label: t("tutorial_pairing_title"),
+						link: "/tutorial/examples/webapp/pairing",
+					},
+				]}
+			/>
+			<Heading>{t("tutorial_i2c_upload_title")}</Heading>
+			<Steps i18nKey="tutorial_own_client_upload" />
+			<LinkButtons
+				actions={[
+					{
+						label: t("tutorial_i2c_upload_link"),
+						link: "/tutorial/firmware/arduino",
+					},
+				]}
+			/>
+			<Heading>{t("tutorial_test")}</Heading>
+			<Typography variant="body1">{t("tutorial_own_client_test")}</Typography>
+			<LinkButtons
+				actions={[{ label: t("midi_monitor"), link: "/debugger" }]}
+			/>
+			<Heading>{t("tutorial_own_client_receive_title")}</Heading>
+			<Typography variant="body1">
+				{t("tutorial_own_client_receive_before")}
+			</Typography>
+			<CodeBlock>{OWN_CLIENT_RECEIVE}</CodeBlock>
+			<Paragraphs i18nKey="tutorial_own_client_receive_after" />
+		</>
+	);
+};
 
 const SERVO_SKETCH = `
 /*
@@ -900,6 +1056,11 @@ const WEBAPP_EXAMPLES: Chapter[] = [
 ];
 
 const CODE_EXAMPLES: Chapter[] = [
+	{
+		id: "own-client",
+		titleKey: "tutorial_own_client_title",
+		Content: OwnClientExample,
+	},
 	{ id: "i2c", titleKey: "tutorial_i2c_title", Content: I2cExample },
 	{ id: "servo", titleKey: "tutorial_servo_title", Content: ServoExample },
 ];
@@ -935,9 +1096,9 @@ const PLATFORM_SECTIONS: Chapter[] = [
 		Content: ArduinoPlatform,
 	},
 	{
-		id: "circuitpython",
-		titleKey: "tutorial_platforms_circuitpython_title",
-		Content: CircuitPythonPlatform,
+		id: "micropython",
+		titleKey: "tutorial_platforms_micropython_title",
+		Content: MicroPythonPlatform,
 	},
 	{
 		id: "platformio",

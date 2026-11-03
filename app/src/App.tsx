@@ -1,6 +1,7 @@
 import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
+import AutoUpdate from "./components/AutoUpdate";
 import BrowserWarning from "./components/BrowserWarning";
 import Configurator from "./components/Configurator";
 import Debugger from "./components/Debugger";
@@ -17,7 +18,6 @@ import NotFound from "./components/NotFound";
 import Sidebar from "./components/Sidebar";
 import Tester from "./components/Tester";
 import Tutorial from "./components/Tutorial";
-import UpdatePrompt from "./components/UpdatePrompt";
 import { darkTheme, lightTheme } from "./muiTheme.ts";
 import { useAppStore } from "./store/app";
 
@@ -76,7 +76,7 @@ function App() {
 					<Footer></Footer>
 				</Box>
 				<Modals></Modals>
-				<UpdatePrompt />
+				<AutoUpdate />
 			</Box>
 		</ThemeProvider>
 	);

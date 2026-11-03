@@ -5,180 +5,102 @@ interface LogoProps {
 	height?: number;
 }
 
+const VIEW_WIDTH = 300;
+const VIEW_HEIGHT = 260;
+const SIDE = 120;
+const RADIUS = 30;
+const CIRCLE_STROKE = 4;
+const LINE_STROKE = 3;
+/** Space between a line end and its circle. */
+const GAP = 5;
+/** Dashes per connection; odd, so the pattern is symmetric. */
+const DASHES = 3;
+const PIN_RADIUS = 4;
+/** Distance of the five DIN pins from their circle's center. */
+const PIN_RING = 16;
+
+const TRIANGLE_HEIGHT = (Math.sqrt(3) / 2) * SIDE;
+// The triangle's bounding box (not its centroid) sits in the middle of the view
+const CENTER_X = VIEW_WIDTH / 2;
+const TOP_Y = VIEW_HEIGHT / 2 - TRIANGLE_HEIGHT / 2;
+const BOTTOM_Y = VIEW_HEIGHT / 2 + TRIANGLE_HEIGHT / 2;
+
+const NODES = [
+	{ x: CENTER_X, y: TOP_Y },
+	{ x: CENTER_X - SIDE / 2, y: BOTTOM_Y },
+	{ x: CENTER_X + SIDE / 2, y: BOTTOM_Y },
+];
+
+/** Pins on a regular pentagon, one pointing up. */
+const PINS = Array.from({ length: 5 }, (_, i) => {
+	const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+	return { dx: PIN_RING * Math.cos(angle), dy: PIN_RING * Math.sin(angle) };
+});
+
+const LINE_LENGTH = SIDE - 2 * (RADIUS + GAP);
+// Equal dashes and gaps that start and end with a dash
+const DASH = LINE_LENGTH / (2 * DASHES - 1);
+
+const CONNECTIONS = [
+	[0, 1],
+	[0, 2],
+	[1, 2],
+].map(([from, to]) => {
+	const a = NODES[from];
+	const b = NODES[to];
+	const ux = (b.x - a.x) / SIDE;
+	const uy = (b.y - a.y) / SIDE;
+	const offset = RADIUS + GAP;
+	return {
+		key: `${from}-${to}`,
+		x1: a.x + ux * offset,
+		y1: a.y + uy * offset,
+		x2: b.x - ux * offset,
+		y2: b.y - uy * offset,
+	};
+});
+
 const Logo: React.FC<LogoProps> = ({ width = 64, height = 64 }) => {
-	const theme = useTheme();
-	const mainColor = theme.palette.primary.main;
-
-	// Calculate equilateral triangle positions
-	const centerX = 150;
-	const centerY = 130;
-	const sideLength = 120;
-	const height_triangle = (Math.sqrt(3) / 2) * sideLength;
-
-	interface Circle {
-		cx: number;
-		cy: number;
-		r: number;
-	}
-
-	// Circle definitions - equilateral triangle
-	// Top vertex is at 2/3 of height above center
-	// Bottom vertices are at 1/3 of height below center
-	const circles: Record<string, Circle> = {
-		top: {
-			cx: centerX,
-			cy: centerY - (2 * height_triangle) / 3,
-			r: 30,
-		},
-		bottomLeft: {
-			cx: centerX - sideLength / 2,
-			cy: centerY + height_triangle / 3,
-			r: 30,
-		},
-		bottomRight: {
-			cx: centerX + sideLength / 2,
-			cy: centerY + height_triangle / 3,
-			r: 30,
-		},
-	};
-
-	const gap = 5; // Gap before circle edge
-	const circleStrokeWidth = 4;
-	const lineStrokeWidth = 3;
-	const dotRadious = 4;
-
-	interface LinePoints {
-		x1: number;
-		y1: number;
-		x2: number;
-		y2: number;
-	}
-
-	// Helper function to calculate line endpoints
-	const getLinePoints = (from: Circle, to: Circle, gap: number): LinePoints => {
-		const dx = to.cx - from.cx;
-		const dy = to.cy - from.cy;
-		const distance = Math.sqrt(dx * dx + dy * dy);
-
-		const unitX = dx / distance;
-		const unitY = dy / distance;
-
-		const startOffset = from.r + gap;
-		const endOffset = to.r + gap;
-
-		return {
-			x1: from.cx + unitX * startOffset,
-			y1: from.cy + unitY * startOffset,
-			x2: to.cx - unitX * endOffset,
-			y2: to.cy - unitY * endOffset,
-		};
-	};
-
-	const line1 = getLinePoints(circles.top, circles.bottomLeft, gap);
-	const line2 = getLinePoints(circles.top, circles.bottomRight, gap);
-	const line3 = getLinePoints(circles.bottomLeft, circles.bottomRight, gap);
-
-	interface Dot {
-		cx: number;
-		cy: number;
-		r: number;
-	}
-
-	// Helper function to get dot positions relative to circle center
-	const getDots = (circle: Circle): Dot[] => {
-		return [
-			{ cx: circle.cx, cy: circle.cy - 16, r: dotRadious },
-			{ cx: circle.cx - 15, cy: circle.cy - 6, r: dotRadious },
-			{ cx: circle.cx + 15, cy: circle.cy - 6, r: dotRadious },
-			{ cx: circle.cx - 10, cy: circle.cy + 12, r: dotRadious },
-			{ cx: circle.cx + 10, cy: circle.cy + 12, r: dotRadious },
-		];
-	};
+	const color = useTheme().palette.primary.main;
 
 	return (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
-			viewBox="0 0 300 260"
+			viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
 			width={width}
 			height={height}
 		>
 			<title>Grantler Instruments</title>
-			{/* Top circle */}
-			<circle
-				cx={circles.top.cx}
-				cy={circles.top.cy}
-				r={circles.top.r}
-				fill="none"
-				stroke={mainColor}
-				strokeWidth={circleStrokeWidth}
-			/>
-			<g fill={mainColor}>
-				{getDots(circles.top).map((dot, i) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: fixed dots
-					<circle key={`top-${i}`} cx={dot.cx} cy={dot.cy} r={dot.r} />
-				))}
-			</g>
-
-			{/* Bottom left circle */}
-			<circle
-				cx={circles.bottomLeft.cx}
-				cy={circles.bottomLeft.cy}
-				r={circles.bottomLeft.r}
-				fill="none"
-				stroke={mainColor}
-				strokeWidth={circleStrokeWidth}
-			/>
-			<g fill={mainColor}>
-				{getDots(circles.bottomLeft).map((dot, i) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: fixed dots
-					<circle key={`bl-${i}`} cx={dot.cx} cy={dot.cy} r={dot.r} />
-				))}
-			</g>
-
-			{/* Bottom right circle */}
-			<circle
-				cx={circles.bottomRight.cx}
-				cy={circles.bottomRight.cy}
-				r={circles.bottomRight.r}
-				fill="none"
-				stroke={mainColor}
-				strokeWidth={circleStrokeWidth}
-			/>
-			<g fill={mainColor}>
-				{getDots(circles.bottomRight).map((dot, i) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: fixed dots
-					<circle key={`br-${i}`} cx={dot.cx} cy={dot.cy} r={dot.r} />
-				))}
-			</g>
-
-			{/* Connecting lines */}
-			<line
-				x1={line1.x1}
-				y1={line1.y1}
-				x2={line1.x2}
-				y2={line1.y2}
-				stroke={mainColor}
-				strokeWidth={lineStrokeWidth}
-				strokeDasharray="10 10"
-			/>
-			<line
-				x1={line2.x1}
-				y1={line2.y1}
-				x2={line2.x2}
-				y2={line2.y2}
-				stroke={mainColor}
-				strokeWidth={lineStrokeWidth}
-				strokeDasharray="10 10"
-			/>
-			<line
-				x1={line3.x1}
-				y1={line3.y1}
-				x2={line3.x2}
-				y2={line3.y2}
-				stroke={mainColor}
-				strokeWidth={lineStrokeWidth}
-				strokeDasharray="12 12"
-			/>
+			{NODES.map((node) => (
+				<g key={`${node.x},${node.y}`}>
+					<circle
+						cx={node.x}
+						cy={node.y}
+						r={RADIUS}
+						fill="none"
+						stroke={color}
+						strokeWidth={CIRCLE_STROKE}
+					/>
+					{PINS.map((pin) => (
+						<circle
+							key={`${pin.dx},${pin.dy}`}
+							cx={node.x + pin.dx}
+							cy={node.y + pin.dy}
+							r={PIN_RADIUS}
+							fill={color}
+						/>
+					))}
+				</g>
+			))}
+			{CONNECTIONS.map(({ key, ...line }) => (
+				<line
+					key={key}
+					{...line}
+					stroke={color}
+					strokeWidth={LINE_STROKE}
+					strokeDasharray={`${DASH} ${DASH}`}
+				/>
+			))}
 		</svg>
 	);
 };

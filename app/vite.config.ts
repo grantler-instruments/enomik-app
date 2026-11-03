@@ -8,6 +8,7 @@ export default defineConfig({
 	plugins: [
 		react(),
 		VitePWA({
+			// New versions wait until AutoUpdate applies them at a safe moment
 			registerType: "prompt",
 			// Keep the hand-written public/manifest.webmanifest
 			manifest: false,

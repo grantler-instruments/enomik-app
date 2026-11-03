@@ -28,7 +28,6 @@ export default function WIPBanner() {
 					padding: "8px 0",
 					transform: "rotate(45deg)",
 					boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
-					pointerEvents: "auto",
 				}}
 			>
 				<Typography

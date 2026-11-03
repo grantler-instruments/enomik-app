@@ -162,6 +162,8 @@ const en = {
 		"Values",
 		"Typical use",
 	],
+	tutorial_midi_table_note:
+		"The library and the dongle handle all of these messages. In the Configurator you can map pins to Note, CC and Pitch Bend; Program Change, Aftertouch and SysEx need your own code.",
 	tutorial_midi_table: [
 		[
 			"Note On / Note Off",
@@ -230,7 +232,7 @@ const en = {
 	tutorial_platforms_code:
 		"Prefer to write code yourself? The library is available for several environments. Each one has its own subchapter:",
 	tutorial_platforms_arduino_title: "Arduino",
-	tutorial_platforms_circuitpython_title: "CircuitPython",
+	tutorial_platforms_micropython_title: "MicroPython",
 	tutorial_platforms_platformio_title: "PlatformIO",
 	tutorial_platforms_idf_title: "ESP-IDF",
 	tutorial_platforms_arduino_install_title: "Installation",
@@ -265,8 +267,8 @@ const en = {
 		"Uploading a dongle sketch to an ESP32-S3? Set Tools → USB Mode to USB-OTG (TinyUSB).",
 	tutorial_platforms_platformio:
 		"Every Arduino example ships with a platformio.ini. For your own project, add the library and its dependencies to lib_deps. The pioarduino platform is needed because the official espressif32 platform does not support Arduino core 3.x. On ESP32-S3 boards with USB MIDI, also set board_build.usb_mode = tinyusb.",
-	tutorial_platforms_circuitpython:
-		"Copy esp_now_midi.py from the library onto your board. It uses the same packet format as the C++ library. This port is largely untested, contributions are welcome.",
+	tutorial_platforms_micropython:
+		"Copy esp_now_midi.py from the library onto a board running MicroPython. It uses the same packet format as the C++ library. Despite the CircuitPython in its header, it is written against MicroPython's espnow and network modules and does not run on CircuitPython. Switch Wi-Fi on and set channel 6 before begin(), otherwise the dongle does not receive anything. This port is largely untested, contributions are welcome.",
 	tutorial_platforms_idf:
 		"Pure ESP-IDF (5.5 or newer), without the Arduino core. Add the repository as a component, e.g. as a git submodule under components/. The examples_idf folder contains client and dongle ports.",
 
@@ -437,6 +439,50 @@ const en = {
 	tutorial_i2c_upload_link: "Firmware via Arduino IDE",
 	tutorial_i2c_test:
 		"Open the MIDI monitor and move your hand above the sensor. The MIDI messages change with the distance.",
+
+	tutorial_own_client_title: "Write your own client",
+	tutorial_own_client_text: [
+		"In this example you write a client from an empty sketch: a potentiometer sends a control change, a button plays a note. Every client follows this pattern, so afterwards you can swap in your own sensors.",
+	],
+	tutorial_own_client_parts_title: "You need",
+	tutorial_own_client_parts: [
+		"An ESP32 board, with the ESP32 boards and the ESP-NOW MIDI library installed in the Arduino IDE.",
+		"A potentiometer, e.g. 10 kΩ.",
+		"A push button.",
+		"A dongle paired with the client.",
+	],
+	tutorial_own_client_pins: [
+		"Potentiometer: outer legs to 3V3 and GND, middle leg to GPIO 1.",
+		"Button: one leg to GPIO 2, the other to GND. The sketch switches on the internal pull-up resistor, so no extra resistor is needed.",
+	],
+	tutorial_own_client_pins_note:
+		"GPIO 1 and 2 suit ESP32-S2 and ESP32-S3 boards such as the LOLIN S2 Mini. On a classic ESP32, GPIO 1 is the serial TX pin: use e.g. GPIO 34 for the potentiometer and GPIO 4 for the button, and change POT_PIN and BUTTON_PIN. Analog inputs must be ADC1 pins, ADC2 does not work while the radio is on. On an enomik board, check the board layout.",
+	tutorial_own_client_code_title: "Code",
+	tutorial_own_client_code_before: "The whole sketch:",
+	tutorial_own_client_based_on: "Library examples this sketch builds on:",
+	tutorial_own_client_code_after: [
+		"enomik::Client does the wireless part. begin() starts ESP-NOW and restores the peers saved during pairing.",
+		"_client.loop() has to run on every pass of loop(). Avoid long delay() calls, otherwise messages go out late and incoming MIDI is not handled.",
+		"The potentiometer is read every 5 ms and averaged, because analog readings jitter slightly. The 12-bit reading 0–4095 is scaled to MIDI's 0–127, and a CC is only sent when the value changes. Without that check the client would flood the dongle with identical messages.",
+		"The button reads LOW when pressed, because of the pull-up. A new state is only accepted 20 ms after the last change, so a bouncing contact does not play several notes. Pressing sends Note On, releasing Note Off.",
+	],
+	tutorial_own_client_pairing_title: "Pairing",
+	tutorial_own_client_pairing:
+		"The sketch sends to the peers stored during pairing. If you have not paired the client, uncomment the addPeer lines and enter your dongle's MAC address.",
+	tutorial_own_client_upload: [
+		"In the Arduino IDE choose File → New Sketch, replace its content with the sketch above and save it.",
+		"Select your board and port and click Upload, as described in the Arduino IDE firmware chapter.",
+		"Press RESET when the upload has finished.",
+	],
+	tutorial_own_client_test:
+		"Open the MIDI monitor. Turning the potentiometer sends CC 1 on channel 1, pressing the button sends note 60 (middle C).",
+	tutorial_own_client_receive_title: "Receive MIDI",
+	tutorial_own_client_receive_before:
+		"A client can also receive MIDI. Add these lines to the sketch to light the onboard LED while note 60 is held, for example when your DAW plays middle C:",
+	tutorial_own_client_receive_after: [
+		"The handlers run while the message is being received. Keep them short: set a pin or store a value, and do slow work such as moving a servo in loop(), like the servo example does.",
+		"Handlers exist for every message type, e.g. setHandleControlChange. client_hello_midi lists all of them.",
+	],
 
 	tutorial_servo_title: "Servo motor",
 	tutorial_servo_text: [
@@ -745,6 +791,8 @@ const de: typeof en = {
 		"Werte",
 		"Typische Nutzung",
 	],
+	tutorial_midi_table_note:
+		"Bibliothek und Dongle verarbeiten alle diese Nachrichten. Im Configurator kannst du Pins auf Note, CC und Pitch Bend legen; Program Change, Aftertouch und SysEx brauchen eigenen Code.",
 	tutorial_midi_table: [
 		[
 			"Note On / Note Off",
@@ -819,7 +867,7 @@ const de: typeof en = {
 	tutorial_platforms_code:
 		"Lieber selbst programmieren? Die Bibliothek gibt es für mehrere Umgebungen. Jede hat ihr eigenes Unterkapitel:",
 	tutorial_platforms_arduino_title: "Arduino",
-	tutorial_platforms_circuitpython_title: "CircuitPython",
+	tutorial_platforms_micropython_title: "MicroPython",
 	tutorial_platforms_platformio_title: "PlatformIO",
 	tutorial_platforms_idf_title: "ESP-IDF",
 	tutorial_platforms_arduino_install_title: "Installation",
@@ -854,8 +902,8 @@ const de: typeof en = {
 		"Dongle-Sketch auf einen ESP32-S3 laden? Stelle Werkzeuge → USB Mode auf USB-OTG (TinyUSB).",
 	tutorial_platforms_platformio:
 		"Jedes Arduino-Beispiel enthält eine platformio.ini. Für eigene Projekte trägst du die Bibliothek und ihre Abhängigkeiten in lib_deps ein. Die pioarduino-Plattform ist nötig, weil die offizielle espressif32-Plattform den Arduino-Core 3.x nicht unterstützt. Auf ESP32-S3-Boards mit USB-MIDI zusätzlich board_build.usb_mode = tinyusb setzen.",
-	tutorial_platforms_circuitpython:
-		"Kopiere esp_now_midi.py aus der Bibliothek auf dein Board. Es nutzt dasselbe Paketformat wie die C++-Bibliothek. Dieser Port ist weitgehend ungetestet, Beiträge sind willkommen.",
+	tutorial_platforms_micropython:
+		"Kopiere esp_now_midi.py aus der Bibliothek auf ein Board mit MicroPython. Sie nutzt dasselbe Paketformat wie die C++-Bibliothek. Trotz „CircuitPython“ im Dateikopf ist sie für die MicroPython-Module espnow und network geschrieben und läuft nicht unter CircuitPython. Schalte vor begin() WLAN ein und stelle Kanal 6 ein, sonst empfängt der Dongle nichts. Diese Portierung ist weitgehend ungetestet, Beiträge sind willkommen.",
 	tutorial_platforms_idf:
 		"Reines ESP-IDF (5.5 oder neuer), ohne Arduino-Core. Binde das Repository als Komponente ein, z. B. als Git-Submodul unter components/. Der Ordner examples_idf enthält Client- und Dongle-Portierungen.",
 
@@ -1026,6 +1074,51 @@ const de: typeof en = {
 	tutorial_i2c_upload_link: "Firmware über die Arduino IDE",
 	tutorial_i2c_test:
 		"Öffne den MIDI-Monitor und bewege deine Hand über dem Sensor. Die MIDI-Nachrichten ändern sich mit dem Abstand.",
+
+	tutorial_own_client_title: "Eigenen Client schreiben",
+	tutorial_own_client_text: [
+		"In diesem Beispiel schreibst du einen Client ab einem leeren Sketch: Ein Potentiometer sendet einen Control Change, ein Taster spielt eine Note. Jeder Client folgt diesem Muster, danach kannst du eigene Sensoren einsetzen.",
+	],
+	tutorial_own_client_parts_title: "Du brauchst",
+	tutorial_own_client_parts: [
+		"Ein ESP32-Board, mit den ESP32-Boards und der ESP-NOW-MIDI-Bibliothek in der Arduino IDE installiert.",
+		"Ein Potentiometer, z. B. 10 kΩ.",
+		"Einen Taster.",
+		"Einen mit dem Client gekoppelten Dongle.",
+	],
+	tutorial_own_client_pins: [
+		"Potentiometer: äußere Beine an 3V3 und GND, mittleres Bein an GPIO 1.",
+		"Taster: ein Bein an GPIO 2, das andere an GND. Der Sketch schaltet den internen Pull-up-Widerstand ein, ein zusätzlicher Widerstand ist nicht nötig.",
+	],
+	tutorial_own_client_pins_note:
+		"GPIO 1 und 2 passen für ESP32-S2- und ESP32-S3-Boards wie das LOLIN S2 Mini. Beim klassischen ESP32 ist GPIO 1 der serielle TX-Pin: Nimm z. B. GPIO 34 für das Potentiometer und GPIO 4 für den Taster und ändere POT_PIN und BUTTON_PIN. Analoge Eingänge müssen ADC1-Pins sein, ADC2 funktioniert nicht, solange der Funk aktiv ist. Bei einem enomik-Board prüfe das Board-Layout.",
+	tutorial_own_client_code_title: "Code",
+	tutorial_own_client_code_before: "Der komplette Sketch:",
+	tutorial_own_client_based_on:
+		"Beispiele der Bibliothek, auf denen dieser Sketch aufbaut:",
+	tutorial_own_client_code_after: [
+		"enomik::Client übernimmt den Funkteil. begin() startet ESP-NOW und stellt die beim Koppeln gespeicherten Peers wieder her.",
+		"_client.loop() muss bei jedem Durchlauf von loop() laufen. Vermeide lange delay()-Aufrufe, sonst gehen Nachrichten verspätet raus und eingehendes MIDI wird nicht verarbeitet.",
+		"Das Potentiometer wird alle 5 ms gelesen und gemittelt, weil analoge Messwerte leicht schwanken. Der 12-Bit-Wert 0–4095 wird auf MIDIs 0–127 skaliert, und ein CC wird nur gesendet, wenn sich der Wert ändert. Ohne diese Prüfung würde der Client den Dongle mit identischen Nachrichten fluten.",
+		"Der Taster liest wegen des Pull-ups LOW, wenn er gedrückt ist. Ein neuer Zustand gilt erst 20 ms nach der letzten Änderung, damit ein prellender Kontakt nicht mehrere Noten spielt. Drücken sendet Note On, Loslassen Note Off.",
+	],
+	tutorial_own_client_pairing_title: "Koppeln",
+	tutorial_own_client_pairing:
+		"Der Sketch sendet an die beim Koppeln gespeicherten Peers. Wenn du den Client nicht gekoppelt hast, entferne die Kommentarzeichen vor den addPeer-Zeilen und trage die MAC-Adresse deines Dongles ein.",
+	tutorial_own_client_upload: [
+		"Wähle in der Arduino IDE Datei → Neuer Sketch, ersetze den Inhalt durch den Sketch oben und speichere ihn.",
+		"Wähle Board und Port und klicke auf Hochladen, wie im Kapitel zur Firmware mit der Arduino IDE beschrieben.",
+		"Drücke RESET, wenn das Hochladen fertig ist.",
+	],
+	tutorial_own_client_test:
+		"Öffne den MIDI-Monitor. Drehen am Potentiometer sendet CC 1 auf Kanal 1, Drücken des Tasters sendet Note 60 (mittleres C).",
+	tutorial_own_client_receive_title: "MIDI empfangen",
+	tutorial_own_client_receive_before:
+		"Ein Client kann auch MIDI empfangen. Füge diese Zeilen in den Sketch ein, damit die Onboard-LED leuchtet, solange Note 60 gehalten wird, zum Beispiel wenn deine DAW ein mittleres C spielt:",
+	tutorial_own_client_receive_after: [
+		"Die Handler laufen, während die Nachricht empfangen wird. Halte sie kurz: Pin setzen oder Wert speichern, und erledige langsame Arbeit wie das Bewegen eines Servos in loop(), wie im Servo-Beispiel.",
+		"Für jeden Nachrichtentyp gibt es einen Handler, z. B. setHandleControlChange. client_hello_midi listet alle auf.",
+	],
 
 	tutorial_servo_title: "Servomotor",
 	tutorial_servo_text: [
@@ -1333,6 +1426,8 @@ const es: typeof en = {
 	tutorial_midi_controller: "Controlador",
 	tutorial_midi_value: "Valor",
 	tutorial_midi_table_head: ["Mensaje", "Qué hace", "Valores", "Uso típico"],
+	tutorial_midi_table_note:
+		"La biblioteca y el dongle gestionan todos estos mensajes. En el Configurator puedes asignar pines a Note, CC y Pitch Bend; Program Change, Aftertouch y SysEx requieren tu propio código.",
 	tutorial_midi_table: [
 		[
 			"Note On / Note Off",
@@ -1407,7 +1502,7 @@ const es: typeof en = {
 	tutorial_platforms_code:
 		"¿Prefieres programar tú mismo? La biblioteca está disponible para varios entornos. Cada uno tiene su propio subcapítulo:",
 	tutorial_platforms_arduino_title: "Arduino",
-	tutorial_platforms_circuitpython_title: "CircuitPython",
+	tutorial_platforms_micropython_title: "MicroPython",
 	tutorial_platforms_platformio_title: "PlatformIO",
 	tutorial_platforms_idf_title: "ESP-IDF",
 	tutorial_platforms_arduino_install_title: "Instalación",
@@ -1442,8 +1537,8 @@ const es: typeof en = {
 		"¿Subes un sketch de dongle a un ESP32-S3? Ajusta Herramientas → USB Mode a USB-OTG (TinyUSB).",
 	tutorial_platforms_platformio:
 		"Cada ejemplo de Arduino incluye un platformio.ini. Para tu propio proyecto, añade la biblioteca y sus dependencias a lib_deps. Se necesita la plataforma pioarduino porque la plataforma oficial espressif32 no soporta el core Arduino 3.x. En placas ESP32-S3 con USB MIDI, añade también board_build.usb_mode = tinyusb.",
-	tutorial_platforms_circuitpython:
-		"Copia esp_now_midi.py de la biblioteca a tu placa. Usa el mismo formato de paquetes que la biblioteca C++. Este port está en gran parte sin probar; las contribuciones son bienvenidas.",
+	tutorial_platforms_micropython:
+		"Copia esp_now_midi.py de la biblioteca en una placa con MicroPython. Usa el mismo formato de paquete que la biblioteca C++. Aunque su cabecera dice CircuitPython, está escrita para los módulos espnow y network de MicroPython y no funciona en CircuitPython. Activa el Wi-Fi y ajusta el canal 6 antes de begin(); si no, el dongle no recibe nada. Esta adaptación está en gran parte sin probar; las contribuciones son bienvenidas.",
 	tutorial_platforms_idf:
 		"ESP-IDF puro (5.5 o superior), sin el core de Arduino. Añade el repositorio como componente, p. ej. como submódulo git en components/. La carpeta examples_idf contiene versiones de cliente y dongle.",
 
@@ -1614,6 +1709,51 @@ const es: typeof en = {
 	tutorial_i2c_upload_link: "Firmware con el Arduino IDE",
 	tutorial_i2c_test:
 		"Abre el monitor MIDI y mueve la mano sobre el sensor. Los mensajes MIDI cambian con la distancia.",
+
+	tutorial_own_client_title: "Escribe tu propio cliente",
+	tutorial_own_client_text: [
+		"En este ejemplo escribes un cliente desde un sketch vacío: un potenciómetro envía un control change y un botón toca una nota. Todos los clientes siguen este patrón, así que después puedes usar tus propios sensores.",
+	],
+	tutorial_own_client_parts_title: "Necesitas",
+	tutorial_own_client_parts: [
+		"Una placa ESP32, con las placas ESP32 y la biblioteca ESP-NOW MIDI instaladas en el Arduino IDE.",
+		"Un potenciómetro, p. ej. de 10 kΩ.",
+		"Un pulsador.",
+		"Un dongle emparejado con el cliente.",
+	],
+	tutorial_own_client_pins: [
+		"Potenciómetro: patas exteriores a 3V3 y GND, pata central a GPIO 1.",
+		"Pulsador: una pata a GPIO 2, la otra a GND. El sketch activa la resistencia pull-up interna, así que no hace falta otra resistencia.",
+	],
+	tutorial_own_client_pins_note:
+		"GPIO 1 y 2 sirven para placas ESP32-S2 y ESP32-S3 como la LOLIN S2 Mini. En un ESP32 clásico, GPIO 1 es el pin TX serie: usa p. ej. GPIO 34 para el potenciómetro y GPIO 4 para el pulsador, y cambia POT_PIN y BUTTON_PIN. Las entradas analógicas deben ser pines ADC1; ADC2 no funciona mientras la radio está activa. En una placa enomik, consulta la distribución de la placa.",
+	tutorial_own_client_code_title: "Código",
+	tutorial_own_client_code_before: "El sketch completo:",
+	tutorial_own_client_based_on:
+		"Ejemplos de la biblioteca en los que se basa este sketch:",
+	tutorial_own_client_code_after: [
+		"enomik::Client se encarga de la parte inalámbrica. begin() inicia ESP-NOW y restaura los peers guardados al emparejar.",
+		"_client.loop() tiene que ejecutarse en cada pasada de loop(). Evita llamadas largas a delay(); si no, los mensajes salen tarde y el MIDI entrante no se procesa.",
+		"El potenciómetro se lee cada 5 ms y se promedia, porque las lecturas analógicas fluctúan un poco. La lectura de 12 bits 0–4095 se escala al rango MIDI 0–127, y solo se envía un CC cuando el valor cambia. Sin esa comprobación, el cliente inundaría el dongle con mensajes idénticos.",
+		"Por el pull-up, el pulsador lee LOW cuando está pulsado. Un nuevo estado solo se acepta 20 ms después del último cambio, para que un contacto con rebote no toque varias notas. Pulsar envía Note On y soltar, Note Off.",
+	],
+	tutorial_own_client_pairing_title: "Emparejamiento",
+	tutorial_own_client_pairing:
+		"El sketch envía a los peers guardados al emparejar. Si no has emparejado el cliente, quita el comentario de las líneas addPeer e introduce la dirección MAC de tu dongle.",
+	tutorial_own_client_upload: [
+		"En el Arduino IDE elige Archivo → Nuevo sketch, sustituye el contenido por el sketch de arriba y guárdalo.",
+		"Selecciona la placa y el puerto y haz clic en Subir, como se describe en el capítulo del firmware con el Arduino IDE.",
+		"Pulsa RESET cuando termine la subida.",
+	],
+	tutorial_own_client_test:
+		"Abre el monitor MIDI. Al girar el potenciómetro se envía CC 1 en el canal 1; al pulsar el botón, la nota 60 (do central).",
+	tutorial_own_client_receive_title: "Recibir MIDI",
+	tutorial_own_client_receive_before:
+		"Un cliente también puede recibir MIDI. Añade estas líneas al sketch para encender el LED de la placa mientras la nota 60 está pulsada, por ejemplo cuando tu DAW toca un do central:",
+	tutorial_own_client_receive_after: [
+		"Los handlers se ejecutan mientras se recibe el mensaje. Mantenlos cortos: cambia un pin o guarda un valor, y haz el trabajo lento, como mover un servo, en loop(), como en el ejemplo del servo.",
+		"Hay un handler para cada tipo de mensaje, p. ej. setHandleControlChange. client_hello_midi los muestra todos.",
+	],
 
 	tutorial_servo_title: "Servomotor",
 	tutorial_servo_text: [
@@ -1918,6 +2058,8 @@ const zh: typeof en = {
 	tutorial_midi_controller: "控制器",
 	tutorial_midi_value: "值",
 	tutorial_midi_table_head: ["消息", "作用", "取值", "典型用途"],
+	tutorial_midi_table_note:
+		"库和 dongle 支持以上所有消息。在 Configurator 中可以把引脚映射为 Note、CC 和 Pitch Bend；Program Change、Aftertouch 和 SysEx 需要自己编写代码。",
 	tutorial_midi_table: [
 		[
 			"Note On / Note Off",
@@ -1986,7 +2128,7 @@ const zh: typeof en = {
 	tutorial_platforms_code:
 		"想自己写代码？该库支持多种开发环境，每种环境都有单独的小节：",
 	tutorial_platforms_arduino_title: "Arduino",
-	tutorial_platforms_circuitpython_title: "CircuitPython",
+	tutorial_platforms_micropython_title: "MicroPython",
 	tutorial_platforms_platformio_title: "PlatformIO",
 	tutorial_platforms_idf_title: "ESP-IDF",
 	tutorial_platforms_arduino_install_title: "安装",
@@ -2017,8 +2159,8 @@ const zh: typeof en = {
 		"要将适配器程序上传到 ESP32-S3？请将 工具 → USB Mode 设置为 USB-OTG (TinyUSB)。",
 	tutorial_platforms_platformio:
 		"每个 Arduino 示例都附带 platformio.ini。在你自己的项目中，将库及其依赖添加到 lib_deps。需要使用 pioarduino 平台，因为官方 espressif32 平台不支持 Arduino 核心 3.x。对于带 USB MIDI 的 ESP32-S3 开发板，还需设置 board_build.usb_mode = tinyusb。",
-	tutorial_platforms_circuitpython:
-		"将库中的 esp_now_midi.py 复制到开发板。它与 C++ 库使用相同的数据包格式。此移植基本未经测试，欢迎贡献。",
+	tutorial_platforms_micropython:
+		"把库中的 esp_now_midi.py 复制到运行 MicroPython 的开发板上。它使用与 C++ 库相同的数据包格式。虽然文件头写着 CircuitPython，但它是基于 MicroPython 的 espnow 和 network 模块编写的，无法在 CircuitPython 上运行。调用 begin() 之前请开启 Wi-Fi 并设置为信道 6，否则 dongle 收不到任何数据。此移植基本未经测试，欢迎贡献。",
 	tutorial_platforms_idf:
 		"纯 ESP-IDF（5.5 或更高版本），不依赖 Arduino 核心。将仓库作为组件添加，例如作为 git 子模块放在 components/ 下。examples_idf 文件夹中有客户端和适配器的移植版本。",
 
@@ -2181,6 +2323,50 @@ const zh: typeof en = {
 	tutorial_i2c_upload_link: "通过 Arduino IDE 上传固件",
 	tutorial_i2c_test:
 		"打开 MIDI 监视器，在传感器上方移动你的手。MIDI 消息会随距离变化。",
+
+	tutorial_own_client_title: "编写自己的客户端",
+	tutorial_own_client_text: [
+		"在这个示例中，你将从一个空白程序开始编写客户端：电位器发送控制变化（CC），按钮演奏一个音符。所有客户端都遵循这个模式，之后你可以换上自己的传感器。",
+	],
+	tutorial_own_client_parts_title: "所需材料",
+	tutorial_own_client_parts: [
+		"一块 ESP32 开发板，并已在 Arduino IDE 中安装 ESP32 开发板支持和 ESP-NOW MIDI 库。",
+		"一个电位器，例如 10 kΩ。",
+		"一个按钮。",
+		"一个已与客户端配对的 dongle。",
+	],
+	tutorial_own_client_pins: [
+		"电位器：两侧引脚接 3V3 和 GND，中间引脚接 GPIO 1。",
+		"按钮：一端接 GPIO 2，另一端接 GND。程序会启用内部上拉电阻，无需额外电阻。",
+	],
+	tutorial_own_client_pins_note:
+		"GPIO 1 和 2 适用于 ESP32-S2 和 ESP32-S3 开发板，例如 LOLIN S2 Mini。在经典 ESP32 上，GPIO 1 是串口 TX 引脚：电位器可用 GPIO 34，按钮可用 GPIO 4，并修改 POT_PIN 和 BUTTON_PIN。模拟输入必须使用 ADC1 引脚，无线开启时 ADC2 无法使用。如果使用 enomik 开发板，请查看开发板布局。",
+	tutorial_own_client_code_title: "代码",
+	tutorial_own_client_code_before: "完整程序：",
+	tutorial_own_client_based_on: "本程序参考的库示例：",
+	tutorial_own_client_code_after: [
+		"enomik::Client 负责无线部分。begin() 启动 ESP-NOW，并恢复配对时保存的 peer。",
+		"每次执行 loop() 都必须调用 _client.loop()。避免长时间的 delay()，否则消息会延迟发出，收到的 MIDI 也无法处理。",
+		"电位器每 5 ms 读取一次并取平均，因为模拟读数会轻微抖动。12 位读数 0–4095 被缩放到 MIDI 的 0–127，只有数值变化时才发送 CC。如果不做这个判断，客户端会向 dongle 发送大量重复消息。",
+		"由于上拉电阻，按钮按下时读到 LOW。只有距上次变化 20 ms 之后才接受新状态，这样触点抖动不会触发多个音符。按下发送 Note On，松开发送 Note Off。",
+	],
+	tutorial_own_client_pairing_title: "配对",
+	tutorial_own_client_pairing:
+		"程序会发送到配对时保存的 peer。如果客户端尚未配对，请取消 addPeer 几行的注释，并填入 dongle 的 MAC 地址。",
+	tutorial_own_client_upload: [
+		"在 Arduino IDE 中选择 文件 → 新建项目，用上面的程序替换内容并保存。",
+		"选择开发板和端口，然后点击上传，详见 Arduino IDE 固件一章。",
+		"上传完成后按 RESET。",
+	],
+	tutorial_own_client_test:
+		"打开 MIDI 监视器。转动电位器会在通道 1 上发送 CC 1，按下按钮会发送音符 60（中央 C）。",
+	tutorial_own_client_receive_title: "接收 MIDI",
+	tutorial_own_client_receive_before:
+		"客户端也可以接收 MIDI。把这几行加入程序，在音符 60 按住期间点亮板载 LED，例如当 DAW 演奏中央 C 时：",
+	tutorial_own_client_receive_after: [
+		"处理函数在接收消息的过程中运行。请保持简短：设置引脚或保存数值，把耗时的工作（例如转动舵机）放到 loop() 中，就像舵机示例那样。",
+		"每种消息类型都有对应的处理函数，例如 setHandleControlChange。client_hello_midi 列出了全部。",
+	],
 
 	tutorial_servo_title: "舵机",
 	tutorial_servo_text: [
