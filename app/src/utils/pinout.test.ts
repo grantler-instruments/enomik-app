@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
 	BOARDS,
 	type BoardPin,
+	ESP32_S2_DEVKITC,
+	ESP32_S3_DEVKITC_V1_0,
+	ESP32_S3_DEVKITC_V1_1,
 	LOLIN_S2_MINI,
+	LOLIN_S3_MINI,
 	type PinType,
 } from "../components/kits/boards";
 import type { InputPinConfig, OutputPinConfig } from "../store/io";
@@ -207,7 +211,14 @@ describe("configSummary", () => {
 	});
 });
 
-describe.each([...BOARDS, LOLIN_S2_MINI])("board $name", (board) => {
+describe.each([
+	...BOARDS,
+	LOLIN_S2_MINI,
+	LOLIN_S3_MINI,
+	ESP32_S2_DEVKITC,
+	ESP32_S3_DEVKITC_V1_0,
+	ESP32_S3_DEVKITC_V1_1,
+])("board $name", (board) => {
 	const inside = (x: number, y: number) =>
 		x >= 0 && x <= board.width && y >= 0 && y <= board.height;
 
@@ -230,9 +241,9 @@ describe.each([...BOARDS, LOLIN_S2_MINI])("board $name", (board) => {
 							? "SCL"
 							: String(p.gpio),
 				);
-				// ESP32-S2 GPIOs
+				// ESP32-S2 GPIOs go up to 46, ESP32-S3 up to 48
 				expect(p.gpio).toBeGreaterThanOrEqual(0);
-				expect(p.gpio).toBeLessThanOrEqual(46);
+				expect(p.gpio).toBeLessThanOrEqual(48);
 			}
 	});
 
@@ -359,5 +370,71 @@ describe("controllerForPin", () => {
 		expect(controllerForPin(17)).toBe(17);
 		expect(controllerForPin(127)).toBe(127);
 		expect(controllerForPin(128)).toBe(127);
+	});
+});
+
+describe.each([
+	{ board: ESP32_S2_DEVKITC, rgb: 18, nc: [19, 20] },
+	{ board: ESP32_S3_DEVKITC_V1_0, rgb: 48, nc: [19, 20, 35, 36, 37] },
+	{ board: ESP32_S3_DEVKITC_V1_1, rgb: 38, nc: [19, 20, 35, 36, 37] },
+])("$board.name", ({ board, rgb, nc }) => {
+	const gpios = (type: PinType) =>
+		board.pins
+			.filter((p) => p.type === type)
+			.map((p) => p.gpio)
+			.sort((a, b) => (a ?? 0) - (b ?? 0));
+
+	it("has 44 header pads and the BOOT button", () => {
+		expect(board.pins).toHaveLength(45);
+		expect(gpios("button")).toEqual([0]);
+	});
+
+	it("has the RGB LED on its GPIO", () => {
+		expect(gpios("neopixel")).toEqual([rgb]);
+	});
+
+	it("has analog on ADC1 (1–10)", () => {
+		expect(gpios("analog")).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+	});
+
+	it("keeps USB, PSRAM and RST pins unassignable", () => {
+		expect(gpios("nc")).toEqual([...nc, undefined]);
+	});
+
+	it("breaks out the 36 header GPIOs once each", () => {
+		const header = board.pins
+			.filter((p) => p.gpio !== undefined && p.type !== "button")
+			.map((p) => p.gpio);
+		expect(new Set(header).size).toBe(36);
+		expect(header).toHaveLength(36);
+	});
+});
+
+describe("LOLIN S3 mini", () => {
+	const gpios = (type: PinType) =>
+		LOLIN_S3_MINI.pins
+			.filter((p) => p.type === type)
+			.map((p) => p.gpio)
+			.sort((a, b) => (a ?? 0) - (b ?? 0));
+
+	it("has 32 header pads, the RGB LED and the BOOT button", () => {
+		expect(LOLIN_S3_MINI.pins).toHaveLength(34);
+		expect(gpios("button")).toEqual([0]);
+		expect(gpios("neopixel")).toEqual([47]);
+	});
+
+	it("has analog on ADC1 (1–10)", () => {
+		expect(gpios("analog")).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+	});
+
+	it("breaks out the 27 header GPIOs once each", () => {
+		const header = LOLIN_S3_MINI.pins
+			.filter(
+				(p) =>
+					p.gpio !== undefined && p.type !== "button" && p.type !== "neopixel",
+			)
+			.map((p) => p.gpio);
+		expect(new Set(header).size).toBe(27);
+		expect(header).toHaveLength(27);
 	});
 });

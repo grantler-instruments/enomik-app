@@ -168,6 +168,14 @@ i18n.use(initReactI18next).init({
 				board_select: "Board",
 				kits_board_s2_mini_desc:
 					"The bare LOLIN S2 mini dev board. GPIO 1–10 read analog values (ADC1), GPIO 1–14 also work as capacitive touch inputs, GPIO 15 drives the onboard LED and GPIO 0 is the BOOT button.",
+				kits_board_s2_devkitc_desc:
+					"Espressif's ESP32-S2-DevKitC-1. Use the USB port (not UART) for USB MIDI. GPIO 1–10 read analog values (ADC1), GPIO 1–14 also work as capacitive touch inputs, the RGB LED is on GPIO 18 and GPIO 0 is the BOOT button. GPIO 19/20 are the USB port, so they stay unassigned.",
+				kits_board_s3_mini_desc:
+					"The bare LOLIN S3 mini dev board. GPIO 1–10 read analog values (ADC1), GPIO 1–14 also work as capacitive touch inputs, the onboard RGB LED is on GPIO 47 and GPIO 0 is the BOOT button.",
+				kits_board_s3_devkitc_v1_0_desc:
+					"Espressif's ESP32-S3-DevKitC-1 v1.0. GPIO 1–10 read analog values (ADC1), GPIO 1–14 also work as capacitive touch inputs, the RGB LED is on GPIO 48 and GPIO 0 is the BOOT button. GPIO 19/20 are the USB port, and GPIO 35–37 are used by the octal PSRAM on R8 modules (N8R8, N16R8), so they stay unassigned.",
+				kits_board_s3_devkitc_v1_1_desc:
+					"Espressif's ESP32-S3-DevKitC-1 v1.1. GPIO 1–10 read analog values (ADC1), GPIO 1–14 also work as capacitive touch inputs, the RGB LED is on GPIO 38 and GPIO 0 is the BOOT button. GPIO 19/20 are the USB port, and GPIO 35–37 are used by the octal PSRAM on R8 modules (N8R8, N16R8), so they stay unassigned.",
 				home_esp_now_midi:
 					"to the rescue! It delivers fast, stable, low-latency wireless MIDI, ideal for live performances, instruments, and embedded systems.",
 				home_utilities: "Equipped with Utilities",
@@ -606,6 +614,14 @@ i18n.use(initReactI18next).init({
 				board_select: "Board",
 				kits_board_s2_mini_desc:
 					"Das nackte LOLIN S2 mini Dev-Board. GPIO 1–10 lesen analoge Werte (ADC1), GPIO 1–14 funktionieren auch als kapazitive Touch-Eingänge, GPIO 15 steuert die Onboard-LED und GPIO 0 ist der BOOT-Taster.",
+				kits_board_s2_devkitc_desc:
+					"Espressifs ESP32-S2-DevKitC-1. Für USB-MIDI den USB-Port (nicht UART) nutzen. GPIO 1–10 lesen analoge Werte (ADC1), GPIO 1–14 funktionieren auch als kapazitive Touch-Eingänge, die RGB-LED hängt an GPIO 18 und GPIO 0 ist der BOOT-Taster. GPIO 19/20 gehören zum USB-Port, daher bleiben sie frei.",
+				kits_board_s3_mini_desc:
+					"Das nackte LOLIN S3 mini Dev-Board. GPIO 1–10 lesen analoge Werte (ADC1), GPIO 1–14 funktionieren auch als kapazitive Touch-Eingänge, die Onboard-RGB-LED hängt an GPIO 47 und GPIO 0 ist der BOOT-Taster.",
+				kits_board_s3_devkitc_v1_0_desc:
+					"Espressifs ESP32-S3-DevKitC-1 v1.0. GPIO 1–10 lesen analoge Werte (ADC1), GPIO 1–14 funktionieren auch als kapazitive Touch-Eingänge, die RGB-LED hängt an GPIO 48 und GPIO 0 ist der BOOT-Taster. GPIO 19/20 gehören zum USB-Port und GPIO 35–37 nutzt das Octal-PSRAM der R8-Module (N8R8, N16R8), daher bleiben sie frei.",
+				kits_board_s3_devkitc_v1_1_desc:
+					"Espressifs ESP32-S3-DevKitC-1 v1.1. GPIO 1–10 lesen analoge Werte (ADC1), GPIO 1–14 funktionieren auch als kapazitive Touch-Eingänge, die RGB-LED hängt an GPIO 38 und GPIO 0 ist der BOOT-Taster. GPIO 19/20 gehören zum USB-Port und GPIO 35–37 nutzt das Octal-PSRAM der R8-Module (N8R8, N16R8), daher bleiben sie frei.",
 				home_esp_now_midi:
 					"Zur Rettung! Es bietet schnelles, stabiles, latenzfreies drahtloses MIDI, ideal für Live-Performances, Instrumente und eingebettete Systeme.",
 				home_utilities: "Ausgestattet mit Utilities",
@@ -1051,6 +1067,14 @@ i18n.use(initReactI18next).init({
 				board_select: "Placa",
 				kits_board_s2_mini_desc:
 					"La placa de desarrollo LOLIN S2 mini sola. GPIO 1–10 leen valores analógicos (ADC1), GPIO 1–14 también sirven como entradas táctiles capacitivas, GPIO 15 controla el LED integrado y GPIO 0 es el botón BOOT.",
+				kits_board_s2_devkitc_desc:
+					"La ESP32-S2-DevKitC-1 de Espressif. Para USB MIDI usa el puerto USB (no UART). GPIO 1–10 leen valores analógicos (ADC1), GPIO 1–14 también sirven como entradas táctiles capacitivas, el LED RGB está en GPIO 18 y GPIO 0 es el botón BOOT. GPIO 19/20 son el puerto USB, así que no se asignan.",
+				kits_board_s3_mini_desc:
+					"La placa de desarrollo LOLIN S3 mini sola. GPIO 1–10 leen valores analógicos (ADC1), GPIO 1–14 también sirven como entradas táctiles capacitivas, el LED RGB integrado está en GPIO 47 y GPIO 0 es el botón BOOT.",
+				kits_board_s3_devkitc_v1_0_desc:
+					"La ESP32-S3-DevKitC-1 v1.0 de Espressif. GPIO 1–10 leen valores analógicos (ADC1), GPIO 1–14 también sirven como entradas táctiles capacitivas, el LED RGB está en GPIO 48 y GPIO 0 es el botón BOOT. GPIO 19/20 son el puerto USB y GPIO 35–37 los usa la PSRAM octal de los módulos R8 (N8R8, N16R8), así que no se asignan.",
+				kits_board_s3_devkitc_v1_1_desc:
+					"La ESP32-S3-DevKitC-1 v1.1 de Espressif. GPIO 1–10 leen valores analógicos (ADC1), GPIO 1–14 también sirven como entradas táctiles capacitivas, el LED RGB está en GPIO 38 y GPIO 0 es el botón BOOT. GPIO 19/20 son el puerto USB y GPIO 35–37 los usa la PSRAM octal de los módulos R8 (N8R8, N16R8), así que no se asignan.",
 				home_utilities: "Equipado con utilidades",
 				home_utilities_description: "Monitor MIDI y cargador de firmware",
 				home_utilities_description_includes: "La aplicación incluye un",
@@ -1486,6 +1510,14 @@ i18n.use(initReactI18next).init({
 				board_select: "电路板",
 				kits_board_s2_mini_desc:
 					"单独的 LOLIN S2 mini 开发板。GPIO 1–10 可读取模拟值（ADC1），GPIO 1–14 也可用作电容触摸输入，GPIO 15 驱动板载 LED，GPIO 0 为 BOOT 按键。",
+				kits_board_s2_devkitc_desc:
+					"乐鑫 ESP32-S2-DevKitC-1。USB MIDI 请使用 USB 接口（而非 UART）。GPIO 1–10 可读取模拟值（ADC1），GPIO 1–14 也可用作电容触摸输入，RGB LED 接在 GPIO 18，GPIO 0 为 BOOT 按键。GPIO 19/20 用于 USB 接口，因此不可分配。",
+				kits_board_s3_mini_desc:
+					"单独的 LOLIN S3 mini 开发板。GPIO 1–10 可读取模拟值（ADC1），GPIO 1–14 也可用作电容触摸输入，板载 RGB LED 接在 GPIO 47，GPIO 0 为 BOOT 按键。",
+				kits_board_s3_devkitc_v1_0_desc:
+					"乐鑫 ESP32-S3-DevKitC-1 v1.0。GPIO 1–10 可读取模拟值（ADC1），GPIO 1–14 也可用作电容触摸输入，RGB LED 接在 GPIO 48，GPIO 0 为 BOOT 按键。GPIO 19/20 用于 USB 接口，GPIO 35–37 在 R8 模组（N8R8、N16R8）上被八线 PSRAM 占用，因此不可分配。",
+				kits_board_s3_devkitc_v1_1_desc:
+					"乐鑫 ESP32-S3-DevKitC-1 v1.1。GPIO 1–10 可读取模拟值（ADC1），GPIO 1–14 也可用作电容触摸输入，RGB LED 接在 GPIO 38，GPIO 0 为 BOOT 按键。GPIO 19/20 用于 USB 接口，GPIO 35–37 在 R8 模组（N8R8、N16R8）上被八线 PSRAM 占用，因此不可分配。",
 				home_esp_now_midi:
 					"前来救场！它提供快速、稳定、低延迟的无线 MIDI，非常适合现场演出、乐器和嵌入式系统。",
 				home_utilities: "配备实用工具",

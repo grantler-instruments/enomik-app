@@ -457,7 +457,7 @@ export const BOARDS: Board[] = [
 // columns 22.86 mm apart like the D1 mini.
 const S2_ROWS = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => 7.62 + i * 2.54);
 /** GPIO 1–10 are on ADC1, which still works while the radio is on. */
-const s2Gpio = (n: number, side: LabelSide) =>
+const adc1Gpio = (n: number, side: LabelSide) =>
 	gpio(n, n >= 1 && n <= 10 ? "analog" : "digital", side);
 
 export const LOLIN_S2_MINI: Board = {
@@ -491,7 +491,7 @@ export const LOLIN_S2_MINI: Board = {
 			S2_ROWS,
 			[
 				pin("EN", "nc"),
-				...[3, 5, 7, 9, 11, 12].map((n) => s2Gpio(n, "left")),
+				...[3, 5, 7, 9, 11, 12].map((n) => adc1Gpio(n, "left")),
 				pin("3V3", "power_3v3"),
 			],
 			"left",
@@ -499,10 +499,10 @@ export const LOLIN_S2_MINI: Board = {
 		...column(
 			3.81,
 			S2_ROWS,
-			[1, 2, 4, 6, 8, 10, 13, 14].map((n) => s2Gpio(n, "right")),
+			[1, 2, 4, 6, 8, 10, 13, 14].map((n) => adc1Gpio(n, "right")),
 		),
 		...column(21.59, S2_ROWS, [
-			...[40, 38, 36, 34, 21, 17].map((n) => s2Gpio(n, "left")),
+			...[40, 38, 36, 34, 21, 17].map((n) => adc1Gpio(n, "left")),
 			{ ...GND, labelSide: "left" },
 			// Shared with the blue onboard LED
 			gpio(15, "led", "left"),
@@ -511,7 +511,7 @@ export const LOLIN_S2_MINI: Board = {
 			24.13,
 			S2_ROWS,
 			[
-				...[39, 37, 35, 33, 18, 16].map((n) => s2Gpio(n, "right")),
+				...[39, 37, 35, 33, 18, 16].map((n) => adc1Gpio(n, "right")),
 				GND,
 				pin("VBUS", "power_5v"),
 			],
@@ -522,8 +522,205 @@ export const LOLIN_S2_MINI: Board = {
 	],
 };
 
+// Espressif ESP32-S2-DevKitC-1 and ESP32-S3-DevKitC-1 share one PCB outline,
+// top view, USB ports at the bottom. Size, pads and parts from Espressif's
+// dimension drawings (DXF_ESP32-S2-DevKitC-1_V1_20210511.dxf,
+// DXF_ESP32-S3-DevKitC-1_V1.1_20220429.dxf) and the user guide pinouts: two
+// 22-pin headers, 2.54 mm pitch, 1.27 mm from the long edges. The module's
+// antenna overhangs the top edge by 6.3 mm; only the part on the board is drawn.
+const DEVKITC_ROWS = Array.from({ length: 22 }, (_, i) => 1.44 + i * 2.54);
+const DEVKITC_J1 = [
+	4, 5, 6, 7, 15, 16, 17, 18, 8, 3, 46, 9, 10, 11, 12, 13, 14,
+];
+
+interface DevkitCSpec {
+	id: string;
+	name: string;
+	descriptionKey: string;
+	module: string;
+	/** J3 GPIOs between TX/RX and the bottom GNDs, top to bottom. */
+	j3: number[];
+	/** GPIO of the addressable RGB LED. */
+	rgb: number;
+	/** Header GPIOs that must stay unassigned. */
+	reserved: number[];
+}
+
+/** GPIO 1–10 are on ADC1, which still works while the radio is on. */
+const devkitC = ({
+	rgb,
+	reserved,
+	j3,
+	module,
+	...rest
+}: DevkitCSpec): Board => {
+	const io = (n: number, side: LabelSide) =>
+		gpio(
+			n,
+			n === rgb
+				? "neopixel"
+				: reserved.includes(n)
+					? "nc"
+					: n >= 1 && n <= 10
+						? "analog"
+						: "digital",
+			side,
+		);
+	return {
+		...rest,
+		width: 25.4,
+		height: 62.74,
+		cornerRadius: 0.5,
+		outlines: [
+			{ name: module, x: 3.75, y: 0, width: 18, height: 19.09, part: true },
+			{
+				name: "RGB",
+				x: 11.96,
+				y: 40.72,
+				width: 3.25,
+				height: 3.75,
+				part: true,
+			},
+			{ name: "BOOT", x: 6, y: 47.68, width: 3.05, height: 2.2 },
+			{ name: "RST", x: 16.38, y: 47.68, width: 3.05, height: 2.2 },
+			{ name: "UART", x: 1.89, y: 56.44, width: 8.22, height: 5.27 },
+			{ name: "USB", x: 15.29, y: 56.44, width: 8.22, height: 5.27 },
+		],
+		groups: [],
+		pins: [
+			...sideColumn(
+				1.27,
+				DEVKITC_ROWS,
+				[
+					pin("3V3", "power_3v3"),
+					pin("3V3", "power_3v3"),
+					pin("RST", "nc"),
+					...DEVKITC_J1.map((n) => io(n, "left")),
+					pin("5V", "power_5v"),
+					GND,
+				],
+				"left",
+			),
+			...sideColumn(
+				24.13,
+				DEVKITC_ROWS,
+				[GND, ...[43, 44, ...j3].map((n) => io(n, "right")), GND, GND],
+				"right",
+			),
+			// Onboard BOOT button to GND
+			{ ...gpio(0, "button", "top"), x: 7.53, y: 48.78 },
+		],
+	};
+};
+
+/** 19/20 are the native USB port on every DevKitC-1. */
+const S2_DEVKITC_J3 = [
+	1, 2, 42, 41, 40, 39, 38, 37, 36, 35, 0, 45, 34, 33, 21, 20, 19,
+];
+const S3_DEVKITC_J3 = [
+	1, 2, 42, 41, 40, 39, 38, 37, 36, 35, 0, 45, 48, 47, 21, 20, 19,
+];
+
+export const ESP32_S2_DEVKITC = devkitC({
+	id: "esp32_s2_devkitc",
+	name: "ESP32-S2-DevKitC-1",
+	descriptionKey: "kits_board_s2_devkitc_desc",
+	module: "ESP32-S2-SOLO-2",
+	j3: S2_DEVKITC_J3,
+	rgb: 18,
+	reserved: [19, 20],
+});
+
+// v1.0 and v1.1 differ only in the RGB LED's GPIO. 35–37 carry the octal
+// PSRAM on R8 modules.
+const s3DevkitC = (version: "1.0" | "1.1", rgb: 48 | 38) =>
+	devkitC({
+		id: `esp32_s3_devkitc_v${version.replace(".", "_")}`,
+		name: `ESP32-S3-DevKitC-1 v${version}`,
+		descriptionKey: `kits_board_s3_devkitc_v${version.replace(".", "_")}_desc`,
+		module: "ESP32-S3-WROOM-1",
+		j3: S3_DEVKITC_J3,
+		rgb,
+		reserved: [19, 20, 35, 36, 37],
+	});
+
+export const ESP32_S3_DEVKITC_V1_0 = s3DevkitC("1.0", 48);
+export const ESP32_S3_DEVKITC_V1_1 = s3DevkitC("1.1", 38);
+
+// LOLIN S3 mini v1.0.0, top view, USB-C at the bottom. Same outline, mounting
+// holes and header grid as the S2 mini (dim_s3_mini_v1.0.0.pdf), pinout from
+// s3_mini_v1.0.0_4_16x9.jpg. The ESP32-S3FH4R2's PSRAM is in the package, so
+// no header pins are taken. The RGB LED (GPIO 47) is onboard only.
+export const LOLIN_S3_MINI: Board = {
+	id: "lolin_s3_mini",
+	name: "LOLIN S3 mini",
+	descriptionKey: "kits_board_s3_mini_desc",
+	width: 25.4,
+	height: 34.3,
+	cornerRadius: 1.5,
+	mountingHoles: [
+		{ x: 2.5, y: 3.2, diameter: 2 },
+		{ x: 22.9, y: 3.2, diameter: 2 },
+	],
+	outlines: [
+		{
+			name: "ESP32-S3",
+			x: 7,
+			y: 10.9,
+			width: 7.1,
+			height: 7.1,
+			part: true,
+		},
+		{ name: "USB-C", x: 8.2, y: 26.6, width: 9, height: 7.6 },
+		{ name: "RST", x: 1.4, y: 28.3, width: 3.2, height: 5 },
+		{ name: "BOOT", x: 22.2, y: 28.3, width: 3.2, height: 5 },
+	],
+	groups: [],
+	pins: [
+		...sideColumn(
+			1.27,
+			S2_ROWS,
+			[
+				pin("EN", "nc"),
+				...[2, 4, 12, 13, 11, 10].map((n) => adc1Gpio(n, "left")),
+				pin("3V3", "power_3v3"),
+			],
+			"left",
+		),
+		...column(
+			3.81,
+			S2_ROWS,
+			[1, 3, 5, 6, 7, 8, 9, 14].map((n) => adc1Gpio(n, "right")),
+		),
+		...column(21.59, S2_ROWS, [
+			...[33, 37, 38, 34, 21, 17].map((n) => adc1Gpio(n, "left")),
+			{ ...GND, labelSide: "left" },
+			adc1Gpio(15, "left"),
+		]),
+		...sideColumn(
+			24.13,
+			S2_ROWS,
+			[
+				...[43, 44, 36, 35, 18, 16].map((n) => adc1Gpio(n, "right")),
+				GND,
+				pin("VBUS", "power_5v"),
+			],
+			"right",
+		),
+		// Onboard RGB LED and BOOT button to GND
+		{ ...gpio(47, "neopixel", "left"), x: 19.5, y: 32.4 },
+		{ ...gpio(0, "button", "left"), x: 23.8, y: 30.8 },
+	],
+};
+
 /** What the configurator can show: our kit, or a bare dev board. */
 export const BOARD_SETS: { id: string; name: string; boards: Board[] }[] = [
 	{ id: "enomik_3000", name: "enomik 3000 client + extender", boards: BOARDS },
-	{ id: "lolin_s2_mini", name: "LOLIN S2 mini", boards: [LOLIN_S2_MINI] },
+	...[
+		LOLIN_S2_MINI,
+		ESP32_S2_DEVKITC,
+		LOLIN_S3_MINI,
+		ESP32_S3_DEVKITC_V1_0,
+		ESP32_S3_DEVKITC_V1_1,
+	].map((board) => ({ id: board.id, name: board.name, boards: [board] })),
 ];
