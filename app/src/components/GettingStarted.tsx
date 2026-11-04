@@ -1,13 +1,7 @@
-import {
-	Box,
-	Button,
-	Container,
-	List,
-	ListItem,
-	Typography,
-} from "@mui/material";
+import { Box, Button, List, ListItem, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
+import PageLayout from "./layout/PageLayout";
 
 const GettingStarted = () => {
 	const { t } = useTranslation();
@@ -46,8 +40,7 @@ const GettingStarted = () => {
 		},
 	];
 	return (
-		<Container maxWidth="lg" sx={{ my: 4 }}>
-			<Typography variant="h1">{t("getting_started")}</Typography>
+		<PageLayout title={t("getting_started")}>
 			<List component={"ol"}>
 				{steps.map((step, index) => {
 					return (
@@ -82,7 +75,7 @@ const GettingStarted = () => {
 					);
 				})}
 			</List>
-		</Container>
+		</PageLayout>
 	);
 };
 export default GettingStarted;

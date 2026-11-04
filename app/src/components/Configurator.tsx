@@ -1,5 +1,3 @@
-import { ArrowDropDown } from "@mui/icons-material";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ClearAllIcon from "@mui/icons-material/ClearAll";
 import DeveloperBoardIcon from "@mui/icons-material/DeveloperBoard";
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
@@ -11,22 +9,18 @@ import {
 	Alert,
 	Box,
 	Button,
-	Container,
 	IconButton,
 	MenuItem,
-	Snackbar,
 	TextField,
 	Tooltip,
 	Typography,
 } from "@mui/material";
-import Accordion from "@mui/material/Accordion";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import AccordionSummary from "@mui/material/AccordionSummary";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useDevice, useDeviceKind } from "../hooks/useDevice";
+import { useToast } from "../hooks/useToast";
 import { useAccordionOpen, useAppStore } from "../store/app";
 import {
 	type DeviceKind,
@@ -60,11 +54,13 @@ import {
 	ENOMIK_ERROR_UNKNOWN_COMMAND,
 } from "../store/midi.config";
 import { useRawStreamStore } from "../store/rawStream";
+import CollapsibleSection from "./common/CollapsibleSection";
 import DeviceKindChooser from "./DeviceKindChooser";
 import Globals from "./Globals";
 import Inputs from "./Inputs";
 import BoardDiagram from "./kits/BoardDiagram";
 import { BOARD_SETS } from "./kits/boards";
+import PageLayout from "./layout/PageLayout";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import Outputs from "./Outputs";
 import Peers from "./Peers";
@@ -81,7 +77,6 @@ const BOARD_PX_PER_MM = 14;
 
 const Configurator = () => {
 	const { t } = useTranslation();
-	const showHints = useAppStore((state) => state.showHints);
 	const boardSetId = useAppStore((state) => state.configuratorBoard);
 	const setBoardSetId = useAppStore((state) => state.setConfiguratorBoard);
 	const boardSet =
@@ -125,10 +120,7 @@ const Configurator = () => {
 			mountedRef.current = false;
 		};
 	}, []);
-	const [deployToast, setDeployToast] = useState<string | null>(null);
-	const [deployToastSeverity, setDeployToastSeverity] = useState<
-		"success" | "info" | "warning" | "error"
-	>("success");
+	const { showToast, toast } = useToast();
 	const [deploying, setDeploying] = useState(false);
 	const [loadingFromDevice, setLoadingFromDevice] = useState(false);
 	const [globalOpen, setGlobalOpen] = useAccordionOpen(
@@ -175,19 +167,18 @@ const Configurator = () => {
 		const change = kindChange(kind, selectedOutputId, midiOutputs);
 		if (change.type === "switch") {
 			setSelectedOutputId(change.port.id);
-			setDeployToastSeverity("info");
-			setDeployToast(t("port_switched", { port: change.port.name }));
+			showToast(t("port_switched", { port: change.port.name }), "info");
 			return;
 		}
 		const current = midiOutputs.find((port) => port.id === selectedOutputId);
 		if (current) setKind(current.id, kind);
 		if (change.type === "none") {
-			setDeployToastSeverity("warning");
-			setDeployToast(
+			showToast(
 				t(current ? "port_kind_not_found" : "port_kind_not_found_none", {
 					kind: t(`device_kind_${kind}`),
 					port: current?.name,
 				}),
+				"warning",
 			);
 		}
 	};
@@ -195,18 +186,17 @@ const Configurator = () => {
 	const handleDeploy = async () => {
 		const dongleBlocker = isDongle ? dongleConfigBlocker(deviceInfo) : null;
 		if (dongleBlocker) {
-			setDeployToastSeverity("warning");
-			setDeployToast(t(dongleBlocker));
+			showToast(t(dongleBlocker), "warning");
 			return;
 		}
 		// ADD_PEER needs all six bytes; a half typed MAC would send garbage.
 		const invalidPeers = findInvalidPeers(peers);
 		if (invalidPeers.length > 0) {
-			setDeployToastSeverity("error");
-			setDeployToast(
+			showToast(
 				t("deploy_toast_invalid_peer", {
 					macs: invalidPeers.map((peer) => peer.macAddress || "–").join(", "),
 				}),
+				"error",
 			);
 			return;
 		}
@@ -215,11 +205,11 @@ const Configurator = () => {
 			? new Set<number>()
 			: findDuplicatePins(inputs, outputs);
 		if (duplicatePins.size > 0) {
-			setDeployToastSeverity("error");
-			setDeployToast(
+			showToast(
 				t("deploy_toast_duplicate_pins", {
 					pins: [...duplicatePins].sort((x, y) => x - y).join(", "),
 				}),
+				"error",
 			);
 			return;
 		}
@@ -286,22 +276,21 @@ const Configurator = () => {
 			);
 
 			if (globalsUnsupported) {
-				setDeployToastSeverity("warning");
-				setDeployToast(
+				showToast(
 					`${summary} ${t("deploy_toast_globals_unsupported", {
 						version: `${globalsUnsupported.major}.${globalsUnsupported.minor}`,
 					})}`,
+					"warning",
 				);
 			} else if (nameUnsupported) {
-				setDeployToastSeverity("warning");
-				setDeployToast(
+				showToast(
 					`${summary} ${t("deploy_toast_name_unsupported", {
 						version: `${nameUnsupported.major}.${nameUnsupported.minor}`,
 					})}`,
+					"warning",
 				);
 			} else if (nameSkipped || globalsSkipped) {
-				setDeployToastSeverity("warning");
-				setDeployToast(
+				showToast(
 					[
 						summary,
 						globalsSkipped && t("compat_globals_skipped"),
@@ -309,22 +298,21 @@ const Configurator = () => {
 					]
 						.filter(Boolean)
 						.join(" "),
+					"warning",
 				);
 			} else if (resetAck) {
-				setDeployToastSeverity("success");
-				setDeployToast(summary);
+				showToast(summary, "success");
 			} else {
-				setDeployToastSeverity("warning");
-				setDeployToast(summary);
+				showToast(summary, "warning");
 			}
 		} catch (error) {
-			setDeployToastSeverity("error");
-			setDeployToast(
+			showToast(
 				t(
 					error instanceof Error && error.message.startsWith("compat_")
 						? error.message
 						: "compat_deploy_failed",
 				),
+				"error",
 			);
 		} finally {
 			setDeploying(false);
@@ -349,12 +337,12 @@ const Configurator = () => {
 					kind,
 				);
 				if ("mismatch" in loaded) {
-					setDeployToastSeverity("warning");
-					setDeployToast(
+					showToast(
 						t("load_from_file_kind_mismatch", {
 							file: t(`device_kind_${loaded.mismatch}`),
 							selected: t(`device_kind_${kind}`),
 						}),
+						"warning",
 					);
 					return;
 				}
@@ -390,31 +378,28 @@ const Configurator = () => {
 	const handleLoadFromDevice = async () => {
 		const rawOut = selectedOutputId ?? "";
 		if (!rawOut || rawOut === "-1") {
-			setDeployToastSeverity("warning");
-			setDeployToast(t("load_from_device_toast_no_device"));
+			showToast(t("load_from_device_toast_no_device"), "warning");
 			return;
 		}
 
 		const dongleBlocker = isDongle ? dongleConfigBlocker(deviceInfo) : null;
 		if (dongleBlocker) {
-			setDeployToastSeverity("warning");
-			setDeployToast(t(dongleBlocker));
+			showToast(t(dongleBlocker), "warning");
 			return;
 		}
 		if (deviceInfo?.status !== "ready") {
-			setDeployToastSeverity("warning");
-			setDeployToast(
+			showToast(
 				t(
 					deviceInfo?.status && deviceInfo.status !== "checking"
 						? `compat_${deviceInfo.status}`
 						: "compat_checking",
 				),
+				"warning",
 			);
 			return;
 		}
 		if (!supportsInspection(deviceInfo.version)) {
-			setDeployToastSeverity("warning");
-			setDeployToast(t("compat_inspection_unsupported"));
+			showToast(t("compat_inspection_unsupported"), "warning");
 			return;
 		}
 		setLoadingFromDevice(true);
@@ -441,18 +426,17 @@ const Configurator = () => {
 			)
 				return;
 			if (!result) {
-				setDeployToastSeverity("warning");
-				setDeployToast(t("load_from_device_toast_timeout"));
+				showToast(t("load_from_device_toast_timeout"), "warning");
 				return;
 			}
 			if (isDongle) {
 				loadFromFile({ peers: result.peers });
 				setPeersOpen(result.peers.length > 0);
-				setDeployToastSeverity("success");
-				setDeployToast(
+				showToast(
 					t("load_from_device_toast_dongle_ok", {
 						peerCount: result.peers.length,
 					}),
+					"success",
 				);
 				return;
 			}
@@ -475,8 +459,7 @@ const Configurator = () => {
 				powerSave: result.powerSave ?? useConfig.getState().powerSave,
 				name: result.name ?? "",
 			});
-			setDeployToastSeverity("success");
-			setDeployToast(
+			showToast(
 				t("load_from_device_toast_ok", {
 					pinConfigs: result.inputs.length + result.outputs.length,
 					peerCount: result.peers.length,
@@ -495,6 +478,7 @@ const Configurator = () => {
 								: "state_off",
 					),
 				}),
+				"success",
 			);
 		} finally {
 			setLoadingFromDevice(false);
@@ -502,247 +486,200 @@ const Configurator = () => {
 	};
 
 	return (
-		<Box display={"flex"} flexDirection={"column"} gap={1} marginBottom={2}>
-			<Box
-				display={"flex"}
-				alignItems={"center"}
-				gap={2}
-				mb={2}
-				pl={2}
-				pr={2}
-				py={2}
-				sx={{
-					position: "sticky",
-					top: 0,
-					zIndex: (theme) => theme.zIndex.appBar,
-					backgroundColor: "background.default",
-				}}
-			>
-				{/* Hidden file input */}
-				<input
-					type="file"
-					accept="application/json"
-					style={{ display: "none" }}
-					ref={fileInputRef}
-					onChange={handleFileChange}
-				/>
-				<Tooltip title={t("tooltip_save_configuration_to_file") || ""}>
-					<IconButton color="inherit" onClick={saveToFile}>
-						<DownloadIcon />
-					</IconButton>
-				</Tooltip>
-
-				<Tooltip title={t("tooltip_load_configuration_from_file") || ""}>
-					<IconButton color="inherit" onClick={handleUploadClick}>
-						<FolderOpenIcon />
-					</IconButton>
-				</Tooltip>
-
-				<Tooltip title={t("tooltip_clear_configuration") || ""}>
-					<IconButton color="inherit" onClick={handleClearConfiguration}>
-						<ClearAllIcon />
-					</IconButton>
-				</Tooltip>
-
-				<Tooltip title={t("tooltip_load_configuration_from_device") || ""}>
-					<span>
-						<IconButton
-							color="inherit"
-							onClick={handleLoadFromDevice}
-							disabled={!initialized || loadingFromDevice || deploying}
-						>
-							<DevicesOtherIcon />
-						</IconButton>
-					</span>
-				</Tooltip>
-
-				<Tooltip title={t("tooltip_pin_modes")}>
-					<IconButton color="inherit" component={NavLink} to="/kits">
-						<SettingsInputComponentIcon />
-					</IconButton>
-				</Tooltip>
-
-				<Box flex={1} />
-				<DeviceKindChooser
-					deviceId={selectedOutputId || "-1"}
-					onChange={handleKindChange}
-				/>
-				<MidiDeviceChooser
-					value={selectedOutputId || ""}
-					onChange={setSelectedOutputId}
-				/>
-
+		<PageLayout
+			title={t("configurator")}
+			maxWidth="xl"
+			info={hasEnomikBoard ? undefined : t("configurator_info")}
+			infoAction={
 				<Button
-					variant="contained"
-					color="primary"
-					onClick={handleDeploy}
-					disabled={!initialized || deploying || !hasSelectedOutput}
+					color="inherit"
+					size="small"
+					component={NavLink}
+					to={"/uploader"}
 				>
-					{t("deploy")}
+					{t("firmware_uploader")}
 				</Button>
-			</Box>
-			<Container maxWidth="xl">
-				{showHints && !hasEnomikBoard && (
-					<Box mb={8} display={"flex"} flexDirection={"column"} gap={2}>
-						<Alert severity="info" sx={{ mb: 2 }}>
-							{t("configurator_info")}
-						</Alert>
-						<Box>
-							<Button variant="outlined" component={NavLink} to={"/uploader"}>
-								{t("firmware_uploader")}
-							</Button>
-						</Box>
-					</Box>
-				)}
-				{!isDongle && (
-					<>
-						<Accordion
-							expanded={globalOpen}
-							onChange={(_, open) => setGlobalOpen(open)}
-						>
-							<AccordionSummary
-								expandIcon={<ArrowDropDownIcon />}
-								aria-controls="global-content"
+			}
+			actions={
+				<>
+					{/* Hidden file input */}
+					<input
+						type="file"
+						accept="application/json"
+						style={{ display: "none" }}
+						ref={fileInputRef}
+						onChange={handleFileChange}
+					/>
+					<Tooltip title={t("tooltip_save_configuration_to_file") || ""}>
+						<IconButton color="inherit" onClick={saveToFile}>
+							<DownloadIcon />
+						</IconButton>
+					</Tooltip>
+
+					<Tooltip title={t("tooltip_load_configuration_from_file") || ""}>
+						<IconButton color="inherit" onClick={handleUploadClick}>
+							<FolderOpenIcon />
+						</IconButton>
+					</Tooltip>
+
+					<Tooltip title={t("tooltip_clear_configuration") || ""}>
+						<IconButton color="inherit" onClick={handleClearConfiguration}>
+							<ClearAllIcon />
+						</IconButton>
+					</Tooltip>
+
+					<Tooltip title={t("tooltip_load_configuration_from_device") || ""}>
+						<span>
+							<IconButton
+								color="inherit"
+								onClick={handleLoadFromDevice}
+								disabled={!initialized || loadingFromDevice || deploying}
 							>
-								<SectionHeader
-									title={t("section_global")}
-									icon={<GlobalIcon />}
-									tooltipKey="tooltip_global"
-								/>
-							</AccordionSummary>
-							<AccordionDetails>
-								<Globals />
-							</AccordionDetails>
-						</Accordion>
-						<Accordion
-							expanded={boardOpen}
-							onChange={(_, open) => setBoardOpen(open)}
-							slotProps={{ transition: { unmountOnExit: true } }}
-						>
-							<AccordionSummary
-								expandIcon={<ArrowDropDownIcon />}
-								aria-controls="board-content"
-							>
-								<SectionHeader
-									title={t("section_board")}
-									icon={<DeveloperBoardIcon />}
-								/>
-							</AccordionSummary>
-							<AccordionDetails>
-								<TextField
-									select
-									size="small"
-									label={t("board_select")}
-									value={boardSet.id}
-									onChange={(e) => setBoardSetId(e.target.value)}
-									sx={{ mb: 2, minWidth: 280 }}
-								>
-									{BOARD_SETS.map((set) => (
-										<MenuItem key={set.id} value={set.id}>
-											{set.name}
-										</MenuItem>
-									))}
-								</TextField>
-								<Alert severity="info" icon={<TouchAppIcon />} sx={{ mb: 2 }}>
-									{t("kits_click_to_configure")}
-								</Alert>
-								{/* Side by side, sized by board width; stacked on small screens */}
-								<Box
-									display="flex"
-									flexDirection={{ xs: "column", lg: "row" }}
-									gap={3}
-								>
-									{boardSet.boards.map((board) => (
-										<Box
-											key={board.id}
-											flex={`${board.width} 1 0`}
-											minWidth={0}
-											// Caps the scale so small boards don't fill the page
-											maxWidth={board.width * BOARD_PX_PER_MM}
-										>
-											<Typography variant="subtitle1" fontWeight={600} mb={1}>
-												{board.name}
-											</Typography>
-											<BoardDiagram board={board} interactive hint={false} />
-										</Box>
-									))}
-								</Box>
-							</AccordionDetails>
-						</Accordion>
-						<Accordion
-							expanded={inputsOpen}
-							onChange={(_, open) => setInputsOpen(open)}
-						>
-							<AccordionSummary
-								expandIcon={<ArrowDropDownIcon />}
-								aria-controls="inputs-content"
-							>
-								<SectionHeader
-									title={t("section_input_pin_to_midi")}
-									icon={<PinToMidiIcon />}
-									tooltipKey="tooltip_pin_to_midi"
-								/>
-							</AccordionSummary>
-							<AccordionDetails>
-								<Inputs></Inputs>
-							</AccordionDetails>
-						</Accordion>
-						<Accordion
-							expanded={outputsOpen}
-							onChange={(_, open) => setOutputsOpen(open)}
-						>
-							<AccordionSummary
-								expandIcon={<ArrowDropDown />}
-								aria-controls="outputs-content"
-							>
-								<SectionHeader
-									title={t("section_midi_to_output_pin")}
-									icon={<MidiToPinIcon />}
-									tooltipKey="tooltip_midi_to_pin"
-								/>
-							</AccordionSummary>
-							<AccordionDetails>
-								<Outputs></Outputs>
-							</AccordionDetails>
-						</Accordion>
-					</>
-				)}
-				<Accordion
-					expanded={isDongle || peersOpen}
-					onChange={(_, open) => setPeersOpen(open)}
-				>
-					<AccordionSummary
-						expandIcon={<ArrowDropDown />}
-						aria-controls="wireless-midi-content"
+								<DevicesOtherIcon />
+							</IconButton>
+						</span>
+					</Tooltip>
+
+					<Tooltip title={t("tooltip_pin_modes")}>
+						<IconButton color="inherit" component={NavLink} to="/kits">
+							<SettingsInputComponentIcon />
+						</IconButton>
+					</Tooltip>
+
+					<Box flex={1} />
+					<DeviceKindChooser
+						deviceId={selectedOutputId || "-1"}
+						onChange={handleKindChange}
+					/>
+					<MidiDeviceChooser
+						value={selectedOutputId || ""}
+						onChange={setSelectedOutputId}
+					/>
+
+					<Button
+						variant="contained"
+						color="primary"
+						onClick={handleDeploy}
+						disabled={!initialized || deploying || !hasSelectedOutput}
 					>
-						<SectionHeader
-							title={t("section_wireless_midi")}
-							icon={<WirelessMidiIcon />}
-							tooltipKey="tooltip_wireless_midi"
-						/>
-					</AccordionSummary>
-					<AccordionDetails>
-						<Peers store={useConfig}></Peers>
-					</AccordionDetails>
-				</Accordion>
-			</Container>
-			<Box flex={1}></Box>
-			<Snackbar
-				open={deployToast !== null}
-				autoHideDuration={8000}
-				onClose={() => setDeployToast(null)}
-				anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+						{t("deploy")}
+					</Button>
+				</>
+			}
+		>
+			{!isDongle && (
+				<>
+					<CollapsibleSection
+						id="global"
+						expanded={globalOpen}
+						onChange={setGlobalOpen}
+						title={
+							<SectionHeader
+								title={t("section_global")}
+								icon={<GlobalIcon />}
+								tooltipKey="tooltip_global"
+							/>
+						}
+					>
+						<Globals />
+					</CollapsibleSection>
+					<CollapsibleSection
+						id="board"
+						expanded={boardOpen}
+						onChange={setBoardOpen}
+						unmountOnExit
+						title={
+							<SectionHeader
+								title={t("section_board")}
+								icon={<DeveloperBoardIcon />}
+							/>
+						}
+					>
+						<TextField
+							select
+							size="small"
+							label={t("board_select")}
+							value={boardSet.id}
+							onChange={(e) => setBoardSetId(e.target.value)}
+							sx={{ mb: 2, minWidth: 280 }}
+						>
+							{BOARD_SETS.map((set) => (
+								<MenuItem key={set.id} value={set.id}>
+									{set.name}
+								</MenuItem>
+							))}
+						</TextField>
+						<Alert severity="info" icon={<TouchAppIcon />} sx={{ mb: 2 }}>
+							{t("kits_click_to_configure")}
+						</Alert>
+						{/* Side by side, sized by board width; stacked on small screens */}
+						<Box
+							display="flex"
+							flexDirection={{ xs: "column", lg: "row" }}
+							gap={3}
+						>
+							{boardSet.boards.map((board) => (
+								<Box
+									key={board.id}
+									flex={`${board.width} 1 0`}
+									minWidth={0}
+									// Caps the scale so small boards don't fill the page
+									maxWidth={board.width * BOARD_PX_PER_MM}
+								>
+									<Typography variant="subtitle1" fontWeight={600} mb={1}>
+										{board.name}
+									</Typography>
+									<BoardDiagram board={board} interactive hint={false} />
+								</Box>
+							))}
+						</Box>
+					</CollapsibleSection>
+					<CollapsibleSection
+						id="inputs"
+						expanded={inputsOpen}
+						onChange={setInputsOpen}
+						title={
+							<SectionHeader
+								title={t("section_input_pin_to_midi")}
+								icon={<PinToMidiIcon />}
+								tooltipKey="tooltip_pin_to_midi"
+							/>
+						}
+					>
+						<Inputs></Inputs>
+					</CollapsibleSection>
+					<CollapsibleSection
+						id="outputs"
+						expanded={outputsOpen}
+						onChange={setOutputsOpen}
+						title={
+							<SectionHeader
+								title={t("section_midi_to_output_pin")}
+								icon={<MidiToPinIcon />}
+								tooltipKey="tooltip_midi_to_pin"
+							/>
+						}
+					>
+						<Outputs></Outputs>
+					</CollapsibleSection>
+				</>
+			)}
+			<CollapsibleSection
+				id="wireless-midi"
+				expanded={isDongle || peersOpen}
+				onChange={setPeersOpen}
+				title={
+					<SectionHeader
+						title={t("section_wireless_midi")}
+						icon={<WirelessMidiIcon />}
+						tooltipKey="tooltip_wireless_midi"
+					/>
+				}
 			>
-				<Alert
-					onClose={() => setDeployToast(null)}
-					severity={deployToastSeverity}
-					variant="filled"
-					sx={{ width: "100%" }}
-				>
-					{deployToast}
-				</Alert>
-			</Snackbar>
-		</Box>
+				<Peers store={useConfig}></Peers>
+			</CollapsibleSection>
+			{toast}
+		</PageLayout>
 	);
 };
 

@@ -403,8 +403,8 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_clear_nvs: "Clear NVS (reset saved settings)",
 				firmwareuploader_clear_nvs_help:
 					"Erases stored settings (e.g. peer config). Leave unchecked for normal updates. Intended for standard Arduino ESP32 firmware / this uploader’s presets.",
-				debugger_init_prompt:
-					"To use the MIDI features, please initialize the MIDI system.",
+				debugger_info:
+					"The Debugger lets you send MIDI messages to your devices, watch everything that comes in and goes out, and read the serial output of a connected board. Handy when something doesn't do what you expect.",
 				section_global: "Global",
 				section_input_pin_to_midi: "Input Pin to MIDI Mapping",
 				section_midi_to_output_pin: "MIDI to Output Pin Mapping",
@@ -854,8 +854,8 @@ i18n.use(initReactI18next).init({
 					"NVS löschen (gespeicherte Einstellungen zurücksetzen)",
 				firmwareuploader_clear_nvs_help:
 					"Löscht gespeicherte Einstellungen (z. B. Peer-Konfiguration). Für normale Updates deaktiviert lassen. Für Standard-Arduino-ESP32-Firmware / die Presets dieses Uploaders.",
-				debugger_init_prompt:
-					"Um die MIDI-Funktionen zu nutzen, initialisiere bitte das MIDI-System.",
+				debugger_info:
+					"Der Debugger ermöglicht es dir, MIDI-Nachrichten an deine Geräte zu senden, alle ein- und ausgehenden Nachrichten mitzulesen und die serielle Ausgabe eines angeschlossenen Boards anzuzeigen. Praktisch, wenn etwas nicht tut, was es soll.",
 				section_global: "Global",
 				section_input_pin_to_midi: "Eingangs-Pin-zu-MIDI-Zuordnung",
 				section_midi_to_output_pin: "MIDI-zu-Ausgangs-Pin-Zuordnung",
@@ -1302,8 +1302,8 @@ i18n.use(initReactI18next).init({
 					"Borrar NVS (restablecer ajustes guardados)",
 				firmwareuploader_clear_nvs_help:
 					"Borra la configuración guardada (p. ej. peers). Déjalo desmarcado para actualizaciones normales. Pensado para firmware Arduino ESP32 estándar / los presets de este cargador.",
-				debugger_init_prompt:
-					"Para usar las funciones MIDI, inicializa el sistema MIDI.",
+				debugger_info:
+					"El Debugger te permite enviar mensajes MIDI a tus dispositivos, ver todo lo que entra y sale, y leer la salida serie de una placa conectada. Útil cuando algo no hace lo que esperas.",
 				section_global: "Global",
 				section_input_pin_to_midi: "Asignación de pin de entrada a MIDI",
 				section_midi_to_output_pin: "Asignación de MIDI a pin de salida",
@@ -1726,7 +1726,8 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_clear_nvs: "清除 NVS（重置已保存的设置）",
 				firmwareuploader_clear_nvs_help:
 					"擦除已保存的设置（例如对端配置）。普通更新请保持未勾选。适用于标准 Arduino ESP32 固件 / 本上传器的预设。",
-				debugger_init_prompt: "要使用 MIDI 功能，请先初始化 MIDI 系统。",
+				debugger_info:
+					"调试器允许你向设备发送 MIDI 消息、查看所有传入和传出的消息，并读取已连接开发板的串行输出。当某些东西不按预期工作时非常有用。",
 				section_global: "全局",
 				section_input_pin_to_midi: "输入引脚到 MIDI 映射",
 				section_midi_to_output_pin: "MIDI 到输出引脚映射",

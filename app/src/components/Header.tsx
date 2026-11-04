@@ -74,7 +74,7 @@ const Header: React.FC = () => {
 						</Typography>
 						<Typography
 							variant="body2"
-							color="textSecondary"
+							color="text.secondary"
 							sx={{ mr: 2, display: { xs: "none", sm: "block" } }}
 						>
 							v{ESP_NOW_VERSION_MAJOR}.{ESP_NOW_VERSION_MINOR}

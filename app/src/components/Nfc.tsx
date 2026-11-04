@@ -34,6 +34,7 @@ import {
 	sameNfcMapping,
 } from "../utils/nfc";
 import Composer from "./Composer";
+import PageLayout from "./layout/PageLayout";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 
 /** No list end after this long: give up waiting. */
@@ -201,247 +202,255 @@ const Nfc = () => {
 	const composerActive = !!mappingMode && !!currentTag;
 
 	return (
-		<Box display="flex" flexDirection="column" gap={2} paddingY={2}>
-			<Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-				<Typography variant="h5">NFC</Typography>
-				<input
-					type="file"
-					accept="application/json"
-					style={{ display: "none" }}
-					ref={fileInputRef}
-					onChange={handleFileChange}
-				/>
-				<Tooltip title="Save mappings to file">
-					<span>
+		<PageLayout
+			title="NFC"
+			actions={
+				<>
+					<input
+						type="file"
+						accept="application/json"
+						style={{ display: "none" }}
+						ref={fileInputRef}
+						onChange={handleFileChange}
+					/>
+					<Tooltip title="Save mappings to file">
+						<span>
+							<IconButton
+								color="inherit"
+								onClick={saveToFile}
+								disabled={mappingList.length === 0}
+							>
+								<DownloadIcon />
+							</IconButton>
+						</span>
+					</Tooltip>
+					<Tooltip title="Load mappings from file">
 						<IconButton
 							color="inherit"
-							onClick={saveToFile}
-							disabled={mappingList.length === 0}
+							onClick={() => fileInputRef.current?.click()}
 						>
-							<DownloadIcon />
+							<FolderOpenIcon />
 						</IconButton>
-					</span>
-				</Tooltip>
-				<Tooltip title="Load mappings from file">
-					<IconButton
-						color="inherit"
-						onClick={() => fileInputRef.current?.click()}
-					>
-						<FolderOpenIcon />
-					</IconButton>
-				</Tooltip>
-				<Box flex={1} />
-				<MidiDeviceChooser value={outputId} onChange={setOutputId} />
-			</Box>
-
-			<Typography variant="body2" color="textSecondary">
-				Maps NFC tags to MIDI messages on a board running the client_nfc
-				example. Connect the board over USB: the dongle keeps this SysEx to
-				itself, so mapping mode can't be switched through it.
-			</Typography>
-
-			{fileError && (
-				<Alert severity="error" onClose={() => setFileError(null)}>
-					{fileError}
-				</Alert>
-			)}
-
-			{pendingList.length > 0 && (
-				<Alert
-					severity="info"
-					action={
-						<Button color="inherit" size="small" onClick={dismissFile}>
-							Dismiss
-						</Button>
-					}
-				>
-					{pendingList.length} mapping(s) from the file aren't on the board yet.
-					The board only learns a mapping with its tag on the reader: turn
-					mapping mode on and place each tag: its saved message is filled into
-					the composer, then press send.
-					<Box component="ul" sx={{ m: 0, mt: 1, pl: 2 }}>
-						{pendingList.map((m) => (
-							<li key={m.uid}>
-								<Box component="span" sx={{ fontFamily: "monospace" }}>
-									{m.uid}
-								</Box>
-								{labels[m.uid] ? ` (${labels[m.uid]})` : ""}:{" "}
-								{describeNfcMapping(m)}
-							</li>
-						))}
-					</Box>
-				</Alert>
-			)}
-
-			{sendFailed && (
-				<Alert severity="error" onClose={() => setSendFailed(false)}>
-					Could not send: pick a connected MIDI output.
-				</Alert>
-			)}
-
-			<Paper variant="outlined" sx={{ p: 2 }}>
-				<Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-					<FormControlLabel
-						control={
-							<Switch
-								checked={!!mappingMode}
-								disabled={!outputConnected}
-								onChange={(e) =>
-									sendCommand(
-										e.target.checked
-											? NFC_COMMAND.MAPPING_ON
-											: NFC_COMMAND.MAPPING_OFF,
-									)
-								}
-							/>
-						}
-						label="Mapping mode"
-					/>
-					{mappingMode === undefined && outputConnected && (
-						<Typography variant="body2" color="textSecondary">
-							State unknown until the board answers.
-						</Typography>
-					)}
+					</Tooltip>
 					<Box flex={1} />
-					{confirmClear ? (
-						<>
-							<Typography variant="body2">
-								Delete all mappings on the board?
-							</Typography>
-							<Button color="error" variant="contained" onClick={clearMappings}>
-								Delete
-							</Button>
-							<Button onClick={() => setConfirmClear(false)}>Cancel</Button>
-						</>
-					) : (
-						<Button
-							color="error"
-							disabled={!outputConnected}
-							onClick={() => setConfirmClear(true)}
-						>
-							Delete all mappings
-						</Button>
-					)}
-				</Box>
-
-				{mappingMode && (
-					<Box mt={2} display="flex" flexDirection="column" gap={2}>
-						<Box display="flex" alignItems="center" gap={1}>
-							<Typography>Tag on reader:</Typography>
-							{currentTag ? (
-								<Chip
-									color="primary"
-									label={labels[currentTag] || currentTag}
-								/>
-							) : (
-								<Typography color="textSecondary">
-									none, place a tag on the reader
-								</Typography>
-							)}
-						</Box>
-						{tableFull !== undefined && (
-							<Alert severity="warning">
-								Mapping table full ({tableFull}). Delete all mappings to add new
-								tags.
-							</Alert>
-						)}
-						<Typography variant="body2" color="textSecondary">
-							Send the message for this tag with the composer below, or send any
-							note, CC or program change from another app or controller.
-						</Typography>
-					</Box>
-				)}
-			</Paper>
-
-			<Paper variant="outlined" sx={{ p: 2 }}>
-				<Typography variant="h6">MIDI composer</Typography>
-				<Typography variant="body2" color="textSecondary" mb={2}>
-					{composerActive
-						? `Sends to the board: the message gets mapped to ${labels[currentTag] || currentTag}.`
-						: "Turn mapping mode on and place a tag on the reader to map it to a message."}
+					<MidiDeviceChooser value={outputId} onChange={setOutputId} />
+				</>
+			}
+		>
+			<Box display="flex" flexDirection="column" gap={2}>
+				<Typography variant="body2" color="text.secondary">
+					Maps NFC tags to MIDI messages on a board running the client_nfc
+					example. Connect the board over USB: the dongle keeps this SysEx to
+					itself, so mapping mode can't be switched through it.
 				</Typography>
-				<Composer outputId={outputId} disabled={!composerActive} />
-			</Paper>
 
-			<Box>
-				<Box display="flex" alignItems="center" gap={1}>
-					<Typography variant="h6">Mappings</Typography>
-					{loading && <CircularProgress size={16} />}
-					<Box flex={1} />
-					<Button
-						size="small"
-						onClick={loadMappings}
-						disabled={!outputConnected || loading}
-					>
-						Reload
-					</Button>
-				</Box>
-				{loadTimedOut && (
-					<Alert severity="warning" onClose={() => setLoadTimedOut(false)}>
-						The board didn't send its mappings. Is it running client_nfc with
-						the get all command, connected over USB?
+				{fileError && (
+					<Alert severity="error" onClose={() => setFileError(null)}>
+						{fileError}
 					</Alert>
 				)}
-				{mappingList.length === 0 ? (
-					<Typography color="textSecondary" mt={1}>
-						No mappings yet.
-					</Typography>
-				) : (
-					<Table size="small">
-						<TableHead>
-							<TableRow>
-								<TableCell>Tag</TableCell>
-								<TableCell>Label</TableCell>
-								<TableCell>Message</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							{mappingList.map((m) => (
-								<TableRow key={m.uid} selected={m.uid === currentTag}>
-									<TableCell sx={{ fontFamily: "monospace" }}>
-										{m.uid}
-									</TableCell>
-									<TableCell>
-										<TextField
-											size="small"
-											variant="standard"
-											placeholder="Label"
-											value={labels[m.uid] ?? ""}
-											onChange={(e) => setLabel(m.uid, e.target.value)}
-										/>
-									</TableCell>
-									<TableCell>{describeNfcMapping(m)}</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				)}
-			</Box>
 
-			<Box>
-				<Box display="flex" alignItems="center">
-					<Typography variant="h6">Events</Typography>
-					<Box flex={1} />
-					<Button size="small" onClick={clearLog} disabled={log.length === 0}>
-						Clear
-					</Button>
-				</Box>
-				{log.length === 0 ? (
-					<Typography color="textSecondary">
-						Nothing received from the board yet.
-					</Typography>
-				) : (
-					<Box component="ul" sx={{ m: 0, pl: 2, fontFamily: "monospace" }}>
-						{log.map((entry) => (
-							<li key={entry.id}>
-								{new Date(entry.timestamp).toLocaleTimeString()}{" "}
-								{describeEvent(entry)}
-							</li>
-						))}
-					</Box>
+				{pendingList.length > 0 && (
+					<Alert
+						severity="info"
+						action={
+							<Button color="inherit" size="small" onClick={dismissFile}>
+								Dismiss
+							</Button>
+						}
+					>
+						{pendingList.length} mapping(s) from the file aren't on the board
+						yet. The board only learns a mapping with its tag on the reader:
+						turn mapping mode on and place each tag: its saved message is filled
+						into the composer, then press send.
+						<Box component="ul" sx={{ m: 0, mt: 1, pl: 2 }}>
+							{pendingList.map((m) => (
+								<li key={m.uid}>
+									<Box component="span" sx={{ fontFamily: "monospace" }}>
+										{m.uid}
+									</Box>
+									{labels[m.uid] ? ` (${labels[m.uid]})` : ""}:{" "}
+									{describeNfcMapping(m)}
+								</li>
+							))}
+						</Box>
+					</Alert>
 				)}
+
+				{sendFailed && (
+					<Alert severity="error" onClose={() => setSendFailed(false)}>
+						Could not send: pick a connected MIDI output.
+					</Alert>
+				)}
+
+				<Paper variant="outlined" sx={{ p: 2 }}>
+					<Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+						<FormControlLabel
+							control={
+								<Switch
+									checked={!!mappingMode}
+									disabled={!outputConnected}
+									onChange={(e) =>
+										sendCommand(
+											e.target.checked
+												? NFC_COMMAND.MAPPING_ON
+												: NFC_COMMAND.MAPPING_OFF,
+										)
+									}
+								/>
+							}
+							label="Mapping mode"
+						/>
+						{mappingMode === undefined && outputConnected && (
+							<Typography variant="body2" color="text.secondary">
+								State unknown until the board answers.
+							</Typography>
+						)}
+						<Box flex={1} />
+						{confirmClear ? (
+							<>
+								<Typography variant="body2">
+									Delete all mappings on the board?
+								</Typography>
+								<Button
+									color="error"
+									variant="contained"
+									onClick={clearMappings}
+								>
+									Delete
+								</Button>
+								<Button onClick={() => setConfirmClear(false)}>Cancel</Button>
+							</>
+						) : (
+							<Button
+								color="error"
+								disabled={!outputConnected}
+								onClick={() => setConfirmClear(true)}
+							>
+								Delete all mappings
+							</Button>
+						)}
+					</Box>
+
+					{mappingMode && (
+						<Box mt={2} display="flex" flexDirection="column" gap={2}>
+							<Box display="flex" alignItems="center" gap={1}>
+								<Typography>Tag on reader:</Typography>
+								{currentTag ? (
+									<Chip
+										color="primary"
+										label={labels[currentTag] || currentTag}
+									/>
+								) : (
+									<Typography color="text.secondary">
+										none, place a tag on the reader
+									</Typography>
+								)}
+							</Box>
+							{tableFull !== undefined && (
+								<Alert severity="warning">
+									Mapping table full ({tableFull}). Delete all mappings to add
+									new tags.
+								</Alert>
+							)}
+							<Typography variant="body2" color="text.secondary">
+								Send the message for this tag with the composer below, or send
+								any note, CC or program change from another app or controller.
+							</Typography>
+						</Box>
+					)}
+				</Paper>
+
+				<Paper variant="outlined" sx={{ p: 2 }}>
+					<Typography variant="h6">MIDI composer</Typography>
+					<Typography variant="body2" color="text.secondary" mb={2}>
+						{composerActive
+							? `Sends to the board: the message gets mapped to ${labels[currentTag] || currentTag}.`
+							: "Turn mapping mode on and place a tag on the reader to map it to a message."}
+					</Typography>
+					<Composer outputId={outputId} disabled={!composerActive} />
+				</Paper>
+
+				<Box>
+					<Box display="flex" alignItems="center" gap={1}>
+						<Typography variant="h6">Mappings</Typography>
+						{loading && <CircularProgress size={16} />}
+						<Box flex={1} />
+						<Button
+							size="small"
+							onClick={loadMappings}
+							disabled={!outputConnected || loading}
+						>
+							Reload
+						</Button>
+					</Box>
+					{loadTimedOut && (
+						<Alert severity="warning" onClose={() => setLoadTimedOut(false)}>
+							The board didn't send its mappings. Is it running client_nfc with
+							the get all command, connected over USB?
+						</Alert>
+					)}
+					{mappingList.length === 0 ? (
+						<Typography color="text.secondary" mt={1}>
+							No mappings yet.
+						</Typography>
+					) : (
+						<Table size="small">
+							<TableHead>
+								<TableRow>
+									<TableCell>Tag</TableCell>
+									<TableCell>Label</TableCell>
+									<TableCell>Message</TableCell>
+								</TableRow>
+							</TableHead>
+							<TableBody>
+								{mappingList.map((m) => (
+									<TableRow key={m.uid} selected={m.uid === currentTag}>
+										<TableCell sx={{ fontFamily: "monospace" }}>
+											{m.uid}
+										</TableCell>
+										<TableCell>
+											<TextField
+												size="small"
+												variant="standard"
+												placeholder="Label"
+												value={labels[m.uid] ?? ""}
+												onChange={(e) => setLabel(m.uid, e.target.value)}
+											/>
+										</TableCell>
+										<TableCell>{describeNfcMapping(m)}</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					)}
+				</Box>
+
+				<Box>
+					<Box display="flex" alignItems="center">
+						<Typography variant="h6">Events</Typography>
+						<Box flex={1} />
+						<Button size="small" onClick={clearLog} disabled={log.length === 0}>
+							Clear
+						</Button>
+					</Box>
+					{log.length === 0 ? (
+						<Typography color="text.secondary">
+							Nothing received from the board yet.
+						</Typography>
+					) : (
+						<Box component="ul" sx={{ m: 0, pl: 2, fontFamily: "monospace" }}>
+							{log.map((entry) => (
+								<li key={entry.id}>
+									{new Date(entry.timestamp).toLocaleTimeString()}{" "}
+									{describeEvent(entry)}
+								</li>
+							))}
+						</Box>
+					)}
+				</Box>
 			</Box>
-		</Box>
+		</PageLayout>
 	);
 };
 

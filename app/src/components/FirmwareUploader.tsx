@@ -1,13 +1,9 @@
 import {
-	ExpandMore as ExpandMoreIcon,
 	FlashOn as FlashOnIcon,
 	Upload as UploadIcon,
 	UsbOff as UsbOffIcon,
 } from "@mui/icons-material";
 import {
-	Accordion,
-	AccordionDetails,
-	AccordionSummary,
 	Alert,
 	Box,
 	Button,
@@ -23,15 +19,16 @@ import {
 	Link,
 	MenuItem,
 	Select,
-	Snackbar,
 	Stack,
 	Typography,
 } from "@mui/material";
 import type { ChangeEvent, FC } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAppStore } from "../store/app";
+import { useToast } from "../hooks/useToast";
 import { type FirmwarePreset, useSerialStore } from "../store/serial";
+import CollapsibleSection from "./common/CollapsibleSection";
+import PageLayout from "./layout/PageLayout";
 import Console from "./SerialConsole";
 
 const formatVersionLabel = (versionPathSegment: string): string =>
@@ -55,7 +52,6 @@ const FirmwareUploader: FC = () => {
 		setSelectedVersion,
 	} = useSerialStore();
 
-	const showHints = useAppStore((state) => state.showHints);
 	const { t } = useTranslation();
 
 	const latestVersionPath = versions[0] ?? "";
@@ -84,7 +80,7 @@ const FirmwareUploader: FC = () => {
 	const [fwOpen, setFwOpen] = useState(true);
 	const [bootOpen, setBootOpen] = useState(false);
 	const [flashOpen, setFlashOpen] = useState(false);
-	const [flashToast, setFlashToast] = useState<string | null>(null);
+	const { showToast, toast } = useToast();
 
 	useEffect(() => {
 		init();
@@ -174,10 +170,11 @@ const FirmwareUploader: FC = () => {
 				clearNvs,
 			);
 			if (!result) return;
-			setFlashToast(
+			showToast(
 				result.hardReset
 					? t("firmwareuploader_flash_success")
 					: t("firmwareuploader_flash_success_reset_manual"),
+				"success",
 			);
 		} catch (err) {
 			console.error(err);
@@ -185,9 +182,10 @@ const FirmwareUploader: FC = () => {
 	};
 
 	return (
-		<Box p={2}>
-			{showHints && (
-				<Alert severity="info" sx={{ mb: 2 }}>
+		<PageLayout
+			title={t("firmware_uploader")}
+			info={
+				<>
 					{t("firmwareuploader_intro")}{" "}
 					<Link
 						href="https://github.com/grantler-instruments/enomik-app/issues"
@@ -196,17 +194,17 @@ const FirmwareUploader: FC = () => {
 					>
 						{t("firmwareuploader_issue_tracker")}
 					</Link>
-				</Alert>
-			)}
+				</>
+			}
+		>
 			<Grid container spacing={2}>
 				{/* Step 1: Version selection */}
 				<Grid size={{ xs: 12 }}>
-					<Accordion
+					<CollapsibleSection
 						expanded={versionOpen}
 						disabled={isFlashing}
-						onChange={(_, expanded) => setVersionOpen(expanded)}
-					>
-						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
+						onChange={setVersionOpen}
+						title={
 							<Stack direction="row" spacing={1} alignItems="center">
 								<Typography variant="subtitle2">
 									{t("firmwareuploader_step1")}
@@ -219,38 +217,35 @@ const FirmwareUploader: FC = () => {
 									/>
 								)}
 							</Stack>
-						</AccordionSummary>
-
-						<AccordionDetails>
-							<FormControl fullWidth disabled={isFlashing}>
-								<InputLabel id="firmware-version-label">
-									{t("firmwareuploader_select_version")}
-								</InputLabel>
-								<Select
-									labelId="firmware-version-label"
-									label={t("firmwareuploader_select_version")}
-									value={selectedVersion}
-									onChange={(e) => handleVersionChange(e.target.value)}
-								>
-									{versions.map((version) => (
-										<MenuItem key={version} value={version}>
-											{versionLabel(version)}
-										</MenuItem>
-									))}
-								</Select>
-							</FormControl>
-						</AccordionDetails>
-					</Accordion>
+						}
+					>
+						<FormControl fullWidth disabled={isFlashing}>
+							<InputLabel id="firmware-version-label">
+								{t("firmwareuploader_select_version")}
+							</InputLabel>
+							<Select
+								labelId="firmware-version-label"
+								label={t("firmwareuploader_select_version")}
+								value={selectedVersion}
+								onChange={(e) => handleVersionChange(e.target.value)}
+							>
+								{versions.map((version) => (
+									<MenuItem key={version} value={version}>
+										{versionLabel(version)}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
+					</CollapsibleSection>
 				</Grid>
 
 				{/* Step 2: Board selection */}
 				<Grid size={{ xs: 12 }}>
-					<Accordion
+					<CollapsibleSection
 						expanded={boardOpen}
 						disabled={isFlashing}
-						onChange={(_, expanded) => setBoardOpen(expanded)}
-					>
-						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
+						onChange={setBoardOpen}
+						title={
 							<Stack direction="row" spacing={1} alignItems="center">
 								<Typography variant="subtitle2">
 									{t("firmwareuploader_step2")}
@@ -263,36 +258,33 @@ const FirmwareUploader: FC = () => {
 									/>
 								)}
 							</Stack>
-						</AccordionSummary>
-
-						<AccordionDetails>
-							<Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
-								{boards.map((board) => (
-									<Button
-										key={board.id}
-										variant={
-											selectedBoardId === board.id ? "contained" : "outlined"
-										}
-										size="large"
-										onClick={() => handleBoardChange(board.id)}
-										disabled={isFlashing}
-									>
-										{board.label}
-									</Button>
-								))}
-							</Stack>
-						</AccordionDetails>
-					</Accordion>
+						}
+					>
+						<Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+							{boards.map((board) => (
+								<Button
+									key={board.id}
+									variant={
+										selectedBoardId === board.id ? "contained" : "outlined"
+									}
+									size="large"
+									onClick={() => handleBoardChange(board.id)}
+									disabled={isFlashing}
+								>
+									{board.label}
+								</Button>
+							))}
+						</Stack>
+					</CollapsibleSection>
 				</Grid>
 
 				{/* Step 3: Firmware selection */}
 				<Grid size={{ xs: 12 }}>
-					<Accordion
+					<CollapsibleSection
 						expanded={fwOpen}
 						disabled={isFlashing}
-						onChange={(_, expanded) => setFwOpen(expanded)}
-					>
-						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
+						onChange={setFwOpen}
+						title={
 							<Stack
 								direction="row"
 								spacing={1}
@@ -319,87 +311,84 @@ const FirmwareUploader: FC = () => {
 									</>
 								)}
 							</Stack>
-						</AccordionSummary>
-
-						<AccordionDetails>
-							<Box
-								sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}
-							>
-								{availableFirmware.map((fw) => (
-									<Button
-										key={`${fw.boardId}-${fw.label}`}
-										variant={
-											selectedFirmware === fw.label ? "contained" : "outlined"
-										}
-										size="large"
-										fullWidth
-										onClick={() => handlePresetSelect(fw)}
-										disabled={isFlashing}
-										sx={{
-											py: 2,
-											justifyContent: "flex-start",
-											textAlign: "left",
-										}}
-									>
-										<Box>
-											<Typography
-												variant="body1"
-												sx={{ fontWeight: 600, lineHeight: 1.2 }}
-											>
-												{fw.label}
-											</Typography>
-											<Typography
-												variant="caption"
-												color="text.secondary"
-												sx={{ display: "block", lineHeight: 1.3 }}
-											>
-												{fw.board} (v{fw.version}) — {fw.description}
-											</Typography>
-										</Box>
-									</Button>
-								))}
-							</Box>
-							<Box my={2} typography="body2">
-								{t("firmwareuploader_releases_link")}{" "}
-								<Link
-									href="https://github.com/grantler-instruments/esp-now-midi/releases"
-									target="_blank"
-									rel="noopener noreferrer"
+						}
+					>
+						<Box
+							sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}
+						>
+							{availableFirmware.map((fw) => (
+								<Button
+									key={`${fw.boardId}-${fw.label}`}
+									variant={
+										selectedFirmware === fw.label ? "contained" : "outlined"
+									}
+									size="large"
+									fullWidth
+									onClick={() => handlePresetSelect(fw)}
+									disabled={isFlashing}
+									sx={{
+										py: 2,
+										justifyContent: "flex-start",
+										textAlign: "left",
+									}}
 								>
-									{t("firmwareuploader_releases_page")}
-								</Link>
-								.
-							</Box>
-
-							<Button
-								variant="outlined"
-								component="label"
-								fullWidth
-								size="large"
-								startIcon={<UploadIcon />}
-								sx={{ borderStyle: "dashed", borderWidth: 2 }}
-								disabled={isFlashing}
+									<Box>
+										<Typography
+											variant="body1"
+											sx={{ fontWeight: 600, lineHeight: 1.2 }}
+										>
+											{fw.label}
+										</Typography>
+										<Typography
+											variant="caption"
+											color="text.secondary"
+											sx={{ display: "block", lineHeight: 1.3 }}
+										>
+											{fw.board} (v{fw.version}) — {fw.description}
+										</Typography>
+									</Box>
+								</Button>
+							))}
+						</Box>
+						<Box my={2} typography="body2">
+							{t("firmwareuploader_releases_link")}{" "}
+							<Link
+								href="https://github.com/grantler-instruments/esp-now-midi/releases"
+								target="_blank"
+								rel="noopener noreferrer"
 							>
-								{file ? file.name : t("firmwareuploader_custom_bin")}
-								<input
-									type="file"
-									hidden
-									accept=".bin"
-									onChange={handleFileChange}
-								/>
-							</Button>
-						</AccordionDetails>
-					</Accordion>
+								{t("firmwareuploader_releases_page")}
+							</Link>
+							.
+						</Box>
+
+						<Button
+							variant="outlined"
+							component="label"
+							fullWidth
+							size="large"
+							startIcon={<UploadIcon />}
+							sx={{ borderStyle: "dashed", borderWidth: 2 }}
+							disabled={isFlashing}
+						>
+							{file ? file.name : t("firmwareuploader_custom_bin")}
+							<input
+								type="file"
+								hidden
+								accept=".bin"
+								onChange={handleFileChange}
+							/>
+						</Button>
+					</CollapsibleSection>
 				</Grid>
 
 				{/* Step 4: Bootloader toggle + confirmation */}
 				<Grid size={{ xs: 12 }}>
-					<Accordion
+					<CollapsibleSection
 						expanded={bootOpen}
 						disabled={!file || isFlashing}
-						onChange={(_, expanded) => setBootOpen(expanded)}
-					>
-						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
+						onChange={setBootOpen}
+						title={
 							<Stack direction="row" spacing={1} alignItems="center">
 								<Typography variant="subtitle2">
 									{t("firmwareuploader_step4")}
@@ -408,68 +397,65 @@ const FirmwareUploader: FC = () => {
 									<Chip size="small" color="success" label={t("confirmed")} />
 								)}
 							</Stack>
-						</AccordionSummary>
+						}
+					>
+						{/* Toggle bootloader requirement */}
+						<FormControlLabel
+							control={
+								<Checkbox
+									checked={bootloaderRequired}
+									onChange={(e) => setBootloaderRequired(e.target.checked)}
+								/>
+							}
+							label={t("firmwareuploader_manual_bootloader_required")}
+						/>
+						<Typography
+							variant="caption"
+							color="text.secondary"
+							sx={{ display: "block", mb: 2, ml: 3 }}
+						>
+							{t("firmwareuploader_bootloader_mode")}
+						</Typography>
 
-						<AccordionDetails>
-							{/* Toggle bootloader requirement */}
-							<FormControlLabel
-								control={
-									<Checkbox
-										checked={bootloaderRequired}
-										onChange={(e) => setBootloaderRequired(e.target.checked)}
-									/>
-								}
-								label={t("firmwareuploader_manual_bootloader_required")}
-							/>
-							<Typography
-								variant="caption"
-								color="text.secondary"
-								sx={{ display: "block", mb: 2, ml: 3 }}
-							>
-								{t("firmwareuploader_bootloader_mode")}
-							</Typography>
+						{/* Only show confirmation if bootloader is required */}
+						{bootloaderRequired && (
+							<>
+								<Alert severity="warning" sx={{ my: 2 }}>
+									{t("firmwareuploader_bootloader_mode_instruction")}
+								</Alert>
 
-							{/* Only show confirmation if bootloader is required */}
-							{bootloaderRequired && (
-								<>
-									<Alert severity="warning" sx={{ my: 2 }}>
-										{t("firmwareuploader_bootloader_mode_instruction")}
-									</Alert>
+								<FormControlLabel
+									control={
+										<Checkbox
+											checked={bootConfirmed}
+											onChange={(e) => {
+												const checked = e.target.checked;
+												setBootConfirmed(checked);
 
-									<FormControlLabel
-										control={
-											<Checkbox
-												checked={bootConfirmed}
-												onChange={(e) => {
-													const checked = e.target.checked;
-													setBootConfirmed(checked);
-
-													if (checked) {
-														setBootOpen(false);
-														setFlashOpen(true);
-														// setStep("flash");
-													} else {
-														setFlashOpen(false);
-														// setStep("bootloader");
-													}
-												}}
-											/>
-										}
-										label={t("firmwareuploader_bootloader_mode_confirmation")}
-									/>
-								</>
-							)}
-						</AccordionDetails>
-					</Accordion>
+												if (checked) {
+													setBootOpen(false);
+													setFlashOpen(true);
+													// setStep("flash");
+												} else {
+													setFlashOpen(false);
+													// setStep("bootloader");
+												}
+											}}
+										/>
+									}
+									label={t("firmwareuploader_bootloader_mode_confirmation")}
+								/>
+							</>
+						)}
+					</CollapsibleSection>
 				</Grid>
 
 				{/* Step 5: Flash */}
 				<Grid size={{ xs: 12 }}>
-					<Accordion
+					<CollapsibleSection
 						expanded={flashOpen}
 						disabled={bootloaderRequired && !bootConfirmed}
-					>
-						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
+						title={
 							<Stack direction="row" spacing={1} alignItems="center">
 								<Typography variant="subtitle2">
 									{t("firmwareuploader_step5")}
@@ -484,52 +470,50 @@ const FirmwareUploader: FC = () => {
 									<Chip size="small" color="warning" label={t("flashing")} />
 								)}
 							</Stack>
-						</AccordionSummary>
+						}
+					>
+						<FormControlLabel
+							control={
+								<Checkbox
+									checked={clearNvs}
+									onChange={(e) => setClearNvs(e.target.checked)}
+									disabled={isFlashing}
+								/>
+							}
+							label={t("firmwareuploader_clear_nvs")}
+						/>
+						<Typography
+							variant="caption"
+							color="text.secondary"
+							sx={{ display: "block", mb: 2, ml: 3 }}
+						>
+							{t("firmwareuploader_clear_nvs_help")}
+						</Typography>
 
-						<AccordionDetails>
-							<FormControlLabel
-								control={
-									<Checkbox
-										checked={clearNvs}
-										onChange={(e) => setClearNvs(e.target.checked)}
-										disabled={isFlashing}
-									/>
-								}
-								label={t("firmwareuploader_clear_nvs")}
-							/>
-							<Typography
-								variant="caption"
-								color="text.secondary"
-								sx={{ display: "block", mb: 2, ml: 3 }}
-							>
-								{t("firmwareuploader_clear_nvs_help")}
-							</Typography>
+						<Button
+							fullWidth
+							size="large"
+							variant="contained"
+							startIcon={<FlashOnIcon />}
+							onClick={handleConnectAndFlash}
+							disabled={(bootloaderRequired && !bootConfirmed) || isFlashing}
+						>
+							{isFlashing ? t("flashing_progress") : t("connect_and_flash")}
+						</Button>
 
+						{isConnected && !isFlashing && (
 							<Button
+								sx={{ mt: 1 }}
 								fullWidth
-								size="large"
-								variant="contained"
-								startIcon={<FlashOnIcon />}
-								onClick={handleConnectAndFlash}
-								disabled={(bootloaderRequired && !bootConfirmed) || isFlashing}
+								variant="outlined"
+								color="error"
+								startIcon={<UsbOffIcon />}
+								onClick={disconnect}
 							>
-								{isFlashing ? t("flashing_progress") : t("connect_and_flash")}
+								{t("disconnect")}
 							</Button>
-
-							{isConnected && !isFlashing && (
-								<Button
-									sx={{ mt: 1 }}
-									fullWidth
-									variant="outlined"
-									color="error"
-									startIcon={<UsbOffIcon />}
-									onClick={disconnect}
-								>
-									{t("disconnect")}
-								</Button>
-							)}
-						</AccordionDetails>
-					</Accordion>
+						)}
+					</CollapsibleSection>
 				</Grid>
 			</Grid>
 
@@ -549,22 +533,8 @@ const FirmwareUploader: FC = () => {
 
 			<Console canSend={false} height={200} />
 
-			<Snackbar
-				open={flashToast !== null}
-				autoHideDuration={8000}
-				onClose={() => setFlashToast(null)}
-				anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-			>
-				<Alert
-					onClose={() => setFlashToast(null)}
-					severity="success"
-					variant="filled"
-					sx={{ width: "100%" }}
-				>
-					{flashToast}
-				</Alert>
-			</Snackbar>
-		</Box>
+			{toast}
+		</PageLayout>
 	);
 };
 

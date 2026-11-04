@@ -3,7 +3,6 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {
 	Box,
 	Button,
-	Container,
 	Grid,
 	List,
 	ListItemButton,
@@ -13,6 +12,7 @@ import {
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, NavLink, useParams } from "react-router-dom";
+import PageLayout from "./layout/PageLayout";
 import { PAGES } from "./tutorial/chapters";
 import WIPBanner from "./WorkInProgress";
 
@@ -38,11 +38,8 @@ const Tutorial = () => {
 	const { Content } = page.chapter;
 
 	return (
-		<Container ref={topRef} maxWidth="lg" sx={{ my: 4 }}>
+		<PageLayout ref={topRef} title={t("tutorial")}>
 			<WIPBanner />
-			<Typography variant="h1" gutterBottom>
-				{t("tutorial")}
-			</Typography>
 			<Grid container spacing={4}>
 				{/* Chapter list; below the content on small screens */}
 				<Grid size={{ xs: 12, md: 3 }} order={{ xs: 2, md: 1 }}>
@@ -116,7 +113,7 @@ const Tutorial = () => {
 					</Box>
 				</Grid>
 			</Grid>
-		</Container>
+		</PageLayout>
 	);
 };
 

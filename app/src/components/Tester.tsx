@@ -37,6 +37,7 @@ import {
 	touchPassed,
 } from "../utils/testerState";
 import InitMidi from "./InitMidi";
+import PageLayout from "./layout/PageLayout";
 import ButtonsStep from "./tester/ButtonsStep";
 import ConnectStep, { type Settings } from "./tester/ConnectStep";
 import DefaultConfig, { type DefaultConfigState } from "./tester/DefaultConfig";
@@ -324,65 +325,66 @@ const Tester = () => {
 	];
 
 	return (
-		<Box display="flex" flexDirection="column" gap={2} padding={2}>
-			<Typography variant="h5">Tester</Typography>
-			<Alert severity="info">
-				Flash the <code>client</code> sketch on the board under test and the{" "}
-				<code>dongle</code> sketch on a dongle. Wire buttons from pins{" "}
-				{BUTTON_PINS.join(" and ")} to GND. Setup overwrites those pin configs
-				(note/CC = pin number, channel {IO_CHANNEL}). Pin {CYCLE_PIN} sends a
-				different MIDI type on every press. Connect the dongle too: presses must
-				arrive over the client's USB and wirelessly at the dongle.
-			</Alert>
-			<InitMidi />
-			{initialized && (
-				<Stepper activeStep={STEPS.indexOf(step)} orientation="vertical">
-					{steps.map(({ name, label, content }) => (
-						<Step key={name}>
-							<StepLabel>{label}</StepLabel>
-							<StepContent>{content}</StepContent>
-						</Step>
-					))}
-				</Stepper>
-			)}
-			{step === "done" && (
-				<Results
-					results={[
-						{ label: "Buttons (USB and wireless)", passed: buttonsDone },
-						{ label: "LED loopback", passed: loopbackDone },
-						{ label: "Touch pins", passed: touchDone },
-					]}
-					onRestart={() => {
-						setDefaultConfig({ status: "ask" });
-						setStep("connect");
-					}}
-				/>
-			)}
-			{step === "done" && client && (
-				<DefaultConfig
-					state={defaultConfig}
-					ledPin={settings.ledPin}
-					dongleMac={dongleMac && macToString(dongleMac)}
-					onWrite={writeDefault}
-					onSkip={() => setDefaultConfig({ status: "skipped" })}
-				/>
-			)}
-			{log.length > 0 && (
-				<Paper variant="outlined" sx={{ p: 2 }}>
-					{log.map((line, index) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: append-only log
-						<Box key={index} display="flex" gap={1} alignItems="center">
-							<Chip
-								size="small"
-								label={line.ok ? "OK" : "FAIL"}
-								color={line.ok ? "success" : "error"}
-							/>
-							<Typography variant="body2">{line.text}</Typography>
-						</Box>
-					))}
-				</Paper>
-			)}
-		</Box>
+		<PageLayout title="Tester" maxWidth={false}>
+			<Box display="flex" flexDirection="column" gap={2}>
+				<Alert severity="info">
+					Flash the <code>client</code> sketch on the board under test and the{" "}
+					<code>dongle</code> sketch on a dongle. Wire buttons from pins{" "}
+					{BUTTON_PINS.join(" and ")} to GND. Setup overwrites those pin configs
+					(note/CC = pin number, channel {IO_CHANNEL}). Pin {CYCLE_PIN} sends a
+					different MIDI type on every press. Connect the dongle too: presses
+					must arrive over the client's USB and wirelessly at the dongle.
+				</Alert>
+				<InitMidi />
+				{initialized && (
+					<Stepper activeStep={STEPS.indexOf(step)} orientation="vertical">
+						{steps.map(({ name, label, content }) => (
+							<Step key={name}>
+								<StepLabel>{label}</StepLabel>
+								<StepContent>{content}</StepContent>
+							</Step>
+						))}
+					</Stepper>
+				)}
+				{step === "done" && (
+					<Results
+						results={[
+							{ label: "Buttons (USB and wireless)", passed: buttonsDone },
+							{ label: "LED loopback", passed: loopbackDone },
+							{ label: "Touch pins", passed: touchDone },
+						]}
+						onRestart={() => {
+							setDefaultConfig({ status: "ask" });
+							setStep("connect");
+						}}
+					/>
+				)}
+				{step === "done" && client && (
+					<DefaultConfig
+						state={defaultConfig}
+						ledPin={settings.ledPin}
+						dongleMac={dongleMac && macToString(dongleMac)}
+						onWrite={writeDefault}
+						onSkip={() => setDefaultConfig({ status: "skipped" })}
+					/>
+				)}
+				{log.length > 0 && (
+					<Paper variant="outlined" sx={{ p: 2 }}>
+						{log.map((line, index) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: append-only log
+							<Box key={index} display="flex" gap={1} alignItems="center">
+								<Chip
+									size="small"
+									label={line.ok ? "OK" : "FAIL"}
+									color={line.ok ? "success" : "error"}
+								/>
+								<Typography variant="body2">{line.text}</Typography>
+							</Box>
+						))}
+					</Paper>
+				)}
+			</Box>
+		</PageLayout>
 	);
 };
 

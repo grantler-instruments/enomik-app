@@ -1,13 +1,4 @@
-import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
-import {
-	Accordion,
-	AccordionDetails,
-	AccordionSummary,
-	Alert,
-	Box,
-	Button,
-	Typography,
-} from "@mui/material";
+import { Alert, Box, Button, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
 	type Sample,
@@ -17,12 +8,14 @@ import { useGrantulatorStore } from "../store/grantulator";
 import { useMIDIStore } from "../store/midi";
 import { getChannel, getStatus, isNoteOn, MIDI_STATUS } from "../utils/midi";
 import { loadSample, saveSample } from "../utils/sampleStore";
+import CollapsibleSection from "./common/CollapsibleSection";
 import Dropzone from "./grantulator/Dropzone";
 import EffectPanel from "./grantulator/EffectPanel";
 import IntervalSetSelect from "./grantulator/IntervalSetSelect";
 import MasterPanel from "./grantulator/MasterPanel";
 import ParamRows from "./grantulator/ParamRows";
 import InitMidi from "./InitMidi";
+import PageLayout from "./layout/PageLayout";
 
 /** CC0, see public/samples/LICENSE.md. */
 const DEFAULT_SAMPLE = "birds-isaiah658.mp3";
@@ -126,33 +119,39 @@ const Grantulator = () => {
 	}, [midiInitialized, inputs, handleControlChange, handleNoteOn]);
 
 	return (
-		<Box display="flex" flexDirection="column" gap={2} paddingY={2}>
-			<Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-				<Typography variant="h5">Grantulator</Typography>
-				<Box flex={1} />
-				<InitMidi />
-				{running ? (
-					<Button variant="outlined" onClick={stop}>
-						Stop audio
-					</Button>
-				) : (
-					<Button variant="contained" onClick={startAudio}>
-						Start audio
-					</Button>
-				)}
-			</Box>
-			{error && <Alert severity="error">{error}</Alert>}
+		<PageLayout
+			title="Grantulator"
+			maxWidth={false}
+			actions={
+				<>
+					<Box flex={1} />
+					<InitMidi />
+					{running ? (
+						<Button variant="outlined" onClick={stop}>
+							Stop audio
+						</Button>
+					) : (
+						<Button variant="contained" onClick={startAudio}>
+							Start audio
+						</Button>
+					)}
+				</>
+			}
+		>
+			{error && (
+				<Alert severity="error" sx={{ mb: 2 }}>
+					{error}
+				</Alert>
+			)}
 			<div>
-				<Accordion defaultExpanded>
-					<AccordionSummary expandIcon={<ExpandMoreIcon />}>
-						<Typography variant="h6">Grains</Typography>
-					</AccordionSummary>
-					<AccordionDetails>
-						<Dropzone sample={sample} swarm={swarm} onFile={loadFile} />
-						<ParamRows group="grains" midi={midiInitialized} />
-						<IntervalSetSelect />
-					</AccordionDetails>
-				</Accordion>
+				<CollapsibleSection
+					defaultExpanded
+					title={<Typography variant="h6">Grains</Typography>}
+				>
+					<Dropzone sample={sample} swarm={swarm} onFile={loadFile} />
+					<ParamRows group="grains" midi={midiInitialized} />
+					<IntervalSetSelect />
+				</CollapsibleSection>
 				<EffectPanel
 					title="Delay"
 					group="delay"
@@ -167,7 +166,7 @@ const Grantulator = () => {
 				/>
 				<MasterPanel midi={midiInitialized} />
 			</div>
-		</Box>
+		</PageLayout>
 	);
 };
 

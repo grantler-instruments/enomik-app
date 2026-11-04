@@ -4,42 +4,33 @@ import ExtensionIcon from "@mui/icons-material/Extension";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import WifiIcon from "@mui/icons-material/Wifi";
-import {
-	Alert,
-	Box,
-	Button,
-	Container,
-	Grid,
-	Link,
-	Paper,
-	Snackbar,
-	Stack,
-	Typography,
-} from "@mui/material";
-import { useState } from "react";
+import { Box, Button, Grid, Link, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import { usePwaInstall } from "../hooks/usePwaInstall";
+import { useToast } from "../hooks/useToast";
 import { openInstalledAppsPage } from "../utils/browser";
+import SectionCard from "./common/SectionCard";
+import PageLayout from "./layout/PageLayout";
 
 const Home = () => {
 	const { t } = useTranslation();
 	const { canInstall, isInstalled, install } = usePwaInstall();
-	const [appsHint, setAppsHint] = useState<string | null>(null);
+	const { showToast, toast } = useToast();
 
 	const handleUninstall = async () => {
 		const { url, opened } = openInstalledAppsPage();
 		if (opened || !url) return;
 		try {
 			await navigator.clipboard.writeText(url);
-			setAppsHint(t("uninstall_app_copied", { url }));
+			showToast(t("uninstall_app_copied", { url }));
 		} catch {
-			setAppsHint(t("uninstall_app_open_failed", { url }));
+			showToast(t("uninstall_app_open_failed", { url }));
 		}
 	};
 
 	return (
-		<Container maxWidth="lg" sx={{ my: { xs: 4, md: 8 }, pb: 6 }}>
+		<PageLayout>
 			{/* Hero Section */}
 			<Box
 				component="section"
@@ -107,24 +98,17 @@ const Home = () => {
 
 			{/* Feature Sections as Cards */}
 			<Stack spacing={4} sx={{ mt: { xs: 6, md: 8 } }}>
-				<Paper
-					component="section"
-					variant="outlined"
-					sx={{
-						p: { xs: 2, md: 3 },
-						borderRadius: 2,
-						borderColor: "divider",
-					}}
-				>
-					<Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
-						<WifiIcon color="secondary" sx={{ fontSize: 28 }} />
-						<Typography variant="h6" fontWeight={600}>
+				<SectionCard
+					icon={<WifiIcon color="secondary" sx={{ fontSize: 28 }} />}
+					title={
+						<>
 							{t("home_reliable_wireless_midi")} —{" "}
 							<Box component="span" sx={{ color: "secondary.main" }}>
 								{t("home_without_bluetooth")}
 							</Box>
-						</Typography>
-					</Box>
+						</>
+					}
+				>
 					<Typography variant="body1" sx={{ opacity: 0.9 }}>
 						{t("home_dont_trust_bluetooth_midi")}{" "}
 						<Link
@@ -137,49 +121,35 @@ const Home = () => {
 						</Link>{" "}
 						{t("home_esp_now_midi")}
 					</Typography>
-				</Paper>
+				</SectionCard>
 
-				<Paper
-					component="section"
-					variant="outlined"
-					sx={{
-						p: { xs: 2, md: 3 },
-						borderRadius: 2,
-						borderColor: "divider",
-					}}
-				>
-					<Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
-						<SwapHorizIcon color="secondary" sx={{ fontSize: 28 }} />
-						<Typography variant="h6" fontWeight={600}>
+				<SectionCard
+					icon={<SwapHorizIcon color="secondary" sx={{ fontSize: 28 }} />}
+					title={
+						<>
 							{t("home_fully_bidirectional")} —{" "}
 							<Box component="span" sx={{ color: "secondary.main" }}>
 								{t("home_midi_controller_or_instrument")}
 							</Box>
-						</Typography>
-					</Box>
+						</>
+					}
+				>
 					<Typography variant="body1" sx={{ opacity: 0.9 }}>
 						{t("home_fully_bidirectional_description")}
 					</Typography>
-				</Paper>
+				</SectionCard>
 
-				<Paper
-					component="section"
-					variant="outlined"
-					sx={{
-						p: { xs: 2, md: 3 },
-						borderRadius: 2,
-						borderColor: "divider",
-					}}
-				>
-					<Box display="flex" alignItems="center" gap={1.5} mb={2}>
-						<ExtensionIcon color="secondary" sx={{ fontSize: 28 }} />
-						<Typography variant="h6" fontWeight={600}>
+				<SectionCard
+					icon={<ExtensionIcon color="secondary" sx={{ fontSize: 28 }} />}
+					title={
+						<>
 							{t("home_kit")} —{" "}
 							<Box component="span" sx={{ color: "secondary.main" }}>
 								{t("home_dongles_and_client_boards")}
 							</Box>
-						</Typography>
-					</Box>
+						</>
+					}
+				>
 					<Grid container spacing={3} alignItems="center">
 						<Grid size={{ xs: 12, md: 5 }}>
 							<Box
@@ -210,26 +180,19 @@ const Home = () => {
 							</Button>
 						</Grid>
 					</Grid>
-				</Paper>
+				</SectionCard>
 
-				<Paper
-					component="section"
-					variant="outlined"
-					sx={{
-						p: { xs: 2, md: 3 },
-						borderRadius: 2,
-						borderColor: "divider",
-					}}
-				>
-					<Box display="flex" alignItems="center" gap={1.5} mb={2}>
-						<BuildIcon color="secondary" sx={{ fontSize: 28 }} />
-						<Typography variant="h6" fontWeight={600}>
+				<SectionCard
+					icon={<BuildIcon color="secondary" sx={{ fontSize: 28 }} />}
+					title={
+						<>
 							{t("home_utilities")} —{" "}
 							<Box component="span" sx={{ color: "secondary.main" }}>
 								{t("home_utilities_description")}
 							</Box>
-						</Typography>
-					</Box>
+						</>
+					}
+				>
 					<Typography variant="body1" sx={{ opacity: 0.9 }}>
 						{t("home_utilities_description_includes")}{" "}
 						<Button
@@ -253,23 +216,12 @@ const Home = () => {
 						</Button>{" "}
 						{t("home_utilities_description_includes_end")}
 					</Typography>
-				</Paper>
+				</SectionCard>
 
-				<Paper
-					component="section"
-					variant="outlined"
-					sx={{
-						p: { xs: 2, md: 3 },
-						borderRadius: 2,
-						borderColor: "divider",
-					}}
+				<SectionCard
+					icon={<GetAppIcon color="secondary" sx={{ fontSize: 28 }} />}
+					title={t("home_pwa_title")}
 				>
-					<Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
-						<GetAppIcon color="secondary" sx={{ fontSize: 28 }} />
-						<Typography variant="h6" fontWeight={600}>
-							{t("home_pwa_title")}
-						</Typography>
-					</Box>
 					<Typography variant="body1" sx={{ opacity: 0.9 }}>
 						{t("home_pwa_description")}
 					</Typography>
@@ -296,24 +248,11 @@ const Home = () => {
 							{t("uninstall_app")}
 						</Button>
 					)}
-				</Paper>
+				</SectionCard>
 			</Stack>
 
-			<Snackbar
-				open={appsHint != null}
-				autoHideDuration={8000}
-				onClose={() => setAppsHint(null)}
-				anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-			>
-				<Alert
-					severity="info"
-					onClose={() => setAppsHint(null)}
-					sx={{ width: "100%" }}
-				>
-					{appsHint}
-				</Alert>
-			</Snackbar>
-		</Container>
+			{toast}
+		</PageLayout>
 	);
 };
 

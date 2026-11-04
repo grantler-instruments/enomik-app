@@ -10,7 +10,6 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
 import { useDevice } from "../hooks/useDevice";
-import { useAppStore } from "../store/app";
 import { supportsInspection, thresholdUnit } from "../store/device";
 import { useInspectorStore } from "../store/inspector";
 import { beginWaitForConfigLoad, useMIDIStore } from "../store/midi";
@@ -21,6 +20,7 @@ import {
 	ENOMIK_COMMAND_GET_MAC,
 } from "../store/midi.config";
 import RawValues, { DeviceCompatibility } from "./inspector/RawValues";
+import PageLayout from "./layout/PageLayout";
 import MacAddressInput from "./MacAddressInput";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import PinRow, {
@@ -70,87 +70,77 @@ const Inspector = () => {
 			clear();
 		};
 	}, [clear]);
-	const showHints = useAppStore((state) => state.showHints);
 	return (
-		<Box display={"flex"} flexDirection="column" marginBottom={2}>
-			<Box
-				display={"flex"}
-				alignItems={"center"}
-				gap={2}
-				mb={2}
-				pl={2}
-				pr={2}
-				py={2}
-				sx={{
-					position: "sticky",
-					top: 0,
-					zIndex: (theme) => theme.zIndex.appBar,
-					backgroundColor: "background.default",
-				}}
-			>
-				<Box flex={1} />
-				<MidiDeviceChooser
-					value={device || ""}
-					onChange={(e) => setDevice(e)}
-				></MidiDeviceChooser>
-				<Button
-					variant="contained"
-					color="primary"
-					disabled={
-						!initialized ||
-						syncing ||
-						info?.status !== "ready" ||
-						!supportsInspection(info.version)
-					}
-					onClick={async () => {
-						if (!device || device === "-1") return;
-						const request = ++syncRequest.current;
-						clear();
-						useInspectorStore.setState({ deviceId: device, syncing: true });
-						const current = () =>
-							request === syncRequest.current &&
-							useInspectorStore.getState().deviceId === device;
-						const send = (command: number) =>
-							sendMessage(
-								{
-									id: uuidv4(),
-									type: 240,
-									channel: 1,
-									data: buildEnomikSysex(command),
-									timestamp: Date.now(),
-								},
-								device,
-							);
-						// A client answers GET_CONFIG, a dongle rejects it: then ask for its peers
-						const wait = beginWaitForConfigLoad(device, 5000);
-						send(ENOMIK_COMMAND_GET_MAC);
-						send(ENOMIK_COMMAND_GET_CONFIG);
-						let result = await wait;
-						if (!current()) return;
-						const firmware = result?.firmware ?? null;
-						useInspectorStore.setState({ firmware });
-						if (firmware === "dongle") {
-							const peersWait = beginWaitForConfigLoad(device, 5000, "peers");
-							send(ENOMIK_COMMAND_GET_ALL_PEERS);
-							result = await peersWait;
-							if (!current()) return;
+		<PageLayout
+			title={t("inspector")}
+			info={t("inspector_info")}
+			maxWidth={false}
+			actions={
+				<>
+					<Box flex={1} />
+					<MidiDeviceChooser
+						value={device || ""}
+						onChange={(e) => setDevice(e)}
+					></MidiDeviceChooser>
+					<Button
+						variant="contained"
+						color="primary"
+						disabled={
+							!initialized ||
+							syncing ||
+							info?.status !== "ready" ||
+							!supportsInspection(info.version)
 						}
-						useInspectorStore.setState({
-							syncing: false,
-							syncError: result === null,
-						});
-					}}
-				>
-					{t("inspector_sync")}
-				</Button>
-			</Box>
-			<Box display={"flex"} flexDirection="column" gap={2} px={2}>
-				{showHints && (
-					<Alert severity="info" sx={{ mb: 2 }}>
-						{t("inspector_info")}
-					</Alert>
-				)}
-				<DeviceCompatibility device={device || "-1"} inspection />
+						onClick={async () => {
+							if (!device || device === "-1") return;
+							const request = ++syncRequest.current;
+							clear();
+							useInspectorStore.setState({ deviceId: device, syncing: true });
+							const current = () =>
+								request === syncRequest.current &&
+								useInspectorStore.getState().deviceId === device;
+							const send = (command: number) =>
+								sendMessage(
+									{
+										id: uuidv4(),
+										type: 240,
+										channel: 1,
+										data: buildEnomikSysex(command),
+										timestamp: Date.now(),
+									},
+									device,
+								);
+							// A client answers GET_CONFIG, a dongle rejects it: then ask for its peers
+							const wait = beginWaitForConfigLoad(device, 5000);
+							send(ENOMIK_COMMAND_GET_MAC);
+							send(ENOMIK_COMMAND_GET_CONFIG);
+							let result = await wait;
+							if (!current()) return;
+							const firmware = result?.firmware ?? null;
+							useInspectorStore.setState({ firmware });
+							if (firmware === "dongle") {
+								const peersWait = beginWaitForConfigLoad(device, 5000, "peers");
+								send(ENOMIK_COMMAND_GET_ALL_PEERS);
+								result = await peersWait;
+								if (!current()) return;
+							}
+							useInspectorStore.setState({
+								syncing: false,
+								syncError: result === null,
+							});
+						}}
+					>
+						{t("inspector_sync")}
+					</Button>
+				</>
+			}
+		>
+			<Box display={"flex"} flexDirection="column" gap={2}>
+				<DeviceCompatibility
+					device={device || "-1"}
+					inspection
+					hideSelectPrompt
+				/>
 				{syncing && <Typography>{t("compat_syncing")}</Typography>}
 				{syncError && (
 					<Alert severity="warning">{t("compat_sync_failed")}</Alert>
@@ -259,7 +249,7 @@ const Inspector = () => {
 					))}
 				</Box>
 			</Box>
-		</Box>
+		</PageLayout>
 	);
 };
 

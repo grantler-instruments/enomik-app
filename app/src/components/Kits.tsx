@@ -3,49 +3,18 @@ import InputIcon from "@mui/icons-material/Input";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import OutputIcon from "@mui/icons-material/Output";
 import SettingsInputComponentIcon from "@mui/icons-material/SettingsInputComponent";
-import {
-	Box,
-	Button,
-	Container,
-	Grid,
-	Paper,
-	Stack,
-	Typography,
-} from "@mui/material";
-import type { ReactNode } from "react";
+import { Box, Button, Grid, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
+import SectionCard from "./common/SectionCard";
 import BoardDiagram from "./kits/BoardDiagram";
 import { BOARDS } from "./kits/boards";
+import PageLayout from "./layout/PageLayout";
 import {
 	INPUT_MODES,
 	MODE_DESCRIPTION_KEYS,
 	OUTPUT_MODES,
 } from "./pinmapping/modes";
-
-const Section = ({
-	icon,
-	title,
-	children,
-}: {
-	icon: ReactNode;
-	title: ReactNode;
-	children: ReactNode;
-}) => (
-	<Paper
-		component="section"
-		variant="outlined"
-		sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, borderColor: "divider" }}
-	>
-		<Box display="flex" alignItems="center" gap={1.5} mb={2}>
-			{icon}
-			<Typography variant="h6" fontWeight={600}>
-				{title}
-			</Typography>
-		</Box>
-		{children}
-	</Paper>
-);
 
 const ModeList = ({ modes }: { modes: { label: string; value: number }[] }) => {
 	const { t } = useTranslation();
@@ -71,13 +40,11 @@ const Kits = () => {
 	const { t } = useTranslation();
 
 	return (
-		<Container maxWidth="lg" sx={{ my: { xs: 4, md: 8 }, pb: 6 }}>
-			<Typography variant="h1">{t("kits_title")}</Typography>
-
+		<PageLayout title={t("kits_title")}>
 			<Stack spacing={4}>
 				<Typography variant="h2">{t("kits_boards_title")}</Typography>
 				{BOARDS.map((board) => (
-					<Section
+					<SectionCard
 						key={board.id}
 						icon={<DeveloperBoardIcon color="secondary" sx={iconSx} />}
 						title={board.name}
@@ -99,7 +66,7 @@ const Kits = () => {
 								{t("configurator")}
 							</Button>
 						</Box>
-					</Section>
+					</SectionCard>
 				))}
 			</Stack>
 
@@ -148,23 +115,23 @@ const Kits = () => {
 				</Typography>
 				<Grid container spacing={3}>
 					<Grid size={{ xs: 12, md: 6 }}>
-						<Section
+						<SectionCard
 							icon={<InputIcon color="secondary" sx={iconSx} />}
 							title={t("kits_inputs")}
 						>
 							<ModeList modes={INPUT_MODES} />
-						</Section>
+						</SectionCard>
 					</Grid>
 					<Grid size={{ xs: 12, md: 6 }}>
-						<Section
+						<SectionCard
 							icon={<OutputIcon color="secondary" sx={iconSx} />}
 							title={t("kits_outputs")}
 						>
 							<ModeList modes={OUTPUT_MODES} />
-						</Section>
+						</SectionCard>
 					</Grid>
 					<Grid size={{ xs: 12, md: 6 }}>
-						<Section
+						<SectionCard
 							icon={
 								<SettingsInputComponentIcon color="secondary" sx={iconSx} />
 							}
@@ -173,21 +140,21 @@ const Kits = () => {
 							<Typography variant="body2" sx={{ opacity: 0.9 }}>
 								{t("kits_type_i2c_desc")}
 							</Typography>
-						</Section>
+						</SectionCard>
 					</Grid>
 					<Grid size={{ xs: 12, md: 6 }}>
-						<Section
+						<SectionCard
 							icon={<LightbulbIcon color="secondary" sx={iconSx} />}
 							title="NeoPixel"
 						>
 							<Typography variant="body2" sx={{ opacity: 0.9 }}>
 								{t("kits_type_neopixel_desc")}
 							</Typography>
-						</Section>
+						</SectionCard>
 					</Grid>
 				</Grid>
 			</Stack>
-		</Container>
+		</PageLayout>
 	);
 };
 

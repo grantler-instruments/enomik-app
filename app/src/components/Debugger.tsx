@@ -1,97 +1,106 @@
-import { ExpandMore } from "@mui/icons-material";
-import {
-	Accordion,
-	AccordionDetails,
-	AccordionSummary,
-	Box,
-	Button,
-	Typography,
-} from "@mui/material";
+import { Box, Button } from "@mui/material";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
-import { useMIDIStore } from "../store/midi";
 import Composer from "./Composer";
+import CollapsibleSection from "./common/CollapsibleSection";
 import InitMidi from "./InitMidi";
+import PageLayout from "./layout/PageLayout";
 import MessageList from "./MessageList";
 import SectionHeader from "./SectionHeader";
 import WebSerialMonitor from "./SerialMonitor";
 
+/** Section title with the Init MIDI button on the right while collapsed. */
+const TitleWithInit = ({
+	collapsed,
+	children,
+}: {
+	collapsed: boolean;
+	children: ReactNode;
+}) => (
+	<Box display="flex" alignItems="center" gap={2} flex={1} mr={1}>
+		{children}
+		<Box flex={1} />
+		{/* InitMidi renders nothing once MIDI is up. Initialise without unfolding the panel. */}
+		{collapsed && (
+			<Box onClick={(e) => e.stopPropagation()}>
+				<InitMidi />
+			</Box>
+		)}
+	</Box>
+);
+
 const Debugger = () => {
 	const { t } = useTranslation();
-	const initialized = useMIDIStore((state) => state.initialized);
+	const [composerOpen, setComposerOpen] = useState(true);
+	const [monitorOpen, setMonitorOpen] = useState(true);
 	return (
-		<Box display={"flex"} flexDirection={"column"} padding={2}>
-			{!initialized && (
-				<Box
-					my={"64px"}
-					textAlign={"center"}
-					display={"flex"}
-					flexDirection={"column"}
-					alignItems={"center"}
-					gap={2}
-				>
-					<Typography variant="body1" gutterBottom>
-						{t("debugger_init_prompt")}
-					</Typography>
-					<InitMidi></InitMidi>
-				</Box>
-			)}
-			{initialized && (
-				<>
-					<Accordion defaultExpanded sx={{ mb: 2 }}>
-						<AccordionSummary expandIcon={<ExpandMore />}>
-							<SectionHeader
-								title={t("section_midi_composer")}
-								tooltipKey="tooltip_midi_composer"
-							/>
-						</AccordionSummary>
-						<AccordionDetails>
-							<Composer />
-						</AccordionDetails>
-					</Accordion>
-					<Accordion defaultExpanded sx={{ mb: 2 }}>
-						<AccordionSummary expandIcon={<ExpandMore />}>
-							<SectionHeader
-								title={t("section_midi_monitor")}
-								tooltipKey="tooltip_midi_monitor"
-							/>
-						</AccordionSummary>
-						<AccordionDetails>
-							<MessageList />
-						</AccordionDetails>
-					</Accordion>
-				</>
-			)}
-			<Accordion sx={{ mb: 2 }}>
-				<AccordionSummary expandIcon={<ExpandMore />}>
+		<PageLayout
+			title={t("debugger")}
+			info={t("debugger_info")}
+			maxWidth={false}
+		>
+			<CollapsibleSection
+				expanded={composerOpen}
+				onChange={setComposerOpen}
+				sx={{ mb: 2 }}
+				title={
+					<TitleWithInit collapsed={!composerOpen}>
+						<SectionHeader
+							title={t("section_midi_composer")}
+							tooltipKey="tooltip_midi_composer"
+						/>
+					</TitleWithInit>
+				}
+			>
+				<Composer />
+			</CollapsibleSection>
+			<CollapsibleSection
+				expanded={monitorOpen}
+				onChange={setMonitorOpen}
+				sx={{ mb: 2 }}
+				title={
+					<TitleWithInit collapsed={!monitorOpen}>
+						<SectionHeader
+							title={t("section_midi_monitor")}
+							tooltipKey="tooltip_midi_monitor"
+						/>
+					</TitleWithInit>
+				}
+			>
+				<MessageList />
+			</CollapsibleSection>
+			<CollapsibleSection
+				sx={{ mb: 2 }}
+				title={
 					<SectionHeader
 						title={t("section_serial_monitor")}
 						tooltipKey="tooltip_serial_monitor"
 					/>
-				</AccordionSummary>
-				<AccordionDetails>
-					<WebSerialMonitor />
-				</AccordionDetails>
-			</Accordion>
-			<Accordion defaultExpanded sx={{ mb: 2 }}>
-				<AccordionSummary expandIcon={<ExpandMore />}>
+				}
+			>
+				<WebSerialMonitor />
+			</CollapsibleSection>
+			<CollapsibleSection
+				defaultExpanded
+				sx={{ mb: 2 }}
+				title={
 					<SectionHeader
 						title={t("section_tools")}
 						tooltipKey="tooltip_tools"
 					/>
-				</AccordionSummary>
-				<AccordionDetails>
-					<Box display={"flex"} gap={1} flexWrap={"wrap"}>
-						<Button variant="outlined" component={NavLink} to={"/tester"}>
-							{t("open_tester")}
-						</Button>
-						<Button variant="outlined" component={NavLink} to={"/grantulator"}>
-							{t("open_grantulator")}
-						</Button>
-					</Box>
-				</AccordionDetails>
-			</Accordion>
-		</Box>
+				}
+			>
+				<Box display={"flex"} gap={1} flexWrap={"wrap"}>
+					<Button variant="outlined" component={NavLink} to={"/tester"}>
+						{t("open_tester")}
+					</Button>
+					<Button variant="outlined" component={NavLink} to={"/grantulator"}>
+						{t("open_grantulator")}
+					</Button>
+				</Box>
+			</CollapsibleSection>
+		</PageLayout>
 	);
 };
 

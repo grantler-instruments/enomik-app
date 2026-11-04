@@ -1,17 +1,10 @@
-import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
-import {
-	Accordion,
-	AccordionDetails,
-	AccordionSummary,
-	Box,
-	Switch,
-	Typography,
-} from "@mui/material";
+import { Box, Switch, Typography } from "@mui/material";
 import {
 	type GrantulatorGroup,
 	type SwitchId,
 	useGrantulatorStore,
 } from "../../store/grantulator";
+import CollapsibleSection from "../common/CollapsibleSection";
 import MidiLearn from "./MidiLearn";
 import ParamRows from "./ParamRows";
 
@@ -30,8 +23,9 @@ const EffectPanel = ({
 	const on = useGrantulatorStore((s) => s[switchId]);
 	const setSwitch = useGrantulatorStore((s) => s.setSwitch);
 	return (
-		<Accordion defaultExpanded>
-			<AccordionSummary expandIcon={<ExpandMoreIcon />}>
+		<CollapsibleSection
+			defaultExpanded
+			title={
 				<Box display="flex" alignItems="center" gap={1}>
 					<Typography variant="h6">{title}</Typography>
 					{/* Toggle and map the effect without folding the panel. */}
@@ -45,11 +39,10 @@ const EffectPanel = ({
 						<MidiLearn target={switchId} midi={midi} />
 					</Box>
 				</Box>
-			</AccordionSummary>
-			<AccordionDetails>
-				<ParamRows group={group} midi={midi} />
-			</AccordionDetails>
-		</Accordion>
+			}
+		>
+			<ParamRows group={group} midi={midi} />
+		</CollapsibleSection>
 	);
 };
 

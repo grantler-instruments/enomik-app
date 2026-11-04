@@ -197,10 +197,13 @@ export const DeviceCompatibility = ({
 	device,
 	live = false,
 	inspection = false,
+	hideSelectPrompt = false,
 }: {
 	device: string;
 	live?: boolean;
 	inspection?: boolean;
+	/** Show nothing instead of the "select a device" hint. */
+	hideSelectPrompt?: boolean;
 }) => {
 	const { t } = useTranslation();
 	const info = useDevice(device);
@@ -208,6 +211,7 @@ export const DeviceCompatibility = ({
 	const connected = outputs.some(
 		(port) => port.id === device && port.state !== "disconnected",
 	);
+	if (!connected && hideSelectPrompt) return null;
 	const key = !connected
 		? "compat_select_device"
 		: !info || info.status === "checking"
