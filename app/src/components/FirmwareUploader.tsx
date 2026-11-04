@@ -193,7 +193,7 @@ const FirmwareUploader: FC<{ embedded?: boolean }> = ({ embedded = false }) => {
 						onChange={setVersionOpen}
 						title={
 							<Stack direction="row" spacing={1} alignItems="center">
-								<Typography variant="subtitle2">
+								<Typography variant="subtitle2" component="span">
 									{t("firmwareuploader_step1")}
 								</Typography>
 								{selectedVersion && (
@@ -234,7 +234,7 @@ const FirmwareUploader: FC<{ embedded?: boolean }> = ({ embedded = false }) => {
 						onChange={setBoardOpen}
 						title={
 							<Stack direction="row" spacing={1} alignItems="center">
-								<Typography variant="subtitle2">
+								<Typography variant="subtitle2" component="span">
 									{t("firmwareuploader_step2")}
 								</Typography>
 								{selectedBoard && (
@@ -278,7 +278,7 @@ const FirmwareUploader: FC<{ embedded?: boolean }> = ({ embedded = false }) => {
 								alignItems="center"
 								flexWrap="wrap"
 							>
-								<Typography variant="subtitle2">
+								<Typography variant="subtitle2" component="span">
 									{t("firmwareuploader_step3")}
 								</Typography>
 								{file && (
@@ -377,7 +377,7 @@ const FirmwareUploader: FC<{ embedded?: boolean }> = ({ embedded = false }) => {
 						onChange={setBootOpen}
 						title={
 							<Stack direction="row" spacing={1} alignItems="center">
-								<Typography variant="subtitle2">
+								<Typography variant="subtitle2" component="span">
 									{t("firmwareuploader_step4")}
 								</Typography>
 								{bootConfirmed && (
@@ -444,7 +444,7 @@ const FirmwareUploader: FC<{ embedded?: boolean }> = ({ embedded = false }) => {
 						disabled={bootloaderRequired && !bootConfirmed}
 						title={
 							<Stack direction="row" spacing={1} alignItems="center">
-								<Typography variant="subtitle2">
+								<Typography variant="subtitle2" component="span">
 									{t("firmwareuploader_step5")}
 								</Typography>
 								{chipInfo && (

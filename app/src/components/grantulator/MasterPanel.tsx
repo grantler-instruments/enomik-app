@@ -15,7 +15,11 @@ const MasterPanel = ({ midi }: { midi: boolean }) => {
 	return (
 		<CollapsibleSection
 			defaultExpanded
-			title={<Typography variant="h6">Master</Typography>}
+			title={
+				<Typography variant="h6" component="span">
+					Master
+				</Typography>
+			}
 			actions={
 				<>
 					<IconButton

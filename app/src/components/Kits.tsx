@@ -22,7 +22,7 @@ const ModeList = ({ modes }: { modes: { label: string; value: number }[] }) => {
 		<Stack spacing={1.5}>
 			{modes.map((mode) => (
 				<Box key={mode.value}>
-					<Typography variant="subtitle2" fontWeight={600}>
+					<Typography variant="subtitle2" component="h4" fontWeight={600}>
 						{mode.label}
 					</Typography>
 					<Typography variant="body2" sx={{ opacity: 0.9 }}>
@@ -45,6 +45,7 @@ const Kits = () => {
 				<Typography variant="h2">{t("kits_boards_title")}</Typography>
 				{BOARDS.map((board) => (
 					<SectionCard
+						headingLevel="h3"
 						key={board.id}
 						icon={<DeveloperBoardIcon color="secondary" sx={iconSx} />}
 						title={board.name}
@@ -116,6 +117,7 @@ const Kits = () => {
 				<Grid container spacing={3}>
 					<Grid size={{ xs: 12, md: 6 }}>
 						<SectionCard
+							headingLevel="h3"
 							icon={<InputIcon color="secondary" sx={iconSx} />}
 							title={t("kits_inputs")}
 						>
@@ -124,6 +126,7 @@ const Kits = () => {
 					</Grid>
 					<Grid size={{ xs: 12, md: 6 }}>
 						<SectionCard
+							headingLevel="h3"
 							icon={<OutputIcon color="secondary" sx={iconSx} />}
 							title={t("kits_outputs")}
 						>
@@ -132,6 +135,7 @@ const Kits = () => {
 					</Grid>
 					<Grid size={{ xs: 12, md: 6 }}>
 						<SectionCard
+							headingLevel="h3"
 							icon={
 								<SettingsInputComponentIcon color="secondary" sx={iconSx} />
 							}
@@ -144,6 +148,7 @@ const Kits = () => {
 					</Grid>
 					<Grid size={{ xs: 12, md: 6 }}>
 						<SectionCard
+							headingLevel="h3"
 							icon={<LightbulbIcon color="secondary" sx={iconSx} />}
 							title="NeoPixel"
 						>

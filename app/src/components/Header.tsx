@@ -118,6 +118,7 @@ const Header: React.FC = () => {
 							<IconButton
 								onClick={() => setShowSettingsModal(true)}
 								color="inherit"
+								aria-label={t("settings")}
 							>
 								<SettingsIcon />
 							</IconButton>
@@ -130,6 +131,7 @@ const Header: React.FC = () => {
 							<IconButton
 								onClick={() => setShowSettingsModal(true)}
 								color="inherit"
+								aria-label={t("settings")}
 							>
 								<SettingsIcon />
 							</IconButton>
@@ -137,6 +139,7 @@ const Header: React.FC = () => {
 								onClick={() => setMobileMenuOpen(true)}
 								color="inherit"
 								edge="end"
+								aria-label={t("menu")}
 							>
 								<MenuIcon />
 							</IconButton>

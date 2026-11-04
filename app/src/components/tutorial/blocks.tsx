@@ -24,7 +24,12 @@ export const Paragraphs = ({ i18nKey }: { i18nKey: string }) => {
 };
 
 export const Heading = ({ children }: { children: ReactNode }) => (
-	<Typography variant="h5" fontWeight={600} sx={{ mt: 4, mb: 1.5 }}>
+	<Typography
+		variant="h5"
+		component="h3"
+		fontWeight={600}
+		sx={{ mt: 4, mb: 1.5 }}
+	>
 		{children}
 	</Typography>
 );

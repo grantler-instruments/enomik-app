@@ -51,7 +51,7 @@ function App() {
 					flexDirection="column"
 				>
 					{/* Pages keep their height; the footer goes below */}
-					<Box flex="1 0 auto">
+					<Box component="main" flex="1 0 auto">
 						<Routes>
 							<Route path="/" element={<Home />} />
 							<Route path="/configurator" element={<Configurator />} />

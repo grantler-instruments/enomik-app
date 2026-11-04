@@ -1030,7 +1030,12 @@ const DawSetup = () => {
 			<Paragraphs i18nKey="tutorial_daw_input" />
 			{DAWS.map((daw) => (
 				<Box key={daw}>
-					<Typography variant="subtitle1" fontWeight={600} sx={{ mt: 2 }}>
+					<Typography
+						variant="subtitle1"
+						component="h4"
+						fontWeight={600}
+						sx={{ mt: 2 }}
+					>
 						{t(`tutorial_daw_${daw}_title`)}
 					</Typography>
 					<Steps i18nKey={`tutorial_daw_${daw}`} />

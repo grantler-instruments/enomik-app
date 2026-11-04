@@ -304,6 +304,7 @@ i18n.use(initReactI18next).init({
 				uninstall_app_open_failed:
 					"Could not open the apps page from here. Open {{url}} in the address bar to manage installed apps.",
 				settings: "Settings",
+				menu: "Menu",
 				show_hints: "Show Hints",
 				language: "Language",
 				dark_theme: "Dark Theme",
@@ -753,6 +754,7 @@ i18n.use(initReactI18next).init({
 				uninstall_app_open_failed:
 					"Die Apps-Seite konnte von hier nicht geöffnet werden. Öffne {{url}} in der Adresszeile, um installierte Apps zu verwalten.",
 				settings: "Einstellungen",
+				menu: "Menü",
 				show_hints: "Hinweise anzeigen",
 				language: "Sprache",
 				dark_theme: "Dunkles Design",
@@ -1200,6 +1202,7 @@ i18n.use(initReactI18next).init({
 				uninstall_app_open_failed:
 					"No se pudo abrir la página de apps desde aquí. Abre {{url}} en la barra de direcciones para gestionar las apps instaladas.",
 				settings: "Configuración",
+				menu: "Menú",
 				show_hints: "Mostrar sugerencias",
 				language: "Idioma",
 				dark_theme: "Tema oscuro",
@@ -1631,6 +1634,7 @@ i18n.use(initReactI18next).init({
 				uninstall_app_open_failed:
 					"无法从此处打开应用管理页。请在地址栏打开 {{url}} 以管理已安装应用。",
 				settings: "设置",
+				menu: "菜单",
 				show_hints: "显示提示",
 				language: "语言",
 				dark_theme: "深色主题",

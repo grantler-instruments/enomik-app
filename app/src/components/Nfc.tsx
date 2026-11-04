@@ -213,10 +213,11 @@ const Nfc = () => {
 						ref={fileInputRef}
 						onChange={handleFileChange}
 					/>
-					<Tooltip title="Save mappings to file">
+					<Tooltip title="Save mappings to file" describeChild>
 						<span>
 							<IconButton
 								color="inherit"
+								aria-label="Save mappings to file"
 								onClick={saveToFile}
 								disabled={mappingList.length === 0}
 							>
@@ -362,7 +363,9 @@ const Nfc = () => {
 				</Paper>
 
 				<Paper variant="outlined" sx={{ p: 2 }}>
-					<Typography variant="h6">MIDI composer</Typography>
+					<Typography variant="h6" component="h2">
+						MIDI composer
+					</Typography>
 					<Typography variant="body2" color="text.secondary" mb={2}>
 						{composerActive
 							? `Sends to the board: the message gets mapped to ${labels[currentTag] || currentTag}.`
@@ -373,7 +376,9 @@ const Nfc = () => {
 
 				<Box>
 					<Box display="flex" alignItems="center" gap={1}>
-						<Typography variant="h6">Mappings</Typography>
+						<Typography variant="h6" component="h2">
+							Mappings
+						</Typography>
 						{loading && <CircularProgress size={16} />}
 						<Box flex={1} />
 						<Button
@@ -428,7 +433,9 @@ const Nfc = () => {
 
 				<Box>
 					<Box display="flex" alignItems="center">
-						<Typography variant="h6">Events</Typography>
+						<Typography variant="h6" component="h2">
+							Events
+						</Typography>
 						<Box flex={1} />
 						<Button size="small" onClick={clearLog} disabled={log.length === 0}>
 							Clear

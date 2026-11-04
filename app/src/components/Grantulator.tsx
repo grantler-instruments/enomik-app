@@ -145,7 +145,11 @@ const Grantulator = ({ embedded = false }: { embedded?: boolean }) => {
 			<div>
 				<CollapsibleSection
 					defaultExpanded
-					title={<Typography variant="h6">Grains</Typography>}
+					title={
+						<Typography variant="h6" component="span">
+							Grains
+						</Typography>
+					}
 				>
 					<Dropzone sample={sample} swarm={swarm} onFile={loadFile} />
 					<ParamRows group="grains" midi={midiInitialized} />

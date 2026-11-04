@@ -5,6 +5,7 @@ import {
 	Button,
 	Grid,
 	List,
+	ListItem,
 	ListItemButton,
 	ListItemText,
 	Typography,
@@ -49,24 +50,25 @@ const Tutorial = () => {
 						</Typography>
 						<List dense disablePadding>
 							{PAGES.map((item) => (
-								<ListItemButton
-									key={item.path}
-									component={NavLink}
-									to={item.path}
-									end
-									sx={{
-										borderRadius: 1,
-										pl: 2 + item.depth * 2,
-										"&.active": {
-											color: "primary.main",
-											"& .MuiListItemText-primary": { fontWeight: 600 },
-										},
-									}}
-								>
-									<ListItemText
-										primary={`${item.number}. ${t(item.chapter.titleKey)}`}
-									/>
-								</ListItemButton>
+								<ListItem key={item.path} disablePadding>
+									<ListItemButton
+										component={NavLink}
+										to={item.path}
+										end
+										sx={{
+											borderRadius: 1,
+											pl: 2 + item.depth * 2,
+											"&.active": {
+												color: "primary.main",
+												"& .MuiListItemText-primary": { fontWeight: 600 },
+											},
+										}}
+									>
+										<ListItemText
+											primary={`${item.number}. ${t(item.chapter.titleKey)}`}
+										/>
+									</ListItemButton>
+								</ListItem>
 							))}
 						</List>
 					</Box>
@@ -77,7 +79,12 @@ const Tutorial = () => {
 						<Typography variant="overline" color="text.secondary">
 							{t("tutorial_chapter_n", { n: page.number })}
 						</Typography>
-						<Typography variant="h3" fontWeight={600} sx={{ mb: 3 }}>
+						<Typography
+							variant="h3"
+							component="h2"
+							fontWeight={600}
+							sx={{ mb: 3 }}
+						>
 							{t(page.chapter.titleKey)}
 						</Typography>
 						<Content />

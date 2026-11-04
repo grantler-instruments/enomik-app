@@ -58,7 +58,7 @@ export default function Console({
 	return (
 		<Box mt={2}>
 			<Box my={1} display="flex" gap={1}>
-				<Typography variant="h6" flex={1}>
+				<Typography variant="h6" component="h3" flex={1}>
 					{t("console")}
 				</Typography>
 				<Box flex={1} />

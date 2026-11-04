@@ -1,6 +1,12 @@
 // theme.ts
 import { createTheme } from "@mui/material/styles";
 
+/**
+ * Subtitles are labels, not headings (MUI renders them as h6): a heading
+ * takes an explicit `component`, so the page outline stays in order.
+ */
+const SUBTITLE_MAPPING = { subtitle1: "p", subtitle2: "p" };
+
 const darkTheme = createTheme({
 	palette: {
 		mode: "dark",
@@ -59,6 +65,7 @@ const darkTheme = createTheme({
 	// shadows: Array(25).fill("0 4px 14px rgba(0, 0, 0, 0.32)"),
 
 	components: {
+		MuiTypography: { defaultProps: { variantMapping: SUBTITLE_MAPPING } },
 		MuiCssBaseline: {
 			styleOverrides: `
         body {
@@ -176,6 +183,7 @@ const lightTheme = createTheme({
 	},
 
 	components: {
+		MuiTypography: { defaultProps: { variantMapping: SUBTITLE_MAPPING } },
 		MuiCssBaseline: {
 			styleOverrides: `
         body {

@@ -46,6 +46,8 @@ const ParamRow = ({
 				step={param.step}
 				value={value}
 				onChange={(_, v) => setValue(param.id, v as number)}
+				aria-label={param.label}
+				getAriaValueText={(v) => formatValue(param, v)}
 			/>
 			<Typography width={80} textAlign="right" variant="body2">
 				{formatValue(param, value)}

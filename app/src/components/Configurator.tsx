@@ -496,10 +496,16 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 				</IconButton>
 			</Tooltip>
 
-			<Tooltip title={t("tooltip_load_configuration_from_device") || ""}>
+			{/* The span keeps the tooltip on a disabled button; the label goes on
+			    the button itself (describeChild), not on the span. */}
+			<Tooltip
+				title={t("tooltip_load_configuration_from_device") || ""}
+				describeChild
+			>
 				<span>
 					<IconButton
 						color="inherit"
+						aria-label={t("tooltip_load_configuration_from_device")}
 						onClick={handleLoadFromDevice}
 						disabled={!initialized || loadingFromDevice || deploying}
 					>
@@ -544,6 +550,7 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 						onChange={setGlobalOpen}
 						title={
 							<SectionHeader
+								component="span"
 								title={t("section_global")}
 								icon={<GlobalIcon />}
 								tooltipKey="tooltip_global"
@@ -559,6 +566,7 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 						unmountOnExit
 						title={
 							<SectionHeader
+								component="span"
 								title={t("section_board")}
 								icon={<DeveloperBoardIcon />}
 							/>
@@ -572,6 +580,7 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 						onChange={setInputsOpen}
 						title={
 							<SectionHeader
+								component="span"
 								title={t("section_input_pin_to_midi")}
 								icon={<PinToMidiIcon />}
 								tooltipKey="tooltip_pin_to_midi"
@@ -586,6 +595,7 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 						onChange={setOutputsOpen}
 						title={
 							<SectionHeader
+								component="span"
 								title={t("section_midi_to_output_pin")}
 								icon={<MidiToPinIcon />}
 								tooltipKey="tooltip_midi_to_pin"
@@ -602,6 +612,7 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 				onChange={setPeersOpen}
 				title={
 					<SectionHeader
+						component="span"
 						title={t("section_wireless_midi")}
 						icon={<WirelessMidiIcon />}
 						tooltipKey="tooltip_wireless_midi"

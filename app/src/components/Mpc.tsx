@@ -418,6 +418,7 @@ const Mpc = ({ embedded = false }: { embedded?: boolean }) => {
 				sx={{ mb: 2 }}
 				title={
 					<SectionHeader
+						component="span"
 						title={t("section_midi_composer")}
 						tooltipKey="tooltip_midi_composer"
 					/>

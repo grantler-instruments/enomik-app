@@ -167,7 +167,8 @@ const BoardDiagram = ({
 			<Box
 				component="svg"
 				viewBox={`${-MARGIN} ${-MARGIN} ${board.width + 2 * MARGIN} ${board.height + 2 * MARGIN}`}
-				role="img"
+				// A group, not an img: an img hides its focusable pins from screen readers.
+				role="group"
 				aria-label={t("kits_board_diagram", { name: board.name })}
 				sx={{
 					width: "100%",

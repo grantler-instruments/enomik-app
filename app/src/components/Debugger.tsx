@@ -26,6 +26,7 @@ const Debugger = () => {
 				sx={{ mb: 2 }}
 				title={
 					<SectionHeader
+						component="span"
 						title={t("section_midi_composer")}
 						tooltipKey="tooltip_midi_composer"
 					/>
@@ -41,6 +42,7 @@ const Debugger = () => {
 				sx={{ mb: 2 }}
 				title={
 					<SectionHeader
+						component="span"
 						title={t("section_midi_monitor")}
 						tooltipKey="tooltip_midi_monitor"
 					/>
@@ -54,6 +56,7 @@ const Debugger = () => {
 				sx={{ mb: 2 }}
 				title={
 					<SectionHeader
+						component="span"
 						title={t("section_serial_monitor")}
 						tooltipKey="tooltip_serial_monitor"
 					/>
@@ -66,6 +69,7 @@ const Debugger = () => {
 				sx={{ mb: 2 }}
 				title={
 					<SectionHeader
+						component="span"
 						title={t("section_tools")}
 						tooltipKey="tooltip_tools"
 					/>

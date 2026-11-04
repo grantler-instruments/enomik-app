@@ -47,7 +47,9 @@ const GettingStarted = () => {
 						// biome-ignore lint/suspicious/noArrayIndexKey: static steps
 						<ListItem key={`step-${index}`} sx={{ marginTop: 4 }}>
 							<Box display={"flex"} flexDirection="column" gap={1}>
-								<Typography variant="h4">{step.title}</Typography>
+								<Typography variant="h4" component="h2">
+									{step.title}
+								</Typography>
 								<Typography variant="body2">{step.description}</Typography>
 								{step.descriptionExtra && (
 									<Typography variant="body2" fontStyle={"italic"}>

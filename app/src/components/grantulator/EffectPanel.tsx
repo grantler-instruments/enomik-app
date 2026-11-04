@@ -25,7 +25,11 @@ const EffectPanel = ({
 	return (
 		<CollapsibleSection
 			defaultExpanded
-			title={<Typography variant="h6">{title}</Typography>}
+			title={
+				<Typography variant="h6" component="span">
+					{title}
+				</Typography>
+			}
 			actions={
 				<>
 					<Switch

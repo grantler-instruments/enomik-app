@@ -384,7 +384,9 @@ function MessageList() {
 						aria-controls="inputs-content"
 					>
 						<Box display="flex" gap={1} alignItems="center">
-							<Typography variant={isMobile ? "h6" : "h3"}>
+							{/* Plain text: the summary is a button; the Accordion's own
+							    h3 is the heading. */}
+							<Typography variant={isMobile ? "h6" : "h3"} component="span">
 								{t("filter")}
 							</Typography>
 							{activeFilters > 0 && (

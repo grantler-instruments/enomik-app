@@ -44,7 +44,12 @@ const BoardView = () => {
 						// Caps the scale so small boards don't fill the page
 						maxWidth={board.width * BOARD_PX_PER_MM}
 					>
-						<Typography variant="subtitle1" fontWeight={600} mb={1}>
+						<Typography
+							variant="subtitle1"
+							component="h3"
+							fontWeight={600}
+							mb={1}
+						>
 							{board.name}
 						</Typography>
 						<BoardDiagram board={board} interactive hint={false} />

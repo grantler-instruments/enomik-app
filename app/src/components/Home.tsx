@@ -56,6 +56,7 @@ const Home = () => {
 
 				<Typography
 					variant="h6"
+					component="p"
 					sx={{ opacity: 0.9, maxWidth: 560, mt: 2 }}
 					gutterBottom
 				>

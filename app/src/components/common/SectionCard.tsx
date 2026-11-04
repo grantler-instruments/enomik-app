@@ -4,10 +4,17 @@ import type { ReactNode } from "react";
 type SectionCardProps = {
 	icon?: ReactNode;
 	title: ReactNode;
+	/** "h3" when the cards sit under a section heading of their own. */
+	headingLevel?: "h2" | "h3";
 	children: ReactNode;
 };
 
-const SectionCard = ({ icon, title, children }: SectionCardProps) => (
+const SectionCard = ({
+	icon,
+	title,
+	headingLevel = "h2",
+	children,
+}: SectionCardProps) => (
 	<Paper
 		component="section"
 		variant="outlined"
@@ -15,7 +22,7 @@ const SectionCard = ({ icon, title, children }: SectionCardProps) => (
 	>
 		<Box display="flex" alignItems="center" gap={1.5} mb={2}>
 			{icon}
-			<Typography variant="h6" fontWeight={600}>
+			<Typography variant="h6" component={headingLevel} fontWeight={600}>
 				{title}
 			</Typography>
 		</Box>

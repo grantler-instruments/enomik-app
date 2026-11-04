@@ -9,7 +9,7 @@ import {
 	Stack,
 	TextField,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
 import { type MidiMessage, useMIDIStore } from "../store/midi";
@@ -40,6 +40,8 @@ const Composer = ({
 	onSend?: (message: MidiMessage) => void;
 } = {}) => {
 	const { t } = useTranslation();
+	const channelLabelId = useId();
+	const typeLabelId = useId();
 	const sendMessage = useMIDIStore((state) => state.sendMessage);
 	const composerOutputId = useMIDIStore(
 		(state) => state.selectedComposerOutputDevice,
@@ -163,8 +165,9 @@ const Composer = ({
 					disabled={disabled}
 					sx={{ width: { xs: "100%", sm: 120 } }}
 				>
-					<InputLabel>{t("channel")}</InputLabel>
+					<InputLabel id={channelLabelId}>{t("channel")}</InputLabel>
 					<Select
+						labelId={channelLabelId}
 						value={channel}
 						label={t("channel")}
 						onChange={(e) => setChannel(Number(e.target.value))}
@@ -182,8 +185,9 @@ const Composer = ({
 					disabled={disabled}
 					sx={{ width: { xs: "100%", sm: 180 } }}
 				>
-					<InputLabel>{t("type")}</InputLabel>
+					<InputLabel id={typeLabelId}>{t("type")}</InputLabel>
 					<Select
+						labelId={typeLabelId}
 						value={type}
 						label={t("type")}
 						onChange={(e) => setType(Number(e.target.value))}
