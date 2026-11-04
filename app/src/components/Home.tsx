@@ -41,6 +41,8 @@ const Home = () => {
 			>
 				<Typography
 					variant="h2"
+					// The page's main heading, styled smaller than an h1.
+					component="h1"
 					fontWeight={700}
 					gutterBottom
 					sx={{ lineHeight: 1.2 }}

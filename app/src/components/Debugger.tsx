@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import Composer from "./Composer";
@@ -9,26 +9,6 @@ import PageLayout from "./layout/PageLayout";
 import MessageList from "./MessageList";
 import SectionHeader from "./SectionHeader";
 import WebSerialMonitor from "./SerialMonitor";
-
-/** Section title with the Init MIDI button on the right while collapsed. */
-const TitleWithInit = ({
-	collapsed,
-	children,
-}: {
-	collapsed: boolean;
-	children: ReactNode;
-}) => (
-	<Box display="flex" alignItems="center" gap={2} flex={1} mr={1}>
-		{children}
-		<Box flex={1} />
-		{/* InitMidi renders nothing once MIDI is up. Initialise without unfolding the panel. */}
-		{collapsed && (
-			<Box onClick={(e) => e.stopPropagation()}>
-				<InitMidi />
-			</Box>
-		)}
-	</Box>
-);
 
 const Debugger = () => {
 	const { t } = useTranslation();
@@ -45,13 +25,13 @@ const Debugger = () => {
 				onChange={setComposerOpen}
 				sx={{ mb: 2 }}
 				title={
-					<TitleWithInit collapsed={!composerOpen}>
-						<SectionHeader
-							title={t("section_midi_composer")}
-							tooltipKey="tooltip_midi_composer"
-						/>
-					</TitleWithInit>
+					<SectionHeader
+						title={t("section_midi_composer")}
+						tooltipKey="tooltip_midi_composer"
+					/>
 				}
+				// InitMidi renders nothing once MIDI is up.
+				actions={!composerOpen && <InitMidi />}
 			>
 				<Composer />
 			</CollapsibleSection>
@@ -60,13 +40,13 @@ const Debugger = () => {
 				onChange={setMonitorOpen}
 				sx={{ mb: 2 }}
 				title={
-					<TitleWithInit collapsed={!monitorOpen}>
-						<SectionHeader
-							title={t("section_midi_monitor")}
-							tooltipKey="tooltip_midi_monitor"
-						/>
-					</TitleWithInit>
+					<SectionHeader
+						title={t("section_midi_monitor")}
+						tooltipKey="tooltip_midi_monitor"
+					/>
 				}
+				// InitMidi renders nothing once MIDI is up.
+				actions={!monitorOpen && <InitMidi />}
 			>
 				<MessageList />
 			</CollapsibleSection>

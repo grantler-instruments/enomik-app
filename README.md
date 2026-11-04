@@ -44,6 +44,7 @@ npm run dev     # http://localhost:5173/enomik-app/
 | --- | --- |
 | `npm run dev` | Dev server |
 | `npm test` | Vitest, once (`npm run test:watch` to keep watching) |
+| `npm run coverage` | Tests with a coverage report in `coverage/` |
 | `npm run lint` | Biome: lint and format check (`npm run check:fix` fixes) |
 | `npm run build` | Type check (`tsc -b`) and production build to `dist/` |
 | `npm run preview` | Serve the build |
@@ -92,6 +93,10 @@ Conventions:
 
 - A page wraps its content in `PageLayout`. Pages that also appear in the tutorial
   take an `embedded` prop: no page chrome, toolbar inline.
+- `src/pages.test.tsx` renders every route and tutorial page in the whole app and
+  fails on crashes and React errors (like invalid HTML nesting). A new page or
+  tutorial section is covered automatically if it has an `<h1>` (`PageLayout`'s
+  title).
 - Logic that can be pure goes to `utils/` and gets tests next to it
   (`foo.ts` / `foo.test.ts`). Tests run in node; component tests opt into jsdom per
   file.

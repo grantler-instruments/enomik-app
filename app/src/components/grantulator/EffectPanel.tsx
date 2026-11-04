@@ -1,4 +1,4 @@
-import { Box, Switch, Typography } from "@mui/material";
+import { Switch, Typography } from "@mui/material";
 import {
 	type GrantulatorGroup,
 	type SwitchId,
@@ -25,20 +25,16 @@ const EffectPanel = ({
 	return (
 		<CollapsibleSection
 			defaultExpanded
-			title={
-				<Box display="flex" alignItems="center" gap={1}>
-					<Typography variant="h6">{title}</Typography>
-					{/* Toggle and map the effect without folding the panel. */}
+			title={<Typography variant="h6">{title}</Typography>}
+			actions={
+				<>
 					<Switch
 						checked={on}
-						onClick={(e) => e.stopPropagation()}
 						onChange={(_, checked) => setSwitch(switchId, checked)}
 						slotProps={{ input: { "aria-label": `${title} on` } }}
 					/>
-					<Box onClick={(e) => e.stopPropagation()}>
-						<MidiLearn target={switchId} midi={midi} />
-					</Box>
-				</Box>
+					<MidiLearn target={switchId} midi={midi} />
+				</>
 			}
 		>
 			<ParamRows group={group} midi={midi} />

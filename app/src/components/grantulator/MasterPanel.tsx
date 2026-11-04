@@ -2,7 +2,7 @@ import {
 	VolumeOff as VolumeOffIcon,
 	VolumeUp as VolumeUpIcon,
 } from "@mui/icons-material";
-import { Box, IconButton, Typography } from "@mui/material";
+import { IconButton, Typography } from "@mui/material";
 import { useGrantulatorStore } from "../../store/grantulator";
 import CollapsibleSection from "../common/CollapsibleSection";
 import MidiLearn from "./MidiLearn";
@@ -15,25 +15,19 @@ const MasterPanel = ({ midi }: { midi: boolean }) => {
 	return (
 		<CollapsibleSection
 			defaultExpanded
-			title={
-				<Box display="flex" alignItems="center" gap={1}>
-					<Typography variant="h6">Master</Typography>
-					{/* Mute and map it without folding the panel. */}
+			title={<Typography variant="h6">Master</Typography>}
+			actions={
+				<>
 					<IconButton
 						color={muted ? "warning" : "default"}
 						aria-label={muted ? "Unmute" : "Mute"}
 						aria-pressed={muted}
-						onClick={(e) => {
-							e.stopPropagation();
-							setSwitch("muted", !muted);
-						}}
+						onClick={() => setSwitch("muted", !muted)}
 					>
 						{muted ? <VolumeOffIcon /> : <VolumeUpIcon />}
 					</IconButton>
-					<Box onClick={(e) => e.stopPropagation()}>
-						<MidiLearn target="muted" midi={midi} />
-					</Box>
-				</Box>
+					<MidiLearn target="muted" midi={midi} />
+				</>
 			}
 		>
 			<ParamRows group="master" midi={midi} />

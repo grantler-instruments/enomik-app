@@ -34,6 +34,12 @@ export default defineConfig({
 	test: {
 		// Environment stays node; component tests opt into jsdom per file.
 		setupFiles: ["./src/test/setup.ts"],
+		// npm run coverage: report in coverage/ (open index.html).
+		coverage: {
+			include: ["src/**/*.{ts,tsx}"],
+			exclude: ["src/**/*.test.{ts,tsx}", "src/test/**", "src/types/**"],
+			reporter: ["text-summary", "html"],
+		},
 	},
 	// Only the lazy grantulator route imports these: pre-bundle them so the
 	// dev server doesn't re-optimize (504 Outdated Optimize Dep) on first visit.

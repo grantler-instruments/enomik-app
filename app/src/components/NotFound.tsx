@@ -1,9 +1,9 @@
-import { Box } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import PageLayout from "./layout/PageLayout";
 
 const NotFound = () => {
 	const { t } = useTranslation();
-	return <Box>{t("not_found")}</Box>;
+	return <PageLayout title={t("not_found")}>{null}</PageLayout>;
 };
 
 export default NotFound;
