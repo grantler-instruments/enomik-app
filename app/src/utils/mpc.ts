@@ -183,63 +183,106 @@ export const padPaths = (pad: number, n: number): SamplePaths => [
 	`mpc:pad${pad}:${n}:right`,
 ];
 
-export interface PadVoice {
+/** One of a pad's two voices: a hit plays on the one not playing yet. */
+export interface Voice {
+	/** A rising edge (0 to 1) starts the sound from the top. */
+	gate: number;
+	/**
+	 * Of the hit it plays, 0..1. 0 until its first one: a new voice starts
+	 * playing right away.
+	 */
+	velocity: number;
+	/** 1 while it's the pad's current voice; 0 fades it out. */
+	active: number;
+}
+
+export interface PadState {
 	/** Where the pad's sound is; null while it has none. */
 	paths: SamplePaths | null;
 	/** The sound's length in samples. */
 	length: number;
-	/** A rising edge (0 to 1) starts the sound from the top. */
-	gate: number;
-	/**
-	 * Of the last hit, 0..1. 0 until the first one: a new voice starts
-	 * playing right away.
-	 */
-	velocity: number;
+	/** The sound's own sample rate. */
+	sampleRate: number;
 	/** The pad's volume slider, 0..1. */
 	volume: number;
 	/** Sound sample rate over the output's, so it plays at its pitch. */
 	rate: number;
+	voices: [Voice, Voice];
 }
+
+/** Fade at the end of a sound, so one that stops above zero doesn't click. */
+export const END_FADE_SEC = 0.003;
+/** Fade of a voice cut off by the next hit, as a time constant. */
+export const CUT_FADE_SEC = 0.001;
+/** Smoothing of the volume slider. */
+const VOLUME_SMOOTH_SEC = 0.01;
 
 /**
  * All pads, summed into stereo. Every value is a keyed const: a hit or a
  * moved slider re-renders as a value change, without rebuilding the graph.
  * Effects can go between the sum and the soft clip.
+ *
+ * Nothing jumps, so nothing clicks: a hit starts the pad's other voice while
+ * the playing one fades out within a few ms, every sound fades out over its
+ * last END_FADE_SEC, and the volume slider is smoothed.
  */
-export function mpcPatch(pads: PadVoice[]): [NodeRepr_t, NodeRepr_t] {
-	const voices = pads.flatMap((p, pad) => {
-		if (!p.paths) return [];
-		const key = (name: string) => `mpc:${pad}:${name}`;
-		const gain = el.mul(
-			// Squared for an even-sounding fade. Not smoothed: el.sm ramps up
-			// from 0 when created, which would fade in the first hit.
-			el.const({ key: key("volume"), value: p.volume ** 2 }),
-			el.const({ key: key("velocity"), value: p.velocity }),
-		);
-		const gate = el.const({ key: key("gate"), value: p.gate });
-		// el.sample fades in over ~40 ms, too slow for a drum's attack. This
-		// reads the sound with a table instead: the position runs from 0 to 1
-		// over its length, back to 0 on each rising edge of the gate.
-		const position = el.accum(
-			el.const({ key: key("step"), value: p.rate / p.length }),
-			gate,
-		);
-		const playing = el.le(position, 1);
+export function mpcPatch(pads: PadState[]): [NodeRepr_t, NodeRepr_t] {
+	const outputs = pads.flatMap((p, pad) => {
 		const paths = p.paths;
-		return [
-			[0, 1].map((side) =>
+		if (!paths) return [];
+		const key = (name: string) => `mpc:${pad}:${name}`;
+		// Squared for an even-sounding fade.
+		const volume = el.smooth(
+			el.tau2pole(VOLUME_SMOOTH_SEC),
+			el.const({ key: key("volume"), value: p.volume ** 2 }),
+		);
+		// From 1 down to 0 over the last END_FADE_SEC of the sound (at most a
+		// quarter of it, for very short ones).
+		const fadeSamples = Math.min(END_FADE_SEC * p.sampleRate, p.length / 4);
+		const endScale = el.const({
+			key: key("endScale"),
+			value: p.length / Math.max(fadeSamples, 1),
+		});
+		const step = el.const({ key: key("step"), value: p.rate / p.length });
+		const voices = p.voices.map((v, i) => {
+			const vkey = (name: string) => key(`${i}:${name}`);
+			// el.sample fades in over ~40 ms, too slow for a drum's attack. This
+			// reads the sound with a table instead: the position runs from 0 to
+			// 1 over its length, back to 0 on each rising edge of the gate.
+			const position = el.accum(
+				step,
+				el.const({ key: vkey("gate"), value: v.gate }),
+			);
+			const endFade = el.max(
+				0,
+				el.min(1, el.mul(el.sub(1, position), endScale)),
+			);
+			// Instant on, so the attack stays sharp; smoothed off when the
+			// next hit takes over.
+			const active = el.const({ key: vkey("active"), value: v.active });
+			const cut = el.max(active, el.smooth(el.tau2pole(CUT_FADE_SEC), active));
+			const gain = el.mul(
+				el.const({ key: vkey("velocity"), value: v.velocity }),
+				cut,
+				endFade,
+			);
+			return [0, 1].map((side) =>
 				el.mul(
 					gain,
-					playing,
 					el.table(
-						{ key: key(`table${side}`), path: paths[side] },
+						{ key: vkey(`table${side}`), path: paths[side] },
 						el.min(position, 1),
 					),
 				),
+			);
+		});
+		return [
+			[0, 1].map((side) =>
+				el.mul(volume, el.add(voices[0][side], voices[1][side])),
 			) as [NodeRepr_t, NodeRepr_t],
 		];
 	});
 	const silence = el.const({ value: 0 });
-	const sum = (side: 0 | 1) => el.add(silence, ...voices.map((v) => v[side]));
+	const sum = (side: 0 | 1) => el.add(silence, ...outputs.map((v) => v[side]));
 	return softClip([sum(0), sum(1)]);
 }

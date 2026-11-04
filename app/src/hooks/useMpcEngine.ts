@@ -2,7 +2,13 @@ import WebRenderer from "@elemaudio/web-renderer";
 import { useEffect, useRef, useState } from "react";
 import { type MpcState, useMpcStore } from "../store/mpc";
 import type { SamplePaths } from "../utils/grantulator";
-import { mpcPatch, PAD_COUNT, type PadVoice, padPaths } from "../utils/mpc";
+import {
+	mpcPatch,
+	PAD_COUNT,
+	type PadState,
+	padPaths,
+	type Voice,
+} from "../utils/mpc";
 
 export interface PadSound {
 	name: string;
@@ -40,9 +46,15 @@ export function useMpcEngine(sounds: PadSound[]) {
 	/** What each pad's paths hold in the renderer's file system. */
 	const uploaded = useRef<{ sound: PadSound; paths: SamplePaths }[]>([]);
 	const uploads = useRef(0);
-	const gates = useRef<number[]>(Array(PAD_COUNT).fill(0));
-	// 0 until a pad is hit: a new voice starts playing right away.
-	const velocities = useRef<number[]>(Array(PAD_COUNT).fill(0));
+	// Velocity 0 until a voice is hit: a new voice starts playing right away.
+	const voices = useRef<[Voice, Voice][]>(
+		Array.from({ length: PAD_COUNT }, () => [
+			{ gate: 0, velocity: 0, active: 0 },
+			{ gate: 0, velocity: 0, active: 0 },
+		]),
+	);
+	/** Each pad's voice of its last hit: the next one goes to the other. */
+	const current = useRef<number[]>(Array(PAD_COUNT).fill(1));
 	const gateTimers = useRef<number[]>([]);
 
 	const create = async () => {
@@ -85,18 +97,19 @@ export function useMpcEngine(sounds: PadSound[]) {
 		const isNew = Object.keys(changed).length > 0;
 		if (isNew) await core.updateVirtualFileSystem(changed);
 		const { padVolumes } = useMpcStore.getState();
-		const voices: PadVoice[] = Array.from({ length: PAD_COUNT }, (_, pad) => {
+		const pads: PadState[] = Array.from({ length: PAD_COUNT }, (_, pad) => {
 			const upload = uploaded.current[pad];
+			const buffer = upload?.sound.buffer;
 			return {
 				paths: upload?.paths ?? null,
-				length: upload?.sound.buffer.length ?? 1,
-				gate: gates.current[pad],
-				velocity: velocities.current[pad],
+				length: buffer?.length ?? 1,
+				sampleRate: buffer?.sampleRate ?? context.sampleRate,
 				volume: padVolumes[pad],
-				rate: upload ? upload.sound.buffer.sampleRate / context.sampleRate : 1,
+				rate: buffer ? buffer.sampleRate / context.sampleRate : 1,
+				voices: voices.current[pad],
 			};
 		});
-		await core.render(...mpcPatch(voices));
+		await core.render(...mpcPatch(pads));
 		if (isNew) await core.pruneVirtualFileSystem();
 	};
 
@@ -126,12 +139,21 @@ export function useMpcEngine(sounds: PadSound[]) {
 	/** Plays a pad from the top; starts the audio first if it isn't yet. */
 	const trigger = async (pad: number, velocity: number) => {
 		if (engine.current?.context.state !== "running") await start();
-		velocities.current[pad] = velocity;
-		gates.current[pad] = 1;
+		// The other voice starts; the one playing fades out instead of jumping.
+		const next = 1 - current.current[pad];
+		current.current[pad] = next;
+		const [a, b] = voices.current[pad];
+		const voice = next === 0 ? a : b;
+		const previous = next === 0 ? b : a;
+		voice.gate = 1;
+		voice.velocity = velocity;
+		voice.active = 1;
+		previous.active = 0;
 		void requestRender();
-		window.clearTimeout(gateTimers.current[pad]);
-		gateTimers.current[pad] = window.setTimeout(() => {
-			gates.current[pad] = 0;
+		const timer = pad * 2 + next;
+		window.clearTimeout(gateTimers.current[timer]);
+		gateTimers.current[timer] = window.setTimeout(() => {
+			voice.gate = 0;
 			void requestRender();
 		}, GATE_MS);
 	};
