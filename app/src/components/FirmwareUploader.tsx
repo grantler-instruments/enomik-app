@@ -34,7 +34,8 @@ import Console from "./SerialConsole";
 const formatVersionLabel = (versionPathSegment: string): string =>
 	versionPathSegment.replace(/-/g, ".");
 
-const FirmwareUploader: FC = () => {
+/** `embedded`: without page chrome (used in the tutorial). */
+const FirmwareUploader: FC<{ embedded?: boolean }> = ({ embedded = false }) => {
 	const {
 		chipInfo,
 		isFlashing,
@@ -181,22 +182,8 @@ const FirmwareUploader: FC = () => {
 		}
 	};
 
-	return (
-		<PageLayout
-			title={t("firmware_uploader")}
-			info={
-				<>
-					{t("firmwareuploader_intro")}{" "}
-					<Link
-						href="https://github.com/grantler-instruments/enomik-app/issues"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						{t("firmwareuploader_issue_tracker")}
-					</Link>
-				</>
-			}
-		>
+	const body = (
+		<>
 			<Grid container spacing={2}>
 				{/* Step 1: Version selection */}
 				<Grid size={{ xs: 12 }}>
@@ -534,6 +521,26 @@ const FirmwareUploader: FC = () => {
 			<Console canSend={false} height={200} />
 
 			{toast}
+		</>
+	);
+	if (embedded) return body;
+	return (
+		<PageLayout
+			title={t("firmware_uploader")}
+			info={
+				<>
+					{t("firmwareuploader_intro")}{" "}
+					<Link
+						href="https://github.com/grantler-instruments/enomik-app/issues"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{t("firmwareuploader_issue_tracker")}
+					</Link>
+				</>
+			}
+		>
+			{body}
 		</PageLayout>
 	);
 };

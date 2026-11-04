@@ -20,6 +20,7 @@ import { useLocation } from "react-router-dom";
 import Composer from "../Composer";
 import Configurator from "../Configurator";
 import BoardView from "../configurator/BoardView";
+import FirmwareUploader from "../FirmwareUploader";
 import Globals from "../Globals";
 import InitMidi from "../InitMidi";
 import Inspector from "../Inspector";
@@ -486,6 +487,9 @@ const FirmwareWeb = () => {
 			<Paragraphs i18nKey="tutorial_firmware_web_text" />
 			<Steps i18nKey="tutorial_firmware_steps" />
 			<Note severity="warning">{t("tutorial_firmware_nvs")}</Note>
+			<LiveDemo>
+				<FirmwareUploader embedded />
+			</LiveDemo>
 			<LinkButtons
 				actions={[{ label: t("firmware_uploader"), link: "/uploader" }]}
 			/>
