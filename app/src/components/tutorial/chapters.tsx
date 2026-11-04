@@ -100,6 +100,8 @@ const Electronics = () => {
 			<Waveform kind="digital" />
 			<Paragraphs i18nKey="tutorial_electronics_digital" />
 			<Note severity="warning">{t("tutorial_electronics_digital_note")}</Note>
+			<Heading>{t("tutorial_electronics_voltage_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_electronics_voltage" />
 			<Heading>{t("tutorial_electronics_analog_title")}</Heading>
 			<Typography variant="body1">
 				{t("tutorial_electronics_dimmer_intro")}

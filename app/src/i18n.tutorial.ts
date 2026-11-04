@@ -130,6 +130,12 @@ const en = {
 		"A pin can only deliver a small current, around 20 mA. That is enough for an LED with a resistor, but not for motors, solenoids or long LED strips. Use a transistor, a driver board or a relay for those, and a separate power supply.",
 	tutorial_electronics_digital_note:
 		"ESP32 pins work with 3.3 V. Never connect a 5 V signal directly to a pin, it can damage the board.",
+	tutorial_electronics_voltage_title: "Voltage levels",
+	tutorial_electronics_voltage: [
+		"Microcontrollers work with a logic voltage: the voltage that means HIGH. Most current boards, like the ESP32 boards in enomik or the Raspberry Pi Pico, use 3.3 V. Some, like the Arduino Uno, Mega and Nano, use 5 V.",
+		"Many sensors and actuators work with either, but some need a higher voltage: some LED strips expect a 5 V data signal, many relay modules, motors and solenoids run on 5 V or 12 V. Connected directly, they react unreliably or not at all, and a 5 V signal going into a 3.3 V pin can damage it.",
+		"To bridge the gap: a logic level shifter translates signals between 3.3 V and 5 V, in both directions. A transistor or MOSFET lets a 3.3 V pin switch a load that runs on a higher voltage. Two resistors as a voltage divider bring a 5 V sensor signal down to 3.3 V. Driver boards and relay modules do the switching for motors and bigger loads.",
+	],
 	tutorial_photo_credit: "Photo",
 	tutorial_photo_button: "Push buttons",
 	tutorial_photo_potentiometer: "Potentiometer",
@@ -861,6 +867,12 @@ const de: typeof en = {
 		"Ein Pin liefert nur wenig Strom, etwa 20 mA. Das reicht für eine LED mit Vorwiderstand, aber nicht für Motoren, Hubmagnete oder lange LED-Streifen. Nutze dafür einen Transistor, ein Treiberboard oder ein Relais und ein eigenes Netzteil.",
 	tutorial_electronics_digital_note:
 		"ESP32-Pins arbeiten mit 3,3 V. Schließe nie ein 5-V-Signal direkt an einen Pin an, das kann das Board beschädigen.",
+	tutorial_electronics_voltage_title: "Spannungspegel",
+	tutorial_electronics_voltage: [
+		"Mikrocontroller arbeiten mit einer Logikspannung: der Spannung, die HIGH bedeutet. Die meisten aktuellen Boards, wie die ESP32-Boards von enomik oder der Raspberry Pi Pico, nutzen 3,3 V. Manche, wie Arduino Uno, Mega und Nano, nutzen 5 V.",
+		"Viele Sensoren und Aktoren funktionieren mit beidem, manche brauchen aber eine höhere Spannung: Einige LED-Streifen erwarten ein 5-V-Datensignal, viele Relaismodule, Motoren und Hubmagnete laufen mit 5 V oder 12 V. Direkt angeschlossen reagieren sie unzuverlässig oder gar nicht, und ein 5-V-Signal an einem 3,3-V-Pin kann diesen beschädigen.",
+		"So überbrückst du den Unterschied: Ein Pegelwandler (Logic Level Shifter) übersetzt Signale zwischen 3,3 V und 5 V, in beide Richtungen. Mit einem Transistor oder MOSFET schaltet ein 3,3-V-Pin eine Last, die mit höherer Spannung läuft. Zwei Widerstände als Spannungsteiler bringen ein 5-V-Sensorsignal auf 3,3 V herunter. Treiberboards und Relaismodule übernehmen das Schalten von Motoren und größeren Lasten.",
+	],
 	tutorial_photo_credit: "Foto",
 	tutorial_photo_button: "Taster",
 	tutorial_photo_potentiometer: "Potentiometer",
@@ -1603,6 +1615,12 @@ const es: typeof en = {
 		"Un pin solo puede dar poca corriente, unos 20 mA. Basta para un LED con resistencia, pero no para motores, solenoides o tiras de LED largas. Para eso usa un transistor, una placa driver o un relé, y una fuente de alimentación aparte.",
 	tutorial_electronics_digital_note:
 		"Los pines del ESP32 funcionan a 3,3 V. Nunca conectes una señal de 5 V directamente a un pin, puede dañar la placa.",
+	tutorial_electronics_voltage_title: "Niveles de tensión",
+	tutorial_electronics_voltage: [
+		"Los microcontroladores trabajan con una tensión lógica: la tensión que significa HIGH. La mayoría de las placas actuales, como las placas ESP32 de enomik o la Raspberry Pi Pico, usan 3,3 V. Algunas, como Arduino Uno, Mega y Nano, usan 5 V.",
+		"Muchos sensores y actuadores funcionan con ambas, pero algunos necesitan una tensión mayor: algunas tiras LED esperan una señal de datos de 5 V, y muchos módulos de relé, motores y solenoides funcionan con 5 V o 12 V. Conectados directamente, reaccionan de forma poco fiable o no reaccionan, y una señal de 5 V en un pin de 3,3 V puede dañarlo.",
+		"Para salvar la diferencia: un convertidor de nivel lógico (logic level shifter) traduce señales entre 3,3 V y 5 V, en ambas direcciones. Un transistor o MOSFET permite que un pin de 3,3 V conmute una carga que funciona a mayor tensión. Dos resistencias como divisor de tensión bajan una señal de sensor de 5 V a 3,3 V. Las placas controladoras y los módulos de relé se encargan de conmutar motores y cargas mayores.",
+	],
 	tutorial_photo_credit: "Foto",
 	tutorial_photo_button: "Pulsadores",
 	tutorial_photo_potentiometer: "Potenciómetro",
@@ -2337,6 +2355,12 @@ const zh: typeof en = {
 		"一个引脚只能提供很小的电流，约 20 mA。这足以驱动带限流电阻的 LED，但不足以驱动电机、电磁铁或长 LED 灯带。这些设备请使用晶体管、驱动板或继电器，并配备独立电源。",
 	tutorial_electronics_digital_note:
 		"ESP32 引脚工作电压为 3.3 V。切勿将 5 V 信号直接接到引脚上，否则可能损坏开发板。",
+	tutorial_electronics_voltage_title: "电压电平",
+	tutorial_electronics_voltage: [
+		"微控制器使用一个逻辑电压：代表 HIGH 的电压。大多数现代开发板，例如 enomik 使用的 ESP32 开发板或 Raspberry Pi Pico，使用 3.3 V。有些开发板，例如 Arduino Uno、Mega 和 Nano，使用 5 V。",
+		"许多传感器和执行器两种电压都能用，但有些需要更高的电压：一些 LED 灯带需要 5 V 的数据信号，许多继电器模块、电机和电磁铁使用 5 V 或 12 V。直接连接时，它们可能工作不稳定或完全没有反应，而且 5 V 信号接到 3.3 V 引脚上可能会损坏它。",
+		"解决方法：逻辑电平转换器（logic level shifter）可以在 3.3 V 和 5 V 之间双向转换信号。晶体管或 MOSFET 让 3.3 V 引脚能够开关使用更高电压的负载。用两个电阻组成分压器，可以把 5 V 的传感器信号降到 3.3 V。驱动板和继电器模块负责开关电机和更大的负载。",
+	],
 	tutorial_photo_credit: "照片",
 	tutorial_photo_button: "按钮",
 	tutorial_photo_potentiometer: "电位器",
