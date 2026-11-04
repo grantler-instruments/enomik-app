@@ -36,7 +36,8 @@ export type MappingTarget = GrantulatorParamId | SwitchId;
 export interface GrantulatorParam {
 	id: GrantulatorParamId;
 	group: GrantulatorGroup;
-	label: string;
+	/** i18n key of the label (src/i18n.audio.ts). */
+	labelKey: string;
 	min: number;
 	max: number;
 	step: number;
@@ -48,7 +49,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "position",
 		group: "grains",
-		label: "Position",
+		labelKey: "grantulator_param_position",
 		min: 0,
 		max: 1,
 		step: 0.001,
@@ -57,7 +58,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "spread",
 		group: "grains",
-		label: "Spread",
+		labelKey: "grantulator_param_spread",
 		min: 0,
 		max: 1,
 		step: 0.001,
@@ -66,7 +67,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "drift",
 		group: "grains",
-		label: "Drift",
+		labelKey: "grantulator_param_drift",
 		min: 0,
 		max: 0.5,
 		step: 0.001,
@@ -75,7 +76,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "driftRate",
 		group: "grains",
-		label: "Drift rate",
+		labelKey: "grantulator_param_drift_rate",
 		min: 0.01,
 		max: 1,
 		step: 0.001,
@@ -85,7 +86,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "size",
 		group: "grains",
-		label: "Grain size",
+		labelKey: "grantulator_param_size",
 		min: 10,
 		max: 2000,
 		step: 1,
@@ -95,7 +96,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "pitch",
 		group: "grains",
-		label: "Pitch",
+		labelKey: "grantulator_param_pitch",
 		min: -24,
 		max: 24,
 		step: 0.01,
@@ -105,7 +106,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "intervalChance",
 		group: "grains",
-		label: "Interval chance",
+		labelKey: "grantulator_param_interval_chance",
 		min: 0,
 		max: 1,
 		step: 0.001,
@@ -114,7 +115,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "grains",
 		group: "grains",
-		label: "Grains",
+		labelKey: "grantulator_param_grains",
 		min: 1,
 		max: 64,
 		step: 1,
@@ -123,7 +124,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "jitter",
 		group: "grains",
-		label: "Jitter",
+		labelKey: "grantulator_param_jitter",
 		min: 0,
 		max: 1,
 		step: 0.001,
@@ -132,7 +133,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "detune",
 		group: "grains",
-		label: "Detune",
+		labelKey: "grantulator_param_detune",
 		min: 0,
 		max: 12,
 		step: 0.01,
@@ -142,7 +143,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "width",
 		group: "grains",
-		label: "Width",
+		labelKey: "grantulator_param_width",
 		min: 0,
 		max: 1,
 		step: 0.001,
@@ -151,7 +152,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "gain",
 		group: "grains",
-		label: "Gain",
+		labelKey: "grantulator_param_gain",
 		min: 0,
 		max: 1,
 		step: 0.001,
@@ -160,7 +161,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "delayTime",
 		group: "delay",
-		label: "Time",
+		labelKey: "grantulator_param_time",
 		min: 1,
 		max: 2000,
 		step: 1,
@@ -170,7 +171,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "delayFeedback",
 		group: "delay",
-		label: "Feedback",
+		labelKey: "grantulator_param_feedback",
 		min: 0,
 		max: 0.95,
 		step: 0.001,
@@ -179,7 +180,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "delayTone",
 		group: "delay",
-		label: "Tone",
+		labelKey: "grantulator_param_tone",
 		min: 200,
 		max: 18000,
 		step: 1,
@@ -189,7 +190,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "delayMix",
 		group: "delay",
-		label: "Mix",
+		labelKey: "grantulator_param_mix",
 		min: 0,
 		max: 1,
 		step: 0.001,
@@ -198,7 +199,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "reverbDecay",
 		group: "reverb",
-		label: "Decay",
+		labelKey: "grantulator_param_decay",
 		min: 0.5,
 		max: 30,
 		step: 0.1,
@@ -208,7 +209,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "reverbSize",
 		group: "reverb",
-		label: "Size",
+		labelKey: "grantulator_param_room_size",
 		min: 0.3,
 		max: 2,
 		step: 0.01,
@@ -217,7 +218,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "reverbDamping",
 		group: "reverb",
-		label: "Damping",
+		labelKey: "grantulator_param_damping",
 		min: 500,
 		max: 16000,
 		step: 1,
@@ -227,7 +228,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "reverbMix",
 		group: "reverb",
-		label: "Mix",
+		labelKey: "grantulator_param_mix",
 		min: 0,
 		max: 1,
 		step: 0.001,
@@ -236,7 +237,7 @@ export const GRANTULATOR_PARAMS: GrantulatorParam[] = [
 	{
 		id: "volume",
 		group: "master",
-		label: "Volume",
+		labelKey: "audio_volume",
 		min: 0,
 		max: 1,
 		step: 0.001,

@@ -669,7 +669,7 @@ const en = {
 		"Click a pad to hear it. Pad 1 is at the bottom left, pad 16 at the top right.",
 		"Drop an audio file on a pad, or use its upload button, to replace the sound. The sample is kept for your next visit; the reset button brings back the built-in sound.",
 		"Click Init MIDI. Pads 1 to 16 already listen to notes 36 to 51 on channel 1, and the velocity sets the volume.",
-		"To use another note or a touch pad, click MIDI learn on a pad and press the button or touch the pad you want. Touch pads trigger with their control change. The volume sliders, per pad and master, learn a control change the same way, e.g. from a knob.",
+		"To use another note or a touch pad, click the trigger chip under a pad (the one with the hand icon, showing e.g. Ch 1 Note 36) and press the button or touch the pad you want. Touch pads trigger with their control change. The volume sliders, per pad and master, learn a control change the same way, e.g. from a knob.",
 	],
 	tutorial_tool_mpc_tip:
 		"Try it with the button example: map each button to a pad and you have a wireless drum controller.",
@@ -1387,10 +1387,10 @@ const de: typeof en = {
 	],
 	tutorial_tool_tester_steps_title: "Die Schritte",
 	tutorial_tool_tester_steps: [
-		"Connect client and dongle: Beide Boards werden automatisch erkannt (oder von Hand ausgewählt). Set up and continue schreibt die Testkonfiguration auf das Board.",
-		"Press the buttons: Jeder Tastendruck muss über den USB des Clients und drahtlos am Dongle ankommen. Pin 16 sendet bei jedem Druck einen anderen MIDI-Typ.",
-		"LED loopback: Halte einen Taster gedrückt und gib an, ob die LED geleuchtet hat.",
-		"Touch pins: Berühre jedes Pad, bis es einen Wert meldet.",
+		"Client und Dongle verbinden: Beide Boards werden automatisch erkannt (oder von Hand ausgewählt). Einrichten und weiter schreibt die Testkonfiguration auf das Board.",
+		"Taster drücken: Jeder Tastendruck muss über den USB des Clients und drahtlos am Dongle ankommen. Pin 16 sendet bei jedem Druck einen anderen MIDI-Typ.",
+		"LED-Loopback: Halte einen Taster gedrückt und gib an, ob die LED geleuchtet hat.",
+		"Touch-Pins: Berühre jedes Pad, bis es einen Wert meldet.",
 		"Ergebnis: Jede Prüfung wird als bestanden oder fehlgeschlagen aufgelistet. Zum Schluss schreibst du eine Standardkonfiguration, damit das Board einsatzbereit ist, oder überspringst das.",
 	],
 	tutorial_tool_tester_warning:
@@ -1400,7 +1400,7 @@ const de: typeof en = {
 		"Der Grantulator ist ein Granularsynthesizer, der im Browser läuft. Er zerlegt ein Sample in winzige Grains und spielt sie als Klangwolke ab, mit Delay und Hall dahinter. Jeder Parameter lässt sich mit deinen enomik-Tastern, Touch-Pads oder jedem anderen MIDI-Controller steuern.",
 	],
 	tutorial_tool_grantulator_steps: [
-		"Klicke auf Start audio. Standardmäßig ist ein Vogel-Sample geladen; zieh deine eigene Audiodatei auf die Wellenform, um es zu ersetzen.",
+		"Klicke auf Audio starten. Standardmäßig ist ein Vogel-Sample geladen; zieh deine eigene Audiodatei auf die Wellenform, um es zu ersetzen.",
 		"Bewege die Regler, um die Grains zu formen, und schalte Delay und Hall ein oder aus.",
 		"Klicke auf Init MIDI, dann auf MIDI learn neben einem Parameter und bewege einen Controller oder berühre ein Pad: Ab jetzt folgt ihm der Parameter. Schalter (Delay, Hall, Mute) können auch eine Note lernen, sodass ein Tastendruck sie umschaltet.",
 	],
@@ -1414,7 +1414,7 @@ const de: typeof en = {
 		"Klicke auf ein Pad, um es zu hören. Pad 1 liegt unten links, Pad 16 oben rechts.",
 		"Zieh eine Audiodatei auf ein Pad oder nutze dessen Upload-Button, um den Sound zu ersetzen. Das Sample bleibt für deinen nächsten Besuch erhalten; der Reset-Button holt den eingebauten Sound zurück.",
 		"Klicke auf Init MIDI. Die Pads 1 bis 16 hören schon auf die Noten 36 bis 51 auf Kanal 1, die Velocity bestimmt die Lautstärke.",
-		"Für eine andere Note oder ein Touch-Pad klicke bei einem Pad auf MIDI learn und drück den gewünschten Taster oder berühre das Pad. Touch-Pads lösen mit ihrem Control Change aus. Die Lautstärkeregler, pro Pad und Master, lernen genauso einen Control Change, z. B. von einem Poti.",
+		"Für eine andere Note oder ein Touch-Pad klicke auf den Trigger-Chip unter einem Pad (der mit dem Hand-Symbol, z. B. Ch 1 Note 36) und drück den gewünschten Taster oder berühre das Pad. Touch-Pads lösen mit ihrem Control Change aus. Die Lautstärkeregler, pro Pad und Master, lernen genauso einen Control Change, z. B. von einem Poti.",
 	],
 	tutorial_tool_mpc_tip:
 		"Probier es mit dem Taster-Beispiel aus: Leg jeden Taster auf ein Pad und du hast einen kabellosen Drum-Controller.",
@@ -2130,10 +2130,10 @@ const es: typeof en = {
 	],
 	tutorial_tool_tester_steps_title: "Los pasos",
 	tutorial_tool_tester_steps: [
-		"Connect client and dongle: ambas placas se detectan automáticamente (o elígelas a mano). Set up and continue escribe la configuración de prueba en la placa.",
-		"Press the buttons: cada pulsación debe llegar por el USB del cliente y de forma inalámbrica al dongle. El pin 16 envía un tipo MIDI distinto en cada pulsación.",
-		"LED loopback: mantén pulsado un botón e indica si el LED se encendió.",
-		"Touch pins: toca cada pad hasta que informe un valor.",
+		"Conectar cliente y dongle: ambas placas se detectan automáticamente (o elígelas a mano). Configurar y continuar escribe la configuración de prueba en la placa.",
+		"Pulsar los botones: cada pulsación debe llegar por el USB del cliente y de forma inalámbrica al dongle. El pin 16 envía un tipo MIDI distinto en cada pulsación.",
+		"Loopback del LED: mantén pulsado un botón e indica si el LED se encendió.",
+		"Pines táctiles: toca cada pad hasta que informe un valor.",
 		"Resultados: cada comprobación aparece como superada o fallida. Al final, escribe una configuración por defecto para dejar la placa lista para usar, u omítelo.",
 	],
 	tutorial_tool_tester_warning:
@@ -2143,7 +2143,7 @@ const es: typeof en = {
 		"El Grantulator es un sintetizador granular que funciona en el navegador. Corta una muestra en granos diminutos y los reproduce como una nube de sonido, con un delay y una reverberación detrás. Cada parámetro se puede controlar con tus botones enomik, pads táctiles o cualquier otro controlador MIDI.",
 	],
 	tutorial_tool_grantulator_steps: [
-		"Haz clic en Start audio. Por defecto se carga una muestra de pájaros; arrastra tu propio archivo de audio sobre la forma de onda para reemplazarla.",
+		"Haz clic en Iniciar audio. Por defecto se carga una muestra de pájaros; arrastra tu propio archivo de audio sobre la forma de onda para reemplazarla.",
 		"Mueve los deslizadores para dar forma a los granos y activa o desactiva el delay y la reverberación.",
 		"Haz clic en Init MIDI, luego en MIDI learn junto a un parámetro y mueve un controlador o toca un pad: desde ahora el parámetro lo sigue. Los interruptores (delay, reverberación, silencio) también pueden aprender una nota, así una pulsación de botón los cambia.",
 	],
@@ -2157,7 +2157,7 @@ const es: typeof en = {
 		"Haz clic en un pad para escucharlo. El pad 1 está abajo a la izquierda y el pad 16 arriba a la derecha.",
 		"Arrastra un archivo de audio sobre un pad, o usa su botón de carga, para reemplazar el sonido. La muestra se guarda para tu próxima visita; el botón de restablecer recupera el sonido incorporado.",
 		"Haz clic en Init MIDI. Los pads 1 a 16 ya escuchan las notas 36 a 51 en el canal 1, y la velocidad determina el volumen.",
-		"Para usar otra nota o un pad táctil, haz clic en MIDI learn en un pad y pulsa el botón o toca el pad que quieras. Los pads táctiles disparan con su control change. Los deslizadores de volumen, por pad y master, aprenden un control change de la misma forma, p. ej. de un potenciómetro.",
+		"Para usar otra nota o un pad táctil, haz clic en el chip de disparo bajo un pad (el del icono de mano, p. ej. Ch 1 Note 36) y pulsa el botón o toca el pad que quieras. Los pads táctiles disparan con su control change. Los deslizadores de volumen, por pad y master, aprenden un control change de la misma forma, p. ej. de un potenciómetro.",
 	],
 	tutorial_tool_mpc_tip:
 		"Pruébalo con el ejemplo del botón: asigna cada botón a un pad y tendrás un controlador de batería inalámbrico.",
@@ -2850,10 +2850,10 @@ const zh: typeof en = {
 	],
 	tutorial_tool_tester_steps_title: "步骤",
 	tutorial_tool_tester_steps: [
-		"Connect client and dongle：两块开发板会被自动识别（也可以手动选择）。Set up and continue 会将测试配置写入开发板。",
-		"Press the buttons：每次按下都必须通过客户端的 USB 以及无线方式到达 dongle。引脚 16 每次按下都会发送不同类型的 MIDI 消息。",
-		"LED loopback：按住一个按钮，并回答 LED 是否亮起。",
-		"Touch pins：依次触摸每个触摸板，直到它报告数值。",
+		"连接客户端和 dongle：两块开发板会被自动识别（也可以手动选择）。“设置并继续”会将测试配置写入开发板。",
+		"按下按钮：每次按下都必须通过客户端的 USB 以及无线方式到达 dongle。引脚 16 每次按下都会发送不同类型的 MIDI 消息。",
+		"LED 回环：按住一个按钮，并回答 LED 是否亮起。",
+		"触摸引脚：依次触摸每个触摸板，直到它报告数值。",
 		"结果：每项检查都会列出通过或失败。最后，写入默认配置让开发板可以直接使用，或者跳过。",
 	],
 	tutorial_tool_tester_warning:
@@ -2863,7 +2863,7 @@ const zh: typeof en = {
 		"Grantulator 是一个在浏览器中运行的颗粒合成器。它把采样切成微小的颗粒，以声音云的形式播放，后面接有延迟和混响。每个参数都可以用你的 enomik 按钮、触摸板或任何其他 MIDI 控制器来控制。",
 	],
 	tutorial_tool_grantulator_steps: [
-		"点击 Start audio。默认加载一段鸟鸣采样；把你自己的音频文件拖到波形上即可替换。",
+		"点击“启动音频”。默认加载一段鸟鸣采样；把你自己的音频文件拖到波形上即可替换。",
 		"移动滑块来塑造颗粒，并打开或关闭延迟和混响。",
 		"点击 Init MIDI，再点击参数旁的 MIDI learn，然后转动控制器或触摸触摸板：此后该参数会跟随它变化。开关（延迟、混响、静音）也可以学习一个音符，这样按一下按钮就能切换它们。",
 	],
@@ -2877,7 +2877,7 @@ const zh: typeof en = {
 		"点击一个打击垫即可试听。打击垫 1 在左下角，打击垫 16 在右上角。",
 		"把音频文件拖到打击垫上，或使用它的上传按钮，来替换音色。采样会保留到你下次访问；重置按钮可恢复内置音色。",
 		"点击 Init MIDI。打击垫 1 到 16 已经响应通道 1 上的音符 36 到 51，力度决定音量。",
-		"要使用其他音符或触摸板，点击打击垫上的 MIDI learn，然后按下想用的按钮或触摸想用的触摸板。触摸板通过其控制变化（CC）触发。音量滑块（每个打击垫的和总音量）也以同样方式学习一个控制变化，例如来自旋钮。",
+		"要使用其他音符或触摸板，点击打击垫下方的触发标签（带手形图标的那个，例如 Ch 1 Note 36），然后按下想用的按钮或触摸想用的触摸板。触摸板通过其控制变化（CC）触发。音量滑块（每个打击垫的和总音量）也以同样方式学习一个控制变化，例如来自旋钮。",
 	],
 	tutorial_tool_mpc_tip:
 		"配合按钮示例试试看：把每个按钮映射到一个打击垫，你就有了一个无线鼓控制器。",

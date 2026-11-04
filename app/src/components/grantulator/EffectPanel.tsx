@@ -1,4 +1,5 @@
 import { Switch, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import {
 	type GrantulatorGroup,
 	type SwitchId,
@@ -20,6 +21,7 @@ const EffectPanel = ({
 	switchId: SwitchId;
 	midi: boolean;
 }) => {
+	const { t } = useTranslation();
 	const on = useGrantulatorStore((s) => s[switchId]);
 	const setSwitch = useGrantulatorStore((s) => s.setSwitch);
 	return (
@@ -35,7 +37,11 @@ const EffectPanel = ({
 					<Switch
 						checked={on}
 						onChange={(_, checked) => setSwitch(switchId, checked)}
-						slotProps={{ input: { "aria-label": `${title} on` } }}
+						slotProps={{
+							input: {
+								"aria-label": t("grantulator_effect_on", { effect: title }),
+							},
+						}}
 					/>
 					<MidiLearn target={switchId} midi={midi} />
 				</>

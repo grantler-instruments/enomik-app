@@ -4,6 +4,10 @@
  * then 4E ("N") and a command byte.
  */
 
+import { nfcTranslations } from "../i18n.nfc";
+
+const nfcEn = nfcTranslations.en;
+
 export const NFC_SYSEX_HEADER = [0xf0, 0x7d, 0x7f, 0x7f, 0x4e] as const;
 
 export const NFC_COMMAND = {
@@ -110,23 +114,42 @@ export function parseNfcSysex(data: ArrayLike<number>): NfcEvent | null {
 	}
 }
 
-export const NFC_TYPE_LABELS: Record<NfcMessageType, string> = {
-	8: "Note off",
-	9: "Note on",
-	11: "Control change",
-	12: "Program change",
+/** Translation key of each message type's name, in i18n.nfc.ts. */
+export const NFC_TYPE_KEYS: Record<NfcMessageType, keyof typeof nfcEn> = {
+	8: "nfc_type_note_off",
+	9: "nfc_type_note_on",
+	11: "nfc_type_control_change",
+	12: "nfc_type_program_change",
 };
 
-export function describeNfcMapping(m: Omit<NfcMapping, "uid">): string {
-	const label = NFC_TYPE_LABELS[m.type];
+export type NfcTranslate = (
+	key: keyof typeof nfcEn,
+	values?: Record<string, string | number>,
+) => string;
+
+/** English, for callers without i18next (tests, logs). */
+const englishNfc: NfcTranslate = (key, values = {}) =>
+	nfcEn[key].replace(/{{(\w+)}}/g, (_, name: string) => String(values[name]));
+
+/** "Note on 60 vel 100 · ch 1", in the language of `t`. */
+export function describeNfcMapping(
+	m: Omit<NfcMapping, "uid">,
+	t: NfcTranslate = englishNfc,
+): string {
+	const values = {
+		type: t(NFC_TYPE_KEYS[m.type]),
+		channel: m.channel,
+		data1: m.data1,
+		data2: m.data2,
+	};
 	switch (m.type) {
 		case 0x8:
 		case 0x9:
-			return `${label} ${m.data1} vel ${m.data2} · ch ${m.channel}`;
+			return t("nfc_describe_note", values);
 		case 0xb:
-			return `${label} ${m.data1} = ${m.data2} · ch ${m.channel}`;
+			return t("nfc_describe_cc", values);
 		case 0xc:
-			return `${label} ${m.data1} · ch ${m.channel}`;
+			return t("nfc_describe_program", values);
 	}
 }
 

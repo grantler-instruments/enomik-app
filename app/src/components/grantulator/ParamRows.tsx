@@ -1,4 +1,6 @@
 import { Box, Slider, Typography } from "@mui/material";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import {
 	GRANTULATOR_PARAMS,
 	type GrantulatorGroup,
@@ -7,8 +9,15 @@ import {
 } from "../../store/grantulator";
 import MidiLearn from "./MidiLearn";
 
-const formatValue = (param: GrantulatorParam, value: number) =>
-	`${value.toFixed(param.step >= 1 ? 0 : 2)}${param.unit ? ` ${param.unit}` : ""}`;
+/** Units that are words, not symbols like ms or Hz: translated. */
+const UNIT_KEYS: Record<string, string> = { st: "grantulator_unit_semitones" };
+
+const formatValue = (t: TFunction, param: GrantulatorParam, value: number) => {
+	const unit =
+		param.unit &&
+		(UNIT_KEYS[param.unit] ? t(UNIT_KEYS[param.unit]) : param.unit);
+	return `${value.toFixed(param.step >= 1 ? 0 : 2)}${unit ? ` ${unit}` : ""}`;
+};
 
 const ParamRows = ({
 	group,
@@ -33,12 +42,13 @@ const ParamRow = ({
 	param: GrantulatorParam;
 	midi: boolean;
 }) => {
+	const { t } = useTranslation();
 	const value = useGrantulatorStore((s) => s.values[param.id]);
 	const setValue = useGrantulatorStore((s) => s.setValue);
 
 	return (
 		<Box display="flex" alignItems="center" gap={2} paddingY={0.5}>
-			<Typography width={100}>{param.label}</Typography>
+			<Typography width={100}>{t(param.labelKey)}</Typography>
 			<Slider
 				sx={{ flex: 1 }}
 				min={param.min}
@@ -46,11 +56,11 @@ const ParamRow = ({
 				step={param.step}
 				value={value}
 				onChange={(_, v) => setValue(param.id, v as number)}
-				aria-label={param.label}
-				getAriaValueText={(v) => formatValue(param, v)}
+				aria-label={t(param.labelKey)}
+				getAriaValueText={(v) => formatValue(t, param, v)}
 			/>
 			<Typography width={80} textAlign="right" variant="body2">
-				{formatValue(param, value)}
+				{formatValue(t, param, value)}
 			</Typography>
 			<Box width={180}>
 				<MidiLearn target={param.id} midi={midi} />

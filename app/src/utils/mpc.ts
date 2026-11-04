@@ -114,19 +114,55 @@ const pluck = (f: number) =>
 /** C minor pentatonic, from C3. */
 const PLUCK_NOTES = [130.81, 155.56, 196.0, 233.08, 261.63, 311.13];
 
-export const DEFAULT_SOUNDS: { name: string; make: () => Float32Array }[] = [
-	{ name: "Kick", make: () => sweep(0.5, 150, 45, 7) },
-	{ name: "Snare", make: snare },
-	{ name: "Closed hat", make: () => hat(0.08, 60, 3) },
-	{ name: "Open hat", make: () => hat(0.45, 8, 4) },
-	{ name: "Clap", make: clap },
-	{ name: "Rim", make: rim },
-	{ name: "Tom low", make: () => sweep(0.45, 120, 80, 8) },
-	{ name: "Tom mid", make: () => sweep(0.4, 180, 120, 9) },
-	{ name: "Tom high", make: () => sweep(0.35, 260, 170, 10) },
-	{ name: "Cowbell", make: cowbell },
+export interface DefaultSound {
+	/** English name, for tests and logs. */
+	name: string;
+	/** i18n key of the name shown on the pad (src/i18n.audio.ts). */
+	labelKey: string;
+	/** Interpolation values for labelKey. */
+	labelValues?: Record<string, number>;
+	make: () => Float32Array;
+}
+
+export const DEFAULT_SOUNDS: DefaultSound[] = [
+	{
+		name: "Kick",
+		labelKey: "mpc_sound_kick",
+		make: () => sweep(0.5, 150, 45, 7),
+	},
+	{ name: "Snare", labelKey: "mpc_sound_snare", make: snare },
+	{
+		name: "Closed hat",
+		labelKey: "mpc_sound_closed_hat",
+		make: () => hat(0.08, 60, 3),
+	},
+	{
+		name: "Open hat",
+		labelKey: "mpc_sound_open_hat",
+		make: () => hat(0.45, 8, 4),
+	},
+	{ name: "Clap", labelKey: "mpc_sound_clap", make: clap },
+	{ name: "Rim", labelKey: "mpc_sound_rim", make: rim },
+	{
+		name: "Tom low",
+		labelKey: "mpc_sound_tom_low",
+		make: () => sweep(0.45, 120, 80, 8),
+	},
+	{
+		name: "Tom mid",
+		labelKey: "mpc_sound_tom_mid",
+		make: () => sweep(0.4, 180, 120, 9),
+	},
+	{
+		name: "Tom high",
+		labelKey: "mpc_sound_tom_high",
+		make: () => sweep(0.35, 260, 170, 10),
+	},
+	{ name: "Cowbell", labelKey: "mpc_sound_cowbell", make: cowbell },
 	...PLUCK_NOTES.map((f, i) => ({
 		name: `Pluck ${i + 1}`,
+		labelKey: "mpc_sound_pluck",
+		labelValues: { n: i + 1 },
 		make: () => pluck(f),
 	})),
 ];

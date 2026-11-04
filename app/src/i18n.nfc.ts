@@ -1,0 +1,209 @@
+// Strings of the NFC page (components/Nfc.tsx), spread into each language in i18n.ts.
+// Keys must exist in every language: src/i18n.test.ts checks.
+
+const en = {
+	nfc_intro:
+		"Maps NFC tags to MIDI messages on a board running the client_nfc example. Connect the board over USB: the dongle keeps this SysEx to itself, so mapping mode can't be switched through it.",
+	nfc_save_to_file: "Save mappings to file",
+	nfc_load_from_file: "Load mappings from file",
+	nfc_file_invalid: "{{name}} is not an NFC mappings file.",
+	nfc_file_load_failed: "Could not load {{name}}: {{error}}",
+	nfc_pending:
+		"{{count}} mapping(s) from the file aren't on the board yet. The board only learns a mapping with its tag on the reader: turn mapping mode on and place each tag: its saved message is filled into the composer, then press send.",
+	nfc_send_failed: "Could not send: pick a connected MIDI output.",
+	nfc_mapping_mode: "Mapping mode",
+	nfc_state_unknown: "State unknown until the board answers.",
+	nfc_confirm_delete_all: "Delete all mappings on the board?",
+	nfc_cancel: "Cancel",
+	nfc_delete_all: "Delete all mappings",
+	nfc_tag_on_reader: "Tag on reader:",
+	nfc_no_tag: "none, place a tag on the reader",
+	nfc_table_full:
+		"Mapping table full ({{count}}). Delete all mappings to add new tags.",
+	nfc_mapping_hint:
+		"Send the message for this tag with the composer below, or send any note, CC or program change from another app or controller.",
+	nfc_composer: "MIDI composer",
+	nfc_composer_active:
+		"Sends to the board: the message gets mapped to {{tag}}.",
+	nfc_composer_inactive:
+		"Turn mapping mode on and place a tag on the reader to map it to a message.",
+	nfc_mappings: "Mappings",
+	nfc_reload: "Reload",
+	nfc_load_timeout:
+		"The board didn't send its mappings. Is it running client_nfc with the get all command, connected over USB?",
+	nfc_no_mappings: "No mappings yet.",
+	nfc_tag: "Tag",
+	nfc_label: "Label",
+	nfc_message: "Message",
+	nfc_events: "Events",
+	nfc_no_events: "Nothing received from the board yet.",
+	nfc_event_placed: "Tag placed: {{uid}}",
+	nfc_event_removed: "Tag removed: {{uid}}",
+	nfc_event_mapping_state: "Mapping mode {{state}}",
+	nfc_event_mapped: "Tag {{uid}} mapped to {{mapping}}",
+	nfc_event_count: "Board has {{count}} mapping(s)",
+	nfc_event_cleared: "All mappings deleted",
+	nfc_event_table_full: "Mapping table full ({{count}})",
+	nfc_type_note_off: "Note off",
+	nfc_type_note_on: "Note on",
+	nfc_type_control_change: "Control change",
+	nfc_type_program_change: "Program change",
+	nfc_describe_note: "{{type}} {{data1}} vel {{data2}} · ch {{channel}}",
+	nfc_describe_cc: "{{type}} {{data1}} = {{data2}} · ch {{channel}}",
+	nfc_describe_program: "{{type}} {{data1}} · ch {{channel}}",
+};
+
+const de: typeof en = {
+	nfc_intro:
+		"Ordnet NFC-Tags MIDI-Nachrichten zu, auf einem Board mit dem client_nfc-Beispiel. Schließ das Board über USB an: Der Dongle behält diese SysEx für sich, darüber lässt sich der Zuordnungsmodus also nicht umschalten.",
+	nfc_save_to_file: "Zuordnungen in Datei speichern",
+	nfc_load_from_file: "Zuordnungen aus Datei laden",
+	nfc_file_invalid: "{{name}} ist keine NFC-Zuordnungsdatei.",
+	nfc_file_load_failed: "{{name}} konnte nicht geladen werden: {{error}}",
+	nfc_pending:
+		"{{count}} Zuordnung(en) aus der Datei sind noch nicht auf dem Board. Das Board lernt eine Zuordnung nur, wenn ihr Tag auf dem Lesegerät liegt: Schalte den Zuordnungsmodus ein und leg jeden Tag auf: Seine gespeicherte Nachricht wird in den Composer übernommen, dann drück auf Senden.",
+	nfc_send_failed:
+		"Senden fehlgeschlagen: Wähle einen verbundenen MIDI-Ausgang.",
+	nfc_mapping_mode: "Zuordnungsmodus",
+	nfc_state_unknown: "Status unbekannt, bis das Board antwortet.",
+	nfc_confirm_delete_all: "Alle Zuordnungen auf dem Board löschen?",
+	nfc_cancel: "Abbrechen",
+	nfc_delete_all: "Alle Zuordnungen löschen",
+	nfc_tag_on_reader: "Tag auf dem Lesegerät:",
+	nfc_no_tag: "keiner, leg einen Tag auf das Lesegerät",
+	nfc_table_full:
+		"Zuordnungstabelle voll ({{count}}). Lösche alle Zuordnungen, um neue Tags hinzuzufügen.",
+	nfc_mapping_hint:
+		"Sende die Nachricht für diesen Tag mit dem Composer unten, oder sende eine beliebige Note, CC oder Program Change aus einer anderen App oder von einem anderen Controller.",
+	nfc_composer: "MIDI-Composer",
+	nfc_composer_active:
+		"Sendet an das Board: Die Nachricht wird {{tag}} zugeordnet.",
+	nfc_composer_inactive:
+		"Schalte den Zuordnungsmodus ein und leg einen Tag auf das Lesegerät, um ihm eine Nachricht zuzuordnen.",
+	nfc_mappings: "Zuordnungen",
+	nfc_reload: "Neu laden",
+	nfc_load_timeout:
+		"Das Board hat seine Zuordnungen nicht gesendet. Läuft darauf client_nfc mit dem Befehl „get all“, und ist es über USB verbunden?",
+	nfc_no_mappings: "Noch keine Zuordnungen.",
+	nfc_tag: "Tag",
+	nfc_label: "Bezeichnung",
+	nfc_message: "Nachricht",
+	nfc_events: "Ereignisse",
+	nfc_no_events: "Noch nichts vom Board empfangen.",
+	nfc_event_placed: "Tag aufgelegt: {{uid}}",
+	nfc_event_removed: "Tag entfernt: {{uid}}",
+	nfc_event_mapping_state: "Zuordnungsmodus {{state}}",
+	nfc_event_mapped: "Tag {{uid}} zugeordnet zu {{mapping}}",
+	nfc_event_count: "Board hat {{count}} Zuordnung(en)",
+	nfc_event_cleared: "Alle Zuordnungen gelöscht",
+	nfc_event_table_full: "Zuordnungstabelle voll ({{count}})",
+	nfc_type_note_off: "Note off",
+	nfc_type_note_on: "Note on",
+	nfc_type_control_change: "Control Change",
+	nfc_type_program_change: "Program Change",
+	nfc_describe_note: "{{type}} {{data1}} Anschl. {{data2}} · Kan. {{channel}}",
+	nfc_describe_cc: "{{type}} {{data1}} = {{data2}} · Kan. {{channel}}",
+	nfc_describe_program: "{{type}} {{data1}} · Kan. {{channel}}",
+};
+
+const es: typeof en = {
+	nfc_intro:
+		"Asigna etiquetas NFC a mensajes MIDI en una placa con el ejemplo client_nfc. Conecta la placa por USB: el dongle se queda este SysEx para sí, así que el modo de asignación no se puede cambiar a través de él.",
+	nfc_save_to_file: "Guardar asignaciones en un archivo",
+	nfc_load_from_file: "Cargar asignaciones desde un archivo",
+	nfc_file_invalid: "{{name}} no es un archivo de asignaciones NFC.",
+	nfc_file_load_failed: "No se pudo cargar {{name}}: {{error}}",
+	nfc_pending:
+		"{{count}} asignación(es) del archivo aún no están en la placa. La placa solo aprende una asignación con su etiqueta en el lector: activa el modo de asignación y coloca cada etiqueta: su mensaje guardado se rellena en el compositor, luego pulsa enviar.",
+	nfc_send_failed: "No se pudo enviar: elige una salida MIDI conectada.",
+	nfc_mapping_mode: "Modo de asignación",
+	nfc_state_unknown: "Estado desconocido hasta que la placa responda.",
+	nfc_confirm_delete_all: "¿Eliminar todas las asignaciones de la placa?",
+	nfc_cancel: "Cancelar",
+	nfc_delete_all: "Eliminar todas las asignaciones",
+	nfc_tag_on_reader: "Etiqueta en el lector:",
+	nfc_no_tag: "ninguna, coloca una etiqueta en el lector",
+	nfc_table_full:
+		"Tabla de asignaciones llena ({{count}}). Elimina todas las asignaciones para añadir etiquetas nuevas.",
+	nfc_mapping_hint:
+		"Envía el mensaje para esta etiqueta con el compositor de abajo, o envía cualquier nota, CC o cambio de programa desde otra app o controlador.",
+	nfc_composer: "Compositor MIDI",
+	nfc_composer_active: "Envía a la placa: el mensaje se asigna a {{tag}}.",
+	nfc_composer_inactive:
+		"Activa el modo de asignación y coloca una etiqueta en el lector para asignarle un mensaje.",
+	nfc_mappings: "Asignaciones",
+	nfc_reload: "Recargar",
+	nfc_load_timeout:
+		"La placa no envió sus asignaciones. ¿Ejecuta client_nfc con el comando get all y está conectada por USB?",
+	nfc_no_mappings: "Aún no hay asignaciones.",
+	nfc_tag: "Etiqueta",
+	nfc_label: "Nombre",
+	nfc_message: "Mensaje",
+	nfc_events: "Eventos",
+	nfc_no_events: "Aún no se ha recibido nada de la placa.",
+	nfc_event_placed: "Etiqueta colocada: {{uid}}",
+	nfc_event_removed: "Etiqueta retirada: {{uid}}",
+	nfc_event_mapping_state: "Modo de asignación {{state}}",
+	nfc_event_mapped: "Etiqueta {{uid}} asignada a {{mapping}}",
+	nfc_event_count: "La placa tiene {{count}} asignación(es)",
+	nfc_event_cleared: "Todas las asignaciones eliminadas",
+	nfc_event_table_full: "Tabla de asignaciones llena ({{count}})",
+	nfc_type_note_off: "Nota off",
+	nfc_type_note_on: "Nota on",
+	nfc_type_control_change: "Cambio de control",
+	nfc_type_program_change: "Cambio de programa",
+	nfc_describe_note: "{{type}} {{data1}} vel {{data2}} · can {{channel}}",
+	nfc_describe_cc: "{{type}} {{data1}} = {{data2}} · can {{channel}}",
+	nfc_describe_program: "{{type}} {{data1}} · can {{channel}}",
+};
+
+const zh: typeof en = {
+	nfc_intro:
+		"在运行 client_nfc 示例的板子上把 NFC 标签映射到 MIDI 消息。请通过 USB 连接板子：dongle 不会转发这条 SysEx，所以无法通过它切换映射模式。",
+	nfc_save_to_file: "将映射保存到文件",
+	nfc_load_from_file: "从文件加载映射",
+	nfc_file_invalid: "{{name}} 不是 NFC 映射文件。",
+	nfc_file_load_failed: "无法加载 {{name}}：{{error}}",
+	nfc_pending:
+		"文件中有 {{count}} 个映射尚未写入板子。只有标签放在读卡器上时板子才能学习映射：打开映射模式并逐个放上标签，其保存的消息会填入编辑器，然后点击发送。",
+	nfc_send_failed: "无法发送：请选择一个已连接的 MIDI 输出。",
+	nfc_mapping_mode: "映射模式",
+	nfc_state_unknown: "板子应答前状态未知。",
+	nfc_confirm_delete_all: "删除板子上的所有映射？",
+	nfc_cancel: "取消",
+	nfc_delete_all: "删除所有映射",
+	nfc_tag_on_reader: "读卡器上的标签：",
+	nfc_no_tag: "无，请将标签放在读卡器上",
+	nfc_table_full: "映射表已满（{{count}}）。删除所有映射后才能添加新标签。",
+	nfc_mapping_hint:
+		"用下方的编辑器发送此标签的消息，或从其他应用或控制器发送任意音符、CC 或程序变更。",
+	nfc_composer: "MIDI 编辑器",
+	nfc_composer_active: "发送到板子：该消息将映射到 {{tag}}。",
+	nfc_composer_inactive: "打开映射模式并将标签放在读卡器上，即可为其映射消息。",
+	nfc_mappings: "映射",
+	nfc_reload: "重新加载",
+	nfc_load_timeout:
+		"板子没有发送映射。它是否运行带 get all 命令的 client_nfc，并通过 USB 连接？",
+	nfc_no_mappings: "还没有映射。",
+	nfc_tag: "标签",
+	nfc_label: "名称",
+	nfc_message: "消息",
+	nfc_events: "事件",
+	nfc_no_events: "尚未从板子收到任何内容。",
+	nfc_event_placed: "标签已放置：{{uid}}",
+	nfc_event_removed: "标签已移除：{{uid}}",
+	nfc_event_mapping_state: "映射模式 {{state}}",
+	nfc_event_mapped: "标签 {{uid}} 已映射到 {{mapping}}",
+	nfc_event_count: "板子有 {{count}} 个映射",
+	nfc_event_cleared: "已删除所有映射",
+	nfc_event_table_full: "映射表已满（{{count}}）",
+	nfc_type_note_off: "音符关",
+	nfc_type_note_on: "音符开",
+	nfc_type_control_change: "控制变更",
+	nfc_type_program_change: "程序变更",
+	nfc_describe_note: "{{type}} {{data1}} 力度 {{data2}} · 通道 {{channel}}",
+	nfc_describe_cc: "{{type}} {{data1}} = {{data2}} · 通道 {{channel}}",
+	nfc_describe_program: "{{type}} {{data1}} · 通道 {{channel}}",
+};
+
+export const nfcTranslations = { en, de, es, zh };

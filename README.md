@@ -93,8 +93,9 @@ Conventions:
 
 - A page wraps its content in `PageLayout`. Pages that also appear in the tutorial
   take an `embedded` prop: no page chrome, toolbar inline.
-- `src/pages.test.tsx` renders every route and tutorial page in the whole app and
-  fails on crashes and React errors (like invalid HTML nesting). A new page or
+- `src/pages.test.tsx` renders every route and tutorial page in the whole app, in
+  every language, and fails on crashes, React errors (like invalid HTML nesting)
+  and translation keys that don't exist. A new page or
   tutorial section is covered automatically if it has an `<h1>` (`PageLayout`'s
   title).
 - Logic that can be pure goes to `utils/` and gets tests next to it
@@ -106,12 +107,12 @@ Conventions:
 
 ## Translations
 
-English, German, Spanish and Chinese. Strings are in `src/i18n.ts` and, for the
-tutorial, `src/i18n.tutorial.ts`. Every language needs every key:
+English, German, Spanish and Chinese. Strings are in `src/i18n.ts`; the tutorial
+and some tools have their own files, spread into each language there:
+`i18n.tutorial.ts`, `i18n.nfc.ts`, `i18n.audio.ts` (Grantulator, MPC) and
+`i18n.tester.ts`. Every language needs every key:
 `src/i18n.test.ts` fails on missing or extra keys, lost `{{placeholders}}` and empty
-strings. To add a language, add a block in both files with all keys.
-
-Some tool pages (Tester, NFC, Grantulator, MPC) are still English only.
+strings. To add a language, add a block with all keys in each of these files.
 
 ## Tutorial
 

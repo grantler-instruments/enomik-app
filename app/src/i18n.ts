@@ -1,5 +1,8 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import { audioTranslations } from "./i18n.audio";
+import { nfcTranslations } from "./i18n.nfc";
+import { testerTranslations } from "./i18n.tester";
 import { tutorialTranslations } from "./i18n.tutorial";
 
 const LANGUAGE_STORAGE_KEY = "enomik-language";
@@ -17,6 +20,9 @@ i18n.use(initReactI18next).init({
 		en: {
 			translation: {
 				...tutorialTranslations.en,
+				...nfcTranslations.en,
+				...audioTranslations.en,
+				...testerTranslations.en,
 				compat_inspection_unsupported:
 					"Reading configuration from the device requires firmware 0.13 or newer. You can still edit, save and deploy pin and peer configurations.",
 				compat_globals_skipped:
@@ -461,6 +467,9 @@ i18n.use(initReactI18next).init({
 		de: {
 			translation: {
 				...tutorialTranslations.de,
+				...nfcTranslations.de,
+				...audioTranslations.de,
+				...testerTranslations.de,
 				compat_inspection_unsupported:
 					"Das Auslesen der Gerätekonfiguration benötigt Firmware 0.13 oder neuer. PINs und Peers lassen sich weiterhin bearbeiten, speichern und deployen.",
 				compat_globals_skipped:
@@ -914,6 +923,9 @@ i18n.use(initReactI18next).init({
 		es: {
 			translation: {
 				...tutorialTranslations.es,
+				...nfcTranslations.es,
+				...audioTranslations.es,
+				...testerTranslations.es,
 				compat_inspection_unsupported:
 					"Leer la configuración del dispositivo requiere firmware 0.13 o posterior. Puedes seguir editando, guardando y desplegando configuraciones de pines y pares.",
 				compat_globals_skipped:
@@ -1363,6 +1375,9 @@ i18n.use(initReactI18next).init({
 		zh: {
 			translation: {
 				...tutorialTranslations.zh,
+				...nfcTranslations.zh,
+				...audioTranslations.zh,
+				...testerTranslations.zh,
 				compat_inspection_unsupported:
 					"从设备读取配置需要固件 0.13 或更新版本。仍可编辑、保存和部署引脚与对等设备配置。",
 				compat_globals_skipped:

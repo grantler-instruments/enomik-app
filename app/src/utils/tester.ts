@@ -34,7 +34,7 @@ import {
 } from "../store/midi.config";
 
 /** Highest GPIO on the ESP32-S2/S3. */
-const PIN_MAX = 48;
+export const PIN_MAX = 48;
 
 /** Button pins, wired to GND. Note/CC number = pin, channel 1. */
 export const BUTTON_PINS = [16, 17];
@@ -320,14 +320,29 @@ export async function readBoardInfo(port: Port): Promise<BoardInfo> {
 	};
 }
 
-/** "firmware 0.19.0 · MAC 84:F7:…", or what is still missing. */
-export function boardInfoText(info: BoardInfo | null | undefined) {
-	if (!info) return "reading firmware and MAC…";
-	return [
-		`firmware ${info.version ? versionToString(info.version) : "unknown"}`,
-		`MAC ${info.mac ? macToString(info.mac) : "unknown"}`,
-	].join(" · ");
-}
+/**
+ * One request of a test or setup run, ok when acknowledged. The page words it
+ * from the id (translation key tester_check_<id>) and the values.
+ */
+export type CheckLine = {
+	id:
+		| "reset"
+		| "button"
+		| "cycle_button"
+		| "cycle_type"
+		| "cycle_note"
+		| "led_note"
+		| "led_cc"
+		| "touch"
+		| "loopback_on"
+		| "loopback_off"
+		| "add_peer"
+		| "no_dongle_mac"
+		| "setup_stopped"
+		| "stopped";
+	values?: Record<string, string | number>;
+	ok: boolean;
+};
 
 /** The LED follows this button through MIDI loopback in the default config. */
 export const DEFAULT_LED_SOURCE = 16;
@@ -341,28 +356,31 @@ export async function writeDefaultConfig(
 	port: Port,
 	{ ledPin, dongleMac }: { ledPin: number; dongleMac: number[] | null },
 ) {
-	const lines: { text: string; ok: boolean }[] = [];
-	const check = (text: string, ok: boolean) => lines.push({ text, ok });
+	const lines: CheckLine[] = [];
+	const check = (
+		id: CheckLine["id"],
+		ok: boolean,
+		values?: CheckLine["values"],
+	) => lines.push(values ? { id, values, ok } : { id, ok });
 	const reset = await request(port, sysex.reset(), (r) => r.cmd === "reset_ok");
-	check("reset: no pins, no peers", reset?.cmd === "reset_ok");
+	check("reset", reset?.cmd === "reset_ok");
 	for (const pin of BUTTON_PINS)
-		check(
-			`pin ${pin}: input pull-up → CC ${pin}`,
-			await configurePin(port, pin, sysex.buttonConfig(pin)),
-		);
+		check("button", await configurePin(port, pin, sysex.buttonConfig(pin)), {
+			pin,
+		});
 	check(
-		`pin ${ledPin}: output ← CC ${DEFAULT_LED_SOURCE} (LED)`,
+		"led_cc",
 		await configurePin(
 			port,
 			ledPin,
 			sysex.ledConfig(ledPin, MIDI_CONTROL_CHANGE, DEFAULT_LED_SOURCE),
 		),
+		{ pin: ledPin, cc: DEFAULT_LED_SOURCE },
 	);
-	check("MIDI loopback on", await setMidiLoopback(port, true));
+	check("loopback_on", await setMidiLoopback(port, true));
 	if (dongleMac)
-		check(
-			`add dongle ${macToString(dongleMac)} as peer`,
-			await addPeer(port, dongleMac),
-		);
+		check("add_peer", await addPeer(port, dongleMac), {
+			mac: macToString(dongleMac),
+		});
 	return lines;
 }

@@ -18,8 +18,9 @@ import { PAGES } from "./components/tutorial/chapters";
 import i18n from "./i18n";
 
 /**
- * Smoke test: every route and every tutorial page renders, in the whole app,
- * without crashing or React errors. Catches broken imports, lazy pages that
+ * Smoke test: every route and every tutorial page renders, in the whole app
+ * and in every language, without crashing, React errors or missing
+ * translation keys. Catches broken imports, lazy pages that
  * fail to load and components that throw on mount. No hardware: Web MIDI,
  * Web Serial and audio stay untouched until a button is clicked.
  */
@@ -137,26 +138,46 @@ const renderAt = (path: string) =>
 		</MemoryRouter>,
 	);
 
-describe("every route renders", () => {
-	it.each(ROUTES)("%s", async (path) => {
-		renderAt(path);
-		expect(
-			await screen.findByRole("heading", { level: 1 }, { timeout: 5000 }),
-		).toBeInTheDocument();
-		expect(errors.map((e) => e.map(String).join(" ").slice(0, 400))).toEqual(
-			[],
-		);
-	});
-});
+/** Keys the pages asked for that no language has: they'd show up raw. */
+let missingKeys: string[] = [];
 
-describe("every tutorial page renders", () => {
-	it.each(PAGES.map((page) => page.path))("%s", async (path) => {
-		renderAt(path);
-		expect(
-			await screen.findByRole("heading", { level: 1 }, { timeout: 5000 }),
-		).toBeInTheDocument();
-		expect(errors.map((e) => e.map(String).join(" ").slice(0, 400))).toEqual(
-			[],
-		);
+const LANGUAGES = Object.keys(i18n.options.resources ?? {});
+
+const expectClean = () => {
+	expect(errors.map((e) => e.map(String).join(" ").slice(0, 400))).toEqual([]);
+	expect([...new Set(missingKeys)]).toEqual([]);
+};
+
+describe.each(LANGUAGES)("in %s", (language) => {
+	beforeAll(async () => {
+		await i18n.changeLanguage(language);
+		i18n.options.saveMissing = true;
+		i18n.options.missingKeyHandler = (_lngs, _ns, key) => {
+			missingKeys.push(key);
+		};
+	});
+
+	afterEach(() => {
+		missingKeys = [];
+	});
+
+	describe("every route renders", () => {
+		it.each(ROUTES)("%s", async (path) => {
+			renderAt(path);
+			expect(
+				await screen.findByRole("heading", { level: 1 }, { timeout: 5000 }),
+			).toBeInTheDocument();
+			expectClean();
+		});
+	});
+
+	describe("every tutorial page renders", () => {
+		it.each(PAGES.map((page) => page.path))("%s", async (path) => {
+			renderAt(path);
+			expect(
+				await screen.findByRole("heading", { level: 1 }, { timeout: 5000 }),
+			).toBeInTheDocument();
+			expectClean();
+		});
 	});
 });

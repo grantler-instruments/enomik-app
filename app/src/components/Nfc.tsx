@@ -19,7 +19,9 @@ import {
 	Tooltip,
 	Typography,
 } from "@mui/material";
+import type { TFunction } from "i18next";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
 import { deviceInputId, useMIDIStore } from "../store/midi";
 import { type NfcLogEntry, useNfcStore } from "../store/nfc";
@@ -40,21 +42,29 @@ import MidiDeviceChooser from "./MidiDeviceChooser";
 /** No list end after this long: give up waiting. */
 const LOAD_TIMEOUT_MS = 3000;
 
-const describeEvent = ({ event, listEnd }: NfcLogEntry): string => {
+const describeEvent = (
+	{ event, listEnd }: NfcLogEntry,
+	t: TFunction,
+): string => {
 	switch (event.kind) {
 		case "placed":
-			return `Tag placed: ${event.uid}`;
+			return t("nfc_event_placed", { uid: event.uid });
 		case "removed":
-			return `Tag removed: ${event.uid}`;
+			return t("nfc_event_removed", { uid: event.uid });
 		case "mapping_state":
-			return `Mapping mode ${event.on ? "on" : "off"}`;
+			return t("nfc_event_mapping_state", {
+				state: t(event.on ? "state_on" : "state_off"),
+			});
 		case "mapped":
-			return `Tag ${event.uid} mapped to ${describeNfcMapping(event)}`;
+			return t("nfc_event_mapped", {
+				uid: event.uid,
+				mapping: describeNfcMapping(event, t),
+			});
 		case "count":
-			if (listEnd) return `Board has ${event.count} mapping(s)`;
+			if (listEnd) return t("nfc_event_count", { count: event.count });
 			return event.count === 0
-				? "All mappings deleted"
-				: `Mapping table full (${event.count})`;
+				? t("nfc_event_cleared")
+				: t("nfc_event_table_full", { count: event.count });
 	}
 };
 
@@ -64,6 +74,7 @@ const describeEvent = ({ event, listEnd }: NfcLogEntry): string => {
  * the tag on the reader and maps it to a MIDI message.
  */
 const Nfc = () => {
+	const { t } = useTranslation();
 	const midiInitialized = useMIDIStore((s) => s.initialized);
 	const inputs = useMIDIStore((s) => s.inputs) as MIDIInput[];
 	const outputs = useMIDIStore((s) => s.outputs);
@@ -189,13 +200,18 @@ const Nfc = () => {
 		try {
 			const loaded = parseNfcFile(JSON.parse(await file.text()));
 			if (!loaded) {
-				setFileError(`${file.name} is not an NFC mappings file.`);
+				setFileError(t("nfc_file_invalid", { name: file.name }));
 				return;
 			}
 			setFileError(null);
 			loadFile(loaded.mappings, loaded.labels);
 		} catch (err) {
-			setFileError(`Could not load ${file.name}: ${(err as Error).message}`);
+			setFileError(
+				t("nfc_file_load_failed", {
+					name: file.name,
+					error: (err as Error).message,
+				}),
+			);
 		}
 	};
 	// The board learns from the next channel message while a tag is armed.
@@ -213,11 +229,11 @@ const Nfc = () => {
 						ref={fileInputRef}
 						onChange={handleFileChange}
 					/>
-					<Tooltip title="Save mappings to file" describeChild>
+					<Tooltip title={t("nfc_save_to_file")} describeChild>
 						<span>
 							<IconButton
 								color="inherit"
-								aria-label="Save mappings to file"
+								aria-label={t("nfc_save_to_file")}
 								onClick={saveToFile}
 								disabled={mappingList.length === 0}
 							>
@@ -225,7 +241,7 @@ const Nfc = () => {
 							</IconButton>
 						</span>
 					</Tooltip>
-					<Tooltip title="Load mappings from file">
+					<Tooltip title={t("nfc_load_from_file")}>
 						<IconButton
 							color="inherit"
 							onClick={() => fileInputRef.current?.click()}
@@ -240,9 +256,7 @@ const Nfc = () => {
 		>
 			<Box display="flex" flexDirection="column" gap={2}>
 				<Typography variant="body2" color="text.secondary">
-					Maps NFC tags to MIDI messages on a board running the client_nfc
-					example. Connect the board over USB: the dongle keeps this SysEx to
-					itself, so mapping mode can't be switched through it.
+					{t("nfc_intro")}
 				</Typography>
 
 				{fileError && (
@@ -256,14 +270,11 @@ const Nfc = () => {
 						severity="info"
 						action={
 							<Button color="inherit" size="small" onClick={dismissFile}>
-								Dismiss
+								{t("browser_warning_dismiss")}
 							</Button>
 						}
 					>
-						{pendingList.length} mapping(s) from the file aren't on the board
-						yet. The board only learns a mapping with its tag on the reader:
-						turn mapping mode on and place each tag: its saved message is filled
-						into the composer, then press send.
+						{t("nfc_pending", { count: pendingList.length })}
 						<Box component="ul" sx={{ m: 0, mt: 1, pl: 2 }}>
 							{pendingList.map((m) => (
 								<li key={m.uid}>
@@ -271,7 +282,7 @@ const Nfc = () => {
 										{m.uid}
 									</Box>
 									{labels[m.uid] ? ` (${labels[m.uid]})` : ""}:{" "}
-									{describeNfcMapping(m)}
+									{describeNfcMapping(m, t)}
 								</li>
 							))}
 						</Box>
@@ -280,7 +291,7 @@ const Nfc = () => {
 
 				{sendFailed && (
 					<Alert severity="error" onClose={() => setSendFailed(false)}>
-						Could not send: pick a connected MIDI output.
+						{t("nfc_send_failed")}
 					</Alert>
 				)}
 
@@ -300,27 +311,29 @@ const Nfc = () => {
 									}
 								/>
 							}
-							label="Mapping mode"
+							label={t("nfc_mapping_mode")}
 						/>
 						{mappingMode === undefined && outputConnected && (
 							<Typography variant="body2" color="text.secondary">
-								State unknown until the board answers.
+								{t("nfc_state_unknown")}
 							</Typography>
 						)}
 						<Box flex={1} />
 						{confirmClear ? (
 							<>
 								<Typography variant="body2">
-									Delete all mappings on the board?
+									{t("nfc_confirm_delete_all")}
 								</Typography>
 								<Button
 									color="error"
 									variant="contained"
 									onClick={clearMappings}
 								>
-									Delete
+									{t("delete")}
 								</Button>
-								<Button onClick={() => setConfirmClear(false)}>Cancel</Button>
+								<Button onClick={() => setConfirmClear(false)}>
+									{t("nfc_cancel")}
+								</Button>
 							</>
 						) : (
 							<Button
@@ -328,7 +341,7 @@ const Nfc = () => {
 								disabled={!outputConnected}
 								onClick={() => setConfirmClear(true)}
 							>
-								Delete all mappings
+								{t("nfc_delete_all")}
 							</Button>
 						)}
 					</Box>
@@ -336,7 +349,7 @@ const Nfc = () => {
 					{mappingMode && (
 						<Box mt={2} display="flex" flexDirection="column" gap={2}>
 							<Box display="flex" alignItems="center" gap={1}>
-								<Typography>Tag on reader:</Typography>
+								<Typography>{t("nfc_tag_on_reader")}</Typography>
 								{currentTag ? (
 									<Chip
 										color="primary"
@@ -344,19 +357,17 @@ const Nfc = () => {
 									/>
 								) : (
 									<Typography color="text.secondary">
-										none, place a tag on the reader
+										{t("nfc_no_tag")}
 									</Typography>
 								)}
 							</Box>
 							{tableFull !== undefined && (
 								<Alert severity="warning">
-									Mapping table full ({tableFull}). Delete all mappings to add
-									new tags.
+									{t("nfc_table_full", { count: tableFull })}
 								</Alert>
 							)}
 							<Typography variant="body2" color="text.secondary">
-								Send the message for this tag with the composer below, or send
-								any note, CC or program change from another app or controller.
+								{t("nfc_mapping_hint")}
 							</Typography>
 						</Box>
 					)}
@@ -364,12 +375,14 @@ const Nfc = () => {
 
 				<Paper variant="outlined" sx={{ p: 2 }}>
 					<Typography variant="h6" component="h2">
-						MIDI composer
+						{t("nfc_composer")}
 					</Typography>
 					<Typography variant="body2" color="text.secondary" mb={2}>
 						{composerActive
-							? `Sends to the board: the message gets mapped to ${labels[currentTag] || currentTag}.`
-							: "Turn mapping mode on and place a tag on the reader to map it to a message."}
+							? t("nfc_composer_active", {
+									tag: labels[currentTag] || currentTag,
+								})
+							: t("nfc_composer_inactive")}
 					</Typography>
 					<Composer outputId={outputId} disabled={!composerActive} />
 				</Paper>
@@ -377,7 +390,7 @@ const Nfc = () => {
 				<Box>
 					<Box display="flex" alignItems="center" gap={1}>
 						<Typography variant="h6" component="h2">
-							Mappings
+							{t("nfc_mappings")}
 						</Typography>
 						{loading && <CircularProgress size={16} />}
 						<Box flex={1} />
@@ -386,26 +399,25 @@ const Nfc = () => {
 							onClick={loadMappings}
 							disabled={!outputConnected || loading}
 						>
-							Reload
+							{t("nfc_reload")}
 						</Button>
 					</Box>
 					{loadTimedOut && (
 						<Alert severity="warning" onClose={() => setLoadTimedOut(false)}>
-							The board didn't send its mappings. Is it running client_nfc with
-							the get all command, connected over USB?
+							{t("nfc_load_timeout")}
 						</Alert>
 					)}
 					{mappingList.length === 0 ? (
 						<Typography color="text.secondary" mt={1}>
-							No mappings yet.
+							{t("nfc_no_mappings")}
 						</Typography>
 					) : (
 						<Table size="small">
 							<TableHead>
 								<TableRow>
-									<TableCell>Tag</TableCell>
-									<TableCell>Label</TableCell>
-									<TableCell>Message</TableCell>
+									<TableCell>{t("nfc_tag")}</TableCell>
+									<TableCell>{t("nfc_label")}</TableCell>
+									<TableCell>{t("nfc_message")}</TableCell>
 								</TableRow>
 							</TableHead>
 							<TableBody>
@@ -418,12 +430,12 @@ const Nfc = () => {
 											<TextField
 												size="small"
 												variant="standard"
-												placeholder="Label"
+												placeholder={t("nfc_label")}
 												value={labels[m.uid] ?? ""}
 												onChange={(e) => setLabel(m.uid, e.target.value)}
 											/>
 										</TableCell>
-										<TableCell>{describeNfcMapping(m)}</TableCell>
+										<TableCell>{describeNfcMapping(m, t)}</TableCell>
 									</TableRow>
 								))}
 							</TableBody>
@@ -434,23 +446,21 @@ const Nfc = () => {
 				<Box>
 					<Box display="flex" alignItems="center">
 						<Typography variant="h6" component="h2">
-							Events
+							{t("nfc_events")}
 						</Typography>
 						<Box flex={1} />
 						<Button size="small" onClick={clearLog} disabled={log.length === 0}>
-							Clear
+							{t("clear")}
 						</Button>
 					</Box>
 					{log.length === 0 ? (
-						<Typography color="text.secondary">
-							Nothing received from the board yet.
-						</Typography>
+						<Typography color="text.secondary">{t("nfc_no_events")}</Typography>
 					) : (
 						<Box component="ul" sx={{ m: 0, pl: 2, fontFamily: "monospace" }}>
 							{log.map((entry) => (
 								<li key={entry.id}>
 									{new Date(entry.timestamp).toLocaleTimeString()}{" "}
-									{describeEvent(entry)}
+									{describeEvent(entry, t)}
 								</li>
 							))}
 						</Box>

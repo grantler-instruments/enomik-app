@@ -14,13 +14,19 @@ export const samplePaths = (n: number): SamplePaths => [
 	`grantulator:sample${n}:right`,
 ];
 
-/** Intervals a grain can jump by, in semitones (see intervalChance). */
+/**
+ * Intervals a grain can jump by, in semitones (see intervalChance), and the
+ * i18n key of their name (src/i18n.audio.ts).
+ */
 export const INTERVAL_SETS = {
-	octaves: { label: "Octaves", semitones: [-12, 12] },
-	fifths: { label: "Fifths and octaves", semitones: [-12, 7, 12] },
-	major: { label: "Major chord", semitones: [4, 7, 12] },
-	minor: { label: "Minor chord", semitones: [3, 7, 12] },
-	shimmer: { label: "Shimmer", semitones: [12, 19, 24] },
+	octaves: { labelKey: "grantulator_interval_octaves", semitones: [-12, 12] },
+	fifths: { labelKey: "grantulator_interval_fifths", semitones: [-12, 7, 12] },
+	major: { labelKey: "grantulator_interval_major", semitones: [4, 7, 12] },
+	minor: { labelKey: "grantulator_interval_minor", semitones: [3, 7, 12] },
+	shimmer: {
+		labelKey: "grantulator_interval_shimmer",
+		semitones: [12, 19, 24],
+	},
 } as const;
 
 export type IntervalSetId = keyof typeof INTERVAL_SETS;

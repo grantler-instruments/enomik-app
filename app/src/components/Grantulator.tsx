@@ -1,5 +1,6 @@
 import { Alert, Box, Button, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	type Sample,
 	useGrantulatorEngine,
@@ -37,6 +38,7 @@ const decode = (data: ArrayBuffer) =>
  * tutorial).
  */
 const Grantulator = ({ embedded = false }: { embedded?: boolean }) => {
+	const { t } = useTranslation();
 	const [sample, setSample] = useState<Sample | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const { running, start, stop, swarm } = useGrantulatorEngine(sample);
@@ -47,7 +49,7 @@ const Grantulator = ({ embedded = false }: { embedded?: boolean }) => {
 
 	const startAudio = () =>
 		start().catch((e) =>
-			setError(`Could not start audio: ${(e as Error).message}`),
+			setError(t("audio_error_start", { message: (e as Error).message })),
 		);
 
 	const loadFile = async (file: File) => {
@@ -62,12 +64,18 @@ const Grantulator = ({ embedded = false }: { embedded?: boolean }) => {
 				console.warn("Could not keep the Grantulator sample", e),
 			);
 		} catch (e) {
-			setError(`Could not load ${file.name}: ${(e as Error).message}`);
+			setError(
+				t("audio_error_load", {
+					name: file.name,
+					message: (e as Error).message,
+				}),
+			);
 		}
 	};
 
 	// Something to play right away: the last loaded sample, else the default.
 	// A file dropped meanwhile wins.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: loads once; t only words the error
 	useEffect(() => {
 		const loadStored = async () => {
 			try {
@@ -91,7 +99,12 @@ const Grantulator = ({ embedded = false }: { embedded?: boolean }) => {
 				const buffer = await decode(await response.arrayBuffer());
 				setSample((prev) => prev ?? { name: DEFAULT_SAMPLE, buffer });
 			} catch (e) {
-				setError(`Could not load ${DEFAULT_SAMPLE}: ${(e as Error).message}`);
+				setError(
+					t("audio_error_load", {
+						name: DEFAULT_SAMPLE,
+						message: (e as Error).message,
+					}),
+				);
 			}
 		};
 		void load();
@@ -125,11 +138,11 @@ const Grantulator = ({ embedded = false }: { embedded?: boolean }) => {
 			<InitMidi />
 			{running ? (
 				<Button variant="outlined" onClick={stop}>
-					Stop audio
+					{t("audio_stop")}
 				</Button>
 			) : (
 				<Button variant="contained" onClick={startAudio}>
-					Start audio
+					{t("audio_start")}
 				</Button>
 			)}
 		</>
@@ -147,7 +160,7 @@ const Grantulator = ({ embedded = false }: { embedded?: boolean }) => {
 					defaultExpanded
 					title={
 						<Typography variant="h6" component="span">
-							Grains
+							{t("grantulator_section_grains")}
 						</Typography>
 					}
 				>
@@ -156,13 +169,13 @@ const Grantulator = ({ embedded = false }: { embedded?: boolean }) => {
 					<IntervalSetSelect />
 				</CollapsibleSection>
 				<EffectPanel
-					title="Delay"
+					title={t("grantulator_section_delay")}
 					group="delay"
 					switchId="delayEnabled"
 					midi={midiInitialized}
 				/>
 				<EffectPanel
-					title="Reverb"
+					title={t("grantulator_section_reverb")}
 					group="reverb"
 					switchId="reverbEnabled"
 					midi={midiInitialized}

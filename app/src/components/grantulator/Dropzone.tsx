@@ -7,6 +7,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import type { Sample, Swarm } from "../../hooks/useGrantulatorEngine";
 import { useGrantulatorStore } from "../../store/grantulator";
 import GrainCanvas from "./GrainCanvas";
@@ -41,6 +42,7 @@ const Dropzone = ({
 	swarm: RefObject<Swarm>;
 	onFile: (file: File) => void;
 }) => {
+	const { t } = useTranslation();
 	const theme = useTheme();
 	const fileInput = useRef<HTMLInputElement>(null);
 	const canvas = useRef<HTMLCanvasElement>(null);
@@ -185,7 +187,7 @@ const Dropzone = ({
 			>
 				{sample
 					? `${sample.name} (${sample.buffer.duration.toFixed(1)} s)`
-					: "Drop an audio file here, or click to choose one"}
+					: t("grantulator_drop_hint")}
 			</Button>
 			<input
 				ref={fileInput}

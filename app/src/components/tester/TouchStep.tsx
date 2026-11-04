@@ -1,6 +1,7 @@
 import { CheckCircle } from "@mui/icons-material";
 import { Box, Button, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDevice } from "../../hooks/useDevice";
 import { useRawStream } from "../../hooks/useRawStream";
 import { supportsLiveValues } from "../../store/device";
@@ -29,6 +30,7 @@ const TouchStep = ({
 	onBack: () => void;
 	onNext: () => void;
 }) => {
+	const { t } = useTranslation();
 	const values = useRawStreamStore((s) => s.values);
 	const streaming = useRawStreamStore((s) => s.active);
 	useRawStream(device);
@@ -55,20 +57,18 @@ const TouchStep = ({
 	return (
 		<>
 			<Typography variant="body2" color="text.secondary" mb={1}>
-				Turn the board around and touch the solder joints of the touch pins –
-				lick your fingers first :) The bar shows the change from the untouched
-				reading; at {TOUCH_THRESHOLD} % it sends CC (pin number).
+				{t("tester_touch_text", { threshold: TOUCH_THRESHOLD })}
 			</Typography>
 			<RawStreamToggle device={device} />
 			{state.touchPins.map((pin) => (
 				<Box key={pin} display="flex" gap={1} alignItems="center" mb={1}>
-					<Typography width={60}>Pin {pin}</Typography>
+					<Typography width={60}>{t("tester_pin", { pin })}</Typography>
 					<Box width={200}>
 						{streaming && values[pin] ? (
 							<LiveCell value={values[pin]} />
 						) : (
 							<Typography variant="caption" color="text.secondary">
-								no live value
+								{t("tester_no_live_value")}
 							</Typography>
 						)}
 					</Box>
@@ -77,7 +77,7 @@ const TouchStep = ({
 							<CheckCircle
 								color="success"
 								fontSize="small"
-								titleAccess="threshold reached"
+								titleAccess={t("tester_threshold_reached")}
 							/>
 						)}
 					</Box>
@@ -85,9 +85,9 @@ const TouchStep = ({
 				</Box>
 			))}
 			<Box display="flex" gap={1} mt={2}>
-				<Button onClick={onBack}>Back</Button>
+				<Button onClick={onBack}>{t("tester_back")}</Button>
 				<Button variant="contained" onClick={onNext}>
-					{passed ? "Finish" : "Skip"}
+					{passed ? t("tester_finish") : t("tester_skip")}
 				</Button>
 			</Box>
 		</>

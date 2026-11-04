@@ -1,9 +1,15 @@
-import { Alert, Box, Button, Chip, Paper, Typography } from "@mui/material";
-import { BUTTON_PINS, DEFAULT_LED_SOURCE } from "../../utils/tester";
+import { Alert, Box, Button, Paper, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import {
+	BUTTON_PINS,
+	type CheckLine,
+	DEFAULT_LED_SOURCE,
+} from "../../utils/tester";
+import CheckLines from "./CheckLines";
 
 export type DefaultConfigState =
 	| { status: "ask" | "writing" | "skipped" }
-	| { status: "done"; lines: { text: string; ok: boolean }[] };
+	| { status: "done"; lines: CheckLine[] };
 
 /** After the tests: offer to write the config the board ships with. */
 const DefaultConfig = ({
@@ -20,42 +26,41 @@ const DefaultConfig = ({
 	onWrite: () => void;
 	onSkip: () => void;
 }) => {
+	const { t, i18n } = useTranslation();
 	if (state.status === "skipped") return null;
 	const failed = state.status === "done" && state.lines.some((l) => !l.ok);
 	return (
 		<Paper variant="outlined" sx={{ p: 2 }}>
 			<Typography variant="h6" mb={1}>
-				Default configuration
+				{t("tester_default_title")}
 			</Typography>
 			<Typography variant="body2" mb={2}>
-				Clears the test setup and leaves the board ready to use: pins{" "}
-				{BUTTON_PINS.join(" and ")} send CC {BUTTON_PINS.join(" and ")} (channel
-				1), MIDI loopback is on and the LED (pin {ledPin}) lights while the pin{" "}
-				{DEFAULT_LED_SOURCE} button is held.{" "}
+				{t("tester_default_text", {
+					pins: new Intl.ListFormat(i18n.language).format(
+						BUTTON_PINS.map(String),
+					),
+					ledPin,
+					source: DEFAULT_LED_SOURCE,
+				})}{" "}
 				{dongleMac
-					? `The dongle ${dongleMac} stays paired.`
-					: "No dongle MAC is known, so no dongle is paired."}
+					? t("tester_default_dongle", { mac: dongleMac })
+					: t("tester_default_no_dongle")}
 			</Typography>
 			{state.status === "done" ? (
 				<>
-					{state.lines.map((line) => (
-						<Box key={line.text} display="flex" gap={1} alignItems="center">
-							<Chip
-								size="small"
-								label={line.ok ? "OK" : "FAIL"}
-								color={line.ok ? "success" : "error"}
-							/>
-							<Typography variant="body2">{line.text}</Typography>
-						</Box>
-					))}
+					<CheckLines lines={state.lines} />
 					<Alert
 						severity={failed ? "error" : "success"}
 						sx={{ mt: 1 }}
-						action={failed && <Button onClick={onWrite}>Try again</Button>}
+						action={
+							failed && (
+								<Button onClick={onWrite}>{t("tester_try_again")}</Button>
+							)
+						}
 					>
 						{failed
-							? "Default configuration incomplete"
-							: "Default configuration written"}
+							? t("tester_default_incomplete")
+							: t("tester_default_written")}
 					</Alert>
 				</>
 			) : (
@@ -66,11 +71,11 @@ const DefaultConfig = ({
 						onClick={onWrite}
 					>
 						{state.status === "writing"
-							? "Writing…"
-							: "Write default configuration"}
+							? t("tester_writing")
+							: t("tester_default_write")}
 					</Button>
 					<Button disabled={state.status === "writing"} onClick={onSkip}>
-						Skip
+						{t("tester_skip")}
 					</Button>
 				</Box>
 			)}

@@ -1,5 +1,6 @@
 import { Close as CloseIcon } from "@mui/icons-material";
 import { Box, Chip, IconButton } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import {
 	type MappingTarget,
 	useGrantulatorStore,
@@ -13,6 +14,7 @@ const MidiLearn = ({
 	target: MappingTarget;
 	midi: boolean;
 }) => {
+	const { t } = useTranslation();
 	const mapping = useGrantulatorStore((s) => s.mappings[target]);
 	const learning = useGrantulatorStore((s) => s.learning === target);
 	const setLearning = useGrantulatorStore((s) => s.setLearning);
@@ -27,17 +29,17 @@ const MidiLearn = ({
 				variant={mapping || learning ? "filled" : "outlined"}
 				label={
 					learning
-						? "Move a control…"
+						? t("audio_move_control")
 						: mapping
 							? `Ch ${mapping.channel} ${"note" in mapping ? `Note ${mapping.note}` : `CC ${mapping.controller}`}`
-							: "MIDI learn"
+							: t("audio_midi_learn")
 				}
 				onClick={() => setLearning(learning ? null : target)}
 			/>
 			{mapping && (
 				<IconButton
 					size="small"
-					aria-label="Clear mapping"
+					aria-label={t("grantulator_clear_mapping")}
 					onClick={() => clearMapping(target)}
 				>
 					<CloseIcon fontSize="small" />

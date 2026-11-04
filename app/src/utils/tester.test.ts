@@ -5,7 +5,6 @@ import {
 	sysexManufacturerId,
 } from "../store/midi.config";
 import {
-	boardInfoText,
 	buttonEvent,
 	macFromString,
 	macToString,
@@ -194,16 +193,6 @@ describe("board info", () => {
 		);
 		expect(versionToString({ major: 0, minor: 19, patch: 0 })).toBe("0.19.0");
 		expect(versionToString({ major: 0, minor: 12 })).toBe("0.12");
-		expect(boardInfoText(null)).toBe("reading firmware and MAC…");
-		expect(
-			boardInfoText({
-				mac: [0, 1, 2, 3, 4, 255],
-				version: { major: 0, minor: 19, patch: 1 },
-			}),
-		).toBe("firmware 0.19.1 · MAC 00:01:02:03:04:FF");
-		expect(boardInfoText({ mac: null, version: null })).toBe(
-			"firmware unknown · MAC unknown",
-		);
 	});
 
 	it("reads MAC and version from a current board", async () => {
@@ -327,9 +316,10 @@ describe("default configuration", () => {
 			);
 			await vi.advanceTimersByTimeAsync(5000);
 			const lines = await write;
-			expect(lines.filter((line) => !line.ok).map((line) => line.text)).toEqual(
-				["reset: no pins, no peers", "MIDI loopback on"],
-			);
+			expect(lines.filter((line) => !line.ok).map((line) => line.id)).toEqual([
+				"reset",
+				"loopback_on",
+			]);
 			expect(sent).toHaveLength(6);
 		} finally {
 			vi.useRealTimers();
@@ -342,7 +332,8 @@ describe("default configuration", () => {
 			{ ledPin: 15, dongleMac },
 		);
 		expect(lines.at(-1)).toEqual({
-			text: "add dongle 84:F7:03:F2:54:06 as peer",
+			id: "add_peer",
+			values: { mac: "84:F7:03:F2:54:06" },
 			ok: true,
 		});
 	});

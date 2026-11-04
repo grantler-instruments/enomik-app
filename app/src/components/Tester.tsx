@@ -1,20 +1,20 @@
 import {
 	Alert,
 	Box,
-	Chip,
 	Paper,
 	Step,
 	StepContent,
 	StepLabel,
 	Stepper,
-	Typography,
 } from "@mui/material";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { useMIDIStore } from "../store/midi";
 import { MIDI_NOTE_ON } from "../store/midi.config";
 import {
 	addPeer,
 	BUTTON_PINS,
+	type CheckLine,
 	CYCLE_PIN,
 	configurePin,
 	DEFAULT_LED_PIN,
@@ -39,6 +39,7 @@ import {
 import InitMidi from "./InitMidi";
 import PageLayout from "./layout/PageLayout";
 import ButtonsStep from "./tester/ButtonsStep";
+import CheckLines from "./tester/CheckLines";
 import ConnectStep, { type Settings } from "./tester/ConnectStep";
 import DefaultConfig, { type DefaultConfigState } from "./tester/DefaultConfig";
 import LoopbackStep from "./tester/LoopbackStep";
@@ -49,7 +50,6 @@ import { AUTO, usePorts } from "./tester/usePorts";
 
 const STEPS = ["connect", "buttons", "loopback", "touch", "done"] as const;
 type StepName = (typeof STEPS)[number];
-type LogLine = { text: string; ok: boolean };
 
 /** Lets the last chip show and the button be released before moving on. */
 const AUTO_ADVANCE_MS = 800;
@@ -61,6 +61,7 @@ const AUTO_ADVANCE_MS = 800;
  */
 /** The tester itself, without page chrome (also embedded in the tutorial). */
 export const TesterContent = () => {
+	const { t, i18n } = useTranslation();
 	const initialized = useMIDIStore((s) => s.initialized);
 	const [settings, setSettings] = useState<Settings>(() => ({
 		client: AUTO,
@@ -76,7 +77,7 @@ export const TesterContent = () => {
 		testerReducer,
 		initialState(DEFAULT_LED_PIN, DEFAULT_TOUCH_PINS),
 	);
-	const [log, setLog] = useState<LogLine[]>([]);
+	const [log, setLog] = useState<CheckLine[]>([]);
 	const [busy, setBusy] = useState(false);
 	/** The last setup had failures: offer to go on anyway. */
 	const [setupFailed, setSetupFailed] = useState(false);
@@ -86,7 +87,8 @@ export const TesterContent = () => {
 		status: "ask",
 	});
 	const fail = useCallback(
-		(text: string) => setLog((prev) => [...prev, { text, ok: false }]),
+		(id: CheckLine["id"], values?: CheckLine["values"]) =>
+			setLog((prev) => [...prev, { id, values, ok: false }]),
 		[],
 	);
 
@@ -128,12 +130,10 @@ export const TesterContent = () => {
 	const cyclePinSent = useRef("");
 	useEffect(() => {
 		if (!configured || !client) return;
-		const [data, label] = loopbackOn
-			? [sysex.buttonConfig(CYCLE_PIN, MIDI_NOTE_ON, ledPin), `note ${ledPin}`]
-			: [
-					sysex.buttonConfig(CYCLE_PIN, MIDI_TYPES[typeIndex].status),
-					MIDI_TYPES[typeIndex].label,
-				];
+		const type = MIDI_TYPES[typeIndex];
+		const data = loopbackOn
+			? sysex.buttonConfig(CYCLE_PIN, MIDI_NOTE_ON, ledPin)
+			: sysex.buttonConfig(CYCLE_PIN, type.status);
 		const key = data.join();
 		if (cyclePinSent.current === key) return;
 		cyclePinSent.current = key;
@@ -145,7 +145,8 @@ export const TesterContent = () => {
 				// e.g. the port disconnected while sending
 			}
 			if (cyclePinSent.current === key) cyclePinSent.current = "";
-			fail(`pin ${CYCLE_PIN} → ${label}`);
+			if (loopbackOn) fail("cycle_note", { pin: CYCLE_PIN, note: ledPin });
+			else fail("cycle_type", { pin: CYCLE_PIN, type: type.label });
 		})();
 	}, [configured, client, loopbackOn, typeIndex, ledPin, fail]);
 
@@ -159,7 +160,7 @@ export const TesterContent = () => {
 				if (!on) dispatch({ type: "loopback", on });
 				// A throw (e.g. port disconnected) must not break the queue.
 				const ok = await setMidiLoopback(client, on).catch(() => false);
-				if (!ok) fail(`MIDI loopback ${on ? "on" : "off"}`);
+				if (!ok) fail(on ? "loopback_on" : "loopback_off");
 				if (on) dispatch({ type: "loopback", on });
 			});
 		};
@@ -187,9 +188,13 @@ export const TesterContent = () => {
 	const setup = async () => {
 		if (!client) return;
 		const touchPins = parsePins(settings.touchText);
-		const lines: LogLine[] = [];
-		const check = (text: string, ok: boolean) => {
-			lines.push({ text, ok });
+		const lines: CheckLine[] = [];
+		const check = (
+			id: CheckLine["id"],
+			ok: boolean,
+			values?: CheckLine["values"],
+		) => {
+			lines.push({ id, values, ok });
 			setLog([...lines]);
 		};
 		setBusy(true);
@@ -203,41 +208,44 @@ export const TesterContent = () => {
 			// The dongle's own MAC, read when its port was found
 			const mac = dongle && dongleInfo?.mac;
 			if (mac)
-				check(
-					`add dongle ${macToString(mac)} as peer`,
-					await addPeer(client, mac),
-				);
-			else if (dongle) check("dongle MAC unknown: not added as peer", false);
+				check("add_peer", await addPeer(client, mac), {
+					mac: macToString(mac),
+				});
+			else if (dongle) check("no_dongle_mac", false);
 			const firstType = MIDI_TYPES[0];
 			const cycleConfig = sysex.buttonConfig(CYCLE_PIN, firstType.status);
 			cyclePinSent.current = cycleConfig.join();
 			check(
-				`pin ${CYCLE_PIN}: input pull-up → ${firstType.label} ${CYCLE_PIN}`,
+				"cycle_button",
 				await configurePin(client, CYCLE_PIN, cycleConfig),
+				{ pin: CYCLE_PIN, type: firstType.label },
 			);
 			for (const pin of BUTTON_PINS.filter((p) => p !== CYCLE_PIN))
 				check(
-					`pin ${pin}: input pull-up → CC ${pin}`,
+					"button",
 					await configurePin(client, pin, sysex.buttonConfig(pin)),
+					{ pin },
 				);
 			check(
-				`pin ${settings.ledPin}: output ← note ${settings.ledPin} (LED)`,
+				"led_note",
 				await configurePin(
 					client,
 					settings.ledPin,
 					sysex.ledConfig(settings.ledPin),
 				),
+				{ pin: settings.ledPin },
 			);
 			for (const pin of touchPins)
 				check(
-					`pin ${pin}: touch (${TOUCH_THRESHOLD} %) → CC ${pin}`,
+					"touch",
 					await configurePin(client, pin, sysex.touchConfig(pin)),
+					{ pin, threshold: TOUCH_THRESHOLD },
 				);
 			setConfigured(true);
 			if (lines.every((line) => line.ok)) setStep("buttons");
 		} catch (error) {
 			// e.g. the port disconnected while sending
-			check(`setup stopped: ${(error as Error).message}`, false);
+			check("setup_stopped", false, { error: (error as Error).message });
 		} finally {
 			setSetupFailed(lines.some((line) => !line.ok));
 			setBusy(false);
@@ -255,8 +263,8 @@ export const TesterContent = () => {
 		const lines = await writeDefaultConfig(client, {
 			ledPin: settings.ledPin,
 			dongleMac,
-		}).catch((error: Error) => [
-			{ text: `stopped: ${error.message}`, ok: false },
+		}).catch((error: Error): CheckLine[] => [
+			{ id: "stopped", values: { error: error.message }, ok: false },
 		]);
 		setDefaultConfig({ status: "done", lines });
 	};
@@ -264,7 +272,7 @@ export const TesterContent = () => {
 	const steps: { name: StepName; label: string; content: React.ReactNode }[] = [
 		{
 			name: "connect",
-			label: "Connect client and dongle",
+			label: t("tester_step_connect"),
 			content: (
 				<ConnectStep
 					settings={settings}
@@ -283,7 +291,7 @@ export const TesterContent = () => {
 		},
 		{
 			name: "buttons",
-			label: "Press the buttons",
+			label: t("tester_step_buttons"),
 			content: (
 				<ButtonsStep
 					state={state}
@@ -296,7 +304,7 @@ export const TesterContent = () => {
 		},
 		{
 			name: "loopback",
-			label: "LED loopback",
+			label: t("tester_led_loopback"),
 			content: (
 				<LoopbackStep
 					state={state}
@@ -311,7 +319,7 @@ export const TesterContent = () => {
 		},
 		{
 			name: "touch",
-			label: "Touch pins",
+			label: t("tester_touch_pins"),
 			content: client && step === "touch" && (
 				<TouchStep
 					device={client.output.id}
@@ -328,12 +336,17 @@ export const TesterContent = () => {
 	return (
 		<Box display="flex" flexDirection="column" gap={2}>
 			<Alert severity="info">
-				Flash the <code>client</code> sketch on the board under test and the{" "}
-				<code>dongle</code> sketch on a dongle. Wire buttons from pins{" "}
-				{BUTTON_PINS.join(" and ")} to GND. Setup overwrites those pin configs
-				(note/CC = pin number, channel {IO_CHANNEL}). Pin {CYCLE_PIN} sends a
-				different MIDI type on every press. Connect the dongle too: presses must
-				arrive over the client's USB and wirelessly at the dongle.
+				<Trans
+					i18nKey="tester_intro"
+					values={{
+						pins: new Intl.ListFormat(i18n.language).format(
+							BUTTON_PINS.map(String),
+						),
+						channel: IO_CHANNEL,
+						cyclePin: CYCLE_PIN,
+					}}
+					components={{ code: <code /> }}
+				/>
 			</Alert>
 			<InitMidi />
 			{initialized && (
@@ -349,9 +362,9 @@ export const TesterContent = () => {
 			{step === "done" && (
 				<Results
 					results={[
-						{ label: "Buttons (USB and wireless)", passed: buttonsDone },
-						{ label: "LED loopback", passed: loopbackDone },
-						{ label: "Touch pins", passed: touchDone },
+						{ label: t("tester_result_buttons"), passed: buttonsDone },
+						{ label: t("tester_led_loopback"), passed: loopbackDone },
+						{ label: t("tester_touch_pins"), passed: touchDone },
 					]}
 					onRestart={() => {
 						setDefaultConfig({ status: "ask" });
@@ -370,27 +383,20 @@ export const TesterContent = () => {
 			)}
 			{log.length > 0 && (
 				<Paper variant="outlined" sx={{ p: 2 }}>
-					{log.map((line, index) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: append-only log
-						<Box key={index} display="flex" gap={1} alignItems="center">
-							<Chip
-								size="small"
-								label={line.ok ? "OK" : "FAIL"}
-								color={line.ok ? "success" : "error"}
-							/>
-							<Typography variant="body2">{line.text}</Typography>
-						</Box>
-					))}
+					<CheckLines lines={log} />
 				</Paper>
 			)}
 		</Box>
 	);
 };
 
-const Tester = () => (
-	<PageLayout title="Tester" maxWidth={false}>
-		<TesterContent />
-	</PageLayout>
-);
+const Tester = () => {
+	const { t } = useTranslation();
+	return (
+		<PageLayout title={t("tester_title")} maxWidth={false}>
+			<TesterContent />
+		</PageLayout>
+	);
+};
 
 export default Tester;
