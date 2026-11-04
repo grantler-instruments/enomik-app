@@ -17,11 +17,21 @@ import {
 import type { FC, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
+import Composer from "../Composer";
+import Configurator from "../Configurator";
+import BoardView from "../configurator/BoardView";
+import Globals from "../Globals";
+import InitMidi from "../InitMidi";
+import Inspector from "../Inspector";
+import MessageList from "../MessageList";
+import SerialMonitor from "../SerialMonitor";
+import { TesterContent } from "../Tester";
 import ArchitectureDiagram from "./ArchitectureDiagram";
 import {
 	CodeBlock,
 	Heading,
 	LinkButtons,
+	LiveDemo,
 	Note,
 	Paragraphs,
 	Steps,
@@ -538,15 +548,54 @@ const Pairing = () => {
 			<Paragraphs i18nKey="tutorial_pairing_text" />
 			<Heading>{t("tutorial_pairing_mac_title")}</Heading>
 			<Steps i18nKey="tutorial_pairing_mac" ordered={false} />
+			<LiveDemo>
+				<Inspector embedded />
+			</LiveDemo>
 			<LinkButtons actions={[{ label: t("inspector"), link: "/inspector" }]} />
 			<Heading>{t("tutorial_pairing_peer_title")}</Heading>
 			<Steps i18nKey="tutorial_pairing_peer" />
+			<LiveDemo>
+				<Configurator embedded />
+			</LiveDemo>
 			<LinkButtons
 				actions={[{ label: t("configurator"), link: "/configurator" }]}
 			/>
 			<Heading>{t("tutorial_pairing_test_title")}</Heading>
 			<Typography variant="body1">{t("tutorial_pairing_test")}</Typography>
 			<Note>{t("tutorial_pairing_tip")}</Note>
+		</>
+	);
+};
+
+const GlobalSettings = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_cfg_global_text" />
+			<Steps i18nKey="tutorial_cfg_global_list" ordered={false} />
+			<LiveDemo>
+				<Globals />
+			</LiveDemo>
+			<Note>{t("tutorial_cfg_global_note")}</Note>
+			<LinkButtons
+				actions={[{ label: t("configurator"), link: "/configurator" }]}
+			/>
+		</>
+	);
+};
+
+const BoardViewChapter = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_cfg_board_text" />
+			<Steps i18nKey="tutorial_cfg_board_steps" />
+			<LiveDemo>
+				<BoardView />
+			</LiveDemo>
+			<LinkButtons
+				actions={[{ label: t("configurator"), link: "/configurator" }]}
+			/>
 		</>
 	);
 };
@@ -560,11 +609,18 @@ const Example = ({ prefix, extra }: { prefix: string; extra?: ReactNode }) => {
 			<Typography variant="body1">{t(`${prefix}_wiring`)}</Typography>
 			<Heading>{t("tutorial_configuration")}</Heading>
 			<Steps i18nKey={`${prefix}_config`} />
+			<LiveDemo>
+				<Configurator embedded />
+			</LiveDemo>
 			<LinkButtons
 				actions={[{ label: t("configurator"), link: "/configurator" }]}
 			/>
 			<Heading>{t("tutorial_test")}</Heading>
 			<Typography variant="body1">{t(`${prefix}_test`)}</Typography>
+			<LiveDemo>
+				<InitMidi />
+				<MessageList />
+			</LiveDemo>
 			<LinkButtons
 				actions={[{ label: t("midi_monitor"), link: "/debugger" }]}
 			/>
@@ -607,6 +663,18 @@ const LedExample = () => {
 				<>
 					<Note>{t("tutorial_led_tip_pwm")}</Note>
 					<Note severity="success">{t("tutorial_led_tip_loopback")}</Note>
+					<LinkButtons
+						actions={[
+							{
+								label: t("tutorial_cfg_global_title"),
+								link: "/tutorial/examples/webapp/global",
+							},
+							{
+								label: t("tutorial_button_title"),
+								link: "/tutorial/examples/webapp/button",
+							},
+						]}
+					/>
 				</>
 			}
 		/>
@@ -971,6 +1039,74 @@ const DawSetup = () => {
 	);
 };
 
+const Tools = () => (
+	<>
+		<Paragraphs i18nKey="tutorial_tools_text" />
+		<SectionLinks sections={TOOL_SECTIONS} />
+	</>
+);
+
+const DebuggerTool = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_tool_debugger_text" />
+			<Heading>{t("section_midi_composer")}</Heading>
+			<Steps i18nKey="tutorial_tool_debugger_composer" />
+			<LiveDemo>
+				<Composer />
+			</LiveDemo>
+			<Heading>{t("section_midi_monitor")}</Heading>
+			<Steps i18nKey="tutorial_tool_debugger_monitor" ordered={false} />
+			<LiveDemo>
+				<InitMidi />
+				<MessageList />
+			</LiveDemo>
+			<Heading>{t("section_serial_monitor")}</Heading>
+			<Paragraphs i18nKey="tutorial_tool_debugger_serial" />
+			<Note>{t("tutorial_tool_debugger_tip")}</Note>
+			<LiveDemo>
+				<SerialMonitor />
+			</LiveDemo>
+			<LinkButtons actions={[{ label: t("debugger"), link: "/debugger" }]} />
+		</>
+	);
+};
+
+const InspectorTool = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_tool_inspector_text" />
+			<Steps i18nKey="tutorial_tool_inspector_steps" />
+			<LiveDemo>
+				<Inspector embedded />
+			</LiveDemo>
+			<Heading>{t("tutorial_tool_inspector_live_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_tool_inspector_live" />
+			<LinkButtons actions={[{ label: t("inspector"), link: "/inspector" }]} />
+		</>
+	);
+};
+
+const TesterTool = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_tool_tester_text" />
+			<Heading>{t("tutorial_tool_tester_needs_title")}</Heading>
+			<Steps i18nKey="tutorial_tool_tester_needs" />
+			<Note severity="warning">{t("tutorial_tool_tester_warning")}</Note>
+			<Heading>{t("tutorial_tool_tester_steps_title")}</Heading>
+			<Steps i18nKey="tutorial_tool_tester_steps" />
+			<LiveDemo>
+				<TesterContent />
+			</LiveDemo>
+			<LinkButtons actions={[{ label: t("open_tester"), link: "/tester" }]} />
+		</>
+	);
+};
+
 const Troubleshooting = () => {
 	const { t } = useTranslation();
 	return (
@@ -1049,6 +1185,16 @@ export type Chapter = {
 };
 
 const WEBAPP_EXAMPLES: Chapter[] = [
+	{
+		id: "global",
+		titleKey: "tutorial_cfg_global_title",
+		Content: GlobalSettings,
+	},
+	{
+		id: "board",
+		titleKey: "tutorial_cfg_board_title",
+		Content: BoardViewChapter,
+	},
 	{ id: "button", titleKey: "tutorial_button_title", Content: ButtonExample },
 	{ id: "knob", titleKey: "tutorial_knob_title", Content: KnobExample },
 	{ id: "led", titleKey: "tutorial_led_title", Content: LedExample },
@@ -1112,6 +1258,24 @@ const PLATFORM_SECTIONS: Chapter[] = [
 	},
 ];
 
+const TOOL_SECTIONS: Chapter[] = [
+	{
+		id: "debugger",
+		titleKey: "tutorial_tool_debugger_title",
+		Content: DebuggerTool,
+	},
+	{
+		id: "inspector",
+		titleKey: "tutorial_tool_inspector_title",
+		Content: InspectorTool,
+	},
+	{
+		id: "tester",
+		titleKey: "tutorial_tool_tester_title",
+		Content: TesterTool,
+	},
+];
+
 export const CHAPTERS: Chapter[] = [
 	{ id: "introduction", titleKey: "tutorial_intro_title", Content: Intro },
 	{
@@ -1144,6 +1308,12 @@ export const CHAPTERS: Chapter[] = [
 		sections: EXAMPLE_SECTIONS,
 	},
 	{ id: "daw", titleKey: "tutorial_daw_title", Content: DawSetup },
+	{
+		id: "tools",
+		titleKey: "tutorial_tools_title",
+		Content: Tools,
+		sections: TOOL_SECTIONS,
+	},
 	{
 		id: "troubleshooting",
 		titleKey: "tutorial_troubleshooting_title",

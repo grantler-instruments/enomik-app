@@ -4,24 +4,14 @@ import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import SettingsInputComponentIcon from "@mui/icons-material/SettingsInputComponent";
-import TouchAppIcon from "@mui/icons-material/TouchApp";
-import {
-	Alert,
-	Box,
-	Button,
-	IconButton,
-	MenuItem,
-	TextField,
-	Tooltip,
-	Typography,
-} from "@mui/material";
+import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useDevice, useDeviceKind } from "../hooks/useDevice";
 import { useToast } from "../hooks/useToast";
-import { useAccordionOpen, useAppStore } from "../store/app";
+import { useAccordionOpen } from "../store/app";
 import {
 	type DeviceKind,
 	dongleConfigBlocker,
@@ -55,11 +45,10 @@ import {
 } from "../store/midi.config";
 import { useRawStreamStore } from "../store/rawStream";
 import CollapsibleSection from "./common/CollapsibleSection";
+import BoardView from "./configurator/BoardView";
 import DeviceKindChooser from "./DeviceKindChooser";
 import Globals from "./Globals";
 import Inputs from "./Inputs";
-import BoardDiagram from "./kits/BoardDiagram";
-import { BOARD_SETS } from "./kits/boards";
 import PageLayout from "./layout/PageLayout";
 import MidiDeviceChooser from "./MidiDeviceChooser";
 import Outputs from "./Outputs";
@@ -72,15 +61,9 @@ import {
 	WirelessMidiIcon,
 } from "./SectionIcons";
 
-/** Largest drawing scale of a board diagram. */
-const BOARD_PX_PER_MM = 14;
-
-const Configurator = () => {
+/** `embedded`: without page chrome, toolbar inline (used in the tutorial). */
+const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 	const { t } = useTranslation();
-	const boardSetId = useAppStore((state) => state.configuratorBoard);
-	const setBoardSetId = useAppStore((state) => state.setConfiguratorBoard);
-	const boardSet =
-		BOARD_SETS.find((set) => set.id === boardSetId) ?? BOARD_SETS[0];
 	const selectedOutputId = useMIDIStore(
 		(state) => state.selectedConfiguratorOutputDevice,
 	);
@@ -485,88 +468,74 @@ const Configurator = () => {
 		}
 	};
 
-	return (
-		<PageLayout
-			title={t("configurator")}
-			maxWidth="xl"
-			info={hasEnomikBoard ? undefined : t("configurator_info")}
-			infoAction={
-				<Button
-					color="inherit"
-					size="small"
-					component={NavLink}
-					to={"/uploader"}
-				>
-					{t("firmware_uploader")}
-				</Button>
-			}
-			actions={
-				<>
-					{/* Hidden file input */}
-					<input
-						type="file"
-						accept="application/json"
-						style={{ display: "none" }}
-						ref={fileInputRef}
-						onChange={handleFileChange}
-					/>
-					<Tooltip title={t("tooltip_save_configuration_to_file") || ""}>
-						<IconButton color="inherit" onClick={saveToFile}>
-							<DownloadIcon />
-						</IconButton>
-					</Tooltip>
+	const toolbar = (
+		<>
+			{/* Hidden file input */}
+			<input
+				type="file"
+				accept="application/json"
+				style={{ display: "none" }}
+				ref={fileInputRef}
+				onChange={handleFileChange}
+			/>
+			<Tooltip title={t("tooltip_save_configuration_to_file") || ""}>
+				<IconButton color="inherit" onClick={saveToFile}>
+					<DownloadIcon />
+				</IconButton>
+			</Tooltip>
 
-					<Tooltip title={t("tooltip_load_configuration_from_file") || ""}>
-						<IconButton color="inherit" onClick={handleUploadClick}>
-							<FolderOpenIcon />
-						</IconButton>
-					</Tooltip>
+			<Tooltip title={t("tooltip_load_configuration_from_file") || ""}>
+				<IconButton color="inherit" onClick={handleUploadClick}>
+					<FolderOpenIcon />
+				</IconButton>
+			</Tooltip>
 
-					<Tooltip title={t("tooltip_clear_configuration") || ""}>
-						<IconButton color="inherit" onClick={handleClearConfiguration}>
-							<ClearAllIcon />
-						</IconButton>
-					</Tooltip>
+			<Tooltip title={t("tooltip_clear_configuration") || ""}>
+				<IconButton color="inherit" onClick={handleClearConfiguration}>
+					<ClearAllIcon />
+				</IconButton>
+			</Tooltip>
 
-					<Tooltip title={t("tooltip_load_configuration_from_device") || ""}>
-						<span>
-							<IconButton
-								color="inherit"
-								onClick={handleLoadFromDevice}
-								disabled={!initialized || loadingFromDevice || deploying}
-							>
-								<DevicesOtherIcon />
-							</IconButton>
-						</span>
-					</Tooltip>
-
-					<Tooltip title={t("tooltip_pin_modes")}>
-						<IconButton color="inherit" component={NavLink} to="/kits">
-							<SettingsInputComponentIcon />
-						</IconButton>
-					</Tooltip>
-
-					<Box flex={1} />
-					<DeviceKindChooser
-						deviceId={selectedOutputId || "-1"}
-						onChange={handleKindChange}
-					/>
-					<MidiDeviceChooser
-						value={selectedOutputId || ""}
-						onChange={setSelectedOutputId}
-					/>
-
-					<Button
-						variant="contained"
-						color="primary"
-						onClick={handleDeploy}
-						disabled={!initialized || deploying || !hasSelectedOutput}
+			<Tooltip title={t("tooltip_load_configuration_from_device") || ""}>
+				<span>
+					<IconButton
+						color="inherit"
+						onClick={handleLoadFromDevice}
+						disabled={!initialized || loadingFromDevice || deploying}
 					>
-						{t("deploy")}
-					</Button>
-				</>
-			}
-		>
+						<DevicesOtherIcon />
+					</IconButton>
+				</span>
+			</Tooltip>
+
+			<Tooltip title={t("tooltip_pin_modes")}>
+				<IconButton color="inherit" component={NavLink} to="/kits">
+					<SettingsInputComponentIcon />
+				</IconButton>
+			</Tooltip>
+
+			<Box flex={1} />
+			<DeviceKindChooser
+				deviceId={selectedOutputId || "-1"}
+				onChange={handleKindChange}
+			/>
+			<MidiDeviceChooser
+				value={selectedOutputId || ""}
+				onChange={setSelectedOutputId}
+			/>
+
+			<Button
+				variant="contained"
+				color="primary"
+				onClick={handleDeploy}
+				disabled={!initialized || deploying || !hasSelectedOutput}
+			>
+				{t("deploy")}
+			</Button>
+		</>
+	);
+	const body = (
+		<>
 			{!isDongle && (
 				<>
 					<CollapsibleSection
@@ -595,44 +564,7 @@ const Configurator = () => {
 							/>
 						}
 					>
-						<TextField
-							select
-							size="small"
-							label={t("board_select")}
-							value={boardSet.id}
-							onChange={(e) => setBoardSetId(e.target.value)}
-							sx={{ mb: 2, minWidth: 280 }}
-						>
-							{BOARD_SETS.map((set) => (
-								<MenuItem key={set.id} value={set.id}>
-									{set.name}
-								</MenuItem>
-							))}
-						</TextField>
-						<Alert severity="info" icon={<TouchAppIcon />} sx={{ mb: 2 }}>
-							{t("kits_click_to_configure")}
-						</Alert>
-						{/* Side by side, sized by board width; stacked on small screens */}
-						<Box
-							display="flex"
-							flexDirection={{ xs: "column", lg: "row" }}
-							gap={3}
-						>
-							{boardSet.boards.map((board) => (
-								<Box
-									key={board.id}
-									flex={`${board.width} 1 0`}
-									minWidth={0}
-									// Caps the scale so small boards don't fill the page
-									maxWidth={board.width * BOARD_PX_PER_MM}
-								>
-									<Typography variant="subtitle1" fontWeight={600} mb={1}>
-										{board.name}
-									</Typography>
-									<BoardDiagram board={board} interactive hint={false} />
-								</Box>
-							))}
-						</Box>
+						<BoardView />
 					</CollapsibleSection>
 					<CollapsibleSection
 						id="inputs"
@@ -679,6 +611,36 @@ const Configurator = () => {
 				<Peers store={useConfig}></Peers>
 			</CollapsibleSection>
 			{toast}
+		</>
+	);
+	if (embedded) {
+		return (
+			<>
+				<Box display="flex" alignItems="center" flexWrap="wrap" gap={2} mb={2}>
+					{toolbar}
+				</Box>
+				{body}
+			</>
+		);
+	}
+	return (
+		<PageLayout
+			title={t("configurator")}
+			maxWidth="xl"
+			info={hasEnomikBoard ? undefined : t("configurator_info")}
+			infoAction={
+				<Button
+					color="inherit"
+					size="small"
+					component={NavLink}
+					to={"/uploader"}
+				>
+					{t("firmware_uploader")}
+				</Button>
+			}
+			actions={toolbar}
+		>
+			{body}
 		</PageLayout>
 	);
 };

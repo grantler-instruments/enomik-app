@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Paper, Stack, Typography } from "@mui/material";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
@@ -62,6 +62,22 @@ export const Note = ({
 		{children}
 	</Alert>
 );
+
+/** Frame around a live, working part of the app embedded in a chapter. */
+export const LiveDemo = ({ children }: { children: ReactNode }) => {
+	const { t } = useTranslation();
+	return (
+		<Paper
+			variant="outlined"
+			sx={{ p: { xs: 1.5, md: 2 }, my: 2, borderColor: "primary.main" }}
+		>
+			<Typography variant="overline" color="primary" display="block" mb={1}>
+				{t("tutorial_try_it")}
+			</Typography>
+			{children}
+		</Paper>
+	);
+};
 
 export const CodeBlock = ({ children }: { children: string }) => (
 	<Box

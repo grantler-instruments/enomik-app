@@ -36,7 +36,8 @@ import {
 	WirelessMidiIcon,
 } from "./SectionIcons";
 
-const Inspector = () => {
+/** `embedded`: without page chrome, toolbar inline (used in the tutorial). */
+const Inspector = ({ embedded = false }: { embedded?: boolean }) => {
 	const { t } = useTranslation();
 	const device = useMIDIStore((state) => state.selectedInspectorOutputDevice);
 	const setDevice = useMIDIStore(
@@ -70,185 +71,197 @@ const Inspector = () => {
 			clear();
 		};
 	}, [clear]);
+	const toolbar = (
+		<>
+			<Box flex={1} />
+			<MidiDeviceChooser
+				value={device || ""}
+				onChange={(e) => setDevice(e)}
+			></MidiDeviceChooser>
+			<Button
+				variant="contained"
+				color="primary"
+				disabled={
+					!initialized ||
+					syncing ||
+					info?.status !== "ready" ||
+					!supportsInspection(info.version)
+				}
+				onClick={async () => {
+					if (!device || device === "-1") return;
+					const request = ++syncRequest.current;
+					clear();
+					useInspectorStore.setState({ deviceId: device, syncing: true });
+					const current = () =>
+						request === syncRequest.current &&
+						useInspectorStore.getState().deviceId === device;
+					const send = (command: number) =>
+						sendMessage(
+							{
+								id: uuidv4(),
+								type: 240,
+								channel: 1,
+								data: buildEnomikSysex(command),
+								timestamp: Date.now(),
+							},
+							device,
+						);
+					// A client answers GET_CONFIG, a dongle rejects it: then ask for its peers
+					const wait = beginWaitForConfigLoad(device, 5000);
+					send(ENOMIK_COMMAND_GET_MAC);
+					send(ENOMIK_COMMAND_GET_CONFIG);
+					let result = await wait;
+					if (!current()) return;
+					const firmware = result?.firmware ?? null;
+					useInspectorStore.setState({ firmware });
+					if (firmware === "dongle") {
+						const peersWait = beginWaitForConfigLoad(device, 5000, "peers");
+						send(ENOMIK_COMMAND_GET_ALL_PEERS);
+						result = await peersWait;
+						if (!current()) return;
+					}
+					useInspectorStore.setState({
+						syncing: false,
+						syncError: result === null,
+					});
+				}}
+			>
+				{t("inspector_sync")}
+			</Button>
+		</>
+	);
+	const body = (
+		<Box display={"flex"} flexDirection="column" gap={2}>
+			<DeviceCompatibility
+				device={device || "-1"}
+				inspection
+				hideSelectPrompt
+			/>
+			{syncing && <Typography>{t("compat_syncing")}</Typography>}
+			{syncError && <Alert severity="warning">{t("compat_sync_failed")}</Alert>}
+			<Box>
+				<SectionHeader title={t("inspector_global")} icon={<GlobalIcon />} />
+				{!isDongle && (
+					<Typography>
+						{t("client_name")}: {name ?? t("compat_unavailable")}
+					</Typography>
+				)}
+				<Typography>
+					{t("inspector_mac_address")}: {macAddress ?? "–"}
+				</Typography>
+				<Typography>
+					{t("inspector_firmware")}:{" "}
+					{firmware ? t(`device_kind_${firmware}`) : "–"}
+				</Typography>
+				<Typography>
+					{t("inspector_protocol_version")}: {protocolVersion ?? "–"}
+				</Typography>
+				{!isDongle && (
+					<>
+						<FormControlLabel
+							control={<Switch checked={midiLoopback ?? false} disabled />}
+							label={`${t("midi_loopback")}${midiLoopback === null ? `: ${t("compat_unavailable")}` : ""}`}
+						/>
+						<FormControlLabel
+							control={<Switch checked={powerSave ?? false} disabled />}
+							label={`${t("power_save")}${powerSave === null ? `: ${t("compat_unavailable")}` : ""}`}
+						/>
+					</>
+				)}
+			</Box>
+			{!isDongle && (
+				<>
+					<Box>
+						<SectionHeader
+							title={t("inspector_input_to_midi")}
+							icon={<PinToMidiIcon />}
+						/>
+						{inputPinConfigs.length > 0 && (
+							<PinTableHeader
+								type="input"
+								showThreshold={hasTouchInput(inputPinConfigs)}
+							/>
+						)}
+						{inputPinConfigs.map((config, index) => (
+							<PinRow
+								key={`input-${config.pin}`}
+								config={config}
+								type="input"
+								index={index}
+								showThreshold={hasTouchInput(inputPinConfigs)}
+								thresholdUnit={thresholdUnit(info?.version)}
+								readOnly
+							/>
+						))}
+					</Box>
+					{hasTouchInput(inputPinConfigs) && (
+						<RawValues device={device || "-1"} />
+					)}
+					<Box>
+						<SectionHeader
+							title={t("inspector_midi_to_output")}
+							icon={<MidiToPinIcon />}
+						/>
+						{outputPinConfigs.length > 0 && (
+							<PinTableHeader
+								type="output"
+								showPwmRange={hasPwmOutput(outputPinConfigs)}
+							/>
+						)}
+						{outputPinConfigs.map((config, index) => (
+							<PinRow
+								key={`output-${config.pin}`}
+								config={config}
+								type="output"
+								index={index}
+								showPwmRange={hasPwmOutput(outputPinConfigs)}
+								thresholdUnit={thresholdUnit(info?.version)}
+								readOnly
+							/>
+						))}
+					</Box>
+				</>
+			)}
+			<Box>
+				<SectionHeader
+					title={t("inspector_esp_now_midi")}
+					icon={<WirelessMidiIcon />}
+				/>
+				{peers.length === 0 && (
+					<Typography color="text.secondary">
+						{/* "No peers" only once a sync has answered */}
+						{firmware && !syncing ? t("inspector_no_peers") : "–"}
+					</Typography>
+				)}
+				{peers.map((peer) => (
+					<MacAddressInput
+						key={peer}
+						macAddress={peer}
+						disabled={true}
+						onMacAddressChange={() => {}}
+					></MacAddressInput>
+				))}
+			</Box>
+		</Box>
+	);
+	if (embedded) {
+		return (
+			<>
+				<Box display="flex" alignItems="center" flexWrap="wrap" gap={2} mb={2}>
+					{toolbar}
+				</Box>
+				{body}
+			</>
+		);
+	}
 	return (
 		<PageLayout
 			title={t("inspector")}
 			info={t("inspector_info")}
 			maxWidth={false}
-			actions={
-				<>
-					<Box flex={1} />
-					<MidiDeviceChooser
-						value={device || ""}
-						onChange={(e) => setDevice(e)}
-					></MidiDeviceChooser>
-					<Button
-						variant="contained"
-						color="primary"
-						disabled={
-							!initialized ||
-							syncing ||
-							info?.status !== "ready" ||
-							!supportsInspection(info.version)
-						}
-						onClick={async () => {
-							if (!device || device === "-1") return;
-							const request = ++syncRequest.current;
-							clear();
-							useInspectorStore.setState({ deviceId: device, syncing: true });
-							const current = () =>
-								request === syncRequest.current &&
-								useInspectorStore.getState().deviceId === device;
-							const send = (command: number) =>
-								sendMessage(
-									{
-										id: uuidv4(),
-										type: 240,
-										channel: 1,
-										data: buildEnomikSysex(command),
-										timestamp: Date.now(),
-									},
-									device,
-								);
-							// A client answers GET_CONFIG, a dongle rejects it: then ask for its peers
-							const wait = beginWaitForConfigLoad(device, 5000);
-							send(ENOMIK_COMMAND_GET_MAC);
-							send(ENOMIK_COMMAND_GET_CONFIG);
-							let result = await wait;
-							if (!current()) return;
-							const firmware = result?.firmware ?? null;
-							useInspectorStore.setState({ firmware });
-							if (firmware === "dongle") {
-								const peersWait = beginWaitForConfigLoad(device, 5000, "peers");
-								send(ENOMIK_COMMAND_GET_ALL_PEERS);
-								result = await peersWait;
-								if (!current()) return;
-							}
-							useInspectorStore.setState({
-								syncing: false,
-								syncError: result === null,
-							});
-						}}
-					>
-						{t("inspector_sync")}
-					</Button>
-				</>
-			}
+			actions={toolbar}
 		>
-			<Box display={"flex"} flexDirection="column" gap={2}>
-				<DeviceCompatibility
-					device={device || "-1"}
-					inspection
-					hideSelectPrompt
-				/>
-				{syncing && <Typography>{t("compat_syncing")}</Typography>}
-				{syncError && (
-					<Alert severity="warning">{t("compat_sync_failed")}</Alert>
-				)}
-				<Box>
-					<SectionHeader title={t("inspector_global")} icon={<GlobalIcon />} />
-					{!isDongle && (
-						<Typography>
-							{t("client_name")}: {name ?? t("compat_unavailable")}
-						</Typography>
-					)}
-					<Typography>
-						{t("inspector_mac_address")}: {macAddress ?? "–"}
-					</Typography>
-					<Typography>
-						{t("inspector_firmware")}:{" "}
-						{firmware ? t(`device_kind_${firmware}`) : "–"}
-					</Typography>
-					<Typography>
-						{t("inspector_protocol_version")}: {protocolVersion ?? "–"}
-					</Typography>
-					{!isDongle && (
-						<>
-							<FormControlLabel
-								control={<Switch checked={midiLoopback ?? false} disabled />}
-								label={`${t("midi_loopback")}${midiLoopback === null ? `: ${t("compat_unavailable")}` : ""}`}
-							/>
-							<FormControlLabel
-								control={<Switch checked={powerSave ?? false} disabled />}
-								label={`${t("power_save")}${powerSave === null ? `: ${t("compat_unavailable")}` : ""}`}
-							/>
-						</>
-					)}
-				</Box>
-				{!isDongle && (
-					<>
-						<Box>
-							<SectionHeader
-								title={t("inspector_input_to_midi")}
-								icon={<PinToMidiIcon />}
-							/>
-							{inputPinConfigs.length > 0 && (
-								<PinTableHeader
-									type="input"
-									showThreshold={hasTouchInput(inputPinConfigs)}
-								/>
-							)}
-							{inputPinConfigs.map((config, index) => (
-								<PinRow
-									key={`input-${config.pin}`}
-									config={config}
-									type="input"
-									index={index}
-									showThreshold={hasTouchInput(inputPinConfigs)}
-									thresholdUnit={thresholdUnit(info?.version)}
-									readOnly
-								/>
-							))}
-						</Box>
-						{hasTouchInput(inputPinConfigs) && (
-							<RawValues device={device || "-1"} />
-						)}
-						<Box>
-							<SectionHeader
-								title={t("inspector_midi_to_output")}
-								icon={<MidiToPinIcon />}
-							/>
-							{outputPinConfigs.length > 0 && (
-								<PinTableHeader
-									type="output"
-									showPwmRange={hasPwmOutput(outputPinConfigs)}
-								/>
-							)}
-							{outputPinConfigs.map((config, index) => (
-								<PinRow
-									key={`output-${config.pin}`}
-									config={config}
-									type="output"
-									index={index}
-									showPwmRange={hasPwmOutput(outputPinConfigs)}
-									thresholdUnit={thresholdUnit(info?.version)}
-									readOnly
-								/>
-							))}
-						</Box>
-					</>
-				)}
-				<Box>
-					<SectionHeader
-						title={t("inspector_esp_now_midi")}
-						icon={<WirelessMidiIcon />}
-					/>
-					{peers.length === 0 && (
-						<Typography color="text.secondary">
-							{/* "No peers" only once a sync has answered */}
-							{firmware && !syncing ? t("inspector_no_peers") : "–"}
-						</Typography>
-					)}
-					{peers.map((peer) => (
-						<MacAddressInput
-							key={peer}
-							macAddress={peer}
-							disabled={true}
-							onMacAddressChange={() => {}}
-						></MacAddressInput>
-					))}
-				</Box>
-			</Box>
+			{body}
 		</PageLayout>
 	);
 };

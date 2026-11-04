@@ -13,6 +13,7 @@ const en = {
 	tutorial_library_docs: "Library documentation",
 	tutorial_source_link: "{{path}} on GitHub",
 	tutorial_library_github: "Library on GitHub",
+	tutorial_try_it: "Try it",
 
 	tutorial_intro_title: "Introduction",
 	tutorial_intro_text: [
@@ -323,11 +324,32 @@ const en = {
 
 	tutorial_examples_title: "Examples",
 	tutorial_examples_text: [
-		"Small projects that show what a client can do. Configure the precompiled client firmware in the web app, or build your own firmware from code:",
+		"Small projects that show what a client can do. Configure the precompiled client firmware in the Configurator, or build your own firmware from code:",
 	],
-	tutorial_examples_webapp_title: "Via web app",
+	tutorial_examples_webapp_title: "Via Configurator",
 	tutorial_examples_webapp_text: [
 		"These examples use the precompiled client firmware. Wire up the hardware and set everything up in the Configurator, no code needed:",
+	],
+	tutorial_cfg_global_title: "Global settings",
+	tutorial_cfg_global_text: [
+		"The Global section holds settings that apply to the whole board rather than to a single pin.",
+	],
+	tutorial_cfg_global_list: [
+		'Client name: a name to tell your boards apart, e.g. "Drums left". Printable ASCII, up to 16 characters (firmware 0.19+). Leave it empty to keep the firmware\'s default name.',
+		"MIDI Loopback: outgoing channel and realtime messages are also fed back into the board itself. Turn it on when an input should drive an output on the same board, e.g. a button that lights its own LED. SysEx is not looped.",
+		"Safe Power Mode: saves power (modem sleep and lower radio power) at the cost of higher latency. Useful on batteries; leave it off for the tightest timing.",
+	],
+	tutorial_cfg_global_note:
+		"Changes only live in the app until you click Deploy. Then they are written to the board and survive a reboot.",
+	tutorial_cfg_board_title: "Board view",
+	tutorial_cfg_board_text: [
+		"The board view draws your board with all its pins, so you can assign them by clicking instead of looking up GPIO numbers.",
+	],
+	tutorial_cfg_board_steps: [
+		"Pick your board from the list. The choice only changes the drawing, not the configuration.",
+		"Pins with a dashed ring are free: click one and choose Add as input or Add as output.",
+		"The new pin shows up in the input or output list below, where you set its MIDI message. Configured pins are marked on the drawing.",
+		"Faded pins (power, GND, I2C) are fixed and can't be assigned.",
 	],
 	tutorial_examples_code_title: "Via code",
 	tutorial_examples_code_text: [
@@ -406,7 +428,7 @@ const en = {
 	tutorial_led_tip_pwm:
 		"Choose PWM (analog) to dim the LED instead: the velocity or controller value sets the brightness.",
 	tutorial_led_tip_loopback:
-		"Combine it with the button example and enable MIDI loopback under Global: the button on pin 16 (note 16) now lights the LED directly on the board, no computer involved.",
+		"You can also activate the MIDI Loopback option under Global settings. Combined with the button example, the button on pin 16 (note 16) then lights the LED directly on the board, no computer involved.",
 
 	tutorial_i2c_title: "I2C distance sensor (VL53L0X)",
 	tutorial_i2c_text: [
@@ -565,6 +587,63 @@ const en = {
 	tutorial_daw_port_note:
 		"On Windows, a MIDI port can only be used by one program at a time. Close the browser tab with the Debugger or Configurator before you open the DAW, or the DAW may not see the dongle.",
 
+	tutorial_tools_title: "Tools",
+	tutorial_tools_text: [
+		"Besides the Configurator, the app comes with a few tools that help you look inside your setup: see which MIDI messages are flowing, send your own, and read what a board prints to its serial port.",
+	],
+	tutorial_tool_debugger_title: "Debugger",
+	tutorial_tool_debugger_text: [
+		"The Debugger is the place to go when something doesn't do what you expect. It shows the MIDI traffic between the browser and your devices and lets you send messages yourself.",
+		"Click Init MIDI first and allow MIDI access when the browser asks. Every section can be folded away when you don't need it.",
+	],
+	tutorial_tool_debugger_composer: [
+		"Pick the MIDI output the message should go to, e.g. the dongle.",
+		"Choose a type (note, control change, program change, pitch bend or SysEx) and a channel.",
+		"Set the note or controller number and the velocity or value, then click Send MIDI.",
+	],
+	tutorial_tool_debugger_monitor: [
+		"Every incoming and outgoing message is listed with direction, time, device, channel, type and values.",
+		"Use the filter to show only certain inputs, outputs, channels or message types.",
+		"Clear empties the list, e.g. before you press a button to see exactly what it sends.",
+	],
+	tutorial_tool_debugger_serial: [
+		"The Serial Monitor connects to a board over Web Serial and shows its log output. You can also type a line and send it to the board.",
+	],
+	tutorial_tool_debugger_tip:
+		"Close other apps that use the board's serial port (e.g. the Arduino IDE) before connecting the Serial Monitor.",
+	tutorial_tool_inspector_title: "Inspector",
+	tutorial_tool_inspector_text: [
+		"The Inspector reads the configuration back from a board, so you can see what is actually on it: its name, firmware type, MAC address and protocol version, every configured pin and its paired wireless MIDI addresses. Nothing is written to the board.",
+	],
+	tutorial_tool_inspector_steps: [
+		"Connect the board over USB and click Init MIDI.",
+		"Pick the board as MIDI output.",
+		"Click sync. Reading the configuration needs firmware 0.13 or newer.",
+	],
+	tutorial_tool_inspector_live_title: "Live Values",
+	tutorial_tool_inspector_live: [
+		"If the board has touch inputs, Live Values streams the raw readings of its input pins (firmware 0.19+, USB only). Touch a pad, read the percentage and set its threshold in the Configurator to about half of what a light touch reaches.",
+	],
+	tutorial_tool_tester_title: "Board tester",
+	tutorial_tool_tester_text: [
+		"The board tester checks a freshly built or soldered client board step by step: do the buttons send MIDI over USB and wirelessly, does the LED react to MIDI, do the touch pads respond?",
+	],
+	tutorial_tool_tester_needs_title: "Before you start",
+	tutorial_tool_tester_needs: [
+		"Flash the client firmware on the board under test and the dongle firmware on a dongle.",
+		"Wire a button from pin 16 to GND and one from pin 17 to GND. The LED sits on pin 15 and the touch pads on pins 1 and 2 by default; both can be changed in the first step.",
+		"Connect both boards over USB and click Init MIDI.",
+	],
+	tutorial_tool_tester_steps_title: "The steps",
+	tutorial_tool_tester_steps: [
+		"Connect client and dongle: both boards are detected automatically (or pick them by hand). Set up and continue writes the test configuration to the board.",
+		"Press the buttons: each press must arrive over the client's USB and wirelessly at the dongle. Pin 16 sends a different MIDI type on every press.",
+		"LED loopback: hold a button and answer whether the LED lit up.",
+		"Touch pins: touch each pad until it reports a value.",
+		"Results: every check is listed as passed or failed. Finally, write a default configuration so the board is ready to use, or skip it.",
+	],
+	tutorial_tool_tester_warning:
+		"The test overwrites the pin configuration of the board under test. Save it to a file in the Configurator first if you want to keep it.",
 	tutorial_troubleshooting_title: "Troubleshooting",
 	tutorial_troubleshooting_text: [
 		"Something doesn't work? Narrow it down step by step: does the board show up, do messages leave the client, do they reach the dongle, does the DAW listen? The app has a tool for each step.",
@@ -642,6 +721,7 @@ const de: typeof en = {
 	tutorial_library_docs: "Dokumentation der Bibliothek",
 	tutorial_source_link: "{{path}} auf GitHub",
 	tutorial_library_github: "Bibliothek auf GitHub",
+	tutorial_try_it: "Ausprobieren",
 
 	tutorial_intro_title: "Einführung",
 	tutorial_intro_text: [
@@ -958,11 +1038,32 @@ const de: typeof en = {
 
 	tutorial_examples_title: "Beispiele",
 	tutorial_examples_text: [
-		"Kleine Projekte, die zeigen, was ein Client kann. Konfiguriere die vorkompilierte Client-Firmware in der Web-App oder baue deine eigene Firmware aus Code:",
+		"Kleine Projekte, die zeigen, was ein Client kann. Konfiguriere die vorkompilierte Client-Firmware im Konfigurator oder baue deine eigene Firmware aus Code:",
 	],
-	tutorial_examples_webapp_title: "Über die Web-App",
+	tutorial_examples_webapp_title: "Über den Konfigurator",
 	tutorial_examples_webapp_text: [
 		"Diese Beispiele nutzen die vorkompilierte Client-Firmware. Verdrahte die Hardware und richte alles im Konfigurator ein, ganz ohne Code:",
+	],
+	tutorial_cfg_global_title: "Globale Einstellungen",
+	tutorial_cfg_global_text: [
+		"Der Bereich Global enthält Einstellungen, die für das ganze Board gelten und nicht für einen einzelnen Pin.",
+	],
+	tutorial_cfg_global_list: [
+		'Client-Name: ein Name, um deine Boards auseinanderzuhalten, z. B. "Drums links". Druckbare ASCII-Zeichen, bis zu 16 Zeichen (Firmware 0.19+). Leer lassen, um den Standardnamen der Firmware zu behalten.',
+		"MIDI-Loopback: Ausgehende Kanal- und Realtime-Nachrichten werden zusätzlich ins Board selbst zurückgeführt. Schalte es ein, wenn ein Eingang einen Ausgang auf demselben Board steuern soll, z. B. ein Taster, der seine eigene LED leuchten lässt. SysEx wird nicht zurückgeführt.",
+		"Energiesparmodus: spart Strom (Modem-Sleep und geringere Funkleistung) auf Kosten höherer Latenz. Praktisch im Akkubetrieb; für das engste Timing ausgeschaltet lassen.",
+	],
+	tutorial_cfg_global_note:
+		"Änderungen existieren nur in der App, bis du auf Bereitstellen klickst. Dann werden sie aufs Board geschrieben und überstehen einen Neustart.",
+	tutorial_cfg_board_title: "Board-Ansicht",
+	tutorial_cfg_board_text: [
+		"Die Board-Ansicht zeichnet dein Board mit allen Pins, sodass du sie per Klick zuweisen kannst, statt GPIO-Nummern nachzuschlagen.",
+	],
+	tutorial_cfg_board_steps: [
+		"Wähle dein Board aus der Liste. Die Auswahl ändert nur die Zeichnung, nicht die Konfiguration.",
+		"Pins mit gestricheltem Ring sind frei: Klicke einen an und wähle Als Eingang hinzufügen oder Als Ausgang hinzufügen.",
+		"Der neue Pin erscheint unten in der Eingangs- oder Ausgangsliste, wo du seine MIDI-Nachricht festlegst. Konfigurierte Pins sind in der Zeichnung markiert.",
+		"Blasse Pins (Strom, GND, I2C) sind fest belegt und können nicht zugewiesen werden.",
 	],
 	tutorial_examples_code_title: "Über Code",
 	tutorial_examples_code_text: [
@@ -1041,7 +1142,7 @@ const de: typeof en = {
 	tutorial_led_tip_pwm:
 		"Wähle PWM (analog), um die LED zu dimmen: Velocity oder Controller-Wert bestimmen die Helligkeit.",
 	tutorial_led_tip_loopback:
-		"Kombiniere es mit dem Taster-Beispiel und aktiviere MIDI-Loopback unter Global: Der Taster an Pin 16 (Note 16) schaltet die LED dann direkt auf dem Board, ganz ohne Computer.",
+		"Du kannst auch die Option MIDI-Loopback unter Globale Einstellungen aktivieren. Zusammen mit dem Taster-Beispiel schaltet der Taster an Pin 16 (Note 16) die LED dann direkt auf dem Board, ganz ohne Computer.",
 
 	tutorial_i2c_title: "I2C-Abstandssensor (VL53L0X)",
 	tutorial_i2c_text: [
@@ -1202,6 +1303,63 @@ const de: typeof en = {
 	tutorial_daw_port_note:
 		"Unter Windows kann ein MIDI-Port nur von einem Programm gleichzeitig genutzt werden. Schließe den Browser-Tab mit Debugger oder Konfigurator, bevor du die DAW öffnest, sonst sieht die DAW den Dongle eventuell nicht.",
 
+	tutorial_tools_title: "Werkzeuge",
+	tutorial_tools_text: [
+		"Neben dem Konfigurator bringt die App ein paar Werkzeuge mit, mit denen du in dein Setup hineinschauen kannst: sehen, welche MIDI-Nachrichten fließen, eigene senden und lesen, was ein Board über seine serielle Schnittstelle ausgibt.",
+	],
+	tutorial_tool_debugger_title: "Debugger",
+	tutorial_tool_debugger_text: [
+		"Der Debugger ist die richtige Adresse, wenn etwas nicht tut, was es soll. Er zeigt den MIDI-Verkehr zwischen Browser und deinen Geräten und lässt dich selbst Nachrichten senden.",
+		"Klicke zuerst auf MIDI initialisieren und erlaube den MIDI-Zugriff, wenn der Browser fragt. Jeden Bereich kannst du einklappen, wenn du ihn nicht brauchst.",
+	],
+	tutorial_tool_debugger_composer: [
+		"Wähle den MIDI-Ausgang, an den die Nachricht gehen soll, z. B. den Dongle.",
+		"Wähle einen Typ (Note, Control Change, Program Change, Pitch Bend oder SysEx) und einen Kanal.",
+		"Stelle Noten- bzw. Controller-Nummer und Velocity bzw. Wert ein und klicke auf MIDI senden.",
+	],
+	tutorial_tool_debugger_monitor: [
+		"Jede ein- und ausgehende Nachricht wird mit Richtung, Zeit, Gerät, Kanal, Typ und Werten aufgelistet.",
+		"Mit dem Filter zeigst du nur bestimmte Eingänge, Ausgänge, Kanäle oder Nachrichtentypen an.",
+		"Löschen leert die Liste, z. B. bevor du einen Taster drückst, um genau zu sehen, was er sendet.",
+	],
+	tutorial_tool_debugger_serial: [
+		"Der serielle Monitor verbindet sich per Web Serial mit einem Board und zeigt seine Log-Ausgabe. Du kannst auch eine Zeile eintippen und an das Board senden.",
+	],
+	tutorial_tool_debugger_tip:
+		"Schließe andere Programme, die die serielle Schnittstelle des Boards nutzen (z. B. die Arduino IDE), bevor du den seriellen Monitor verbindest.",
+	tutorial_tool_inspector_title: "Inspector",
+	tutorial_tool_inspector_text: [
+		"Der Inspector liest die Konfiguration von einem Board zurück, damit du siehst, was wirklich darauf ist: Name, Firmware-Typ, MAC-Adresse und Protokollversion, jeden konfigurierten Pin und die gekoppelten Wireless-MIDI-Adressen. Auf das Board wird nichts geschrieben.",
+	],
+	tutorial_tool_inspector_steps: [
+		"Schließe das Board per USB an und klicke auf MIDI initialisieren.",
+		"Wähle das Board als MIDI-Ausgang.",
+		"Klicke auf Synchronisieren. Zum Auslesen der Konfiguration ist Firmware 0.13 oder neuer nötig.",
+	],
+	tutorial_tool_inspector_live_title: "Live-Werte",
+	tutorial_tool_inspector_live: [
+		"Hat das Board Touch-Eingänge, streamen die Live-Werte die Rohwerte seiner Eingangs-Pins (Firmware 0.19+, nur über USB). Berühre ein Pad, lies den Prozentwert ab und setze den Schwellwert im Konfigurator auf etwa die Hälfte dessen, was eine leichte Berührung erreicht.",
+	],
+	tutorial_tool_tester_title: "Board-Tester",
+	tutorial_tool_tester_text: [
+		"Der Board-Tester prüft ein frisch gebautes oder gelötetes Client-Board Schritt für Schritt: Senden die Taster MIDI über USB und drahtlos, reagiert die LED auf MIDI, sprechen die Touch-Pads an?",
+	],
+	tutorial_tool_tester_needs_title: "Bevor du loslegst",
+	tutorial_tool_tester_needs: [
+		"Flashe die Client-Firmware auf das zu testende Board und die Dongle-Firmware auf einen Dongle.",
+		"Verbinde einen Taster von Pin 16 nach GND und einen von Pin 17 nach GND. Die LED liegt standardmäßig an Pin 15, die Touch-Pads an Pin 1 und 2; beides lässt sich im ersten Schritt ändern.",
+		"Schließe beide Boards per USB an und klicke auf MIDI initialisieren.",
+	],
+	tutorial_tool_tester_steps_title: "Die Schritte",
+	tutorial_tool_tester_steps: [
+		"Connect client and dongle: Beide Boards werden automatisch erkannt (oder von Hand ausgewählt). Set up and continue schreibt die Testkonfiguration auf das Board.",
+		"Press the buttons: Jeder Tastendruck muss über den USB des Clients und drahtlos am Dongle ankommen. Pin 16 sendet bei jedem Druck einen anderen MIDI-Typ.",
+		"LED loopback: Halte einen Taster gedrückt und gib an, ob die LED geleuchtet hat.",
+		"Touch pins: Berühre jedes Pad, bis es einen Wert meldet.",
+		"Ergebnis: Jede Prüfung wird als bestanden oder fehlgeschlagen aufgelistet. Zum Schluss schreibst du eine Standardkonfiguration, damit das Board einsatzbereit ist, oder überspringst das.",
+	],
+	tutorial_tool_tester_warning:
+		"Der Test überschreibt die Pin-Konfiguration des getesteten Boards. Speichere sie vorher im Konfigurator in eine Datei, wenn du sie behalten willst.",
 	tutorial_troubleshooting_title: "Fehlerbehebung",
 	tutorial_troubleshooting_text: [
 		"Etwas funktioniert nicht? Grenze es Schritt für Schritt ein: Erscheint das Board, verlassen Nachrichten den Client, erreichen sie den Dongle, hört die DAW zu? Für jeden Schritt hat die App ein Werkzeug.",
@@ -1281,6 +1439,7 @@ const es: typeof en = {
 	tutorial_library_docs: "Documentación de la biblioteca",
 	tutorial_source_link: "{{path}} en GitHub",
 	tutorial_library_github: "Biblioteca en GitHub",
+	tutorial_try_it: "Pruébalo",
 
 	tutorial_intro_title: "Introducción",
 	tutorial_intro_text: [
@@ -1593,11 +1752,32 @@ const es: typeof en = {
 
 	tutorial_examples_title: "Ejemplos",
 	tutorial_examples_text: [
-		"Pequeños proyectos que muestran lo que puede hacer un cliente. Configura el firmware de cliente precompilado en la app web o crea tu propio firmware con código:",
+		"Pequeños proyectos que muestran lo que puede hacer un cliente. Configura el firmware de cliente precompilado en el Configurador o crea tu propio firmware con código:",
 	],
-	tutorial_examples_webapp_title: "Con la app web",
+	tutorial_examples_webapp_title: "Con el Configurador",
 	tutorial_examples_webapp_text: [
 		"Estos ejemplos usan el firmware de cliente precompilado. Conecta el hardware y configúralo todo en el Configurador, sin código:",
+	],
+	tutorial_cfg_global_title: "Ajustes globales",
+	tutorial_cfg_global_text: [
+		"La sección Global contiene ajustes que se aplican a toda la placa y no a un solo pin.",
+	],
+	tutorial_cfg_global_list: [
+		'Nombre del cliente: un nombre para distinguir tus placas, p. ej. "Batería izquierda". ASCII imprimible, hasta 16 caracteres (firmware 0.19+). Déjalo vacío para conservar el nombre por defecto del firmware.',
+		"MIDI Loopback: los mensajes de canal y de tiempo real salientes también se devuelven a la propia placa. Actívalo cuando una entrada deba controlar una salida de la misma placa, p. ej. un botón que enciende su propio LED. SysEx no se devuelve.",
+		"Modo de ahorro de energía: ahorra energía (modem sleep y menor potencia de radio) a costa de mayor latencia. Útil con baterías; déjalo desactivado para la menor latencia.",
+	],
+	tutorial_cfg_global_note:
+		"Los cambios solo existen en la app hasta que haces clic en Desplegar. Entonces se escriben en la placa y sobreviven a un reinicio.",
+	tutorial_cfg_board_title: "Vista de la placa",
+	tutorial_cfg_board_text: [
+		"La vista de la placa dibuja tu placa con todos sus pines, para que los asignes con un clic en lugar de buscar números GPIO.",
+	],
+	tutorial_cfg_board_steps: [
+		"Elige tu placa de la lista. La elección solo cambia el dibujo, no la configuración.",
+		"Los pines con un anillo discontinuo están libres: haz clic en uno y elige Añadir como entrada o Añadir como salida.",
+		"El nuevo pin aparece abajo en la lista de entradas o salidas, donde defines su mensaje MIDI. Los pines configurados se marcan en el dibujo.",
+		"Los pines atenuados (alimentación, GND, I2C) son fijos y no se pueden asignar.",
 	],
 	tutorial_examples_code_title: "Con código",
 	tutorial_examples_code_text: [
@@ -1676,7 +1856,7 @@ const es: typeof en = {
 	tutorial_led_tip_pwm:
 		"Elige PWM (analog) para atenuar el LED: la velocidad o el valor del controlador fija el brillo.",
 	tutorial_led_tip_loopback:
-		"Combínalo con el ejemplo del botón y activa MIDI loopback en Global: el botón del pin 16 (nota 16) enciende el LED directamente en la placa, sin ordenador.",
+		"También puedes activar la opción MIDI Loopback en Ajustes globales. Junto con el ejemplo del botón, el botón del pin 16 (nota 16) enciende entonces el LED directamente en la placa, sin ordenador.",
 
 	tutorial_i2c_title: "Sensor de distancia I2C (VL53L0X)",
 	tutorial_i2c_text: [
@@ -1837,6 +2017,63 @@ const es: typeof en = {
 	tutorial_daw_port_note:
 		"En Windows, un puerto MIDI solo puede usarlo un programa a la vez. Cierra la pestaña del navegador con el Depurador o el Configurador antes de abrir la DAW; si no, puede que la DAW no vea el dongle.",
 
+	tutorial_tools_title: "Herramientas",
+	tutorial_tools_text: [
+		"Además del Configurador, la app incluye algunas herramientas para mirar dentro de tu montaje: ver qué mensajes MIDI circulan, enviar los tuyos y leer lo que una placa escribe por su puerto serie.",
+	],
+	tutorial_tool_debugger_title: "Debugger",
+	tutorial_tool_debugger_text: [
+		"El Debugger es el lugar al que acudir cuando algo no hace lo que esperas. Muestra el tráfico MIDI entre el navegador y tus dispositivos y te permite enviar mensajes tú mismo.",
+		"Haz clic primero en Iniciar MIDI y permite el acceso MIDI cuando el navegador lo pida. Puedes plegar cada sección cuando no la necesites.",
+	],
+	tutorial_tool_debugger_composer: [
+		"Elige la salida MIDI a la que debe ir el mensaje, p. ej. el dongle.",
+		"Elige un tipo (nota, control change, program change, pitch bend o SysEx) y un canal.",
+		"Ajusta el número de nota o de controlador y la velocidad o el valor, y haz clic en Enviar MIDI.",
+	],
+	tutorial_tool_debugger_monitor: [
+		"Cada mensaje entrante y saliente aparece con dirección, hora, dispositivo, canal, tipo y valores.",
+		"Usa el filtro para mostrar solo ciertas entradas, salidas, canales o tipos de mensaje.",
+		"Limpiar vacía la lista, p. ej. antes de pulsar un botón para ver exactamente qué envía.",
+	],
+	tutorial_tool_debugger_serial: [
+		"El monitor serie se conecta a una placa mediante Web Serial y muestra su salida de log. También puedes escribir una línea y enviarla a la placa.",
+	],
+	tutorial_tool_debugger_tip:
+		"Cierra otras aplicaciones que usen el puerto serie de la placa (p. ej. el Arduino IDE) antes de conectar el monitor serie.",
+	tutorial_tool_inspector_title: "Inspector",
+	tutorial_tool_inspector_text: [
+		"El Inspector lee la configuración de vuelta desde una placa, para que veas lo que realmente tiene: su nombre, tipo de firmware, dirección MAC y versión de protocolo, cada pin configurado y sus direcciones de MIDI inalámbrico emparejadas. No se escribe nada en la placa.",
+	],
+	tutorial_tool_inspector_steps: [
+		"Conecta la placa por USB y haz clic en Iniciar MIDI.",
+		"Elige la placa como salida MIDI.",
+		"Haz clic en sincronizar. Leer la configuración requiere firmware 0.13 o posterior.",
+	],
+	tutorial_tool_inspector_live_title: "Valores en vivo",
+	tutorial_tool_inspector_live: [
+		"Si la placa tiene entradas táctiles, Valores en vivo transmite las lecturas brutas de sus pines de entrada (firmware 0.19+, solo USB). Toca un pad, lee el porcentaje y ajusta su umbral en el Configurador a aproximadamente la mitad de lo que alcanza un toque ligero.",
+	],
+	tutorial_tool_tester_title: "Probador de placas",
+	tutorial_tool_tester_text: [
+		"El probador de placas comprueba paso a paso una placa cliente recién montada o soldada: ¿envían los botones MIDI por USB y de forma inalámbrica, reacciona el LED a MIDI, responden los pads táctiles?",
+	],
+	tutorial_tool_tester_needs_title: "Antes de empezar",
+	tutorial_tool_tester_needs: [
+		"Graba el firmware cliente en la placa a probar y el firmware dongle en un dongle.",
+		"Conecta un botón del pin 16 a GND y otro del pin 17 a GND. Por defecto el LED está en el pin 15 y los pads táctiles en los pines 1 y 2; ambos se pueden cambiar en el primer paso.",
+		"Conecta ambas placas por USB y haz clic en Iniciar MIDI.",
+	],
+	tutorial_tool_tester_steps_title: "Los pasos",
+	tutorial_tool_tester_steps: [
+		"Connect client and dongle: ambas placas se detectan automáticamente (o elígelas a mano). Set up and continue escribe la configuración de prueba en la placa.",
+		"Press the buttons: cada pulsación debe llegar por el USB del cliente y de forma inalámbrica al dongle. El pin 16 envía un tipo MIDI distinto en cada pulsación.",
+		"LED loopback: mantén pulsado un botón e indica si el LED se encendió.",
+		"Touch pins: toca cada pad hasta que informe un valor.",
+		"Resultados: cada comprobación aparece como superada o fallida. Al final, escribe una configuración por defecto para dejar la placa lista para usar, u omítelo.",
+	],
+	tutorial_tool_tester_warning:
+		"La prueba sobrescribe la configuración de pines de la placa probada. Guárdala antes en un archivo desde el Configurador si quieres conservarla.",
 	tutorial_troubleshooting_title: "Solución de problemas",
 	tutorial_troubleshooting_text: [
 		"¿Algo no funciona? Acótalo paso a paso: ¿aparece la placa?, ¿salen mensajes del cliente?, ¿llegan al dongle?, ¿escucha la DAW? La app tiene una herramienta para cada paso.",
@@ -1916,6 +2153,7 @@ const zh: typeof en = {
 	tutorial_library_docs: "库文档",
 	tutorial_source_link: "GitHub 上的 {{path}}",
 	tutorial_library_github: "GitHub 上的库",
+	tutorial_try_it: "试一试",
 
 	tutorial_intro_title: "简介",
 	tutorial_intro_text: [
@@ -2213,11 +2451,32 @@ const zh: typeof en = {
 
 	tutorial_examples_title: "示例",
 	tutorial_examples_text: [
-		"展示客户端功能的小项目。可以在网页应用中配置预编译的客户端固件，也可以用代码构建自己的固件：",
+		"展示客户端功能的小项目。可以在配置器中配置预编译的客户端固件，也可以用代码构建自己的固件：",
 	],
-	tutorial_examples_webapp_title: "通过网页应用",
+	tutorial_examples_webapp_title: "通过配置器",
 	tutorial_examples_webapp_text: [
 		"这些示例使用预编译的客户端固件。连接好硬件，在配置器中完成所有设置，无需代码：",
+	],
+	tutorial_cfg_global_title: "全局设置",
+	tutorial_cfg_global_text: [
+		"全局部分包含适用于整个开发板、而不是单个引脚的设置。",
+	],
+	tutorial_cfg_global_list: [
+		"客户端名称：用于区分开发板的名称，例如“左侧鼓”。可打印 ASCII 字符，最多 16 个（固件 0.19+）。留空则保留固件的默认名称。",
+		"MIDI 回环：发出的通道消息和实时消息也会回送到开发板本身。当一个输入需要驱动同一块开发板上的输出时（例如按钮点亮自己的 LED），请开启它。SysEx 不会回环。",
+		"安全省电模式：以更高的延迟为代价节省电量（调制解调器休眠和更低的发射功率）。适合电池供电；如需最紧凑的时序请保持关闭。",
+	],
+	tutorial_cfg_global_note:
+		"在点击部署之前，修改只存在于应用中。部署后它们会写入开发板，重启后依然保留。",
+	tutorial_cfg_board_title: "开发板视图",
+	tutorial_cfg_board_text: [
+		"开发板视图会画出你的开发板及其所有引脚，这样你可以直接点击分配引脚，而不必查找 GPIO 编号。",
+	],
+	tutorial_cfg_board_steps: [
+		"从列表中选择你的开发板。该选择只改变图示，不影响配置。",
+		"带虚线圆环的引脚是空闲的：点击一个，然后选择添加为输入或添加为输出。",
+		"新引脚会出现在下方的输入或输出列表中，你可以在那里设置它的 MIDI 消息。已配置的引脚会在图上标出。",
+		"淡色引脚（电源、GND、I2C）是固定的，无法分配。",
 	],
 	tutorial_examples_code_title: "通过代码",
 	tutorial_examples_code_text: [
@@ -2290,7 +2549,7 @@ const zh: typeof en = {
 	tutorial_led_tip_pwm:
 		"改选 PWM (analog) 可调节 LED 亮度：力度或控制器值决定亮度。",
 	tutorial_led_tip_loopback:
-		"与按钮示例结合，并在全局中启用 MIDI 回环：引脚 16 上的按钮（音符 16）将直接在开发板上点亮 LED，无需电脑。",
+		"你也可以在全局设置中启用 MIDI 回环选项。结合按钮示例，引脚 16 上的按钮（音符 16）就会直接在开发板上点亮 LED，无需电脑。",
 
 	tutorial_i2c_title: "I2C 距离传感器 (VL53L0X)",
 	tutorial_i2c_text: [
@@ -2449,6 +2708,63 @@ const zh: typeof en = {
 	tutorial_daw_port_note:
 		"在 Windows 上，一个 MIDI 端口同一时间只能被一个程序使用。打开 DAW 之前，请关闭打开了调试器或配置器的浏览器标签页，否则 DAW 可能看不到适配器。",
 
+	tutorial_tools_title: "工具",
+	tutorial_tools_text: [
+		"除了配置器，应用还附带一些工具，帮助你查看设备内部情况：查看正在传输的 MIDI 消息、发送自己的消息，以及读取开发板通过串口输出的内容。",
+	],
+	tutorial_tool_debugger_title: "调试器",
+	tutorial_tool_debugger_text: [
+		"当某些东西不按预期工作时，就来调试器。它显示浏览器与设备之间的 MIDI 通信，并允许你自己发送消息。",
+		"先点击初始化 MIDI，并在浏览器询问时允许 MIDI 访问。不需要的部分可以折叠起来。",
+	],
+	tutorial_tool_debugger_composer: [
+		"选择消息要发送到的 MIDI 输出，例如 dongle。",
+		"选择类型（音符、控制变化、程序变化、弯音或 SysEx）和通道。",
+		"设置音符或控制器编号以及力度或数值，然后点击发送 MIDI。",
+	],
+	tutorial_tool_debugger_monitor: [
+		"每条传入和传出的消息都会列出方向、时间、设备、通道、类型和数值。",
+		"使用筛选器只显示特定的输入、输出、通道或消息类型。",
+		"清除会清空列表，例如在按下按钮之前清空，以准确查看它发送了什么。",
+	],
+	tutorial_tool_debugger_serial: [
+		"串口监视器通过 Web Serial 连接到开发板并显示其日志输出。你也可以输入一行内容并发送给开发板。",
+	],
+	tutorial_tool_debugger_tip:
+		"连接串口监视器之前，请关闭其他使用开发板串口的应用（例如 Arduino IDE）。",
+	tutorial_tool_inspector_title: "检查器",
+	tutorial_tool_inspector_text: [
+		"检查器会从开发板读回配置，让你看到板上实际的内容：名称、固件类型、MAC 地址和协议版本、每个已配置的引脚以及已配对的无线 MIDI 地址。不会向开发板写入任何内容。",
+	],
+	tutorial_tool_inspector_steps: [
+		"通过 USB 连接开发板，然后点击初始化 MIDI。",
+		"选择该开发板作为 MIDI 输出。",
+		"点击同步。读取配置需要固件 0.13 或更新版本。",
+	],
+	tutorial_tool_inspector_live_title: "实时数值",
+	tutorial_tool_inspector_live: [
+		"如果开发板有触摸输入，实时数值会传输其输入引脚的原始读数（固件 0.19+，仅限 USB）。触摸一个触摸板，读取百分比，然后在配置器中将其阈值设置为轻触所达到值的一半左右。",
+	],
+	tutorial_tool_tester_title: "开发板测试器",
+	tutorial_tool_tester_text: [
+		"开发板测试器会逐步检查刚组装或焊接好的客户端开发板：按钮能否通过 USB 和无线发送 MIDI，LED 是否响应 MIDI，触摸板是否有反应？",
+	],
+	tutorial_tool_tester_needs_title: "开始之前",
+	tutorial_tool_tester_needs: [
+		"将客户端固件烧录到待测开发板，将 dongle 固件烧录到一个 dongle。",
+		"将一个按钮从引脚 16 接到 GND，另一个从引脚 17 接到 GND。LED 默认在引脚 15，触摸板默认在引脚 1 和 2；两者都可以在第一步中修改。",
+		"通过 USB 连接两块开发板，然后点击初始化 MIDI。",
+	],
+	tutorial_tool_tester_steps_title: "步骤",
+	tutorial_tool_tester_steps: [
+		"Connect client and dongle：两块开发板会被自动识别（也可以手动选择）。Set up and continue 会将测试配置写入开发板。",
+		"Press the buttons：每次按下都必须通过客户端的 USB 以及无线方式到达 dongle。引脚 16 每次按下都会发送不同类型的 MIDI 消息。",
+		"LED loopback：按住一个按钮，并回答 LED 是否亮起。",
+		"Touch pins：依次触摸每个触摸板，直到它报告数值。",
+		"结果：每项检查都会列出通过或失败。最后，写入默认配置让开发板可以直接使用，或者跳过。",
+	],
+	tutorial_tool_tester_warning:
+		"测试会覆盖被测开发板的引脚配置。如果想保留，请先在配置器中将其保存到文件。",
 	tutorial_troubleshooting_title: "故障排除",
 	tutorial_troubleshooting_text: [
 		"有东西不工作？一步步缩小范围：开发板是否出现？客户端是否发出消息？消息是否到达适配器？DAW 是否在监听？应用为每一步都提供了工具。",
