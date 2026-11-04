@@ -21,8 +21,9 @@ import Tutorial from "./components/Tutorial";
 import { darkTheme, lightTheme } from "./muiTheme.ts";
 import { useAppStore } from "./store/app";
 
-// Elementary's inlined wasm is big: only load it on this page.
+// Elementary's inlined wasm is big: only load it on these pages.
 const Grantulator = lazy(() => import("./components/Grantulator"));
+const Mpc = lazy(() => import("./components/Mpc"));
 
 function App() {
 	const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
@@ -67,6 +68,14 @@ function App() {
 								element={
 									<Suspense>
 										<Grantulator />
+									</Suspense>
+								}
+							/>
+							<Route
+								path="/mpc"
+								element={
+									<Suspense>
+										<Mpc />
 									</Suspense>
 								}
 							/>

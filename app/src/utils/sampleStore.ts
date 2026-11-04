@@ -1,7 +1,8 @@
 /**
- * Keeps the last loaded Grantulator sample in IndexedDB: localStorage only
- * holds a few MB of strings, too little for most audio files. Stores the
- * encoded file as dropped, which is far smaller than the decoded samples.
+ * Keeps loaded samples in IndexedDB (the Grantulator's last one, the MPC
+ * pads): localStorage only holds a few MB of strings, too little for most
+ * audio files. Stores the encoded file as dropped, which is far smaller than
+ * the decoded samples.
  */
 
 const DB_NAME = "grantulator";
@@ -37,8 +38,12 @@ const transact = async <T>(
 	}
 };
 
-export const saveSample = (sample: StoredSample) =>
-	transact("readwrite", (store) => store.put(sample, KEY)).then(() => {});
+/** `key`: which slot, the Grantulator's by default. */
+export const saveSample = (sample: StoredSample, key = KEY) =>
+	transact("readwrite", (store) => store.put(sample, key)).then(() => {});
 
-export const loadSample = () =>
-	transact<StoredSample | undefined>("readonly", (store) => store.get(KEY));
+export const loadSample = (key = KEY) =>
+	transact<StoredSample | undefined>("readonly", (store) => store.get(key));
+
+export const deleteSample = (key = KEY) =>
+	transact("readwrite", (store) => store.delete(key)).then(() => {});

@@ -33,9 +33,10 @@ const decode = (data: ArrayBuffer) =>
  * Hidden page (not in the menu, open #/grantulator): a granular synth built
  * with Elementary Audio. Starts with a default sample; drop another, move
  * the grains around, map the parameters to control changes from any MIDI
- * input.
+ * input. `embedded`: without page chrome, toolbar inline (used in the
+ * tutorial).
  */
-const Grantulator = () => {
+const Grantulator = ({ embedded = false }: { embedded?: boolean }) => {
 	const [sample, setSample] = useState<Sample | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const { running, start, stop, swarm } = useGrantulatorEngine(sample);
@@ -118,26 +119,24 @@ const Grantulator = () => {
 		};
 	}, [midiInitialized, inputs, handleControlChange, handleNoteOn]);
 
-	return (
-		<PageLayout
-			title="Grantulator"
-			maxWidth={false}
-			actions={
-				<>
-					<Box flex={1} />
-					<InitMidi />
-					{running ? (
-						<Button variant="outlined" onClick={stop}>
-							Stop audio
-						</Button>
-					) : (
-						<Button variant="contained" onClick={startAudio}>
-							Start audio
-						</Button>
-					)}
-				</>
-			}
-		>
+	const toolbar = (
+		<>
+			<Box flex={1} />
+			<InitMidi />
+			{running ? (
+				<Button variant="outlined" onClick={stop}>
+					Stop audio
+				</Button>
+			) : (
+				<Button variant="contained" onClick={startAudio}>
+					Start audio
+				</Button>
+			)}
+		</>
+	);
+
+	const body = (
+		<>
 			{error && (
 				<Alert severity="error" sx={{ mb: 2 }}>
 					{error}
@@ -166,6 +165,23 @@ const Grantulator = () => {
 				/>
 				<MasterPanel midi={midiInitialized} />
 			</div>
+		</>
+	);
+
+	if (embedded) {
+		return (
+			<>
+				<Box display="flex" alignItems="center" flexWrap="wrap" gap={2} mb={2}>
+					{toolbar}
+				</Box>
+				{body}
+			</>
+		);
+	}
+
+	return (
+		<PageLayout title="Grantulator" maxWidth={false} actions={toolbar}>
+			{body}
 		</PageLayout>
 	);
 };

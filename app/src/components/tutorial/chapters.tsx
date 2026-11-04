@@ -14,7 +14,7 @@ import {
 	useMediaQuery,
 	useTheme,
 } from "@mui/material";
-import type { FC, ReactNode } from "react";
+import { type FC, lazy, type ReactNode, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import Composer from "../Composer";
@@ -28,6 +28,11 @@ import MessageList from "../MessageList";
 import SerialMonitor from "../SerialMonitor";
 import { TesterContent } from "../Tester";
 import ArchitectureDiagram from "./ArchitectureDiagram";
+
+// Elementary's inlined wasm is big: only load it with these sections.
+const Grantulator = lazy(() => import("../Grantulator"));
+const Mpc = lazy(() => import("../Mpc"));
+
 import {
 	CodeBlock,
 	Heading,
@@ -1111,6 +1116,42 @@ const TesterTool = () => {
 	);
 };
 
+const GrantulatorTool = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_tool_grantulator_text" />
+			<Steps i18nKey="tutorial_tool_grantulator_steps" />
+			<Note>{t("tutorial_tool_grantulator_tip")}</Note>
+			<LiveDemo>
+				<Suspense>
+					<Grantulator embedded />
+				</Suspense>
+			</LiveDemo>
+			<LinkButtons
+				actions={[{ label: t("open_grantulator"), link: "/grantulator" }]}
+			/>
+		</>
+	);
+};
+
+const MpcTool = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_tool_mpc_text" />
+			<Steps i18nKey="tutorial_tool_mpc_steps" />
+			<Note>{t("tutorial_tool_mpc_tip")}</Note>
+			<LiveDemo>
+				<Suspense>
+					<Mpc embedded />
+				</Suspense>
+			</LiveDemo>
+			<LinkButtons actions={[{ label: t("open_mpc"), link: "/mpc" }]} />
+		</>
+	);
+};
+
 const Troubleshooting = () => {
 	const { t } = useTranslation();
 	return (
@@ -1277,6 +1318,16 @@ const TOOL_SECTIONS: Chapter[] = [
 		id: "tester",
 		titleKey: "tutorial_tool_tester_title",
 		Content: TesterTool,
+	},
+	{
+		id: "grantulator",
+		titleKey: "tutorial_tool_grantulator_title",
+		Content: GrantulatorTool,
+	},
+	{
+		id: "mpc",
+		titleKey: "tutorial_tool_mpc_title",
+		Content: MpcTool,
 	},
 ];
 

@@ -28,10 +28,16 @@ const clamp = (value: number, min: number, max: number) =>
 const Composer = ({
 	outputId,
 	disabled = false,
+	onSend,
 }: {
 	/** Send here, without the output chooser (a page with its own). */
 	outputId?: string;
 	disabled?: boolean;
+	/**
+	 * Gets every sent message, e.g. to play it in the page. Sending then
+	 * works without an output too; with one, the message also goes there.
+	 */
+	onSend?: (message: MidiMessage) => void;
 } = {}) => {
 	const { t } = useTranslation();
 	const sendMessage = useMIDIStore((state) => state.sendMessage);
@@ -357,7 +363,7 @@ const Composer = ({
 					variant="contained"
 					startIcon={<Send />}
 					sx={{ width: { xs: "100%", sm: "auto" } }}
-					disabled={disabled || !hasSelectedOutput || sysexInvalid}
+					disabled={disabled || (!hasSelectedOutput && !onSend) || sysexInvalid}
 					onClick={() => {
 						const msg: MidiMessage = {
 							id: uuidv4(),
@@ -390,7 +396,8 @@ const Composer = ({
 									: undefined,
 						};
 
-						sendMessage(msg, selectedOutputId);
+						if (hasSelectedOutput) sendMessage(msg, selectedOutputId);
+						onSend?.(msg);
 					}}
 				>
 					{t("composer_send_midi")}

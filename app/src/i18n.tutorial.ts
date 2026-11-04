@@ -644,6 +644,29 @@ const en = {
 	],
 	tutorial_tool_tester_warning:
 		"The test overwrites the pin configuration of the board under test. Save it to a file in the Configurator first if you want to keep it.",
+	tutorial_tool_grantulator_title: "Grantulator",
+	tutorial_tool_grantulator_text: [
+		"The Grantulator is a granular synth that runs in the browser. It chops a sample into tiny grains and plays them back as a cloud of sound, with a delay and a reverb behind it. Every parameter can be controlled by your enomik buttons, touch pads or any other MIDI controller.",
+	],
+	tutorial_tool_grantulator_steps: [
+		"Click Start audio. A bird sample is loaded by default; drop your own audio file onto the waveform to replace it.",
+		"Move the sliders to shape the grains, and switch the delay and reverb on or off.",
+		"Click Init MIDI, then MIDI learn next to a parameter and move a controller or touch a pad: the parameter follows it from now on. Switches (delay, reverb, mute) can also learn a note, so a button press flips them.",
+	],
+	tutorial_tool_grantulator_tip:
+		"Use headphones or turn the volume down before you start: grain clouds can get loud quickly.",
+	tutorial_tool_mpc_title: "MPC",
+	tutorial_tool_mpc_text: [
+		"The MPC is a sample player with 16 pads in a 4x4 grid. Every pad comes with a built-in drum or pluck sound, and you can drop your own samples on it. Play it with the mouse, the dongle, your enomik buttons and touch pads or any other MIDI controller.",
+	],
+	tutorial_tool_mpc_steps: [
+		"Click a pad to hear it. Pad 1 is at the bottom left, pad 16 at the top right.",
+		"Drop an audio file on a pad, or use its upload button, to replace the sound. The sample is kept for your next visit; the reset button brings back the built-in sound.",
+		"Click Init MIDI. Pads 1 to 16 already listen to notes 36 to 51 on channel 1, and the velocity sets the volume.",
+		"To use another note or a touch pad, click MIDI learn on a pad and press the button or touch the pad you want. Touch pads trigger with their control change. The volume sliders, per pad and master, learn a control change the same way, e.g. from a knob.",
+	],
+	tutorial_tool_mpc_tip:
+		"Try it with the button example: map each button to a pad and you have a wireless drum controller.",
 	tutorial_troubleshooting_title: "Troubleshooting",
 	tutorial_troubleshooting_text: [
 		"Something doesn't work? Narrow it down step by step: does the board show up, do messages leave the client, do they reach the dongle, does the DAW listen? The app has a tool for each step.",
@@ -1360,6 +1383,29 @@ const de: typeof en = {
 	],
 	tutorial_tool_tester_warning:
 		"Der Test überschreibt die Pin-Konfiguration des getesteten Boards. Speichere sie vorher im Konfigurator in eine Datei, wenn du sie behalten willst.",
+	tutorial_tool_grantulator_title: "Grantulator",
+	tutorial_tool_grantulator_text: [
+		"Der Grantulator ist ein Granularsynthesizer, der im Browser läuft. Er zerlegt ein Sample in winzige Grains und spielt sie als Klangwolke ab, mit Delay und Hall dahinter. Jeder Parameter lässt sich mit deinen enomik-Tastern, Touch-Pads oder jedem anderen MIDI-Controller steuern.",
+	],
+	tutorial_tool_grantulator_steps: [
+		"Klicke auf Start audio. Standardmäßig ist ein Vogel-Sample geladen; zieh deine eigene Audiodatei auf die Wellenform, um es zu ersetzen.",
+		"Bewege die Regler, um die Grains zu formen, und schalte Delay und Hall ein oder aus.",
+		"Klicke auf Init MIDI, dann auf MIDI learn neben einem Parameter und bewege einen Controller oder berühre ein Pad: Ab jetzt folgt ihm der Parameter. Schalter (Delay, Hall, Mute) können auch eine Note lernen, sodass ein Tastendruck sie umschaltet.",
+	],
+	tutorial_tool_grantulator_tip:
+		"Nimm Kopfhörer oder dreh die Lautstärke herunter, bevor du startest: Grain-Wolken können schnell laut werden.",
+	tutorial_tool_mpc_title: "MPC",
+	tutorial_tool_mpc_text: [
+		"Der MPC ist ein Sample-Player mit 16 Pads in einem 4x4-Raster. Jedes Pad hat einen eingebauten Drum- oder Pluck-Sound, und du kannst eigene Samples darauf ziehen. Spiel ihn mit der Maus, dem Dongle, deinen enomik-Tastern und Touch-Pads oder jedem anderen MIDI-Controller.",
+	],
+	tutorial_tool_mpc_steps: [
+		"Klicke auf ein Pad, um es zu hören. Pad 1 liegt unten links, Pad 16 oben rechts.",
+		"Zieh eine Audiodatei auf ein Pad oder nutze dessen Upload-Button, um den Sound zu ersetzen. Das Sample bleibt für deinen nächsten Besuch erhalten; der Reset-Button holt den eingebauten Sound zurück.",
+		"Klicke auf Init MIDI. Die Pads 1 bis 16 hören schon auf die Noten 36 bis 51 auf Kanal 1, die Velocity bestimmt die Lautstärke.",
+		"Für eine andere Note oder ein Touch-Pad klicke bei einem Pad auf MIDI learn und drück den gewünschten Taster oder berühre das Pad. Touch-Pads lösen mit ihrem Control Change aus. Die Lautstärkeregler, pro Pad und Master, lernen genauso einen Control Change, z. B. von einem Poti.",
+	],
+	tutorial_tool_mpc_tip:
+		"Probier es mit dem Taster-Beispiel aus: Leg jeden Taster auf ein Pad und du hast einen kabellosen Drum-Controller.",
 	tutorial_troubleshooting_title: "Fehlerbehebung",
 	tutorial_troubleshooting_text: [
 		"Etwas funktioniert nicht? Grenze es Schritt für Schritt ein: Erscheint das Board, verlassen Nachrichten den Client, erreichen sie den Dongle, hört die DAW zu? Für jeden Schritt hat die App ein Werkzeug.",
@@ -2074,6 +2120,29 @@ const es: typeof en = {
 	],
 	tutorial_tool_tester_warning:
 		"La prueba sobrescribe la configuración de pines de la placa probada. Guárdala antes en un archivo desde el Configurador si quieres conservarla.",
+	tutorial_tool_grantulator_title: "Grantulator",
+	tutorial_tool_grantulator_text: [
+		"El Grantulator es un sintetizador granular que funciona en el navegador. Corta una muestra en granos diminutos y los reproduce como una nube de sonido, con un delay y una reverberación detrás. Cada parámetro se puede controlar con tus botones enomik, pads táctiles o cualquier otro controlador MIDI.",
+	],
+	tutorial_tool_grantulator_steps: [
+		"Haz clic en Start audio. Por defecto se carga una muestra de pájaros; arrastra tu propio archivo de audio sobre la forma de onda para reemplazarla.",
+		"Mueve los deslizadores para dar forma a los granos y activa o desactiva el delay y la reverberación.",
+		"Haz clic en Init MIDI, luego en MIDI learn junto a un parámetro y mueve un controlador o toca un pad: desde ahora el parámetro lo sigue. Los interruptores (delay, reverberación, silencio) también pueden aprender una nota, así una pulsación de botón los cambia.",
+	],
+	tutorial_tool_grantulator_tip:
+		"Usa auriculares o baja el volumen antes de empezar: las nubes de granos pueden sonar fuerte rápidamente.",
+	tutorial_tool_mpc_title: "MPC",
+	tutorial_tool_mpc_text: [
+		"El MPC es un reproductor de muestras con 16 pads en una cuadrícula de 4x4. Cada pad trae un sonido de batería o pluck incorporado, y puedes arrastrar tus propias muestras sobre él. Tócalo con el ratón, el dongle, tus botones y pads táctiles enomik o cualquier otro controlador MIDI.",
+	],
+	tutorial_tool_mpc_steps: [
+		"Haz clic en un pad para escucharlo. El pad 1 está abajo a la izquierda y el pad 16 arriba a la derecha.",
+		"Arrastra un archivo de audio sobre un pad, o usa su botón de carga, para reemplazar el sonido. La muestra se guarda para tu próxima visita; el botón de restablecer recupera el sonido incorporado.",
+		"Haz clic en Init MIDI. Los pads 1 a 16 ya escuchan las notas 36 a 51 en el canal 1, y la velocidad determina el volumen.",
+		"Para usar otra nota o un pad táctil, haz clic en MIDI learn en un pad y pulsa el botón o toca el pad que quieras. Los pads táctiles disparan con su control change. Los deslizadores de volumen, por pad y master, aprenden un control change de la misma forma, p. ej. de un potenciómetro.",
+	],
+	tutorial_tool_mpc_tip:
+		"Pruébalo con el ejemplo del botón: asigna cada botón a un pad y tendrás un controlador de batería inalámbrico.",
 	tutorial_troubleshooting_title: "Solución de problemas",
 	tutorial_troubleshooting_text: [
 		"¿Algo no funciona? Acótalo paso a paso: ¿aparece la placa?, ¿salen mensajes del cliente?, ¿llegan al dongle?, ¿escucha la DAW? La app tiene una herramienta para cada paso.",
@@ -2765,6 +2834,29 @@ const zh: typeof en = {
 	],
 	tutorial_tool_tester_warning:
 		"测试会覆盖被测开发板的引脚配置。如果想保留，请先在配置器中将其保存到文件。",
+	tutorial_tool_grantulator_title: "Grantulator",
+	tutorial_tool_grantulator_text: [
+		"Grantulator 是一个在浏览器中运行的颗粒合成器。它把采样切成微小的颗粒，以声音云的形式播放，后面接有延迟和混响。每个参数都可以用你的 enomik 按钮、触摸板或任何其他 MIDI 控制器来控制。",
+	],
+	tutorial_tool_grantulator_steps: [
+		"点击 Start audio。默认加载一段鸟鸣采样；把你自己的音频文件拖到波形上即可替换。",
+		"移动滑块来塑造颗粒，并打开或关闭延迟和混响。",
+		"点击 Init MIDI，再点击参数旁的 MIDI learn，然后转动控制器或触摸触摸板：此后该参数会跟随它变化。开关（延迟、混响、静音）也可以学习一个音符，这样按一下按钮就能切换它们。",
+	],
+	tutorial_tool_grantulator_tip:
+		"开始前请戴上耳机或调低音量：颗粒声音云可能很快变得很响。",
+	tutorial_tool_mpc_title: "MPC",
+	tutorial_tool_mpc_text: [
+		"MPC 是一个采样播放器，有 16 个打击垫，排成 4x4 网格。每个打击垫都自带一个鼓或拨弦音色，你也可以把自己的采样拖上去。可以用鼠标、接收器、你的 enomik 按钮和触摸板或任何其他 MIDI 控制器来演奏。",
+	],
+	tutorial_tool_mpc_steps: [
+		"点击一个打击垫即可试听。打击垫 1 在左下角，打击垫 16 在右上角。",
+		"把音频文件拖到打击垫上，或使用它的上传按钮，来替换音色。采样会保留到你下次访问；重置按钮可恢复内置音色。",
+		"点击 Init MIDI。打击垫 1 到 16 已经响应通道 1 上的音符 36 到 51，力度决定音量。",
+		"要使用其他音符或触摸板，点击打击垫上的 MIDI learn，然后按下想用的按钮或触摸想用的触摸板。触摸板通过其控制变化（CC）触发。音量滑块（每个打击垫的和总音量）也以同样方式学习一个控制变化，例如来自旋钮。",
+	],
+	tutorial_tool_mpc_tip:
+		"配合按钮示例试试看：把每个按钮映射到一个打击垫，你就有了一个无线鼓控制器。",
 	tutorial_troubleshooting_title: "故障排除",
 	tutorial_troubleshooting_text: [
 		"有东西不工作？一步步缩小范围：开发板是否出现？客户端是否发出消息？消息是否到达适配器？DAW 是否在监听？应用为每一步都提供了工具。",

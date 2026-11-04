@@ -1,6 +1,6 @@
 import { IDBFactory } from "fake-indexeddb";
 import { beforeEach, describe, expect, it } from "vitest";
-import { loadSample, saveSample } from "./sampleStore";
+import { deleteSample, loadSample, saveSample } from "./sampleStore";
 
 const bytes = (...values: number[]) => new Uint8Array(values).buffer;
 
@@ -27,6 +27,16 @@ describe("sampleStore", () => {
 		const stored = await loadSample();
 		expect(stored?.name).toBe("b.wav");
 		expect(stored?.data.byteLength).toBe(2);
+	});
+
+	it("keeps slots apart, and deletes one", async () => {
+		await saveSample({ name: "default.wav", data: bytes(1) });
+		await saveSample({ name: "pad.wav", data: bytes(2) }, "mpc-3");
+		expect((await loadSample())?.name).toBe("default.wav");
+		expect((await loadSample("mpc-3"))?.name).toBe("pad.wav");
+		await deleteSample("mpc-3");
+		await expect(loadSample("mpc-3")).resolves.toBeUndefined();
+		expect((await loadSample())?.name).toBe("default.wav");
 	});
 
 	it("rejects when the database can't be opened", async () => {

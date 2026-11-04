@@ -98,6 +98,9 @@ const Debugger = () => {
 					<Button variant="outlined" component={NavLink} to={"/grantulator"}>
 						{t("open_grantulator")}
 					</Button>
+					<Button variant="outlined" component={NavLink} to={"/mpc"}>
+						{t("open_mpc")}
+					</Button>
 				</Box>
 			</CollapsibleSection>
 		</PageLayout>
