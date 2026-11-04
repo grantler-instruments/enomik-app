@@ -2,6 +2,7 @@ import CryptoJS from "crypto-js";
 import { ESPLoader, Transport } from "esptool-js";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { firmwareFileName } from "../utils/firmware";
 
 // import axios from "axios";
 
@@ -126,7 +127,7 @@ function buildFirmwareList(
 ): FirmwarePreset[] {
 	return roles.map((role) => ({
 		label: role.label,
-		path: `/enomik-app/firmware/${versionPathSegment}/${board.id}_${role.sketch}_${role.sketch}.ino.bin`,
+		path: `/enomik-app/firmware/${versionPathSegment}/${firmwareFileName(board.id, role.sketch)}`,
 		version: versionDisplay,
 		description: role.description,
 		board: board.label,

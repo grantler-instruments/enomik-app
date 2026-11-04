@@ -125,7 +125,10 @@ listing the versions, newest first. The Firmware Uploader reads these.
 The ESP-NOW-MIDI repo's release workflow commits new versions here. Every version
 in `versions.json` needs a `manifest.json`, or the uploader fails with a 404: some
 older releases came without one and needed a copy of the previous manifest.
-`public/firmware/` is excluded from Biome, since those files are generated.
+`src/utils/firmware.test.ts` catches that in CI: it checks that `versions.json`
+lists every folder newest first, and that each version has a manifest and every
+binary it names. `public/firmware/` is excluded from Biome, since those files are
+generated.
 
 Firmware isn't precached by the service worker (it's large); it's always fetched
 from the network.
