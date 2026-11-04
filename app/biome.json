@@ -6,7 +6,7 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"includes": ["**", "!!**/dist"]
+		"includes": ["**", "!!**/dist", "!!**/dev-dist", "!public/firmware"]
 	},
 	"formatter": {
 		"enabled": true,

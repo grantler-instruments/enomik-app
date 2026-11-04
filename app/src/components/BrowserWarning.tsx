@@ -39,7 +39,6 @@ function getWarningConfig(browser: BrowserName): WarningConfig {
 				titleKey: "browser_warning_unknown_title",
 				messageKey: "browser_warning_unknown",
 			};
-		case "chrome":
 		default:
 			return null;
 	}

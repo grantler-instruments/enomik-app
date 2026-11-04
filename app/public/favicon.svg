@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>enomik</title>
   <rect width="64" height="64" rx="14" fill="#d89cae" />
   <g stroke="#1a1718" stroke-width="4">
     <line x1="28.00" y1="19.93" x2="16.00" y2="40.67" stroke-dasharray="5.32 4" />

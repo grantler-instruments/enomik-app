@@ -3,7 +3,6 @@ export const sleep = (time: number) =>
 	new Promise((resolve) => setTimeout(resolve, time));
 
 export const hardResetTransport = async (transport: Transport) => {
-	console.log("Triggering reset");
 	// Type assertion to access the method
 	await (transport.device as any).setSignals({
 		dataTerminalReady: false,

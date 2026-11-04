@@ -525,7 +525,7 @@ export const useSerialStore = create<SerialState>()(
 
 			send: async (data: string) => {
 				if (!get().writer) return;
-				await get().writer!.write(data + "\n");
+				await get().writer!.write(`${data}\n`);
 				addLog(data, "send");
 			},
 

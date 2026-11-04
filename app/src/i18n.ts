@@ -1102,7 +1102,6 @@ i18n.use(initReactI18next).init({
 				connect: "Conectar",
 				disconnect: "Desconectar",
 				clear: "Limpiar",
-				test: "Esta es una cadena de prueba",
 				made_with_love: "Desarrollado con ♡️ por",
 				tooltip_pin_to_midi:
 					"Configurar cómo los pines de entrada en el microcontrolador se asignan a los mensajes MIDI.",
@@ -1589,7 +1588,6 @@ i18n.use(initReactI18next).init({
 				device_kind_dongle: "Dongle",
 				tooltip_device_kind:
 					"客户端或 Dongle。根据端口名称推测，如有误请更改。",
-				deploy_toast_dongle_summary: "已发送 {{peerCount}} 个无线 MIDI 地址。",
 				deploy_toast_dongle_summary_reset_ok:
 					"设备重置已确认。已发送 {{peerCount}} 个无线 MIDI 地址。",
 				deploy_toast_dongle_summary_reset_timeout:

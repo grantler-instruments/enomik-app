@@ -14,7 +14,6 @@ import { useInspectorStore } from "./inspector";
 import {
 	buildEnomikSysex,
 	decodeSeptets32,
-	ENOMIK_COMMAND_ADD_PEER_RESPONSE,
 	ENOMIK_COMMAND_ERROR_RESPONSE,
 	ENOMIK_COMMAND_GET_ALL_PEERS_RESPONSE,
 	ENOMIK_COMMAND_GET_ALL_PIN_CONFIGS_RESPONSE,
@@ -545,7 +544,6 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 
 			case MIDI_STATUS.PITCH_BEND: {
 				// Combine LSB and MSB into 14-bit value (0-16383)
-				console.log("got pitchbend");
 				const rawValue = data1 | (data2 << 7);
 				get().addIncomingMessage(
 					{
@@ -775,7 +773,6 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 					) {
 						// Payload: [major, minor] or, since 0.19, [major, minor, patch]
 						const version = Array.from(payload.slice(0, 3)).join(".");
-						console.log(`Device version: ${version}`);
 						if (inspecting) inspector.setProtocolVersion(version);
 					}
 
@@ -819,14 +816,6 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 					) {
 						if (inspecting)
 							inspector.setMacAddress(nibblesToMacString(payload.slice(0, 12)));
-					}
-
-					if (
-						command === ENOMIK_COMMAND_ADD_PEER_RESPONSE &&
-						payload.length >= 1 &&
-						payload[0] === 1
-					) {
-						console.log("ADD_PEER succeeded");
 					}
 
 					if (
