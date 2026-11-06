@@ -579,6 +579,27 @@ const Pairing = () => {
 	);
 };
 
+const ConfiguratorChapter = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_configurator_text" />
+			<Heading>{t("tutorial_configurator_connect_title")}</Heading>
+			<Steps i18nKey="tutorial_configurator_connect" />
+			<Heading>{t("tutorial_configurator_sections_title")}</Heading>
+			<Steps i18nKey="tutorial_configurator_sections" ordered={false} />
+			<Note severity="warning">{t("tutorial_configurator_deploy")}</Note>
+			<Heading>{t("tutorial_configurator_toolbar_title")}</Heading>
+			<Steps i18nKey="tutorial_configurator_toolbar" ordered={false} />
+			<Note>{t("tutorial_configurator_tip")}</Note>
+			<SectionLinks sections={CONFIGURATOR_SECTIONS} />
+			<LinkButtons
+				actions={[{ label: t("configurator"), link: "/configurator" }]}
+			/>
+		</>
+	);
+};
+
 const GlobalSettings = () => {
 	const { t } = useTranslation();
 	return (
@@ -679,7 +700,7 @@ const LedExample = () => {
 						actions={[
 							{
 								label: t("tutorial_cfg_global_title"),
-								link: "/tutorial/examples/webapp/global",
+								link: "/tutorial/configurator/global",
 							},
 							{
 								label: t("tutorial_button_title"),
@@ -1236,6 +1257,8 @@ const NextSteps = () => {
 					{ label: t("kits_title"), link: "/kits" },
 					{ label: t("open_tester"), link: "/tester" },
 					{ label: t("open_grantulator"), link: "/grantulator" },
+					{ label: t("open_mpc"), link: "/mpc" },
+					{ label: t("open_patcher"), link: "/patcher" },
 					{ label: t("tutorial_library_docs"), link: LIBRARY_DOCS },
 					{
 						label: t("firmwareuploader_issue_tracker"),
@@ -1255,16 +1278,6 @@ export type Chapter = {
 };
 
 const WEBAPP_EXAMPLES: Chapter[] = [
-	{
-		id: "global",
-		titleKey: "tutorial_cfg_global_title",
-		Content: GlobalSettings,
-	},
-	{
-		id: "board",
-		titleKey: "tutorial_cfg_board_title",
-		Content: BoardViewChapter,
-	},
 	{ id: "button", titleKey: "tutorial_button_title", Content: ButtonExample },
 	{ id: "knob", titleKey: "tutorial_knob_title", Content: KnobExample },
 	{ id: "led", titleKey: "tutorial_led_title", Content: LedExample },
@@ -1279,6 +1292,19 @@ const CODE_EXAMPLES: Chapter[] = [
 	},
 	{ id: "i2c", titleKey: "tutorial_i2c_title", Content: I2cExample },
 	{ id: "servo", titleKey: "tutorial_servo_title", Content: ServoExample },
+];
+
+const CONFIGURATOR_SECTIONS: Chapter[] = [
+	{
+		id: "global",
+		titleKey: "tutorial_cfg_global_title",
+		Content: GlobalSettings,
+	},
+	{
+		id: "board",
+		titleKey: "tutorial_cfg_board_title",
+		Content: BoardViewChapter,
+	},
 ];
 
 const EXAMPLE_SECTIONS: Chapter[] = [
@@ -1385,6 +1411,12 @@ export const CHAPTERS: Chapter[] = [
 		titleKey: "tutorial_firmware_title",
 		Content: Firmware,
 		sections: FIRMWARE_SECTIONS,
+	},
+	{
+		id: "configurator",
+		titleKey: "tutorial_configurator_title",
+		Content: ConfiguratorChapter,
+		sections: CONFIGURATOR_SECTIONS,
 	},
 	{
 		id: "examples",

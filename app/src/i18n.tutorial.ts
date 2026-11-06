@@ -336,6 +336,37 @@ const en = {
 	tutorial_examples_webapp_text: [
 		"These examples use the precompiled client firmware. Wire up the hardware and set everything up in the Configurator, no code needed:",
 	],
+	tutorial_configurator_title: "Configurator",
+	tutorial_configurator_text: [
+		"The Configurator tells a board what to do: which pins to read, which MIDI messages to send, which messages drive which outputs, and which wireless peers to talk to. It works with the precompiled firmware and with sketches built on enomik::Client.",
+	],
+	tutorial_configurator_connect_title: "Connect a board",
+	tutorial_configurator_connect: [
+		"Connect the board via USB and open the Configurator.",
+		"Click Init MIDI and allow MIDI access when the browser asks.",
+		"Pick the board in the MIDI device list at the top right.",
+		"Check the device type next to it: Client or Dongle. The app guesses it from the port name; change it if the guess is wrong.",
+	],
+	tutorial_configurator_sections_title: "What's on the page",
+	tutorial_configurator_sections: [
+		"Global: settings for the whole board, such as its name and MIDI Loopback.",
+		"Board: a drawing of the board to add pins by clicking.",
+		"Input Pin to MIDI Mapping: inputs such as buttons, knobs and touch pads, and the message each one sends.",
+		"MIDI to Output Pin Mapping: outputs such as LEDs and servos, and the message each one reacts to.",
+		"Wireless MIDI Configuration: the MAC addresses the board sends to. A dongle only shows this section.",
+	],
+	tutorial_configurator_deploy:
+		"Nothing reaches the board until you click Deploy. Deploy writes the whole configuration to the board, which keeps it across reboots and firmware updates.",
+	tutorial_configurator_toolbar_title: "Save, load and read back",
+	tutorial_configurator_toolbar: [
+		"Save configuration to a file: a backup, or a starting point for the next board.",
+		"Load configuration from a file: fills in the page; click Deploy to write it to the board.",
+		"Load configuration from a device: reads back what is on the selected board (firmware 0.13 or newer).",
+		"Clear configuration: empties the page, not the board, until you deploy.",
+		"Pin modes and board pinouts: opens Kits & Boards to look up which pin can do what.",
+	],
+	tutorial_configurator_tip:
+		"The next two sections explain Global and Board in detail. The examples after this chapter fill in the input and output mappings, and Wireless pairing the last section.",
 	tutorial_cfg_global_title: "Global settings",
 	tutorial_cfg_global_text: [
 		"The Global section holds settings that apply to the whole board rather than to a single pin.",
@@ -595,7 +626,7 @@ const en = {
 
 	tutorial_tools_title: "Tools",
 	tutorial_tools_text: [
-		"Besides the Configurator, the app comes with a few tools that help you look inside your setup: see which MIDI messages are flowing, send your own, and read what a board prints to its serial port.",
+		"Besides the Configurator, the app comes with tools to look inside your setup and to play with it: watch which MIDI messages are flowing, send your own, read a board's configuration and serial output, test a fresh board, route and change MIDI in the Patcher, and play the Grantulator and the MPC with your enomik boards.",
 	],
 	tutorial_tool_debugger_title: "Debugger",
 	tutorial_tool_debugger_text: [
@@ -695,6 +726,7 @@ const en = {
 		"Debugger: the MIDI Monitor shows every message a device sends, the MIDI Composer sends test notes and CCs (e.g. to light an LED), and the Serial Monitor shows the board's log output.",
 		"Inspector: reads the configuration back from a board and shows its firmware version, MAC address and protocol version. Live Values streams raw input readings (firmware 0.19+, USB only).",
 		"Board tester: checks a freshly soldered board step by step.",
+		"MIDI Patcher: put a print object behind a notein or ctlin to see what really arrives, or remap channels and numbers when a device listens somewhere else.",
 	],
 	tutorial_troubleshooting_board_title: "The board doesn't show up",
 	tutorial_troubleshooting_board: [
@@ -747,6 +779,8 @@ const en = {
 		"Look up pinouts and pin capabilities in Kits & Boards.",
 		"Check a freshly soldered board with the Board tester.",
 		"Play the Grantulator, a granular synth in the browser, with your enomik boards.",
+		"Play the MPC, a 16-pad sample player, with buttons or touch pads.",
+		"Route, transpose and remap MIDI between devices in the MIDI Patcher.",
 		"Dive into the library documentation and examples.",
 	],
 };
@@ -1092,6 +1126,37 @@ const de: typeof en = {
 	tutorial_examples_webapp_text: [
 		"Diese Beispiele nutzen die vorkompilierte Client-Firmware. Verdrahte die Hardware und richte alles im Konfigurator ein, ganz ohne Code:",
 	],
+	tutorial_configurator_title: "Konfigurator",
+	tutorial_configurator_text: [
+		"Der Konfigurator sagt einem Board, was es tun soll: welche Pins es liest, welche MIDI-Nachrichten es sendet, welche Nachrichten welche Ausgänge steuern und mit welchen drahtlosen Peers es spricht. Er funktioniert mit der vorkompilierten Firmware und mit Sketches, die auf enomik::Client aufbauen.",
+	],
+	tutorial_configurator_connect_title: "Board verbinden",
+	tutorial_configurator_connect: [
+		"Schließ das Board per USB an und öffne den Konfigurator.",
+		"Klick auf MIDI initialisieren und erlaube den MIDI-Zugriff, wenn der Browser fragt.",
+		"Wähl das Board oben rechts in der MIDI-Geräteliste aus.",
+		"Prüf den Gerätetyp daneben: Client oder Dongle. Die App errät ihn aus dem Portnamen; ändere ihn, wenn er falsch ist.",
+	],
+	tutorial_configurator_sections_title: "Was auf der Seite ist",
+	tutorial_configurator_sections: [
+		"Global: Einstellungen für das ganze Board, z. B. sein Name und MIDI Loopback.",
+		"Board: eine Zeichnung des Boards, um Pins per Klick hinzuzufügen.",
+		"Eingangs-Pin-zu-MIDI-Zuordnung: Eingänge wie Taster, Potis und Touch-Pads und die Nachricht, die jeder sendet.",
+		"MIDI-zu-Ausgangs-Pin-Zuordnung: Ausgänge wie LEDs und Servos und die Nachricht, auf die jeder reagiert.",
+		"Drahtlose MIDI-Konfiguration: die MAC-Adressen, an die das Board sendet. Bei einem Dongle gibt es nur diesen Abschnitt.",
+	],
+	tutorial_configurator_deploy:
+		"Erst mit Bereitstellen kommt etwas auf dem Board an. Bereitstellen schreibt die ganze Konfiguration auf das Board, das sie über Neustarts und Firmware-Updates hinweg behält.",
+	tutorial_configurator_toolbar_title: "Speichern, laden und zurücklesen",
+	tutorial_configurator_toolbar: [
+		"Konfiguration in eine Datei speichern: als Sicherung oder als Ausgangspunkt für das nächste Board.",
+		"Konfiguration aus einer Datei laden: füllt die Seite aus; mit Bereitstellen kommt sie auf das Board.",
+		"Konfiguration vom Gerät laden: liest zurück, was auf dem gewählten Board ist (Firmware 0.13 oder neuer).",
+		"Konfiguration löschen: leert die Seite, nicht das Board, bis du bereitstellst.",
+		"Pin-Modi und Board-Pinouts: öffnet Kits & Boards, um nachzuschlagen, welcher Pin was kann.",
+	],
+	tutorial_configurator_tip:
+		"Die nächsten beiden Abschnitte erklären Global und Board genauer. Die Beispiele nach diesem Kapitel füllen die Ein- und Ausgangszuordnungen aus, Kabellos koppeln den letzten Abschnitt.",
 	tutorial_cfg_global_title: "Globale Einstellungen",
 	tutorial_cfg_global_text: [
 		"Der Bereich Global enthält Einstellungen, die für das ganze Board gelten und nicht für einen einzelnen Pin.",
@@ -1353,7 +1418,7 @@ const de: typeof en = {
 
 	tutorial_tools_title: "Werkzeuge",
 	tutorial_tools_text: [
-		"Neben dem Konfigurator bringt die App ein paar Werkzeuge mit, mit denen du in dein Setup hineinschauen kannst: sehen, welche MIDI-Nachrichten fließen, eigene senden und lesen, was ein Board über seine serielle Schnittstelle ausgibt.",
+		"Neben dem Konfigurator bringt die App Werkzeuge mit, um in dein Setup hineinzuschauen und damit zu spielen: sehen, welche MIDI-Nachrichten fließen, eigene senden, Konfiguration und serielle Ausgabe eines Boards lesen, ein neues Board testen, MIDI im Patcher umleiten und verändern, und den Grantulator und den MPC mit deinen enomik-Boards spielen.",
 	],
 	tutorial_tool_debugger_title: "Debugger",
 	tutorial_tool_debugger_text: [
@@ -1453,6 +1518,7 @@ const de: typeof en = {
 		"Debugger: Der MIDI-Monitor zeigt jede Nachricht, die ein Gerät sendet, der MIDI-Composer schickt Testnoten und CCs (z. B. um eine LED einzuschalten), und der serielle Monitor zeigt die Log-Ausgaben des Boards.",
 		"Inspector: liest die Konfiguration vom Board zurück und zeigt Firmware-Version, MAC-Adresse und Protokollversion. Live-Werte streamt die rohen Messwerte der Eingänge (Firmware 0.19+, nur USB).",
 		"Board-Tester: prüft ein frisch gelötetes Board Schritt für Schritt.",
+		"MIDI-Patcher: Setz ein print-Objekt hinter ein notein oder ctlin, um zu sehen, was wirklich ankommt, oder leg Kanäle und Nummern um, wenn ein Gerät woanders zuhört.",
 	],
 	tutorial_troubleshooting_board_title: "Das Board erscheint nicht",
 	tutorial_troubleshooting_board: [
@@ -1507,6 +1573,8 @@ const de: typeof en = {
 		"Pinouts und Pin-Fähigkeiten unter Kits & Boards nachschlagen.",
 		"Ein frisch gelötetes Board mit dem Board-Tester prüfen.",
 		"Den Grantulator, einen granularen Synth im Browser, mit deinen enomik-Boards spielen.",
+		"Den MPC, einen Sample-Player mit 16 Pads, mit Tastern oder Touch-Pads spielen.",
+		"MIDI zwischen Geräten im MIDI-Patcher umleiten, transponieren und umbelegen.",
 		"In die Dokumentation und Beispiele der Bibliothek eintauchen.",
 	],
 };
@@ -1848,6 +1916,37 @@ const es: typeof en = {
 	tutorial_examples_webapp_text: [
 		"Estos ejemplos usan el firmware de cliente precompilado. Conecta el hardware y configúralo todo en el Configurador, sin código:",
 	],
+	tutorial_configurator_title: "Configurador",
+	tutorial_configurator_text: [
+		"El Configurador le dice a una placa qué hacer: qué pines leer, qué mensajes MIDI enviar, qué mensajes controlan qué salidas y con qué pares inalámbricos hablar. Funciona con el firmware precompilado y con sketches basados en enomik::Client.",
+	],
+	tutorial_configurator_connect_title: "Conectar una placa",
+	tutorial_configurator_connect: [
+		"Conecta la placa por USB y abre el Configurador.",
+		"Haz clic en Iniciar MIDI y permite el acceso MIDI cuando el navegador lo pida.",
+		"Elige la placa en la lista de dispositivos MIDI arriba a la derecha.",
+		"Comprueba el tipo de dispositivo al lado: Client o Dongle. La app lo deduce del nombre del puerto; cámbialo si se equivoca.",
+	],
+	tutorial_configurator_sections_title: "Qué hay en la página",
+	tutorial_configurator_sections: [
+		"Global: ajustes para toda la placa, como su nombre y MIDI Loopback.",
+		"Placa: un dibujo de la placa para añadir pines con un clic.",
+		"Asignación de pin de entrada a MIDI: entradas como botones, potenciómetros y pads táctiles, y el mensaje que envía cada una.",
+		"Asignación de MIDI a pin de salida: salidas como LEDs y servos, y el mensaje al que reacciona cada una.",
+		"Configuración de MIDI inalámbrico: las direcciones MAC a las que envía la placa. Un dongle solo muestra esta sección.",
+	],
+	tutorial_configurator_deploy:
+		"Nada llega a la placa hasta que haces clic en Desplegar. Desplegar escribe toda la configuración en la placa, que la conserva tras reinicios y actualizaciones de firmware.",
+	tutorial_configurator_toolbar_title: "Guardar, cargar y leer",
+	tutorial_configurator_toolbar: [
+		"Guardar la configuración en un archivo: como copia de seguridad o punto de partida para la siguiente placa.",
+		"Cargar la configuración desde un archivo: rellena la página; haz clic en Desplegar para escribirla en la placa.",
+		"Cargar la configuración desde un dispositivo: lee lo que hay en la placa seleccionada (firmware 0.13 o posterior).",
+		"Borrar la configuración: vacía la página, no la placa, hasta que despliegues.",
+		"Modos de pin y pinouts: abre Kits y placas para consultar qué puede hacer cada pin.",
+	],
+	tutorial_configurator_tip:
+		"Las dos secciones siguientes explican Global y Placa en detalle. Los ejemplos después de este capítulo rellenan las asignaciones de entradas y salidas, y Emparejamiento inalámbrico la última sección.",
 	tutorial_cfg_global_title: "Ajustes globales",
 	tutorial_cfg_global_text: [
 		"La sección Global contiene ajustes que se aplican a toda la placa y no a un solo pin.",
@@ -2109,7 +2208,7 @@ const es: typeof en = {
 
 	tutorial_tools_title: "Herramientas",
 	tutorial_tools_text: [
-		"Además del Configurador, la app incluye algunas herramientas para mirar dentro de tu montaje: ver qué mensajes MIDI circulan, enviar los tuyos y leer lo que una placa escribe por su puerto serie.",
+		"Además del Configurador, la app incluye herramientas para mirar dentro de tu montaje y jugar con él: ver qué mensajes MIDI circulan, enviar los tuyos, leer la configuración y la salida serie de una placa, probar una placa nueva, enrutar y transformar MIDI en el Patcher, y tocar el Grantulator y el MPC con tus placas enomik.",
 	],
 	tutorial_tool_debugger_title: "Debugger",
 	tutorial_tool_debugger_text: [
@@ -2209,6 +2308,7 @@ const es: typeof en = {
 		"Depurador: el Monitor MIDI muestra cada mensaje que envía un dispositivo, el Compositor MIDI envía notas y CC de prueba (p. ej. para encender un LED) y el Monitor serial muestra el log de la placa.",
 		"Inspector: lee la configuración de vuelta desde la placa y muestra la versión de firmware, la dirección MAC y la versión del protocolo. Valores en vivo transmite las lecturas brutas de las entradas (firmware 0.19+, solo USB).",
 		"Probador de placas: comprueba paso a paso una placa recién soldada.",
+		"Patcher MIDI: pon un objeto print detrás de un notein o ctlin para ver qué llega de verdad, o reasigna canales y números cuando un dispositivo escucha en otro sitio.",
 	],
 	tutorial_troubleshooting_board_title: "La placa no aparece",
 	tutorial_troubleshooting_board: [
@@ -2263,6 +2363,8 @@ const es: typeof en = {
 		"Consulta pinouts y capacidades de los pines en Kits y placas.",
 		"Comprueba una placa recién soldada con el Probador de placas.",
 		"Toca el Grantulator, un sintetizador granular en el navegador, con tus placas enomik.",
+		"Toca el MPC, un reproductor de samples con 16 pads, con botones o pads táctiles.",
+		"Enruta, transpón y reasigna MIDI entre dispositivos en el Patcher MIDI.",
 		"Profundiza en la documentación y los ejemplos de la biblioteca.",
 	],
 };
@@ -2589,6 +2691,37 @@ const zh: typeof en = {
 	tutorial_examples_webapp_text: [
 		"这些示例使用预编译的客户端固件。连接好硬件，在配置器中完成所有设置，无需代码：",
 	],
+	tutorial_configurator_title: "配置器",
+	tutorial_configurator_text: [
+		"配置器告诉开发板要做什么：读取哪些引脚、发送哪些 MIDI 消息、哪些消息驱动哪些输出，以及与哪些无线对等设备通信。它适用于预编译固件，也适用于基于 enomik::Client 的草图。",
+	],
+	tutorial_configurator_connect_title: "连接开发板",
+	tutorial_configurator_connect: [
+		"通过 USB 连接开发板并打开配置器。",
+		"点击初始化 MIDI，并在浏览器询问时允许 MIDI 访问。",
+		"在右上角的 MIDI 设备列表中选择开发板。",
+		"检查旁边的设备类型：Client 或 Dongle。应用会根据端口名称猜测；如果猜错了请修改。",
+	],
+	tutorial_configurator_sections_title: "页面上有什么",
+	tutorial_configurator_sections: [
+		"全局：适用于整个开发板的设置，例如名称和 MIDI Loopback。",
+		"电路板：开发板示意图，点击即可添加引脚。",
+		"输入引脚到 MIDI 映射：按钮、旋钮和触摸板等输入，以及每个输入发送的消息。",
+		"MIDI 到输出引脚映射：LED 和舵机等输出，以及每个输出响应的消息。",
+		"无线 MIDI 配置：开发板发送到的 MAC 地址。接收器只显示这一部分。",
+	],
+	tutorial_configurator_deploy:
+		"在点击部署之前，任何更改都不会写入开发板。部署会把整个配置写入开发板，重启和固件更新后依然保留。",
+	tutorial_configurator_toolbar_title: "保存、加载和读回",
+	tutorial_configurator_toolbar: [
+		"将配置保存到文件：作为备份，或作为下一块开发板的起点。",
+		"从文件加载配置：填充页面；点击部署将其写入开发板。",
+		"从设备加载配置：读回所选开发板上的配置（需要固件 0.13 或更高版本）。",
+		"清除配置：清空页面而不是开发板，直到你部署为止。",
+		"引脚模式和开发板引脚图：打开套件与电路板，查看每个引脚能做什么。",
+	],
+	tutorial_configurator_tip:
+		"接下来的两节详细介绍全局和电路板。本章之后的示例会填写输入和输出映射，无线配对则会填写最后一部分。",
 	tutorial_cfg_global_title: "全局设置",
 	tutorial_cfg_global_text: [
 		"全局部分包含适用于整个开发板、而不是单个引脚的设置。",
@@ -2842,7 +2975,7 @@ const zh: typeof en = {
 
 	tutorial_tools_title: "工具",
 	tutorial_tools_text: [
-		"除了配置器，应用还附带一些工具，帮助你查看设备内部情况：查看正在传输的 MIDI 消息、发送自己的消息，以及读取开发板通过串口输出的内容。",
+		"除了配置器，应用还附带一些工具，帮助你查看设备内部情况并玩起来：查看正在传输的 MIDI 消息、发送自己的消息、读取开发板的配置和串口输出、测试新开发板、在 Patcher 中路由和变换 MIDI，以及用你的 enomik 开发板演奏 Grantulator 和 MPC。",
 	],
 	tutorial_tool_debugger_title: "调试器",
 	tutorial_tool_debugger_text: [
@@ -2942,6 +3075,7 @@ const zh: typeof en = {
 		"调试器：MIDI 监视器显示设备发送的每条消息，MIDI 编辑器发送测试音符和 CC（例如点亮 LED），串行监视器显示开发板的日志输出。",
 		"检查器：从开发板读回配置，并显示固件版本、MAC 地址和协议版本。实时数值会传输输入引脚的原始读数（固件 0.19+，仅限 USB）。",
 		"开发板测试：逐步检查刚焊好的开发板。",
+		"MIDI Patcher：在 notein 或 ctlin 后面放一个 print 对象，查看实际到达的内容；或者在设备监听其他通道时重新映射通道和编号。",
 	],
 	tutorial_troubleshooting_board_title: "开发板没有出现",
 	tutorial_troubleshooting_board: [
@@ -2991,6 +3125,8 @@ const zh: typeof en = {
 		"在套件与电路板中查看引脚图和引脚功能。",
 		"用开发板测试工具检查刚焊好的开发板。",
 		"用你的 enomik 开发板演奏 Grantulator，一个浏览器中的粒子合成器。",
+		"用按钮或触摸板演奏 MPC，一个 16 打击垫的采样播放器。",
+		"在 MIDI Patcher 中在设备之间路由、移调和重新映射 MIDI。",
 		"深入了解库的文档和示例。",
 	],
 };
