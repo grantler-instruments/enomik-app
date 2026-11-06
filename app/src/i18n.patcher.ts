@@ -1,0 +1,378 @@
+// Strings of the Patcher page, spread into each language in i18n.ts.
+// Keys must exist in every language: src/i18n.test.ts checks.
+
+const en = {
+	patcher_shortcut_message: "New message box: {{keys}}",
+	patcher_message_text: "Message",
+	patcher_message_placeholder: "e.g. 60 100 or $1",
+	patcher_ref_message:
+		"Click it, or send it anything, to send its content: a number, a list like 60 100 (spread over the next object's inlets, right to left) or bang. $1, $2… are the numbers that came in.",
+	patcher_port_message: "Anything: sends the content",
+	patcher_port_content: "Content",
+	patcher_group_gui: "Controls",
+	patcher_ref_bng:
+		"Click it to send a bang; lights up when it gets anything. A bang tells an object to act now: math repeats its last result, a number box resends its value.",
+	patcher_ref_tgl:
+		"Click it to switch on (1) or off (0). A number sets it (0: off, else on), a bang flips it.",
+	patcher_port_bang: "Bang",
+	patcher_port_toggle: "Number sets, bang flips",
+	patcher_port_state: "1 (on) or 0 (off)",
+	patcher_shortcut_search: "Search objects: {{keys}}",
+	patcher_search_label: "Object",
+	patcher_cancel: "Cancel",
+	patcher_clear_undo: "Every object and connection goes. This can't be undone.",
+	patcher_group_flow: "Flow",
+	patcher_ref_trigger:
+		"Sends what it gets out of every outlet, right to left, one outlet per type: f (number), b (bang) or a (as it came); two f without arguments. Use it to set cold inlets before the hot one.",
+	patcher_ref_spigot:
+		"Passes numbers on while open: a number other than 0 on the right inlet opens it, 0 closes it. Starts closed unless given 1.",
+	patcher_ref_moses:
+		"Numbers below the split go out on the left, the rest on the right. The right inlet changes the split (default 64).",
+	patcher_port_open: "Open (not 0) or closed (0)",
+	patcher_port_split: "Split point",
+	patcher_port_below: "Below the split",
+	patcher_port_above: "At or above the split",
+	patcher_shortcut: "New object at the pointer: {{keys}}",
+	patcher_port_argument: "Argument",
+	patcher_port_result: "Result",
+	patcher_port_truth: "1 if true, 0 if not",
+	patcher_port_hot: "Hot: acts right away",
+	patcher_port_cold: "Cold: kept until the left inlet gets a value",
+	patcher_group_debug: "Debug",
+	patcher_ref_print:
+		"Prints each number it gets to the console, after its label.",
+	patcher_console: "Console",
+	patcher_console_clear: "Clear",
+	patcher_console_empty:
+		"Nothing printed yet. Connect an outlet to a print object.",
+	section_patcher: "MIDI Patcher",
+	tooltip_patcher:
+		"Patch MIDI inputs through math objects to outputs, like in Pure Data",
+	open_patcher: "Patcher",
+	patcher: "Patcher",
+	patcher_info:
+		"Patch MIDI like in Pure Data: double-click the canvas (or press {{keys}}) and type an object, e.g. “ctlin 7”, “+ 12” or “noteout 2”, then drag from an outlet (bottom) to an inlet (top). The left inlet computes and outputs, the others only store a value. Pick each MIDI object's device below its name. Backspace deletes what's selected.",
+	patcher_add: "Add object",
+	patcher_clear: "Clear patch",
+	patcher_clear_confirm: "Remove every object from the patch?",
+	patcher_canvas: "Patch",
+	patcher_reference: "Objects",
+	patcher_group_in: "MIDI in",
+	patcher_group_out: "MIDI out",
+	patcher_group_math: "Math",
+	patcher_group_compare: "Compare",
+	patcher_device: "MIDI device",
+	patcher_all_devices: "All devices",
+	patcher_no_device: "Choose a device",
+	patcher_missing_device: "Not connected",
+	patcher_object_text: "Object",
+	patcher_object_placeholder: "e.g. + 5",
+	patcher_unknown: "Unknown object",
+	patcher_port_byte: "Byte",
+	patcher_port_note: "Note",
+	patcher_port_velocity: "Velocity",
+	patcher_port_channel: "Channel",
+	patcher_port_value: "Value",
+	patcher_port_controller: "Controller",
+	patcher_port_low: "Low",
+	patcher_port_high: "High",
+	patcher_ref_notein:
+		"Notes from the device: outputs note, velocity (0 on note off) and channel. With a channel, only that one.",
+	patcher_ref_ctlin:
+		"Control changes: outputs value, controller and channel. With a controller and channel, only those.",
+	patcher_ref_midiin: "Every incoming message, byte by byte.",
+	patcher_ref_noteout:
+		"Sends a note on (velocity 0: note off) when a note arrives on the left inlet.",
+	patcher_ref_ctlout:
+		"Sends a control change when a value arrives on the left inlet.",
+	patcher_ref_midiout:
+		"Sends the bytes it gets, e.g. from midiin, as whole messages.",
+	patcher_ref_math:
+		"Calculates with the number from the right inlet or the argument.",
+	patcher_ref_compare: "Outputs 1 if the comparison holds, otherwise 0.",
+	patcher_ref_scale: "Maps a range onto another, e.g. scale 0 127 127 0.",
+	patcher_ref_clip: "Keeps a number between low and high.",
+	patcher_ref_number: "Shows the number passing through.",
+};
+
+const de: typeof en = {
+	patcher_shortcut_message: "Neue Nachrichtenbox: {{keys}}",
+	patcher_message_text: "Nachricht",
+	patcher_message_placeholder: "z. B. 60 100 oder $1",
+	patcher_ref_message:
+		"Klicken oder irgendetwas hineinschicken sendet ihren Inhalt: eine Zahl, eine Liste wie 60 100 (verteilt auf die Eingänge des nächsten Objekts, von rechts nach links) oder bang. $1, $2 … sind die ankommenden Zahlen.",
+	patcher_port_message: "Alles: sendet den Inhalt",
+	patcher_port_content: "Inhalt",
+	patcher_group_gui: "Bedienelemente",
+	patcher_ref_bng:
+		"Klicken sendet einen Bang; leuchtet auf, wenn etwas ankommt. Ein Bang lässt ein Objekt sofort handeln: Rechenobjekte wiederholen ihr letztes Ergebnis, eine Zahlbox sendet ihren Wert erneut.",
+	patcher_ref_tgl:
+		"Klicken schaltet ein (1) oder aus (0). Eine Zahl setzt ihn (0: aus, sonst an), ein Bang schaltet um.",
+	patcher_port_bang: "Bang",
+	patcher_port_toggle: "Zahl setzt, Bang schaltet um",
+	patcher_port_state: "1 (an) oder 0 (aus)",
+	patcher_shortcut_search: "Objekte suchen: {{keys}}",
+	patcher_search_label: "Objekt",
+	patcher_cancel: "Abbrechen",
+	patcher_clear_undo:
+		"Alle Objekte und Verbindungen werden entfernt. Das lässt sich nicht rückgängig machen.",
+	patcher_group_flow: "Ablauf",
+	patcher_ref_trigger:
+		"Gibt aus, was ankommt, an jedem Ausgang, von rechts nach links, ein Ausgang pro Typ: f (Zahl), b (Bang) oder a (wie es kam); ohne Argumente zwei f. Damit setzt man kalte Eingänge vor dem heißen.",
+	patcher_ref_spigot:
+		"Lässt Zahlen durch, solange es offen ist: eine Zahl ungleich 0 am rechten Eingang öffnet es, 0 schließt es. Startet geschlossen, außer mit 1.",
+	patcher_ref_moses:
+		"Zahlen unter der Grenze gehen links raus, der Rest rechts. Der rechte Eingang ändert die Grenze (Standard 64).",
+	patcher_port_open: "Offen (nicht 0) oder zu (0)",
+	patcher_port_split: "Grenze",
+	patcher_port_below: "Unter der Grenze",
+	patcher_port_above: "Auf oder über der Grenze",
+	patcher_shortcut: "Neues Objekt am Mauszeiger: {{keys}}",
+	patcher_port_argument: "Argument",
+	patcher_port_result: "Ergebnis",
+	patcher_port_truth: "1 wenn wahr, sonst 0",
+	patcher_port_hot: "Heiß: wirkt sofort",
+	patcher_port_cold:
+		"Kalt: wird gemerkt, bis am linken Eingang ein Wert ankommt",
+	patcher_group_debug: "Debug",
+	patcher_ref_print:
+		"Schreibt jede Zahl, die es bekommt, mit seiner Bezeichnung in die Konsole.",
+	patcher_console: "Konsole",
+	patcher_console_clear: "Leeren",
+	patcher_console_empty:
+		"Noch nichts ausgegeben. Verbinde einen Ausgang mit einem print-Objekt.",
+	section_patcher: "MIDI-Patcher",
+	tooltip_patcher:
+		"MIDI-Eingänge über Rechenobjekte mit Ausgängen verbinden, wie in Pure Data",
+	open_patcher: "Patcher",
+	patcher: "Patcher",
+	patcher_info:
+		"MIDI patchen wie in Pure Data: Doppelklick auf die Fläche (oder {{keys}} drücken) und ein Objekt eintippen, z. B. „ctlin 7“, „+ 12“ oder „noteout 2“, dann von einem Ausgang (unten) zu einem Eingang (oben) ziehen. Der linke Eingang rechnet und gibt aus, die anderen merken sich nur einen Wert. Das Gerät jedes MIDI-Objekts wählst du unter seinem Namen. Rücktaste löscht die Auswahl.",
+	patcher_add: "Objekt hinzufügen",
+	patcher_clear: "Patch leeren",
+	patcher_clear_confirm: "Alle Objekte aus dem Patch entfernen?",
+	patcher_canvas: "Patch",
+	patcher_reference: "Objekte",
+	patcher_group_in: "MIDI-Eingang",
+	patcher_group_out: "MIDI-Ausgang",
+	patcher_group_math: "Rechnen",
+	patcher_group_compare: "Vergleichen",
+	patcher_device: "MIDI-Gerät",
+	patcher_all_devices: "Alle Geräte",
+	patcher_no_device: "Gerät wählen",
+	patcher_missing_device: "Nicht verbunden",
+	patcher_object_text: "Objekt",
+	patcher_object_placeholder: "z. B. + 5",
+	patcher_unknown: "Unbekanntes Objekt",
+	patcher_port_byte: "Byte",
+	patcher_port_note: "Note",
+	patcher_port_velocity: "Anschlagstärke",
+	patcher_port_channel: "Kanal",
+	patcher_port_value: "Wert",
+	patcher_port_controller: "Controller",
+	patcher_port_low: "Untergrenze",
+	patcher_port_high: "Obergrenze",
+	patcher_ref_notein:
+		"Noten vom Gerät: gibt Note, Anschlagstärke (0 bei Note Off) und Kanal aus. Mit Kanal nur diesen.",
+	patcher_ref_ctlin:
+		"Control Changes: gibt Wert, Controller und Kanal aus. Mit Controller und Kanal nur diese.",
+	patcher_ref_midiin: "Jede eingehende Nachricht, Byte für Byte.",
+	patcher_ref_noteout:
+		"Sendet ein Note On (Anschlagstärke 0: Note Off), wenn eine Note am linken Eingang ankommt.",
+	patcher_ref_ctlout:
+		"Sendet ein Control Change, wenn ein Wert am linken Eingang ankommt.",
+	patcher_ref_midiout:
+		"Sendet die Bytes, die es bekommt, z. B. von midiin, als ganze Nachrichten.",
+	patcher_ref_math:
+		"Rechnet mit der Zahl vom rechten Eingang oder dem Argument.",
+	patcher_ref_compare: "Gibt 1 aus, wenn der Vergleich stimmt, sonst 0.",
+	patcher_ref_scale:
+		"Bildet einen Bereich auf einen anderen ab, z. B. scale 0 127 127 0.",
+	patcher_ref_clip: "Hält eine Zahl zwischen Unter- und Obergrenze.",
+	patcher_ref_number: "Zeigt die durchlaufende Zahl.",
+};
+
+const es: typeof en = {
+	patcher_shortcut_message: "Nueva caja de mensaje: {{keys}}",
+	patcher_message_text: "Mensaje",
+	patcher_message_placeholder: "p. ej. 60 100 o $1",
+	patcher_ref_message:
+		"Haz clic o envíale cualquier cosa para enviar su contenido: un número, una lista como 60 100 (repartida entre las entradas del siguiente objeto, de derecha a izquierda) o bang. $1, $2… son los números que llegan.",
+	patcher_port_message: "Cualquier cosa: envía el contenido",
+	patcher_port_content: "Contenido",
+	patcher_group_gui: "Controles",
+	patcher_ref_bng:
+		"Haz clic para enviar un bang; se ilumina al recibir algo. Un bang hace que un objeto actúe ya: los de cálculo repiten su último resultado, una caja de número reenvía su valor.",
+	patcher_ref_tgl:
+		"Haz clic para encender (1) o apagar (0). Un número lo fija (0: apagado, si no encendido), un bang lo invierte.",
+	patcher_port_bang: "Bang",
+	patcher_port_toggle: "Un número lo fija, un bang lo invierte",
+	patcher_port_state: "1 (encendido) o 0 (apagado)",
+	patcher_shortcut_search: "Buscar objetos: {{keys}}",
+	patcher_search_label: "Objeto",
+	patcher_cancel: "Cancelar",
+	patcher_clear_undo:
+		"Se eliminan todos los objetos y conexiones. No se puede deshacer.",
+	patcher_group_flow: "Flujo",
+	patcher_ref_trigger:
+		"Envía lo que recibe por cada salida, de derecha a izquierda, una salida por tipo: f (número), b (bang) o a (tal cual); sin argumentos, dos f. Sirve para fijar entradas frías antes de la caliente.",
+	patcher_ref_spigot:
+		"Deja pasar números mientras está abierto: un número distinto de 0 en la entrada derecha lo abre, 0 lo cierra. Empieza cerrado salvo con 1.",
+	patcher_ref_moses:
+		"Los números por debajo del límite salen por la izquierda, el resto por la derecha. La entrada derecha cambia el límite (por defecto 64).",
+	patcher_port_open: "Abierto (no 0) o cerrado (0)",
+	patcher_port_split: "Límite",
+	patcher_port_below: "Por debajo del límite",
+	patcher_port_above: "En o por encima del límite",
+	patcher_shortcut: "Nuevo objeto en el puntero: {{keys}}",
+	patcher_port_argument: "Argumento",
+	patcher_port_result: "Resultado",
+	patcher_port_truth: "1 si se cumple, si no 0",
+	patcher_port_hot: "Caliente: actúa de inmediato",
+	patcher_port_cold:
+		"Frío: se guarda hasta que llegue un valor a la entrada izquierda",
+	patcher_group_debug: "Depurar",
+	patcher_ref_print:
+		"Escribe cada número que recibe en la consola, tras su etiqueta.",
+	patcher_console: "Consola",
+	patcher_console_clear: "Vaciar",
+	patcher_console_empty:
+		"Aún no se ha impreso nada. Conecta una salida a un objeto print.",
+	section_patcher: "Patcher MIDI",
+	tooltip_patcher:
+		"Conecta entradas MIDI a salidas pasando por objetos de cálculo, como en Pure Data",
+	open_patcher: "Patcher",
+	patcher: "Patcher",
+	patcher_info:
+		"Conecta MIDI como en Pure Data: haz doble clic en el lienzo (o pulsa {{keys}}) y escribe un objeto, p. ej. «ctlin 7», «+ 12» o «noteout 2», luego arrastra de una salida (abajo) a una entrada (arriba). La entrada izquierda calcula y emite, las demás solo guardan un valor. Elige el dispositivo de cada objeto MIDI debajo de su nombre. Retroceso borra lo seleccionado.",
+	patcher_add: "Añadir objeto",
+	patcher_clear: "Vaciar patch",
+	patcher_clear_confirm: "¿Quitar todos los objetos del patch?",
+	patcher_canvas: "Patch",
+	patcher_reference: "Objetos",
+	patcher_group_in: "Entrada MIDI",
+	patcher_group_out: "Salida MIDI",
+	patcher_group_math: "Cálculo",
+	patcher_group_compare: "Comparar",
+	patcher_device: "Dispositivo MIDI",
+	patcher_all_devices: "Todos los dispositivos",
+	patcher_no_device: "Elige un dispositivo",
+	patcher_missing_device: "No conectado",
+	patcher_object_text: "Objeto",
+	patcher_object_placeholder: "p. ej. + 5",
+	patcher_unknown: "Objeto desconocido",
+	patcher_port_byte: "Byte",
+	patcher_port_note: "Nota",
+	patcher_port_velocity: "Velocidad",
+	patcher_port_channel: "Canal",
+	patcher_port_value: "Valor",
+	patcher_port_controller: "Controlador",
+	patcher_port_low: "Mínimo",
+	patcher_port_high: "Máximo",
+	patcher_ref_notein:
+		"Notas del dispositivo: emite nota, velocidad (0 en note off) y canal. Con un canal, solo ese.",
+	patcher_ref_ctlin:
+		"Control changes: emite valor, controlador y canal. Con controlador y canal, solo esos.",
+	patcher_ref_midiin: "Cada mensaje entrante, byte a byte.",
+	patcher_ref_noteout:
+		"Envía un note on (velocidad 0: note off) cuando llega una nota a la entrada izquierda.",
+	patcher_ref_ctlout:
+		"Envía un control change cuando llega un valor a la entrada izquierda.",
+	patcher_ref_midiout:
+		"Envía los bytes que recibe, p. ej. de midiin, como mensajes completos.",
+	patcher_ref_math:
+		"Calcula con el número de la entrada derecha o el argumento.",
+	patcher_ref_compare: "Emite 1 si la comparación se cumple, si no 0.",
+	patcher_ref_scale: "Lleva un rango a otro, p. ej. scale 0 127 127 0.",
+	patcher_ref_clip: "Mantiene un número entre mínimo y máximo.",
+	patcher_ref_number: "Muestra el número que pasa.",
+};
+
+const zh: typeof en = {
+	patcher_shortcut_message: "新建消息框：{{keys}}",
+	patcher_message_text: "消息",
+	patcher_message_placeholder: "例如 60 100 或 $1",
+	patcher_ref_message:
+		"点击或向其发送任何内容即可发送其内容：一个数字、一个列表如 60 100（从右到左分配到下一个对象的入口）或 bang。$1、$2… 为收到的数字。",
+	patcher_port_message: "任意消息：发送内容",
+	patcher_port_content: "内容",
+	patcher_group_gui: "控件",
+	patcher_ref_bng:
+		"点击发送 bang；收到任何消息时亮起。bang 让对象立即执行：运算对象重复上次结果，数字框重新发送其数值。",
+	patcher_ref_tgl:
+		"点击打开（1）或关闭（0）。数字设置其状态（0：关，其他：开），bang 切换状态。",
+	patcher_port_bang: "Bang",
+	patcher_port_toggle: "数字设置，bang 切换",
+	patcher_port_state: "1（开）或 0（关）",
+	patcher_shortcut_search: "搜索对象：{{keys}}",
+	patcher_search_label: "对象",
+	patcher_cancel: "取消",
+	patcher_clear_undo: "所有对象和连接都将被删除。此操作无法撤销。",
+	patcher_group_flow: "流程",
+	patcher_ref_trigger:
+		"从右到左从每个出口输出收到的内容，每种类型一个出口：f（数字）、b（bang）或 a（原样）；无参数时为两个 f。用于在热入口之前设置冷入口。",
+	patcher_ref_spigot:
+		"打开时让数字通过：右侧入口收到非 0 数字时打开，收到 0 时关闭。默认关闭，参数为 1 时打开。",
+	patcher_ref_moses:
+		"小于分界点的数字从左侧输出，其余从右侧输出。右侧入口更改分界点（默认 64）。",
+	patcher_port_open: "打开（非 0）或关闭（0）",
+	patcher_port_split: "分界点",
+	patcher_port_below: "低于分界点",
+	patcher_port_above: "等于或高于分界点",
+	patcher_shortcut: "在指针处新建对象：{{keys}}",
+	patcher_port_argument: "参数",
+	patcher_port_result: "结果",
+	patcher_port_truth: "成立为 1，否则为 0",
+	patcher_port_hot: "热：立即生效",
+	patcher_port_cold: "冷：保存到左侧入口收到数值为止",
+	patcher_group_debug: "调试",
+	patcher_ref_print: "将收到的每个数字连同其标签输出到控制台。",
+	patcher_console: "控制台",
+	patcher_console_clear: "清空",
+	patcher_console_empty: "尚无输出。将出口连接到 print 对象。",
+	section_patcher: "MIDI Patcher",
+	tooltip_patcher: "像在 Pure Data 中一样，通过运算对象将 MIDI 输入连接到输出",
+	open_patcher: "Patcher",
+	patcher: "Patcher",
+	patcher_info:
+		"像在 Pure Data 中一样连接 MIDI：双击画布（或按 {{keys}}）并输入对象，例如“ctlin 7”“+ 12”或“noteout 2”，然后从出口（下方）拖到入口（上方）。左侧入口计算并输出，其他入口只保存数值。在每个 MIDI 对象名称下方选择其设备。按退格键删除所选内容。",
+	patcher_add: "添加对象",
+	patcher_clear: "清空 Patch",
+	patcher_clear_confirm: "从 Patch 中移除所有对象？",
+	patcher_canvas: "Patch",
+	patcher_reference: "对象",
+	patcher_group_in: "MIDI 输入",
+	patcher_group_out: "MIDI 输出",
+	patcher_group_math: "运算",
+	patcher_group_compare: "比较",
+	patcher_device: "MIDI 设备",
+	patcher_all_devices: "所有设备",
+	patcher_no_device: "选择设备",
+	patcher_missing_device: "未连接",
+	patcher_object_text: "对象",
+	patcher_object_placeholder: "例如 + 5",
+	patcher_unknown: "未知对象",
+	patcher_port_byte: "字节",
+	patcher_port_note: "音符",
+	patcher_port_velocity: "力度",
+	patcher_port_channel: "通道",
+	patcher_port_value: "数值",
+	patcher_port_controller: "控制器",
+	patcher_port_low: "下限",
+	patcher_port_high: "上限",
+	patcher_ref_notein:
+		"来自设备的音符：输出音符、力度（音符关时为 0）和通道。指定通道时只接收该通道。",
+	patcher_ref_ctlin:
+		"控制变更：输出数值、控制器和通道。指定控制器和通道时只接收这些。",
+	patcher_ref_midiin: "每条传入消息，逐字节输出。",
+	patcher_ref_noteout: "当音符到达左侧入口时发送音符开（力度 0：音符关）。",
+	patcher_ref_ctlout: "当数值到达左侧入口时发送控制变更。",
+	patcher_ref_midiout: "将收到的字节（例如来自 midiin）作为完整消息发送。",
+	patcher_ref_math: "用右侧入口的数字或参数进行计算。",
+	patcher_ref_compare: "比较成立时输出 1，否则输出 0。",
+	patcher_ref_scale: "将一个范围映射到另一个范围，例如 scale 0 127 127 0。",
+	patcher_ref_clip: "将数字限制在下限和上限之间。",
+	patcher_ref_number: "显示经过的数字。",
+};
+
+export const patcherTranslations = { en, de, es, zh };

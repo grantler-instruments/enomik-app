@@ -24,6 +24,8 @@ import { useAppStore } from "./store/app";
 // Elementary's inlined wasm is big: only load it on these pages.
 const Grantulator = lazy(() => import("./components/Grantulator"));
 const Mpc = lazy(() => import("./components/Mpc"));
+// React Flow: only on the Patcher.
+const Patcher = lazy(() => import("./components/Patcher"));
 
 function App() {
 	const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
@@ -76,6 +78,14 @@ function App() {
 								element={
 									<Suspense>
 										<Mpc />
+									</Suspense>
+								}
+							/>
+							<Route
+								path="/patcher"
+								element={
+									<Suspense>
+										<Patcher />
 									</Suspense>
 								}
 							/>

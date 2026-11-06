@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import Composer from "./Composer";
@@ -9,6 +9,9 @@ import PageLayout from "./layout/PageLayout";
 import MessageList from "./MessageList";
 import SectionHeader from "./SectionHeader";
 import WebSerialMonitor from "./SerialMonitor";
+
+// React Flow is big: load it when the section opens.
+const Patcher = lazy(() => import("./Patcher"));
 
 const Debugger = () => {
 	const { t } = useTranslation();
@@ -35,6 +38,22 @@ const Debugger = () => {
 				actions={!composerOpen && <InitMidi />}
 			>
 				<Composer />
+			</CollapsibleSection>
+			<CollapsibleSection
+				// Unmounted when closed: the patch only runs while it's open.
+				unmountOnExit
+				sx={{ mb: 2 }}
+				title={
+					<SectionHeader
+						component="span"
+						title={t("section_patcher")}
+						tooltipKey="tooltip_patcher"
+					/>
+				}
+			>
+				<Suspense>
+					<Patcher embedded />
+				</Suspense>
 			</CollapsibleSection>
 			<CollapsibleSection
 				expanded={monitorOpen}
@@ -84,6 +103,9 @@ const Debugger = () => {
 					</Button>
 					<Button variant="outlined" component={NavLink} to={"/mpc"}>
 						{t("open_mpc")}
+					</Button>
+					<Button variant="outlined" component={NavLink} to={"/patcher"}>
+						{t("open_patcher")}
 					</Button>
 				</Box>
 			</CollapsibleSection>

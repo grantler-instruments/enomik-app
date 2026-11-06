@@ -24,6 +24,7 @@ Firmware: [ESP-NOW-MIDI](https://github.com/grantler-instruments/ESP-NOW-MIDI)
 | `/nfc` | NFC tags |
 | `/grantulator` | Granular synth (hidden, linked from the Debugger) |
 | `/mpc` | 4x4 sample pads (hidden, linked from the Debugger) |
+| `/patcher` | MIDI patcher, a minimal Pure Data (hidden, linked from the Debugger) |
 
 The browser needs Web MIDI and Web Serial: Chrome, Edge or another Chromium
 browser. The app warns on Firefox and Safari, which lack Web Serial (Safari also Web

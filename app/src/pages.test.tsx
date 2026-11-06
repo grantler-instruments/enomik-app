@@ -48,6 +48,7 @@ const ROUTES = [
 	"/nfc",
 	"/grantulator",
 	"/mpc",
+	"/patcher",
 	"/does-not-exist",
 ];
 
@@ -69,6 +70,15 @@ beforeAll(async () => {
 			}) as unknown as MediaQueryList,
 	);
 	Element.prototype.scrollIntoView = () => {};
+	// React Flow measures the canvas and its nodes.
+	vi.stubGlobal(
+		"ResizeObserver",
+		class {
+			observe() {}
+			unobserve() {}
+			disconnect() {}
+		},
+	);
 	// Enough for the MPC's built-in sounds; nothing plays without a click.
 	vi.stubGlobal(
 		"AudioBuffer",
