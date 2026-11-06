@@ -673,6 +673,19 @@ const en = {
 	],
 	tutorial_tool_mpc_tip:
 		"Try it with the button example: map each button to a pad and you have a wireless drum controller.",
+	tutorial_tool_patcher_title: "MIDI Patcher",
+	tutorial_tool_patcher_text: [
+		"The MIDI Patcher routes MIDI from one device to another and changes it on the way, like a tiny Pure Data. You place small objects on a canvas, each doing one job, and connect them with patch cords. Messages flow from the outlets at the bottom of an object to the inlets at the top of the next one.",
+	],
+	tutorial_tool_patcher_steps: [
+		"Click Init MIDI and allow MIDI access.",
+		"Right-click the canvas (or double-click it, or press Ctrl+1 / ⌘1) and type an object, e.g. “notein”. Pick the input device below its name, e.g. your enomik dongle.",
+		"Add a second object, e.g. “+ 12” to transpose by an octave, and a “noteout” with the output device, e.g. a synth or your DAW.",
+		"Drag from an outlet to an inlet to connect them: notein's note goes into + 12, the result into noteout's note, and notein's velocity straight into noteout's velocity.",
+		"Add a “print” object anywhere in between to watch the values in the console next to the canvas.",
+	],
+	tutorial_tool_patcher_tip:
+		"The left inlet of an object is hot: a number arriving there is computed and sent on. The other inlets are cold and only store a value for the next time. The object reference below the canvas lists every object and what its inlets do.",
 	tutorial_troubleshooting_title: "Troubleshooting",
 	tutorial_troubleshooting_text: [
 		"Something doesn't work? Narrow it down step by step: does the board show up, do messages leave the client, do they reach the dongle, does the DAW listen? The app has a tool for each step.",
@@ -1418,6 +1431,19 @@ const de: typeof en = {
 	],
 	tutorial_tool_mpc_tip:
 		"Probier es mit dem Taster-Beispiel aus: Leg jeden Taster auf ein Pad und du hast einen kabellosen Drum-Controller.",
+	tutorial_tool_patcher_title: "MIDI-Patcher",
+	tutorial_tool_patcher_text: [
+		"Der MIDI-Patcher leitet MIDI von einem Gerät zum anderen und verändert es unterwegs, wie ein kleines Pure Data. Du setzt kleine Objekte auf eine Fläche, jedes mit einer Aufgabe, und verbindest sie mit Patchkabeln. Nachrichten fließen von den Ausgängen unten an einem Objekt zu den Eingängen oben am nächsten.",
+	],
+	tutorial_tool_patcher_steps: [
+		"Klick auf Init MIDI und erlaube den MIDI-Zugriff.",
+		"Rechtsklick auf die Fläche (oder Doppelklick, oder Strg+1 / ⌘1) und tippe ein Objekt ein, z. B. „notein“. Wähle unter dem Namen das Eingangsgerät, z. B. deinen enomik-Dongle.",
+		"Füge ein zweites Objekt hinzu, z. B. „+ 12“ für eine Oktave höher, und ein „noteout“ mit dem Ausgangsgerät, z. B. einem Synth oder deiner DAW.",
+		"Zieh von einem Ausgang zu einem Eingang, um sie zu verbinden: die Note von notein in + 12, das Ergebnis in die Note von noteout und die Velocity von notein direkt in die Velocity von noteout.",
+		"Setz irgendwo dazwischen ein „print“-Objekt, um die Werte in der Konsole neben der Fläche zu sehen.",
+	],
+	tutorial_tool_patcher_tip:
+		"Der linke Eingang eines Objekts ist heiß: Eine Zahl, die dort ankommt, wird berechnet und weitergeschickt. Die anderen Eingänge sind kalt und merken sich nur einen Wert für das nächste Mal. Die Objektreferenz unter der Fläche listet jedes Objekt und was seine Eingänge tun.",
 	tutorial_troubleshooting_title: "Fehlerbehebung",
 	tutorial_troubleshooting_text: [
 		"Etwas funktioniert nicht? Grenze es Schritt für Schritt ein: Erscheint das Board, verlassen Nachrichten den Client, erreichen sie den Dongle, hört die DAW zu? Für jeden Schritt hat die App ein Werkzeug.",
@@ -2161,6 +2187,19 @@ const es: typeof en = {
 	],
 	tutorial_tool_mpc_tip:
 		"Pruébalo con el ejemplo del botón: asigna cada botón a un pad y tendrás un controlador de batería inalámbrico.",
+	tutorial_tool_patcher_title: "Patcher MIDI",
+	tutorial_tool_patcher_text: [
+		"El Patcher MIDI lleva MIDI de un dispositivo a otro y lo transforma por el camino, como un pequeño Pure Data. Colocas objetos pequeños en un lienzo, cada uno con una tarea, y los conectas con cables. Los mensajes fluyen de las salidas en la parte inferior de un objeto a las entradas en la parte superior del siguiente.",
+	],
+	tutorial_tool_patcher_steps: [
+		"Haz clic en Init MIDI y permite el acceso MIDI.",
+		"Haz clic derecho en el lienzo (o doble clic, o pulsa Ctrl+1 / ⌘1) y escribe un objeto, p. ej. «notein». Elige el dispositivo de entrada debajo de su nombre, p. ej. tu dongle enomik.",
+		"Añade un segundo objeto, p. ej. «+ 12» para subir una octava, y un «noteout» con el dispositivo de salida, p. ej. un sintetizador o tu DAW.",
+		"Arrastra de una salida a una entrada para conectarlas: la nota de notein a + 12, el resultado a la nota de noteout y la velocidad de notein directamente a la velocidad de noteout.",
+		"Añade un objeto «print» en cualquier punto intermedio para ver los valores en la consola junto al lienzo.",
+	],
+	tutorial_tool_patcher_tip:
+		"La entrada izquierda de un objeto es caliente: un número que llega ahí se calcula y se envía. Las demás entradas son frías y solo guardan un valor para la próxima vez. La referencia de objetos debajo del lienzo lista cada objeto y lo que hacen sus entradas.",
 	tutorial_troubleshooting_title: "Solución de problemas",
 	tutorial_troubleshooting_text: [
 		"¿Algo no funciona? Acótalo paso a paso: ¿aparece la placa?, ¿salen mensajes del cliente?, ¿llegan al dongle?, ¿escucha la DAW? La app tiene una herramienta para cada paso.",
@@ -2881,6 +2920,19 @@ const zh: typeof en = {
 	],
 	tutorial_tool_mpc_tip:
 		"配合按钮示例试试看：把每个按钮映射到一个打击垫，你就有了一个无线鼓控制器。",
+	tutorial_tool_patcher_title: "MIDI Patcher",
+	tutorial_tool_patcher_text: [
+		"MIDI Patcher 把 MIDI 从一个设备传到另一个设备，并在途中加以变换，就像一个迷你版的 Pure Data。你在画布上放置小对象，每个对象只做一件事，再用连线把它们连起来。消息从一个对象底部的出口流向下一个对象顶部的入口。",
+	],
+	tutorial_tool_patcher_steps: [
+		"点击 Init MIDI 并允许 MIDI 访问。",
+		"右键单击画布（或双击，或按 Ctrl+1 / ⌘1）并输入一个对象，例如“notein”。在名称下方选择输入设备，例如你的 enomik 接收器。",
+		"再添加一个对象，例如“+ 12”用于升高一个八度，以及一个选择了输出设备（例如合成器或 DAW）的“noteout”。",
+		"从出口拖到入口来连接它们：notein 的音符连到 + 12，结果连到 noteout 的音符，notein 的力度直接连到 noteout 的力度。",
+		"在中间任意位置加一个“print”对象，即可在画布旁的控制台中查看数值。",
+	],
+	tutorial_tool_patcher_tip:
+		"对象的左侧入口是热入口：到达那里的数字会被计算并发送出去。其他入口是冷入口，只保存一个值供下次使用。画布下方的对象参考列出了每个对象及其入口的作用。",
 	tutorial_troubleshooting_title: "故障排除",
 	tutorial_troubleshooting_text: [
 		"有东西不工作？一步步缩小范围：开发板是否出现？客户端是否发出消息？消息是否到达适配器？DAW 是否在监听？应用为每一步都提供了工具。",

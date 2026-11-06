@@ -32,6 +32,7 @@ import ArchitectureDiagram from "./ArchitectureDiagram";
 // Elementary's inlined wasm is big: only load it with these sections.
 const Grantulator = lazy(() => import("../Grantulator"));
 const Mpc = lazy(() => import("../Mpc"));
+const Patcher = lazy(() => import("../Patcher"));
 
 import {
 	CodeBlock,
@@ -1159,6 +1160,23 @@ const MpcTool = () => {
 	);
 };
 
+const PatcherTool = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_tool_patcher_text" />
+			<Steps i18nKey="tutorial_tool_patcher_steps" />
+			<Note>{t("tutorial_tool_patcher_tip")}</Note>
+			<LiveDemo>
+				<Suspense>
+					<Patcher embedded />
+				</Suspense>
+			</LiveDemo>
+			<LinkButtons actions={[{ label: t("open_patcher"), link: "/patcher" }]} />
+		</>
+	);
+};
+
 const Troubleshooting = () => {
 	const { t } = useTranslation();
 	return (
@@ -1335,6 +1353,11 @@ const TOOL_SECTIONS: Chapter[] = [
 		id: "mpc",
 		titleKey: "tutorial_tool_mpc_title",
 		Content: MpcTool,
+	},
+	{
+		id: "patcher",
+		titleKey: "tutorial_tool_patcher_title",
+		Content: PatcherTool,
 	},
 ];
 
