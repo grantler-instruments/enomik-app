@@ -140,7 +140,7 @@ const en = {
 	tutorial_photo_button: "Push buttons",
 	tutorial_photo_potentiometer: "Potentiometer",
 	tutorial_photo_photoresistor: "Light sensors (photoresistors)",
-	tutorial_photo_motion: "Motion sensor (MPU-6050)",
+	tutorial_photo_motion: "Motion sensor (shown: MPU-6050 module)",
 	tutorial_photo_leds: "LEDs",
 	tutorial_photo_neopixels: "Addressable LEDs (WS2812B)",
 	tutorial_photo_servo: "Servo (SG90)",
@@ -411,7 +411,7 @@ const en = {
 	],
 	tutorial_pairing_test_title: "3. Go wireless",
 	tutorial_pairing_test:
-		"Unplug the client and power it from a power bank or battery. Plug in the dongle. Messages from the client now arrive through the dongle's MIDI port.",
+		"Unplug the client and power it from a power bank or battery. Plug in the dongle and select it in the MIDI Monitor. Press the button from the Button example: its notes now arrive through the dongle's MIDI port.",
 	tutorial_pairing_tip:
 		"Several clients can share one dongle: repeat step 2 for every client.",
 
@@ -424,10 +424,12 @@ const en = {
 	tutorial_button_config: [
 		"Open the Configurator with the client connected and selected.",
 		"In Input Pin to MIDI Mapping, add two rows.",
-		"First row: pin 16, mode INPUT_PULLUP (digital), channel 1, MIDI type Note On, note 16, min 0, max 127.",
-		"Second row: the same with pin 17 and note 17. On enomik boards the note number matches the pin number.",
+		"First row: pin 16, mode INPUT_PULLUP (digital), channel 1, MIDI type Note On, note 16, min 0, max 127. Max is the velocity sent when you press the button, min the one sent when you release it.",
+		"Second row: the same with pin 17 and note 17.",
 		"Click Deploy.",
 	],
+	tutorial_button_note:
+		"Note 16 is a very low note. It's chosen so that the note number matches the pin number, which lets the MIDI to LED example react to this button. To play an instrument, use e.g. note 60 (middle C).",
 	tutorial_button_test:
 		"Open the MIDI Monitor and select the client. Pressing the button on pin 16 sends note 16 with velocity 127 (max), the one on pin 17 note 17; releasing sends velocity 0 (min), which synths treat as note off.",
 	tutorial_button_tip:
@@ -449,6 +451,22 @@ const en = {
 	tutorial_knob_tip:
 		"No potentiometer at hand? Choose INPUT_TOUCH on a touch capable pin and touch a wire or a piece of foil.",
 
+	tutorial_touch_title: "Touch pad to note",
+	tutorial_touch_text: [
+		"A touch pad needs no moving parts: a piece of metal, foil or conductive paint on a touch capable pin becomes a button. The board measures how much the pin's capacitance changes when your finger comes close.",
+	],
+	tutorial_touch_wiring:
+		"The enomik client has touch pads on pins 1 and 2. On another board, connect a wire to a touch capable pin, e.g. GPIO 1 on ESP32-S2 and ESP32-S3 boards, and tape a piece of aluminium foil or a coin to its end. No resistor and no GND connection needed. Kits & Boards shows which pins can sense touch.",
+	tutorial_touch_config: [
+		"In Input Pin to MIDI Mapping, add a row.",
+		"Set pin 1, mode INPUT_TOUCH, channel 1, MIDI type Note On, note 60, min 0, max 127 and threshold 20 to start with.",
+		"Click Deploy.",
+		"Tune the threshold: switch on Stream raw input values above the list, touch the pad lightly and read its Live value. Set the threshold to about half of what a light touch reaches and deploy again. Live values need firmware 0.19 or newer and a USB connection.",
+	],
+	tutorial_touch_test:
+		"Open the MIDI Monitor and select the client. Touching the pad sends note 60 with velocity 127 (max), letting go sends velocity 0 (min). The pad switches on at the threshold and only switches off again when the reading drops below ¾ of it, so it doesn't flicker at the edge.",
+	tutorial_touch_tip:
+		"Set the threshold to 0 for a continuous value instead of on and off, e.g. with Control Change: the value follows how much of your finger covers the pad. Firmware before 0.19 measures the threshold in raw readings instead of percent; the Configurator warns you when the units don't match.",
 	tutorial_led_title: "MIDI to LED",
 	tutorial_led_text: [
 		"The other direction: MIDI from your computer switches the onboard LED on pin 15.",
@@ -461,7 +479,7 @@ const en = {
 		"Click Deploy.",
 	],
 	tutorial_led_test:
-		"Open the MIDI Monitor and use the MIDI Composer to send note 16 on channel 1: the LED lights up, note off switches it off. Playing the note from your DAW works the same way.",
+		"Open the MIDI Composer, pick the client as output and send Note On, channel 1, note 16, velocity 127: the LED lights up. Send the same note with type Note Off (or Note On with velocity 0) to switch it off. Playing note 16 from your DAW works the same way.",
 	tutorial_led_tip_pwm:
 		"Choose PWM (analog) to dim the LED instead: the velocity or controller value sets the brightness.",
 	tutorial_led_tip_loopback:
@@ -924,7 +942,7 @@ const de: typeof en = {
 	tutorial_photo_button: "Taster",
 	tutorial_photo_potentiometer: "Potentiometer",
 	tutorial_photo_photoresistor: "Lichtsensoren (Fotowiderstände)",
-	tutorial_photo_motion: "Bewegungssensor (MPU-6050)",
+	tutorial_photo_motion: "Bewegungssensor (abgebildet: MPU-6050-Modul)",
 	tutorial_photo_leds: "LEDs",
 	tutorial_photo_neopixels: "Adressierbare LEDs (WS2812B)",
 	tutorial_photo_servo: "Servo (SG90)",
@@ -1201,7 +1219,7 @@ const de: typeof en = {
 	],
 	tutorial_pairing_test_title: "3. Kabellos werden",
 	tutorial_pairing_test:
-		"Client abstecken und mit Powerbank oder Akku versorgen. Dongle einstecken. Nachrichten vom Client kommen jetzt über den MIDI-Port des Dongles an.",
+		"Den Client abstecken und mit einer Powerbank oder einem Akku versorgen. Den Dongle anstecken und im MIDI-Monitor auswählen. Den Taster aus dem Taster-Beispiel drücken: Seine Noten kommen jetzt über den MIDI-Port des Dongles an.",
 	tutorial_pairing_tip:
 		"Mehrere Clients können sich einen Dongle teilen: Schritt 2 für jeden Client wiederholen.",
 
@@ -1214,10 +1232,12 @@ const de: typeof en = {
 	tutorial_button_config: [
 		"Den Konfigurator öffnen, Client angeschlossen und ausgewählt.",
 		"Unter Eingangs-Pin-zu-MIDI-Zuordnung zwei Zeilen hinzufügen.",
-		"Erste Zeile: Pin 16, Modus INPUT_PULLUP (digital), Kanal 1, MIDI-Typ Note On, Note 16, Min 0, Max 127.",
-		"Zweite Zeile: dasselbe mit Pin 17 und Note 17. Auf enomik-Boards entspricht die Notennummer der Pin-Nummer.",
+		"Erste Zeile: Pin 16, Modus INPUT_PULLUP (digital), Kanal 1, MIDI-Typ Note On, Note 16, Min 0, Max 127. Max ist die Velocity beim Drücken des Tasters, Min die beim Loslassen.",
+		"Zweite Zeile: dasselbe mit Pin 17 und Note 17.",
 		"Auf Bereitstellen klicken.",
 	],
+	tutorial_button_note:
+		"Note 16 ist eine sehr tiefe Note. Sie ist so gewählt, dass die Notennummer der Pin-Nummer entspricht, damit das Beispiel MIDI zu LED auf diesen Taster reagieren kann. Um ein Instrument zu spielen, nimm z. B. Note 60 (mittleres C).",
 	tutorial_button_test:
 		"Den MIDI-Monitor öffnen und den Client wählen. Der Taster an Pin 16 sendet beim Drücken Note 16 mit Velocity 127 (Max), der an Pin 17 Note 17; Loslassen sendet Velocity 0 (Min), was Synths als Note-Off behandeln.",
 	tutorial_button_tip:
@@ -1239,6 +1259,22 @@ const de: typeof en = {
 	tutorial_knob_tip:
 		"Kein Potentiometer zur Hand? Wähle INPUT_TOUCH auf einem touchfähigen Pin und berühre ein Kabel oder ein Stück Alufolie.",
 
+	tutorial_touch_title: "Touch-Pad zu Note",
+	tutorial_touch_text: [
+		"Ein Touch-Pad braucht keine beweglichen Teile: Ein Stück Metall, Folie oder leitfähige Farbe an einem touchfähigen Pin wird zum Taster. Das Board misst, wie stark sich die Kapazität des Pins ändert, wenn dein Finger näher kommt.",
+	],
+	tutorial_touch_wiring:
+		"Der enomik Client hat Touch-Pads an Pin 1 und 2. Auf einem anderen Board einen Draht an einen touchfähigen Pin anschließen, z. B. GPIO 1 bei ESP32-S2- und ESP32-S3-Boards, und ein Stück Alufolie oder eine Münze an sein Ende kleben. Kein Widerstand und kein GND nötig. Kits & Boards zeigt, welche Pins Berührung erkennen.",
+	tutorial_touch_config: [
+		"Unter Eingangs-Pin-zu-MIDI-Zuordnung eine Zeile hinzufügen.",
+		"Pin 1, Modus INPUT_TOUCH, Kanal 1, MIDI-Typ Note On, Note 60, Min 0, Max 127 und für den Anfang Schwellenwert 20 einstellen.",
+		"Auf Bereitstellen klicken.",
+		"Schwellenwert einstellen: Über der Liste Rohwerte streamen einschalten, das Pad leicht berühren und den Live-Wert ablesen. Den Schwellenwert auf etwa die Hälfte dessen setzen, was eine leichte Berührung erreicht, und erneut bereitstellen. Live-Werte brauchen Firmware 0.19 oder neuer und eine USB-Verbindung.",
+	],
+	tutorial_touch_test:
+		"Den MIDI-Monitor öffnen und den Client wählen. Berühren sendet Note 60 mit Velocity 127 (Max), Loslassen sendet Velocity 0 (Min). Das Pad schaltet am Schwellenwert ein und erst wieder aus, wenn der Wert unter ¾ davon fällt, damit es an der Grenze nicht flackert.",
+	tutorial_touch_tip:
+		"Schwellenwert 0 liefert statt An und Aus einen stufenlosen Wert, z. B. mit Control Change: Der Wert folgt, wie viel vom Pad dein Finger bedeckt. Firmware vor 0.19 misst den Schwellenwert in Rohwerten statt Prozent; der Konfigurator warnt, wenn die Einheiten nicht passen.",
 	tutorial_led_title: "MIDI zu LED",
 	tutorial_led_text: [
 		"Die andere Richtung: MIDI von deinem Computer schaltet die Onboard-LED an Pin 15.",
@@ -1251,7 +1287,7 @@ const de: typeof en = {
 		"Auf Bereitstellen klicken.",
 	],
 	tutorial_led_test:
-		"Den MIDI-Monitor öffnen und mit dem MIDI-Composer Note 16 auf Kanal 1 senden: Die LED leuchtet, Note-Off schaltet sie wieder aus. Aus der DAW gespielt funktioniert es genauso.",
+		"Den MIDI-Composer öffnen, den Client als Ausgang wählen und Note On, Kanal 1, Note 16, Velocity 127 senden: Die LED leuchtet. Dieselbe Note mit Typ Note Off (oder Note On mit Velocity 0) senden, um sie auszuschalten. Note 16 aus der DAW funktioniert genauso.",
 	tutorial_led_tip_pwm:
 		"Wähle PWM (analog), um die LED zu dimmen: Velocity oder Controller-Wert bestimmen die Helligkeit.",
 	tutorial_led_tip_loopback:
@@ -1719,7 +1755,7 @@ const es: typeof en = {
 	tutorial_photo_button: "Pulsadores",
 	tutorial_photo_potentiometer: "Potenciómetro",
 	tutorial_photo_photoresistor: "Sensores de luz (fotorresistencias)",
-	tutorial_photo_motion: "Sensor de movimiento (MPU-6050)",
+	tutorial_photo_motion: "Sensor de movimiento (en la foto: módulo MPU-6050)",
 	tutorial_photo_leds: "LEDs",
 	tutorial_photo_neopixels: "LEDs direccionables (WS2812B)",
 	tutorial_photo_servo: "Servo (SG90)",
@@ -1991,7 +2027,7 @@ const es: typeof en = {
 	],
 	tutorial_pairing_test_title: "3. Sin cables",
 	tutorial_pairing_test:
-		"Desconecta el cliente y aliméntalo con un power bank o batería. Conecta el dongle. Los mensajes del cliente llegan ahora por el puerto MIDI del dongle.",
+		"Desconecta el cliente y aliméntalo con una batería externa o una batería. Conecta el dongle y selecciónalo en el Monitor MIDI. Pulsa el botón del ejemplo del botón: sus notas llegan ahora por el puerto MIDI del dongle.",
 	tutorial_pairing_tip:
 		"Varios clientes pueden compartir un dongle: repite el paso 2 para cada cliente.",
 
@@ -2004,10 +2040,12 @@ const es: typeof en = {
 	tutorial_button_config: [
 		"Abre el Configurador con el cliente conectado y seleccionado.",
 		"En Asignación de pin de entrada a MIDI, añade dos filas.",
-		"Primera fila: pin 16, modo INPUT_PULLUP (digital), canal 1, tipo MIDI Note On, nota 16, mín 0, máx 127.",
-		"Segunda fila: lo mismo con el pin 17 y la nota 17. En las placas enomik el número de nota coincide con el número de pin.",
+		"Primera fila: pin 16, modo INPUT_PULLUP (digital), canal 1, tipo MIDI Note On, nota 16, mín 0, máx 127. Máx es la velocidad que se envía al pulsar el botón, mín la que se envía al soltarlo.",
+		"Segunda fila: lo mismo con el pin 17 y la nota 17.",
 		"Pulsa Desplegar.",
 	],
+	tutorial_button_note:
+		"La nota 16 es muy grave. Se eligió para que el número de nota coincida con el número de pin, así el ejemplo MIDI a LED puede reaccionar a este botón. Para tocar un instrumento, usa p. ej. la nota 60 (do central).",
 	tutorial_button_test:
 		"Abre el Monitor MIDI y selecciona el cliente. Al pulsar el botón del pin 16 se envía la nota 16 con velocidad 127 (máx), el del pin 17 la nota 17; al soltar, velocidad 0 (mín), que los sintetizadores tratan como note off.",
 	tutorial_button_tip:
@@ -2029,6 +2067,22 @@ const es: typeof en = {
 	tutorial_knob_tip:
 		"¿No tienes potenciómetro? Elige INPUT_TOUCH en un pin táctil y toca un cable o un trozo de papel de aluminio.",
 
+	tutorial_touch_title: "Pad táctil a nota",
+	tutorial_touch_text: [
+		"Un pad táctil no tiene partes móviles: un trozo de metal, papel de aluminio o pintura conductora en un pin táctil se convierte en un botón. La placa mide cuánto cambia la capacitancia del pin cuando tu dedo se acerca.",
+	],
+	tutorial_touch_wiring:
+		"El cliente enomik tiene pads táctiles en los pines 1 y 2. En otra placa, conecta un cable a un pin táctil, p. ej. GPIO 1 en placas ESP32-S2 y ESP32-S3, y pega en su extremo un trozo de papel de aluminio o una moneda. No hace falta resistencia ni conexión a GND. Kits y placas muestra qué pines detectan el tacto.",
+	tutorial_touch_config: [
+		"En Asignación de pin de entrada a MIDI, añade una fila.",
+		"Ajusta pin 1, modo INPUT_TOUCH, canal 1, tipo MIDI Note On, nota 60, mín 0, máx 127 y, para empezar, umbral 20.",
+		"Pulsa Desplegar.",
+		"Ajusta el umbral: activa la transmisión de valores en bruto encima de la lista, toca el pad suavemente y lee su valor en vivo. Pon el umbral en más o menos la mitad de lo que alcanza un toque suave y despliega de nuevo. Los valores en vivo necesitan firmware 0.19 o posterior y conexión USB.",
+	],
+	tutorial_touch_test:
+		"Abre el Monitor MIDI y selecciona el cliente. Al tocar el pad se envía la nota 60 con velocidad 127 (máx), al soltar, velocidad 0 (mín). El pad se activa en el umbral y solo se desactiva cuando la lectura baja de ¾ de él, para que no parpadee en el límite.",
+	tutorial_touch_tip:
+		"Con umbral 0 obtienes un valor continuo en lugar de encendido y apagado, p. ej. con Control Change: el valor sigue cuánto cubre tu dedo el pad. El firmware anterior a 0.19 mide el umbral en lecturas en bruto en vez de porcentaje; el Configurador te avisa si las unidades no coinciden.",
 	tutorial_led_title: "MIDI a LED",
 	tutorial_led_text: [
 		"La otra dirección: el MIDI de tu ordenador enciende el LED integrado en el pin 15.",
@@ -2041,7 +2095,7 @@ const es: typeof en = {
 		"Pulsa Desplegar.",
 	],
 	tutorial_led_test:
-		"Abre el Monitor MIDI y usa el Compositor MIDI para enviar la nota 16 en el canal 1: el LED se enciende y el note off lo apaga. Tocar la nota desde tu DAW funciona igual.",
+		"Abre el Compositor MIDI, elige el cliente como salida y envía Note On, canal 1, nota 16, velocidad 127: el LED se enciende. Envía la misma nota con tipo Note Off (o Note On con velocidad 0) para apagarlo. Tocar la nota 16 desde tu DAW funciona igual.",
 	tutorial_led_tip_pwm:
 		"Elige PWM (analog) para atenuar el LED: la velocidad o el valor del controlador fija el brillo.",
 	tutorial_led_tip_loopback:
@@ -2506,7 +2560,7 @@ const zh: typeof en = {
 	tutorial_photo_button: "按钮",
 	tutorial_photo_potentiometer: "电位器",
 	tutorial_photo_photoresistor: "光线传感器（光敏电阻）",
-	tutorial_photo_motion: "运动传感器 (MPU-6050)",
+	tutorial_photo_motion: "运动传感器（图示：MPU-6050 模块）",
 	tutorial_photo_leds: "LED",
 	tutorial_photo_neopixels: "可寻址 LED (WS2812B)",
 	tutorial_photo_servo: "舵机 (SG90)",
@@ -2708,7 +2762,7 @@ const zh: typeof en = {
 		"电路板：开发板示意图，点击即可添加引脚。",
 		"输入引脚到 MIDI 映射：按钮、旋钮和触摸板等输入，以及每个输入发送的消息。",
 		"MIDI 到输出引脚映射：LED 和舵机等输出，以及每个输出响应的消息。",
-		"无线 MIDI 配置：开发板发送到的 MAC 地址。接收器只显示这一部分。",
+		"无线 MIDI 配置：开发板发送到的 MAC 地址。适配器只显示这一部分。",
 	],
 	tutorial_configurator_deploy:
 		"在点击部署之前，任何更改都不会写入开发板。部署会把整个配置写入开发板，重启和固件更新后依然保留。",
@@ -2766,7 +2820,7 @@ const zh: typeof en = {
 	],
 	tutorial_pairing_test_title: "3. 无线运行",
 	tutorial_pairing_test:
-		"拔下客户端，用充电宝或电池供电。插入适配器。客户端的消息现在通过适配器的 MIDI 端口到达。",
+		"拔下客户端，用充电宝或电池供电。插入适配器并在 MIDI 监视器中选择它。按下按钮示例中的按钮：其音符现在通过适配器的 MIDI 端口到达。",
 	tutorial_pairing_tip:
 		"多个客户端可以共用一个适配器：对每个客户端重复步骤 2。",
 
@@ -2777,10 +2831,12 @@ const zh: typeof en = {
 	tutorial_button_config: [
 		"连接并选中客户端，打开配置器。",
 		"在输入引脚到 MIDI 映射中添加两行。",
-		"第一行：引脚 16、模式 INPUT_PULLUP (digital)、通道 1、MIDI 类型 Note On、音符 16、最小 0、最大 127。",
-		"第二行：相同设置，引脚 17、音符 17。在 enomik 开发板上，音符编号与引脚编号相同。",
+		"第一行：引脚 16、模式 INPUT_PULLUP (digital)、通道 1、MIDI 类型 Note On、音符 16、最小 0、最大 127。最大值是按下按钮时发送的力度，最小值是松开时发送的力度。",
+		"第二行：相同设置，引脚 17、音符 17。",
 		"点击部署。",
 	],
+	tutorial_button_note:
+		"音符 16 是一个非常低的音。选择它是为了让音符编号与引脚编号一致，这样 MIDI 到 LED 示例就能响应这个按钮。要演奏乐器，请使用例如音符 60（中央 C）。",
 	tutorial_button_test:
 		"打开 MIDI 监视器并选择客户端。按下引脚 16 上的按钮发送力度 127（最大）的音符 16，引脚 17 上的按钮发送音符 17；松开发送力度 0（最小），合成器会将其视为 note off。",
 	tutorial_button_tip:
@@ -2800,6 +2856,22 @@ const zh: typeof en = {
 	tutorial_knob_tip:
 		"手边没有电位器？在支持触摸的引脚上选择 INPUT_TOUCH，然后触摸一根导线或一片铝箔。",
 
+	tutorial_touch_title: "触摸板到音符",
+	tutorial_touch_text: [
+		"触摸板没有活动部件：接在支持触摸的引脚上的一块金属、铝箔或导电涂料就能变成按钮。开发板测量手指靠近时引脚电容的变化量。",
+	],
+	tutorial_touch_wiring:
+		"enomik 客户端在引脚 1 和 2 上有触摸板。使用其他开发板时，将一根导线接到支持触摸的引脚上，例如 ESP32-S2 和 ESP32-S3 开发板的 GPIO 1，并在导线末端贴一块铝箔或一枚硬币。无需电阻，也无需接 GND。套件与电路板页面显示哪些引脚可以检测触摸。",
+	tutorial_touch_config: [
+		"在输入引脚到 MIDI 映射中添加一行。",
+		"设置引脚 1、模式 INPUT_TOUCH、通道 1、MIDI 类型 Note On、音符 60、最小 0、最大 127，阈值先设为 20。",
+		"点击部署。",
+		"调整阈值：打开列表上方的原始输入值流，轻触触摸板并读取其实时值。将阈值设为轻触所达数值的一半左右，然后再次部署。实时值需要固件 0.19 或更高版本以及 USB 连接。",
+	],
+	tutorial_touch_test:
+		"打开 MIDI 监视器并选择客户端。触摸时发送力度 127（最大）的音符 60，松开时发送力度 0（最小）。触摸板在达到阈值时打开，只有读数降到阈值的 ¾ 以下时才关闭，因此在临界点不会闪烁。",
+	tutorial_touch_tip:
+		"将阈值设为 0 可得到连续值而不是开和关，例如配合 Control Change：数值随手指覆盖触摸板的面积而变化。0.19 之前的固件以原始读数而不是百分比衡量阈值；单位不匹配时配置器会提醒你。",
 	tutorial_led_title: "MIDI 到 LED",
 	tutorial_led_text: ["另一个方向：来自电脑的 MIDI 控制引脚 15 上的板载 LED。"],
 	tutorial_led_wiring:
@@ -2810,7 +2882,7 @@ const zh: typeof en = {
 		"点击部署。",
 	],
 	tutorial_led_test:
-		"打开 MIDI 监视器，用 MIDI 编辑器在通道 1 上发送音符 16：LED 点亮，note off 将其熄灭。从 DAW 演奏该音符效果相同。",
+		"打开 MIDI 编辑器，选择客户端作为输出，发送 Note On、通道 1、音符 16、力度 127：LED 亮起。用 Note Off 类型（或力度为 0 的 Note On）发送同一音符即可关闭。从 DAW 演奏音符 16 效果相同。",
 	tutorial_led_tip_pwm:
 		"改选 PWM (analog) 可调节 LED 亮度：力度或控制器值决定亮度。",
 	tutorial_led_tip_loopback:
@@ -3043,7 +3115,7 @@ const zh: typeof en = {
 		"开始前请戴上耳机或调低音量：颗粒声音云可能很快变得很响。",
 	tutorial_tool_mpc_title: "MPC",
 	tutorial_tool_mpc_text: [
-		"MPC 是一个采样播放器，有 16 个打击垫，排成 4x4 网格。每个打击垫都自带一个鼓或拨弦音色，你也可以把自己的采样拖上去。可以用鼠标、接收器、你的 enomik 按钮和触摸板或任何其他 MIDI 控制器来演奏。",
+		"MPC 是一个采样播放器，有 16 个打击垫，排成 4x4 网格。每个打击垫都自带一个鼓或拨弦音色，你也可以把自己的采样拖上去。可以用鼠标、适配器、你的 enomik 按钮和触摸板或任何其他 MIDI 控制器来演奏。",
 	],
 	tutorial_tool_mpc_steps: [
 		"点击一个打击垫即可试听。打击垫 1 在左下角，打击垫 16 在右上角。",
@@ -3059,7 +3131,7 @@ const zh: typeof en = {
 	],
 	tutorial_tool_patcher_steps: [
 		"点击 Init MIDI 并允许 MIDI 访问。",
-		"右键单击画布（或双击，或按 Ctrl+1 / ⌘1）并输入一个对象，例如“notein”。在名称下方选择输入设备，例如你的 enomik 接收器。",
+		"右键单击画布（或双击，或按 Ctrl+1 / ⌘1）并输入一个对象，例如“notein”。在名称下方选择输入设备，例如你的 enomik 适配器。",
 		"再添加一个对象，例如“+ 12”用于升高一个八度，以及一个选择了输出设备（例如合成器或 DAW）的“noteout”。",
 		"从出口拖到入口来连接它们：notein 的音符连到 + 12，结果连到 noteout 的音符，notein 的力度直接连到 noteout 的力度。",
 		"在中间任意位置加一个“print”对象，即可在画布旁的控制台中查看数值。",

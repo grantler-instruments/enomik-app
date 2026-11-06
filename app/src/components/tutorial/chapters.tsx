@@ -667,7 +667,27 @@ const ButtonExample = () => {
 	return (
 		<Example
 			prefix="tutorial_button"
-			extra={<Note>{t("tutorial_button_tip")}</Note>}
+			extra={
+				<>
+					<Note>{t("tutorial_button_note")}</Note>
+					<Note>{t("tutorial_button_tip")}</Note>
+				</>
+			}
+		/>
+	);
+};
+
+const TouchExample = () => {
+	const { t } = useTranslation();
+	return (
+		<Example
+			prefix="tutorial_touch"
+			extra={
+				<>
+					<Note>{t("tutorial_touch_tip")}</Note>
+					<LinkButtons actions={[{ label: t("kits_title"), link: "/kits" }]} />
+				</>
+			}
 		/>
 	);
 };
@@ -873,7 +893,7 @@ const OwnClientExample = () => {
 				actions={[
 					{
 						label: t("tutorial_pairing_title"),
-						link: "/tutorial/examples/webapp/pairing",
+						link: "/tutorial/pairing",
 					},
 				]}
 			/>
@@ -1280,8 +1300,8 @@ export type Chapter = {
 const WEBAPP_EXAMPLES: Chapter[] = [
 	{ id: "button", titleKey: "tutorial_button_title", Content: ButtonExample },
 	{ id: "knob", titleKey: "tutorial_knob_title", Content: KnobExample },
+	{ id: "touch", titleKey: "tutorial_touch_title", Content: TouchExample },
 	{ id: "led", titleKey: "tutorial_led_title", Content: LedExample },
-	{ id: "pairing", titleKey: "tutorial_pairing_title", Content: Pairing },
 ];
 
 const CODE_EXAMPLES: Chapter[] = [
@@ -1424,6 +1444,7 @@ export const CHAPTERS: Chapter[] = [
 		Content: Examples,
 		sections: EXAMPLE_SECTIONS,
 	},
+	{ id: "pairing", titleKey: "tutorial_pairing_title", Content: Pairing },
 	{ id: "daw", titleKey: "tutorial_daw_title", Content: DawSetup },
 	{
 		id: "tools",
