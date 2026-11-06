@@ -3,6 +3,9 @@ import {
 	Add as AddIcon,
 	Close as CloseIcon,
 	DeleteOutline as DeleteIcon,
+	FitScreen as FitScreenIcon,
+	ZoomIn as ZoomInIcon,
+	ZoomOut as ZoomOutIcon,
 } from "@mui/icons-material";
 import {
 	Autocomplete,
@@ -13,6 +16,9 @@ import {
 	DialogContent,
 	DialogContentText,
 	DialogTitle,
+	Divider,
+	IconButton,
+	ListItemText,
 	ListSubheader,
 	Menu,
 	MenuItem,
@@ -234,13 +240,18 @@ const PatchConsole = ({ height }: { height: number | string }) => {
 				<Typography variant="subtitle2" component="h3" flex={1}>
 					{t("patcher_console")}
 				</Typography>
-				<Button
-					size="small"
-					onClick={() => useConsole.setState({ lines: [] })}
-					disabled={lines.length === 0}
-				>
-					{t("patcher_console_clear")}
-				</Button>
+				<Tooltip title={t("patcher_console_clear")}>
+					<span>
+						<IconButton
+							size="small"
+							aria-label={t("patcher_console_clear")}
+							onClick={() => useConsole.setState({ lines: [] })}
+							disabled={lines.length === 0}
+						>
+							<DeleteIcon fontSize="small" />
+						</IconButton>
+					</span>
+				</Tooltip>
 			</Box>
 			<Box
 				ref={box}
@@ -672,63 +683,6 @@ const usePatch = () => {
 	return patch;
 };
 
-const AddObject = ({ canvas }: { canvas: HTMLElement | null }) => {
-	const { t } = useTranslation();
-	const { screenToFlowPosition } = useReactFlow();
-	const addObject = usePatcherStore((s) => s.addObject);
-	const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-
-	const add = (name: string) => {
-		setAnchor(null);
-		const rect = canvas?.getBoundingClientRect();
-		const position = rect
-			? screenToFlowPosition({
-					x: rect.left + rect.width / 2 + (Math.random() - 0.5) * 80,
-					y: rect.top + rect.height / 2 + (Math.random() - 0.5) * 80,
-				})
-			: { x: 0, y: 0 };
-		placeText(addObject, position, name);
-	};
-
-	return (
-		<>
-			<Tooltip
-				title={
-					<>
-						<div>{t("patcher_shortcut", { keys: PLACE_SHORTCUT })}</div>
-						<div>
-							{t("patcher_shortcut_message", { keys: MESSAGE_SHORTCUT })}
-						</div>
-						<div>{t("patcher_shortcut_search", { keys: SEARCH_SHORTCUT })}</div>
-					</>
-				}
-			>
-				<Button
-					variant="outlined"
-					startIcon={<AddIcon />}
-					onClick={(e) => setAnchor(e.currentTarget)}
-				>
-					{t("patcher_add")}
-				</Button>
-			</Tooltip>
-			<Menu anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}>
-				{MENU.flatMap(({ group, names }) => [
-					<ListSubheader key={group}>{t(group)}</ListSubheader>,
-					...names.map((name) => (
-						<MenuItem
-							key={name}
-							onClick={() => add(name)}
-							sx={{ fontFamily: "monospace" }}
-						>
-							{name}
-						</MenuItem>
-					)),
-				])}
-			</Menu>
-		</>
-	);
-};
-
 /** Ctrl+1, or Cmd+1 on a Mac. By key position, so it works on any layout. */
 const isPlaceShortcut = (e: KeyboardEvent) => isShortcut(e, "Digit1");
 
@@ -847,17 +801,18 @@ const ObjectSearch = ({
 	);
 };
 
-const Canvas = ({
-	onCanvas,
-	height,
-}: {
-	onCanvas: (el: HTMLElement | null) => void;
-	height: number | string;
-}) => {
+/** A shortcut, right-aligned in a menu item. */
+const Shortcut = ({ keys }: { keys: string }) => (
+	<Typography variant="body2" color="text.secondary" ml={3}>
+		{keys}
+	</Typography>
+);
+
+const Canvas = ({ height }: { height: number | string }) => {
 	const { t } = useTranslation();
 	const theme = useTheme();
 	const darkMode = useAppStore((s) => s.darkMode);
-	const { screenToFlowPosition } = useReactFlow();
+	const { screenToFlowPosition, zoomIn, zoomOut, fitView } = useReactFlow();
 	const nodes = usePatcherStore((s) => s.nodes);
 	const edges = usePatcherStore((s) => s.edges);
 	const onNodesChange = usePatcherStore((s) => s.onNodesChange);
@@ -875,6 +830,14 @@ const Canvas = ({
 
 	/** Where the search's object goes: where the pointer was when it opened. */
 	const [searchAt, setSearchAt] = useState<XYPosition | null>(null);
+
+	/** Right-click on empty canvas: a menu of objects, placed where clicked. */
+	const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
+	const placeFromMenu = (text: string) => {
+		if (!menuAt) return;
+		setMenuAt(null);
+		placeText(addObject, screenToFlowPosition(menuAt), text);
+	};
 
 	// Ctrl/Cmd+1 and +2, like Pure Data: a new object or message box at the
 	// pointer (or in the middle). Ctrl/Cmd+K: search objects, placed there too.
@@ -912,10 +875,7 @@ const Canvas = ({
 
 	return (
 		<Box
-			ref={(el: HTMLElement | null) => {
-				box.current = el;
-				onCanvas(el);
-			}}
+			ref={box}
 			onPointerMove={(e) => {
 				pointer.current = { x: e.clientX, y: e.clientY };
 			}}
@@ -931,6 +891,17 @@ const Canvas = ({
 				borderColor: "divider",
 				borderRadius: 1,
 				overflow: "hidden",
+				// In CSS, not as an inline edge style, so React Flow's selected
+				// state can still show: a selected connection turns primary.
+				"& .react-flow__edge-path": {
+					stroke: theme.palette.text.secondary,
+					strokeWidth: 2,
+				},
+				"& .react-flow__edge.selected .react-flow__edge-path, & .react-flow__edge:focus-visible .react-flow__edge-path":
+					{
+						stroke: theme.palette.primary.main,
+						strokeWidth: 3,
+					},
 			}}
 		>
 			<ReactFlow
@@ -941,11 +912,12 @@ const Canvas = ({
 				onEdgesChange={onEdgesChange}
 				onConnect={onConnect}
 				onDoubleClick={onDoubleClick}
+				onPaneContextMenu={(e) => {
+					e.preventDefault();
+					setMenuAt({ x: e.clientX, y: e.clientY });
+				}}
 				zoomOnDoubleClick={false}
 				deleteKeyCode={["Backspace", "Delete"]}
-				defaultEdgeOptions={{
-					style: { stroke: theme.palette.text.secondary, strokeWidth: 2 },
-				}}
 				connectionLineStyle={{
 					stroke: theme.palette.primary.main,
 					strokeWidth: 2,
@@ -956,7 +928,45 @@ const Canvas = ({
 				proOptions={{ hideAttribution: true }}
 			>
 				<Background gap={16} />
-				<Controls showInteractive={false}>
+				{/* Own buttons, so every control has the same (MUI) icons. */}
+				<Controls showInteractive={false} showZoom={false} showFitView={false}>
+					<ControlButton
+						title={t("patcher_zoom_in")}
+						aria-label={t("patcher_zoom_in")}
+						onClick={() => zoomIn()}
+					>
+						<ZoomInIcon />
+					</ControlButton>
+					<ControlButton
+						title={t("patcher_zoom_out")}
+						aria-label={t("patcher_zoom_out")}
+						onClick={() => zoomOut()}
+					>
+						<ZoomOutIcon />
+					</ControlButton>
+					<ControlButton
+						title={t("patcher_fit_view")}
+						aria-label={t("patcher_fit_view")}
+						onClick={() => fitView({ maxZoom: 1.2 })}
+					>
+						<FitScreenIcon />
+					</ControlButton>
+					<ControlButton
+						title={`${t("patcher_menu_object")} (${PLACE_SHORTCUT})`}
+						aria-label={t("patcher_menu_object")}
+						onClick={() => {
+							const rect = box.current?.getBoundingClientRect();
+							if (!rect) return;
+							addObject(
+								screenToFlowPosition({
+									x: rect.left + rect.width / 2,
+									y: rect.top + rect.height / 2,
+								}),
+							);
+						}}
+					>
+						<AddIcon />
+					</ControlButton>
 					<ControlButton
 						title={t("patcher_clear")}
 						aria-label={t("patcher_clear")}
@@ -997,6 +1007,47 @@ const Canvas = ({
 					</Button>
 				</DialogActions>
 			</Dialog>
+			<Menu
+				open={!!menuAt}
+				onClose={() => setMenuAt(null)}
+				anchorReference="anchorPosition"
+				anchorPosition={menuAt ? { top: menuAt.y, left: menuAt.x } : undefined}
+				slotProps={{ paper: { sx: { maxHeight: 420 } } }}
+			>
+				<MenuItem onClick={() => placeFromMenu("")}>
+					<ListItemText>{t("patcher_menu_object")}</ListItemText>
+					<Shortcut keys={PLACE_SHORTCUT} />
+				</MenuItem>
+				<MenuItem onClick={() => placeFromMenu("message")}>
+					<ListItemText>{t("patcher_menu_message")}</ListItemText>
+					<Shortcut keys={MESSAGE_SHORTCUT} />
+				</MenuItem>
+				<MenuItem
+					onClick={() => {
+						if (menuAt) setSearchAt(screenToFlowPosition(menuAt));
+						setMenuAt(null);
+					}}
+				>
+					<ListItemText>{t("patcher_menu_search")}</ListItemText>
+					<Shortcut keys={SEARCH_SHORTCUT} />
+				</MenuItem>
+				{MENU.flatMap(({ group, names }) => [
+					<Divider key={`${group}-divider`} />,
+					<ListSubheader key={group} sx={{ lineHeight: "32px" }}>
+						{t(group)}
+					</ListSubheader>,
+					...names.map((name) => (
+						<MenuItem
+							key={name}
+							dense
+							onClick={() => placeFromMenu(name)}
+							sx={{ fontFamily: "monospace" }}
+						>
+							{name}
+						</MenuItem>
+					)),
+				])}
+			</Menu>
 			<ObjectSearch
 				open={!!searchAt}
 				onClose={() => setSearchAt(null)}
@@ -1040,13 +1091,7 @@ const Reference = () => {
 };
 
 /** The canvas with the console on its right. */
-const Workspace = ({
-	onCanvas,
-	height,
-}: {
-	onCanvas: (el: HTMLElement | null) => void;
-	height: number | string;
-}) => (
+const Workspace = ({ height }: { height: number | string }) => (
 	<Box
 		display="flex"
 		flexDirection={{ xs: "column", md: "row" }}
@@ -1054,7 +1099,7 @@ const Workspace = ({
 		alignItems="stretch"
 	>
 		<Box flex={1} minWidth={0}>
-			<Canvas onCanvas={onCanvas} height={height} />
+			<Canvas height={height} />
 		</Box>
 		<PatchConsole height={height} />
 	</Box>
@@ -1062,22 +1107,16 @@ const Workspace = ({
 
 const PatcherPage = ({ embedded }: { embedded: boolean }) => {
 	const { t } = useTranslation();
-	const [canvas, setCanvas] = useState<HTMLElement | null>(null);
 	const patch = usePatch();
 
-	const toolbar = (
-		<Box display="flex" gap={1} flexWrap="wrap" alignItems="center">
-			<InitMidi />
-			<AddObject canvas={canvas} />
-		</Box>
-	);
+	const toolbar = <InitMidi />;
 
 	if (embedded)
 		return (
 			<Box>
 				<Box mb={1.5}>{toolbar}</Box>
 				<PatchContext value={patch}>
-					<Workspace onCanvas={setCanvas} height={500} />
+					<Workspace height={500} />
 				</PatchContext>
 				<Reference />
 			</Box>
@@ -1091,7 +1130,7 @@ const PatcherPage = ({ embedded }: { embedded: boolean }) => {
 			actions={toolbar}
 		>
 			<PatchContext value={patch}>
-				<Workspace onCanvas={setCanvas} height="calc(100vh - 280px)" />
+				<Workspace height="calc(100vh - 280px)" />
 			</PatchContext>
 			<Reference />
 		</PageLayout>
