@@ -75,6 +75,9 @@ i18n.use(initReactI18next).init({
 				home_create_midi_devices_easily: "Create MIDI Devices Easily",
 				home_no_coding_required: "No Coding Required.",
 				home_or_getting_started_guide: "or check out the Getting Started guide",
+				home_topology_caption: "Example topology",
+				home_topology_label:
+					"Two MIDI hosts, each connected to an ESP-NOW MIDI dongle. Both dongles talk wirelessly to four client boards.",
 				home_caption:
 					"Tired of writing the same code over and over? Use the intuitive no-code configurator to assign MIDI messages to pins and vice versa, and set up wireless MIDI connections effortlessly.",
 				home_reliable_wireless_midi: "Reliable Wireless MIDI",
@@ -524,6 +527,9 @@ i18n.use(initReactI18next).init({
 				home_no_coding_required: "Keine Programmierung erforderlich.",
 				home_or_getting_started_guide:
 					"oder check den Getting Started Guide aus",
+				home_topology_caption: "Beispiel-Topologie",
+				home_topology_label:
+					"Zwei MIDI-Hosts, jeder mit einem ESP-NOW-MIDI-Dongle verbunden. Beide Dongles sprechen kabellos mit vier Client-Boards.",
 				home_caption:
 					"Müde von immer wieder demselben Code schreiben? Verwende den intuitiven No-Code-Konfigurator, um MIDI-Nachrichten Pins zuzuordnen und umgekehrt, und richte mühelos drahtlose MIDI-Verbindungen ein.",
 				home_reliable_wireless_midi: "Zuverlässiges drahtloses MIDI",
@@ -980,6 +986,9 @@ i18n.use(initReactI18next).init({
 				home_create_midi_devices_easily: "Crea dispositivos MIDI fácilmente",
 				home_no_coding_required: "No se requiere codificación.",
 				home_or_getting_started_guide: "o consulta la guía de introducción",
+				home_topology_caption: "Topología de ejemplo",
+				home_topology_label:
+					"Dos hosts MIDI, cada uno conectado a un dongle ESP-NOW MIDI. Ambos dongles se comunican de forma inalámbrica con cuatro placas cliente.",
 				home_caption:
 					"¿Cansado de escribir el mismo código una y otra vez? Usa el intuitivo configurador sin código para asignar mensajes MIDI a pines y viceversa, y configurar conexiones MIDI inalámbricas sin esfuerzo.",
 				home_reliable_wireless_midi: "MIDI inalámbrico confiable",
@@ -1429,6 +1438,9 @@ i18n.use(initReactI18next).init({
 				home_create_midi_devices_easily: "轻松创建 MIDI 设备",
 				home_no_coding_required: "无需编程。",
 				home_or_getting_started_guide: "或查看入门指南",
+				home_topology_caption: "示例拓扑",
+				home_topology_label:
+					"两台 MIDI 主机各连接一个 ESP-NOW MIDI 适配器。两个适配器都与四块客户端开发板无线通信。",
 				home_caption:
 					"厌倦了一遍又一遍地编写相同的代码？使用直观的无代码配置器将 MIDI 消息分配给引脚，反之亦然，并轻松设置无线 MIDI 连接。",
 				home_reliable_wireless_midi: "可靠的无线 MIDI",
