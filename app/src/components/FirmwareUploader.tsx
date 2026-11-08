@@ -1,5 +1,8 @@
 import {
+	ExpandLess as ExpandLessIcon,
+	ExpandMore as ExpandMoreIcon,
 	FlashOn as FlashOnIcon,
+	Search as SearchIcon,
 	Upload as UploadIcon,
 	UsbOff as UsbOffIcon,
 } from "@mui/icons-material";
@@ -11,15 +14,18 @@ import {
 	CardContent,
 	Checkbox,
 	Chip,
+	Collapse,
 	FormControl,
 	FormControlLabel,
 	Grid,
+	InputAdornment,
 	InputLabel,
 	LinearProgress,
 	Link,
 	MenuItem,
 	Select,
 	Stack,
+	TextField,
 	Typography,
 } from "@mui/material";
 import type { ChangeEvent, FC } from "react";
@@ -27,9 +33,16 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../hooks/useToast";
 import { type FirmwarePreset, useSerialStore } from "../store/serial";
+import { FIRMWARE_CATEGORIES } from "../utils/firmware";
 import CollapsibleSection from "./common/CollapsibleSection";
 import PageLayout from "./layout/PageLayout";
 import Console from "./SerialConsole";
+
+/** Known categories first, in their listed order; unknown ones after. */
+const categoryOrder = (category: string): number => {
+	const index = (FIRMWARE_CATEGORIES as readonly string[]).indexOf(category);
+	return index === -1 ? FIRMWARE_CATEGORIES.length : index;
+};
 
 const formatVersionLabel = (versionPathSegment: string): string =>
 	versionPathSegment.replace(/-/g, ".");
@@ -81,6 +94,8 @@ const FirmwareUploader: FC<{ embedded?: boolean }> = ({ embedded = false }) => {
 	const [fwOpen, setFwOpen] = useState(true);
 	const [bootOpen, setBootOpen] = useState(false);
 	const [flashOpen, setFlashOpen] = useState(false);
+	const [moreFirmwareOpen, setMoreFirmwareOpen] = useState(false);
+	const [moreFirmwareFilter, setMoreFirmwareFilter] = useState("");
 	const { showToast, toast } = useToast();
 
 	useEffect(() => {
@@ -159,6 +174,60 @@ const FirmwareUploader: FC<{ embedded?: boolean }> = ({ embedded = false }) => {
 			alert(t("firmwareuploader_load_failed"));
 		}
 	};
+
+	const mainFirmware = availableFirmware.filter((fw) => !fw.category);
+	const categories = [
+		...new Set(
+			availableFirmware.flatMap((fw) => (fw.category ? [fw.category] : [])),
+		),
+	].sort((a, b) => categoryOrder(a) - categoryOrder(b));
+	const categoryLabel = (category: string): string =>
+		t(`firmwareuploader_category_${category}`, { defaultValue: category });
+
+	/** "More firmware" entries matching the filter, grouped by category. */
+	const filterQuery = moreFirmwareFilter.trim().toLowerCase();
+	const filteredCategories = categories
+		.map((category) => ({
+			category,
+			firmware: availableFirmware.filter(
+				(fw) =>
+					fw.category === category &&
+					(!filterQuery ||
+						[fw.label, fw.description, categoryLabel(category)].some((text) =>
+							text.toLowerCase().includes(filterQuery),
+						)),
+			),
+		}))
+		.filter(({ firmware }) => firmware.length > 0);
+
+	const renderFirmwareButton = (fw: FirmwarePreset) => (
+		<Button
+			key={`${fw.boardId}-${fw.label}`}
+			variant={selectedFirmware === fw.label ? "contained" : "outlined"}
+			size="large"
+			fullWidth
+			onClick={() => handlePresetSelect(fw)}
+			disabled={isFlashing}
+			sx={{
+				py: 2,
+				justifyContent: "flex-start",
+				textAlign: "left",
+			}}
+		>
+			<Box>
+				<Typography variant="body1" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+					{fw.label}
+				</Typography>
+				<Typography
+					variant="caption"
+					color="text.secondary"
+					sx={{ display: "block", lineHeight: 1.3 }}
+				>
+					{fw.board} (v{fw.version}) — {fw.description}
+				</Typography>
+			</Box>
+		</Button>
+	);
 
 	const handleConnectAndFlash = async (): Promise<void> => {
 		if (!file || (bootloaderRequired && !bootConfirmed)) return;
@@ -303,39 +372,66 @@ const FirmwareUploader: FC<{ embedded?: boolean }> = ({ embedded = false }) => {
 						<Box
 							sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}
 						>
-							{availableFirmware.map((fw) => (
-								<Button
-									key={`${fw.boardId}-${fw.label}`}
-									variant={
-										selectedFirmware === fw.label ? "contained" : "outlined"
-									}
-									size="large"
-									fullWidth
-									onClick={() => handlePresetSelect(fw)}
-									disabled={isFlashing}
-									sx={{
-										py: 2,
-										justifyContent: "flex-start",
-										textAlign: "left",
-									}}
-								>
-									<Box>
-										<Typography
-											variant="body1"
-											sx={{ fontWeight: 600, lineHeight: 1.2 }}
+							{mainFirmware.map(renderFirmwareButton)}
+							{categories.length > 0 && (
+								<>
+									<Button
+										variant="text"
+										size="small"
+										onClick={() => setMoreFirmwareOpen((open) => !open)}
+										endIcon={
+											moreFirmwareOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />
+										}
+										sx={{ alignSelf: "flex-start" }}
+									>
+										{moreFirmwareOpen
+											? t("firmwareuploader_less_firmware")
+											: t("firmwareuploader_more_firmware")}
+									</Button>
+									<Collapse in={moreFirmwareOpen} unmountOnExit>
+										<Box
+											sx={{ display: "flex", flexDirection: "column", gap: 2 }}
 										>
-											{fw.label}
-										</Typography>
-										<Typography
-											variant="caption"
-											color="text.secondary"
-											sx={{ display: "block", lineHeight: 1.3 }}
-										>
-											{fw.board} (v{fw.version}) — {fw.description}
-										</Typography>
-									</Box>
-								</Button>
-							))}
+											<TextField
+												size="small"
+												fullWidth
+												value={moreFirmwareFilter}
+												onChange={(e) => setMoreFirmwareFilter(e.target.value)}
+												placeholder={t("firmwareuploader_filter_firmware")}
+												slotProps={{
+													input: {
+														startAdornment: (
+															<InputAdornment position="start">
+																<SearchIcon fontSize="small" />
+															</InputAdornment>
+														),
+													},
+												}}
+											/>
+											{filteredCategories.length === 0 && (
+												<Typography variant="body2" color="text.secondary">
+													{t("firmwareuploader_filter_no_match")}
+												</Typography>
+											)}
+											{filteredCategories.map(({ category, firmware }) => (
+												<Box
+													key={category}
+													sx={{
+														display: "flex",
+														flexDirection: "column",
+														gap: 2,
+													}}
+												>
+													<Typography variant="overline" color="text.secondary">
+														{categoryLabel(category)}
+													</Typography>
+													{firmware.map(renderFirmwareButton)}
+												</Box>
+											))}
+										</Box>
+									</Collapse>
+								</>
+							)}
 						</Box>
 						<Box my={2} typography="body2">
 							{t("firmwareuploader_releases_link")}{" "}

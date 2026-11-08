@@ -2,7 +2,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { firmwareFileName } from "./firmware";
+import { FIRMWARE_CATEGORIES, firmwareFileName } from "./firmware";
 
 /**
  * The firmware repo's release bot commits new versions to public/firmware/.
@@ -64,6 +64,20 @@ describe.each(versions)("firmware %s", (version) => {
 
 	it("has a manifest.json", () => {
 		expect(existsSync(manifestPath)).toBe(true);
+	});
+
+	it("only uses known role categories", () => {
+		// A typo would show up as its own group under "More firmware".
+		if (!existsSync(manifestPath)) return;
+		const manifest = readJson(manifestPath) as {
+			roles?: { sketch: string; category?: string }[];
+		};
+		const unknown = (manifest.roles ?? []).filter(
+			(role) =>
+				role.category !== undefined &&
+				!(FIRMWARE_CATEGORIES as readonly string[]).includes(role.category),
+		);
+		expect(unknown).toEqual([]);
 	});
 
 	it("has a binary for every board and role in its manifest", () => {

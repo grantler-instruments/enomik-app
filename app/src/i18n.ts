@@ -287,6 +287,11 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_releases_link:
 					"Could not find your firmware, or need a specific version? You can download the corresponding .bin file from our ",
 				firmwareuploader_custom_bin: "Or upload a custom .bin file",
+				firmwareuploader_more_firmware: "More firmware",
+				firmwareuploader_category_examples: "Examples",
+				firmwareuploader_filter_firmware: "Filter firmware…",
+				firmwareuploader_filter_no_match: "No firmware matches the filter.",
+				firmwareuploader_less_firmware: "Less firmware",
 				firmwareuploader_bootloader_mode:
 					"Some boards, like LOLIN S2 Mini, must be manually set into bootloader mode by holding BOOT and pressing RESET. This is required for flashing and is not related to any software settings.",
 				firmwareuploader_bootloader_mode_instruction:
@@ -744,6 +749,11 @@ i18n.use(initReactI18next).init({
 					"Konntest du deine Firmware nicht finden oder benötigst du eine bestimmte Version? Du kannst die entsprechende .bin-Datei von unserer ",
 				firmwareuploader_custom_bin:
 					"Oder lade eine benutzerdefinierte .bin-Datei hoch",
+				firmwareuploader_more_firmware: "Mehr Firmware",
+				firmwareuploader_category_examples: "Beispiele",
+				firmwareuploader_filter_firmware: "Firmware filtern…",
+				firmwareuploader_filter_no_match: "Keine Firmware passt zum Filter.",
+				firmwareuploader_less_firmware: "Weniger Firmware",
 				firmwareuploader_bootloader_mode:
 					"Einige Boards, wie LOLIN S2 Mini, müssen manuell in den Bootloader-Modus versetzt werden, indem du BOOT gedrückt hältst und RESET drückst. Dies ist zum Flashen erforderlich und steht in keinem Zusammenhang mit Softwareeinstellungen.",
 				firmwareuploader_bootloader_mode_instruction:
@@ -1199,6 +1209,12 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_releases_link:
 					"¿No puedes encontrar tu firmware o necesitas una versión específica? Puedes descargar el archivo .bin correspondiente de nuestro ",
 				firmwareuploader_custom_bin: "O sube un archivo .bin personalizado",
+				firmwareuploader_more_firmware: "Más firmware",
+				firmwareuploader_category_examples: "Ejemplos",
+				firmwareuploader_filter_firmware: "Filtrar firmware…",
+				firmwareuploader_filter_no_match:
+					"Ningún firmware coincide con el filtro.",
+				firmwareuploader_less_firmware: "Menos firmware",
 				firmwareuploader_bootloader_mode:
 					"Algunas placas, como LOLIN S2 Mini, deben configurarse manualmente en modo bootloader manteniendo presionado BOOT y presionando RESET. Esto es necesario para flashear y no está relacionado con ninguna configuración de software.",
 				firmwareuploader_bootloader_mode_instruction:
@@ -1638,6 +1654,11 @@ i18n.use(initReactI18next).init({
 				firmwareuploader_releases_link:
 					"找不到你的固件，或需要特定版本？你可以从我们的",
 				firmwareuploader_custom_bin: "或上传自定义 .bin 文件",
+				firmwareuploader_more_firmware: "更多固件",
+				firmwareuploader_category_examples: "示例",
+				firmwareuploader_filter_firmware: "筛选固件…",
+				firmwareuploader_filter_no_match: "没有匹配筛选条件的固件。",
+				firmwareuploader_less_firmware: "收起固件",
 				firmwareuploader_bootloader_mode:
 					"某些开发板（如 LOLIN S2 Mini）必须通过按住 BOOT 并按下 RESET 手动进入引导加载程序模式。这是刷写所必需的，与任何软件设置无关。",
 				firmwareuploader_bootloader_mode_instruction:

@@ -46,6 +46,8 @@ export interface FirmwareRole {
 	label: string;
 	sketch: string;
 	description: string;
+	/** One of FIRMWARE_CATEGORIES; none means main firmware. */
+	category?: string;
 }
 
 export interface FirmwareManifest {
@@ -61,6 +63,7 @@ export interface FirmwarePreset {
 	board: string;
 	boardId: string;
 	requiresManualBootloader: boolean;
+	category?: string;
 }
 
 interface SerialState {
@@ -133,6 +136,7 @@ function buildFirmwareList(
 		board: board.label,
 		boardId: board.id,
 		requiresManualBootloader: board.requiresManualBootloader,
+		category: role.category,
 	}));
 }
 
