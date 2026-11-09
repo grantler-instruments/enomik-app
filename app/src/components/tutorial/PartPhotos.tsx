@@ -75,6 +75,35 @@ const PHOTOS: Record<string, Photo> = {
 		source:
 			"https://commons.wikimedia.org/wiki/File:SRD-05VDC-SL-C_5V_one-channel_relay_module.jpg",
 	},
+	nfc: {
+		id: "nfc",
+		author: "oomlout",
+		license: "CC BY-SA 2.0",
+		licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+		source:
+			"https://commons.wikimedia.org/wiki/File:ARSH-19-RF_02_(14152092267).jpg",
+	},
+	nfc_card: {
+		id: "nfc_card",
+		author: "Gleam",
+		license: "CC BY-SA 3.0",
+		licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+		source: "https://commons.wikimedia.org/wiki/File:RFID_card.jpg",
+	},
+	nfc_sticker: {
+		id: "nfc_sticker",
+		author: "HenryWortel",
+		license: "CC BY-SA 4.0",
+		licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+		source: "https://commons.wikimedia.org/wiki/File:NFC_Tag_Chip.jpg",
+	},
+	nfc_keyring: {
+		id: "nfc_keyring",
+		author: "Andreas",
+		license: "CC BY-SA 4.0",
+		licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+		source: "https://commons.wikimedia.org/wiki/File:NFC_tag.jpg",
+	},
 };
 
 const external = { target: "_blank", rel: "noopener noreferrer" } as const;

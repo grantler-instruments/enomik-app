@@ -1063,6 +1063,9 @@ const NfcExample = () => {
 			<Paragraphs i18nKey="tutorial_nfc_text" />
 			<Heading>{t("tutorial_nfc_about_title")}</Heading>
 			<Paragraphs i18nKey="tutorial_nfc_about" />
+			<PartPhotos ids={["nfc", "nfc_card", "nfc_sticker", "nfc_keyring"]} />
+			<Note>{t("tutorial_nfc_photo_note")}</Note>
+			<Note severity="warning">{t("tutorial_nfc_tags_note")}</Note>
 			<Heading>{t("tutorial_wiring")}</Heading>
 			<Typography variant="body1">{t("tutorial_nfc_wiring")}</Typography>
 			<Steps i18nKey="tutorial_nfc_pins" ordered={false} />

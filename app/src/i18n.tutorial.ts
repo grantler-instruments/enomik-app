@@ -143,6 +143,10 @@ const en = {
 	tutorial_photo_motion: "Motion sensor (shown: MPU-6050 module)",
 	tutorial_photo_leds: "LEDs",
 	tutorial_photo_neopixels: "Addressable LEDs (WS2812B)",
+	tutorial_photo_nfc: "PN532 NFC shield (Adafruit)",
+	tutorial_photo_nfc_card: "NFC card",
+	tutorial_photo_nfc_sticker: "NFC sticker",
+	tutorial_photo_nfc_keyring: "NFC keyring tag",
 	tutorial_photo_servo: "Servo (SG90)",
 	tutorial_photo_relay: "Relay module",
 	tutorial_electronics_pwm_dim: "25 % on: dim",
@@ -602,6 +606,10 @@ const en = {
 		"The client keeps a table that maps each UID to a MIDI message. It is stored in the board's flash and survives a reboot. Up to 32 tags fit in the table.",
 		"The PN532 talks to the board over I2C, just like the distance sensor in the I2C example.",
 	],
+	tutorial_nfc_photo_note:
+		"The photo shows the Adafruit PN532 shield. Other PN532 boards, such as the NFC Module V3, look different and select I2C mode their own way: follow the labels on your board.",
+	tutorial_nfc_tags_note:
+		"Tags come as cards, stickers and keyring tags; any of them works as long as it is a 13.56 MHz NFC tag (ISO 14443A, such as NTAG213 or MIFARE Classic). Many cheap keyring tags and access cards are 125 kHz RFID instead: the PN532 can't read those.",
 	tutorial_nfc_wiring:
 		"Connect the PN532 breakout to the board with jumper wires:",
 	tutorial_nfc_pins: [
@@ -990,6 +998,10 @@ const de: typeof en = {
 	tutorial_photo_motion: "Bewegungssensor (abgebildet: MPU-6050-Modul)",
 	tutorial_photo_leds: "LEDs",
 	tutorial_photo_neopixels: "Adressierbare LEDs (WS2812B)",
+	tutorial_photo_nfc: "PN532-NFC-Shield (Adafruit)",
+	tutorial_photo_nfc_card: "NFC-Karte",
+	tutorial_photo_nfc_sticker: "NFC-Sticker",
+	tutorial_photo_nfc_keyring: "NFC-Schlüsselanhänger",
 	tutorial_photo_servo: "Servo (SG90)",
 	tutorial_photo_relay: "Relais-Modul",
 	tutorial_electronics_pwm_dim: "25 % an: schwach",
@@ -1457,6 +1469,10 @@ const de: typeof en = {
 		"Der Client führt eine Tabelle, die jeder UID eine MIDI-Nachricht zuordnet. Sie liegt im Flash des Boards und übersteht einen Neustart. Bis zu 32 Tags passen in die Tabelle.",
 		"Der PN532 spricht über I2C mit dem Board, genau wie der Abstandssensor im I2C-Beispiel.",
 	],
+	tutorial_nfc_photo_note:
+		"Das Foto zeigt das Adafruit-PN532-Shield. Andere PN532-Boards wie das NFC Module V3 sehen anders aus und stellen den I2C-Modus auf ihre eigene Weise ein: Richte dich nach der Beschriftung deines Boards.",
+	tutorial_nfc_tags_note:
+		"Tags gibt es als Karten, Sticker und Schlüsselanhänger; jede Form funktioniert, solange es ein 13,56-MHz-NFC-Tag ist (ISO 14443A, etwa NTAG213 oder MIFARE Classic). Viele günstige Schlüsselanhänger und Zugangskarten nutzen stattdessen 125-kHz-RFID: Die kann der PN532 nicht lesen.",
 	tutorial_nfc_wiring:
 		"Verbinde das PN532-Breakout mit Jumper-Kabeln mit dem Board:",
 	tutorial_nfc_pins: [
@@ -1848,6 +1864,10 @@ const es: typeof en = {
 	tutorial_photo_motion: "Sensor de movimiento (en la foto: módulo MPU-6050)",
 	tutorial_photo_leds: "LEDs",
 	tutorial_photo_neopixels: "LEDs direccionables (WS2812B)",
+	tutorial_photo_nfc: "Shield NFC PN532 (Adafruit)",
+	tutorial_photo_nfc_card: "Tarjeta NFC",
+	tutorial_photo_nfc_sticker: "Pegatina NFC",
+	tutorial_photo_nfc_keyring: "Llavero NFC",
 	tutorial_photo_servo: "Servo (SG90)",
 	tutorial_photo_relay: "Módulo de relé",
 	tutorial_electronics_pwm_dim: "25 % encendido: tenue",
@@ -2310,6 +2330,10 @@ const es: typeof en = {
 		"El cliente guarda una tabla que asigna un mensaje MIDI a cada UID. Se almacena en la flash de la placa y sobrevive a un reinicio. Caben hasta 32 etiquetas.",
 		"El PN532 se comunica con la placa por I2C, igual que el sensor de distancia del ejemplo I2C.",
 	],
+	tutorial_nfc_photo_note:
+		"La foto muestra el shield PN532 de Adafruit. Otras placas PN532, como el NFC Module V3, tienen otro aspecto y seleccionan el modo I2C a su manera: sigue las indicaciones de tu placa.",
+	tutorial_nfc_tags_note:
+		"Las etiquetas vienen como tarjetas, pegatinas y llaveros; cualquiera sirve siempre que sea una etiqueta NFC de 13,56 MHz (ISO 14443A, como NTAG213 o MIFARE Classic). Muchos llaveros y tarjetas de acceso baratos usan RFID de 125 kHz: el PN532 no puede leerlos.",
 	tutorial_nfc_wiring: "Conecta la placa PN532 a la placa con cables jumper:",
 	tutorial_nfc_pins: [
 		"SDA al pin SDA de la placa.",
@@ -2697,6 +2721,10 @@ const zh: typeof en = {
 	tutorial_photo_motion: "运动传感器（图示：MPU-6050 模块）",
 	tutorial_photo_leds: "LED",
 	tutorial_photo_neopixels: "可寻址 LED (WS2812B)",
+	tutorial_photo_nfc: "PN532 NFC 扩展板 (Adafruit)",
+	tutorial_photo_nfc_card: "NFC 卡",
+	tutorial_photo_nfc_sticker: "NFC 贴纸",
+	tutorial_photo_nfc_keyring: "NFC 钥匙扣",
 	tutorial_photo_servo: "舵机 (SG90)",
 	tutorial_photo_relay: "继电器模块",
 	tutorial_electronics_pwm_dim: "25 % 导通：暗",
@@ -3139,6 +3167,10 @@ const zh: typeof en = {
 		"客户端保存一张表，把每个 UID 映射到一条 MIDI 消息。它存储在板子的闪存中，重启后仍然保留。表中最多可存 32 个标签。",
 		"PN532 通过 I2C 与板子通信，和 I2C 示例中的距离传感器一样。",
 	],
+	tutorial_nfc_photo_note:
+		"照片中是 Adafruit PN532 扩展板。其他 PN532 模块（例如 NFC Module V3）外观不同，选择 I2C 模式的方式也不同：请以你的模块上的标注为准。",
+	tutorial_nfc_tags_note:
+		"标签有卡片、贴纸和钥匙扣等形式；只要是 13.56 MHz 的 NFC 标签（ISO 14443A，例如 NTAG213 或 MIFARE Classic）都可以使用。许多便宜的钥匙扣和门禁卡使用的是 125 kHz RFID：PN532 无法读取。",
 	tutorial_nfc_wiring: "用杜邦线把 PN532 模块连接到板子：",
 	tutorial_nfc_pins: [
 		"SDA 接板子的 SDA 引脚。",
