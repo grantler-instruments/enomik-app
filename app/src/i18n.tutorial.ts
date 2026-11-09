@@ -592,6 +592,51 @@ const en = {
 	],
 	tutorial_servo_test:
 		"Send CC 40 on MIDI channel 1 from your DAW through the dongle. Value 0 turns the servo to 0°, 64 to about the middle, 127 to 180°.",
+	tutorial_nfc_title: "NFC tags (PN532)",
+	tutorial_nfc_text: [
+		"In this example a PN532 reader turns NFC tags into MIDI. Put a tag on the reader and the client sends the message you mapped to it: a note, a control change or a program change. Take a tag mapped to a note away and the note stops.",
+	],
+	tutorial_nfc_about_title: "How it works",
+	tutorial_nfc_about: [
+		"Every NFC tag, card or sticker has a unique ID (UID) of 4 or 7 bytes. The reader polls about ten times a second and reports which tag lies on it. The tag needs no battery: the reader powers it through its antenna, a few centimeters is enough.",
+		"The client keeps a table that maps each UID to a MIDI message. It is stored in the board's flash and survives a reboot. Up to 32 tags fit in the table.",
+		"The PN532 talks to the board over I2C, just like the distance sensor in the I2C example.",
+	],
+	tutorial_nfc_wiring:
+		"Connect the PN532 breakout to the board with jumper wires:",
+	tutorial_nfc_pins: [
+		"SDA to the SDA pin of the board.",
+		"SCL to the SCL pin of the board.",
+		"GND to GND.",
+		"VCC to 5V: the PN532 NFC Module V3 has to be connected to 5V. Other breakouts may run on 3.3V, check yours.",
+	],
+	tutorial_nfc_board:
+		"Using an enomik client board? The I2C ports are the lower two of the column next to the microcontroller, labeled I2C GROVE. Hover over a pin to see its GPIO:",
+	tutorial_nfc_mode_note:
+		"The PN532 speaks I2C, SPI and UART. Set its DIP switches (or jumpers) to I2C: SEL0 on (1), SEL1 off (0). In another mode the reader doesn't answer.",
+	tutorial_nfc_upload: [
+		'Install the library "Adafruit PN532" in the Arduino IDE: Tools → Manage Libraries. It also installs Adafruit BusIO.',
+		"Open the example: File → Examples → ESP-NOW MIDI → client_nfc.",
+		"Select your board and port and click Upload, as described in the Arduino IDE firmware chapter.",
+		"Press RESET when the upload has finished.",
+	],
+	tutorial_nfc_mapping_title: "Map tags",
+	tutorial_nfc_mapping:
+		"Which tag sends which message is set on the NFC page of this app:",
+	tutorial_nfc_mapping_steps: [
+		'Connect the client to the computer via USB and open the NFC page. Click "Init MIDI"; the page selects the client by itself and reads the mappings it already has.',
+		"Switch on mapping mode in the toolbar.",
+		"Put a tag on the reader. Its UID shows up and the MIDI composer lights up.",
+		'Choose the message in the composer and click "Send MIDI". The client stores it for this tag, and mapping mode switches off.',
+		"Repeat for every tag. A tag that is mapped again gets the new message.",
+	],
+	tutorial_nfc_usb_note:
+		"Map tags with the client connected directly via USB. The dongle keeps the NFC commands (mapping mode, read and delete mappings) to itself and doesn't pass them on to the client.",
+	tutorial_nfc_file_note:
+		"Give tags a label in the mappings list and save the list to a file with the download icon. Labels only live in this browser and in that file, not on the board.",
+	tutorial_nfc_open: "Open the NFC page",
+	tutorial_nfc_test:
+		"With mapping mode off, put a mapped tag on the reader. Its message shows up in the MIDI monitor, and in your DAW via the dongle.",
 
 	tutorial_daw_title: "DAW setup",
 	tutorial_daw_text: [
@@ -1402,6 +1447,51 @@ const de: typeof en = {
 	],
 	tutorial_servo_test:
 		"Sende CC 40 auf MIDI-Kanal 1 aus deiner DAW über den Dongle. Wert 0 dreht den Servo auf 0°, 64 etwa in die Mitte, 127 auf 180°.",
+	tutorial_nfc_title: "NFC-Tags (PN532)",
+	tutorial_nfc_text: [
+		"In diesem Beispiel macht ein PN532-Lesegerät aus NFC-Tags MIDI. Leg einen Tag auf das Lesegerät und der Client sendet die Nachricht, die du ihm zugeordnet hast: eine Note, einen Control Change oder einen Program Change. Nimmst du einen Tag mit einer Note weg, endet die Note.",
+	],
+	tutorial_nfc_about_title: "So funktioniert es",
+	tutorial_nfc_about: [
+		"Jeder NFC-Tag, jede Karte und jeder Sticker hat eine eindeutige ID (UID) mit 4 oder 7 Bytes. Das Lesegerät fragt etwa zehnmal pro Sekunde ab und meldet, welcher Tag darauf liegt. Der Tag braucht keine Batterie: Das Lesegerät versorgt ihn über seine Antenne, ein paar Zentimeter Abstand reichen.",
+		"Der Client führt eine Tabelle, die jeder UID eine MIDI-Nachricht zuordnet. Sie liegt im Flash des Boards und übersteht einen Neustart. Bis zu 32 Tags passen in die Tabelle.",
+		"Der PN532 spricht über I2C mit dem Board, genau wie der Abstandssensor im I2C-Beispiel.",
+	],
+	tutorial_nfc_wiring:
+		"Verbinde das PN532-Breakout mit Jumper-Kabeln mit dem Board:",
+	tutorial_nfc_pins: [
+		"SDA an den SDA-Pin des Boards.",
+		"SCL an den SCL-Pin des Boards.",
+		"GND an GND.",
+		"VCC an 5 V: Das PN532 NFC Module V3 muss an 5 V angeschlossen werden. Andere Breakouts laufen eventuell mit 3,3 V, prüfe deins.",
+	],
+	tutorial_nfc_board:
+		"Du nutzt ein enomik-Client-Board? Die I2C-Ports sind die unteren zwei der Spalte neben dem Mikrocontroller, beschriftet mit I2C GROVE. Fahre über einen Pin, um seinen GPIO zu sehen:",
+	tutorial_nfc_mode_note:
+		"Der PN532 kann I2C, SPI und UART. Stell seine DIP-Schalter (oder Jumper) auf I2C: SEL0 an (1), SEL1 aus (0). In einem anderen Modus antwortet das Lesegerät nicht.",
+	tutorial_nfc_upload: [
+		'Installiere die Bibliothek "Adafruit PN532" in der Arduino IDE: Werkzeuge → Bibliotheken verwalten. Sie installiert auch Adafruit BusIO.',
+		"Öffne das Beispiel: Datei → Beispiele → ESP-NOW MIDI → client_nfc.",
+		"Wähle Board und Port und klicke auf Hochladen, wie im Kapitel zur Firmware über die Arduino IDE beschrieben.",
+		"Drücke RESET, wenn das Hochladen abgeschlossen ist.",
+	],
+	tutorial_nfc_mapping_title: "Tags zuordnen",
+	tutorial_nfc_mapping:
+		"Welcher Tag welche Nachricht sendet, legst du auf der NFC-Seite dieser App fest:",
+	tutorial_nfc_mapping_steps: [
+		'Verbinde den Client per USB mit dem Computer und öffne die NFC-Seite. Klicke auf "MIDI initialisieren"; die Seite wählt den Client selbst aus und liest seine vorhandenen Zuordnungen.',
+		"Schalte in der Werkzeugleiste den Zuordnungsmodus ein.",
+		"Leg einen Tag auf das Lesegerät. Seine UID erscheint und der MIDI-Composer wird hervorgehoben.",
+		'Wähle im Composer die Nachricht und klicke auf "MIDI senden". Der Client speichert sie für diesen Tag, und der Zuordnungsmodus schaltet sich aus.',
+		"Wiederhole das für jeden Tag. Ein Tag, der erneut zugeordnet wird, bekommt die neue Nachricht.",
+	],
+	tutorial_nfc_usb_note:
+		"Ordne Tags zu, während der Client direkt per USB angeschlossen ist. Der Dongle behält die NFC-Befehle (Zuordnungsmodus, Zuordnungen lesen und löschen) für sich und gibt sie nicht an den Client weiter.",
+	tutorial_nfc_file_note:
+		"Gib Tags in der Zuordnungsliste ein Label und speichere die Liste mit dem Download-Symbol in eine Datei. Labels gibt es nur in diesem Browser und in dieser Datei, nicht auf dem Board.",
+	tutorial_nfc_open: "NFC-Seite öffnen",
+	tutorial_nfc_test:
+		"Leg bei ausgeschaltetem Zuordnungsmodus einen zugeordneten Tag auf das Lesegerät. Seine Nachricht erscheint im MIDI-Monitor und über den Dongle in deiner DAW.",
 
 	tutorial_daw_title: "DAW einrichten",
 	tutorial_daw_text: [
@@ -2210,6 +2300,50 @@ const es: typeof en = {
 	],
 	tutorial_servo_test:
 		"Envía el CC 40 en el canal MIDI 1 desde tu DAW a través del dongle. El valor 0 gira el servo a 0°, 64 aproximadamente al centro, 127 a 180°.",
+	tutorial_nfc_title: "Etiquetas NFC (PN532)",
+	tutorial_nfc_text: [
+		"En este ejemplo un lector PN532 convierte etiquetas NFC en MIDI. Pon una etiqueta sobre el lector y el cliente envía el mensaje que le asignaste: una nota, un control change o un program change. Al retirar una etiqueta asignada a una nota, la nota se detiene.",
+	],
+	tutorial_nfc_about_title: "Cómo funciona",
+	tutorial_nfc_about: [
+		"Cada etiqueta, tarjeta o pegatina NFC tiene un ID único (UID) de 4 o 7 bytes. El lector consulta unas diez veces por segundo e informa qué etiqueta tiene encima. La etiqueta no necesita batería: el lector la alimenta a través de su antena, basta con unos pocos centímetros.",
+		"El cliente guarda una tabla que asigna un mensaje MIDI a cada UID. Se almacena en la flash de la placa y sobrevive a un reinicio. Caben hasta 32 etiquetas.",
+		"El PN532 se comunica con la placa por I2C, igual que el sensor de distancia del ejemplo I2C.",
+	],
+	tutorial_nfc_wiring: "Conecta la placa PN532 a la placa con cables jumper:",
+	tutorial_nfc_pins: [
+		"SDA al pin SDA de la placa.",
+		"SCL al pin SCL de la placa.",
+		"GND a GND.",
+		"VCC a 5 V: el PN532 NFC Module V3 debe conectarse a 5 V. Otras placas pueden funcionar con 3,3 V, comprueba la tuya.",
+	],
+	tutorial_nfc_board:
+		"¿Usas una placa cliente enomik? Los puertos I2C son los dos inferiores de la columna junto al microcontrolador, rotulados I2C GROVE. Pasa el ratón sobre un pin para ver su GPIO:",
+	tutorial_nfc_mode_note:
+		"El PN532 habla I2C, SPI y UART. Pon sus interruptores DIP (o jumpers) en I2C: SEL0 activado (1), SEL1 desactivado (0). En otro modo el lector no responde.",
+	tutorial_nfc_upload: [
+		'Instala la biblioteca "Adafruit PN532" en el Arduino IDE: Herramientas → Administrar bibliotecas. También instala Adafruit BusIO.',
+		"Abre el ejemplo: Archivo → Ejemplos → ESP-NOW MIDI → client_nfc.",
+		"Selecciona tu placa y puerto y haz clic en Subir, como se describe en el capítulo de firmware con el Arduino IDE.",
+		"Pulsa RESET cuando termine la subida.",
+	],
+	tutorial_nfc_mapping_title: "Asignar etiquetas",
+	tutorial_nfc_mapping:
+		"Qué etiqueta envía qué mensaje se define en la página NFC de esta app:",
+	tutorial_nfc_mapping_steps: [
+		'Conecta el cliente al ordenador por USB y abre la página NFC. Haz clic en "Iniciar MIDI"; la página selecciona el cliente sola y lee las asignaciones que ya tiene.',
+		"Activa el modo de asignación en la barra de herramientas.",
+		"Pon una etiqueta sobre el lector. Aparece su UID y el compositor MIDI se resalta.",
+		'Elige el mensaje en el compositor y haz clic en "Enviar MIDI". El cliente lo guarda para esta etiqueta y el modo de asignación se desactiva.',
+		"Repite para cada etiqueta. Una etiqueta asignada de nuevo recibe el mensaje nuevo.",
+	],
+	tutorial_nfc_usb_note:
+		"Asigna etiquetas con el cliente conectado directamente por USB. El dongle se queda con los comandos NFC (modo de asignación, leer y borrar asignaciones) y no los pasa al cliente.",
+	tutorial_nfc_file_note:
+		"Pon un nombre a las etiquetas en la lista de asignaciones y guarda la lista en un archivo con el icono de descarga. Los nombres solo existen en este navegador y en ese archivo, no en la placa.",
+	tutorial_nfc_open: "Abrir la página NFC",
+	tutorial_nfc_test:
+		"Con el modo de asignación desactivado, pon una etiqueta asignada sobre el lector. Su mensaje aparece en el monitor MIDI y, a través del dongle, en tu DAW.",
 
 	tutorial_daw_title: "Configurar la DAW",
 	tutorial_daw_text: [
@@ -2995,6 +3129,49 @@ const zh: typeof en = {
 	],
 	tutorial_servo_test:
 		"从 DAW 经由适配器在 MIDI 通道 1 上发送 CC 40。值 0 使舵机转到 0°，64 大约到中间，127 到 180°。",
+	tutorial_nfc_title: "NFC 标签（PN532）",
+	tutorial_nfc_text: [
+		"在这个示例中，PN532 读卡器把 NFC 标签变成 MIDI。把标签放到读卡器上，客户端就会发送你为它映射的消息：音符、控制变更或程序变更。拿走映射到音符的标签，音符就会停止。",
+	],
+	tutorial_nfc_about_title: "工作原理",
+	tutorial_nfc_about: [
+		"每个 NFC 标签、卡片或贴纸都有一个 4 或 7 字节的唯一 ID（UID）。读卡器每秒查询约十次，并报告上面放着哪个标签。标签不需要电池：读卡器通过天线为它供电，几厘米的距离就够了。",
+		"客户端保存一张表，把每个 UID 映射到一条 MIDI 消息。它存储在板子的闪存中，重启后仍然保留。表中最多可存 32 个标签。",
+		"PN532 通过 I2C 与板子通信，和 I2C 示例中的距离传感器一样。",
+	],
+	tutorial_nfc_wiring: "用杜邦线把 PN532 模块连接到板子：",
+	tutorial_nfc_pins: [
+		"SDA 接板子的 SDA 引脚。",
+		"SCL 接板子的 SCL 引脚。",
+		"GND 接 GND。",
+		"VCC 接 5V：PN532 NFC Module V3 必须接 5V。其他模块可能用 3.3V 即可，请检查你的模块。",
+	],
+	tutorial_nfc_board:
+		"使用 enomik 客户端板？I2C 接口是微控制器旁边那一列最下面的两个，标有 I2C GROVE。将鼠标悬停在引脚上可查看其 GPIO：",
+	tutorial_nfc_mode_note:
+		"PN532 支持 I2C、SPI 和 UART。把它的拨码开关（或跳线）设为 I2C：SEL0 开（1），SEL1 关（0）。在其他模式下读卡器不会响应。",
+	tutorial_nfc_upload: [
+		'在 Arduino IDE 中安装 "Adafruit PN532" 库：工具 → 管理库。它也会安装 Adafruit BusIO。',
+		"打开示例：文件 → 示例 → ESP-NOW MIDI → client_nfc。",
+		"选择板子和端口并点击上传，如 Arduino IDE 固件章节所述。",
+		"上传完成后按 RESET。",
+	],
+	tutorial_nfc_mapping_title: "映射标签",
+	tutorial_nfc_mapping: "哪个标签发送哪条消息，在本应用的 NFC 页面上设置：",
+	tutorial_nfc_mapping_steps: [
+		'通过 USB 把客户端连接到电脑并打开 NFC 页面。点击"初始化 MIDI"；页面会自动选择客户端并读取它已有的映射。',
+		"在工具栏中打开映射模式。",
+		"把标签放到读卡器上。它的 UID 会显示出来，MIDI 编辑器会高亮。",
+		'在编辑器中选择消息并点击"发送 MIDI"。客户端会为该标签保存它，映射模式随即关闭。',
+		"对每个标签重复以上步骤。再次映射的标签会得到新消息。",
+	],
+	tutorial_nfc_usb_note:
+		"映射标签时请把客户端直接通过 USB 连接。适配器会自己处理 NFC 命令（映射模式、读取和删除映射），不会转发给客户端。",
+	tutorial_nfc_file_note:
+		"在映射列表中为标签添加名称，并用下载图标把列表保存到文件。名称只保存在此浏览器和该文件中，不在板子上。",
+	tutorial_nfc_open: "打开 NFC 页面",
+	tutorial_nfc_test:
+		"在映射模式关闭时，把已映射的标签放到读卡器上。它的消息会出现在 MIDI 监视器中，并通过适配器出现在你的 DAW 中。",
 
 	tutorial_daw_title: "设置 DAW",
 	tutorial_daw_text: [

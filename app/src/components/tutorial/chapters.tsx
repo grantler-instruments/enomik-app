@@ -24,7 +24,10 @@ import FirmwareUploader from "../FirmwareUploader";
 import Globals from "../Globals";
 import InitMidi from "../InitMidi";
 import Inspector from "../Inspector";
+import BoardDiagram from "../kits/BoardDiagram";
+import { BOARDS } from "../kits/boards";
 import MessageList from "../MessageList";
+import Nfc from "../Nfc";
 import SerialMonitor from "../SerialMonitor";
 import { TesterContent } from "../Tester";
 import ArchitectureDiagram from "./ArchitectureDiagram";
@@ -1049,6 +1052,57 @@ const ServoExample = () => {
 	);
 };
 
+/** The enomik client board: its I2C header and Grove ports, for wiring. */
+const CLIENT_BOARD =
+	BOARDS.find((board) => board.id === "client_v0_5") ?? BOARDS[0];
+
+const NfcExample = () => {
+	const { t } = useTranslation();
+	return (
+		<>
+			<Paragraphs i18nKey="tutorial_nfc_text" />
+			<Heading>{t("tutorial_nfc_about_title")}</Heading>
+			<Paragraphs i18nKey="tutorial_nfc_about" />
+			<Heading>{t("tutorial_wiring")}</Heading>
+			<Typography variant="body1">{t("tutorial_nfc_wiring")}</Typography>
+			<Steps i18nKey="tutorial_nfc_pins" ordered={false} />
+			<Note>{t("tutorial_nfc_mode_note")}</Note>
+			<Typography variant="body1">{t("tutorial_nfc_board")}</Typography>
+			<Box my={2} maxWidth={80 * 12}>
+				<BoardDiagram board={CLIENT_BOARD} />
+			</Box>
+			<LinkButtons actions={[{ label: t("kits_title"), link: "/kits" }]} />
+			<Heading>{t("tutorial_i2c_upload_title")}</Heading>
+			<Steps i18nKey="tutorial_nfc_upload" />
+			<SourceLink paths={["examples/client_nfc/client_nfc.ino"]} />
+			<LinkButtons
+				actions={[
+					{
+						label: t("tutorial_i2c_upload_link"),
+						link: "/tutorial/firmware/arduino",
+					},
+				]}
+			/>
+			<Heading>{t("tutorial_nfc_mapping_title")}</Heading>
+			<Typography variant="body1">{t("tutorial_nfc_mapping")}</Typography>
+			<Steps i18nKey="tutorial_nfc_mapping_steps" />
+			<Note severity="warning">{t("tutorial_nfc_usb_note")}</Note>
+			<Note>{t("tutorial_nfc_file_note")}</Note>
+			<LiveDemo>
+				<Nfc embedded />
+			</LiveDemo>
+			<LinkButtons
+				actions={[{ label: t("tutorial_nfc_open"), link: "/nfc" }]}
+			/>
+			<Heading>{t("tutorial_test")}</Heading>
+			<Typography variant="body1">{t("tutorial_nfc_test")}</Typography>
+			<LinkButtons
+				actions={[{ label: t("midi_monitor"), link: "/debugger" }]}
+			/>
+		</>
+	);
+};
+
 const WebappExamples = () => (
 	<>
 		<Paragraphs i18nKey="tutorial_examples_webapp_text" />
@@ -1312,6 +1366,7 @@ const CODE_EXAMPLES: Chapter[] = [
 	},
 	{ id: "i2c", titleKey: "tutorial_i2c_title", Content: I2cExample },
 	{ id: "servo", titleKey: "tutorial_servo_title", Content: ServoExample },
+	{ id: "nfc", titleKey: "tutorial_nfc_title", Content: NfcExample },
 ];
 
 const CONFIGURATOR_SECTIONS: Chapter[] = [

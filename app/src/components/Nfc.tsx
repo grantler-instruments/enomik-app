@@ -79,11 +79,6 @@ const describeEvent = (
 	}
 };
 
-/**
- * Hidden page (not in the menu, open #/nfc): set up the client_nfc example
- * (ESP-NOW-MIDI/examples/client_nfc). Turns mapping mode on and off, shows
- * the tag on the reader and maps it to a MIDI message.
- */
 /** Mapping mode and the composer, while they wait for the user. */
 const activeSx = {
 	p: 2,
@@ -97,7 +92,13 @@ const pulse = keyframes`
 	50% { box-shadow: 0 0 0 6px var(--nfc-pulse); }
 `;
 
-const Nfc = () => {
+/**
+ * Hidden page (not in the menu, open #/nfc): set up the client_nfc example
+ * (ESP-NOW-MIDI/examples/client_nfc). Turns mapping mode on and off, shows
+ * the tag on the reader and maps it to a MIDI message.
+ * `embedded`: without page chrome, toolbar inline (used in the tutorial).
+ */
+const Nfc = ({ embedded = false }: { embedded?: boolean }) => {
 	const { t } = useTranslation();
 	const midiInitialized = useMIDIStore((s) => s.initialized);
 	const inputs = useMIDIStore((s) => s.inputs) as MIDIInput[];
@@ -253,315 +254,327 @@ const Nfc = () => {
 	// The board learns from the next channel message while a tag is armed.
 	const composerActive = !!mappingMode && !!currentTag;
 
-	return (
-		<PageLayout
-			title="NFC"
-			actions={
-				<>
-					<input
-						type="file"
-						accept="application/json"
-						style={{ display: "none" }}
-						ref={fileInputRef}
-						onChange={handleFileChange}
-					/>
-					<Tooltip title={t("nfc_save_to_file")} describeChild>
-						<span>
-							<IconButton
-								color="inherit"
-								aria-label={t("nfc_save_to_file")}
-								onClick={saveToFile}
-								disabled={mappingList.length === 0}
-							>
-								<DownloadIcon />
-							</IconButton>
-						</span>
-					</Tooltip>
-					<Tooltip title={t("nfc_load_from_file")}>
-						<IconButton
-							color="inherit"
-							onClick={() => fileInputRef.current?.click()}
-						>
-							<FolderOpenIcon />
-						</IconButton>
-					</Tooltip>
-					<Tooltip title={t("nfc_delete_all")} describeChild>
-						<span>
-							<IconButton
-								color="inherit"
-								aria-label={t("nfc_delete_all")}
-								disabled={!outputConnected}
-								onClick={() => setConfirmClear(true)}
-							>
-								<ClearAllIcon />
-							</IconButton>
-						</span>
-					</Tooltip>
-					<Tooltip
-						title={
-							mappingMode === undefined && outputConnected
-								? t("nfc_state_unknown")
-								: ""
-						}
+	const toolbar = (
+		<>
+			<input
+				type="file"
+				accept="application/json"
+				style={{ display: "none" }}
+				ref={fileInputRef}
+				onChange={handleFileChange}
+			/>
+			<Tooltip title={t("nfc_save_to_file")} describeChild>
+				<span>
+					<IconButton
+						color="inherit"
+						aria-label={t("nfc_save_to_file")}
+						onClick={saveToFile}
+						disabled={mappingList.length === 0}
 					>
-						<FormControlLabel
-							control={
-								<Switch
-									checked={!!mappingMode}
-									disabled={!outputConnected}
-									onChange={(e) =>
-										sendCommand(
-											e.target.checked
-												? NFC_COMMAND.MAPPING_ON
-												: NFC_COMMAND.MAPPING_OFF,
-										)
-									}
-								/>
-							}
-							label={t("nfc_mapping_mode")}
-							sx={
-								mappingMode
-									? {
-											"& .MuiFormControlLabel-label": {
-												color: "primary.main",
-												fontWeight: 600,
-											},
-										}
-									: undefined
+						<DownloadIcon />
+					</IconButton>
+				</span>
+			</Tooltip>
+			<Tooltip title={t("nfc_load_from_file")}>
+				<IconButton
+					color="inherit"
+					onClick={() => fileInputRef.current?.click()}
+				>
+					<FolderOpenIcon />
+				</IconButton>
+			</Tooltip>
+			<Tooltip title={t("nfc_delete_all")} describeChild>
+				<span>
+					<IconButton
+						color="inherit"
+						aria-label={t("nfc_delete_all")}
+						disabled={!outputConnected}
+						onClick={() => setConfirmClear(true)}
+					>
+						<ClearAllIcon />
+					</IconButton>
+				</span>
+			</Tooltip>
+			<Tooltip
+				title={
+					mappingMode === undefined && outputConnected
+						? t("nfc_state_unknown")
+						: ""
+				}
+			>
+				<FormControlLabel
+					control={
+						<Switch
+							checked={!!mappingMode}
+							disabled={!outputConnected}
+							onChange={(e) =>
+								sendCommand(
+									e.target.checked
+										? NFC_COMMAND.MAPPING_ON
+										: NFC_COMMAND.MAPPING_OFF,
+								)
 							}
 						/>
-					</Tooltip>
-					<Box flex={1} />
-					<MidiDeviceChooser value={outputId} onChange={setOutputId} />
-					<Dialog open={confirmClear} onClose={() => setConfirmClear(false)}>
-						<DialogContent>
-							<DialogContentText>
-								{t("nfc_confirm_delete_all")}
-							</DialogContentText>
-						</DialogContent>
-						<DialogActions>
-							<Button onClick={() => setConfirmClear(false)}>
-								{t("nfc_cancel")}
-							</Button>
-							<Button color="error" variant="contained" onClick={clearMappings}>
-								{t("delete")}
-							</Button>
-						</DialogActions>
-					</Dialog>
-				</>
-			}
-		>
-			<Box display="flex" flexDirection="column" gap={2}>
-				<Typography variant="body2" color="text.secondary">
-					{t("nfc_intro")}
-				</Typography>
-
-				{fileError && (
-					<Alert severity="error" onClose={() => setFileError(null)}>
-						{fileError}
-					</Alert>
-				)}
-
-				{pendingList.length > 0 && (
-					<Alert
-						severity="info"
-						action={
-							<Button color="inherit" size="small" onClick={dismissFile}>
-								{t("browser_warning_dismiss")}
-							</Button>
-						}
-					>
-						{t("nfc_pending", { count: pendingList.length })}
-						<Box component="ul" sx={{ m: 0, mt: 1, pl: 2 }}>
-							{pendingList.map((m) => (
-								<li key={m.uid}>
-									<Box component="span" sx={{ fontFamily: "monospace" }}>
-										{m.uid}
-									</Box>
-									{labels[m.uid] ? ` (${labels[m.uid]})` : ""}:{" "}
-									{describeNfcMapping(m, t)}
-								</li>
-							))}
-						</Box>
-					</Alert>
-				)}
-
-				{sendFailed && (
-					<Alert severity="error" onClose={() => setSendFailed(false)}>
-						{t("nfc_send_failed")}
-					</Alert>
-				)}
-
-				{mappingMode && (
-					<Paper
-						variant="outlined"
-						sx={[
-							{ p: 2 },
-							// Waiting for a tag: highlight and pulse. Once one is
-							// placed, the composer takes over the highlight.
-							!currentTag && activeSx,
-							!currentTag &&
-								((theme: Theme) => ({
-									"--nfc-pulse": alpha(theme.palette.primary.main, 0.35),
-									animation: `${pulse} 1.6s ease-in-out infinite`,
-									"@media (prefers-reduced-motion: reduce)": {
-										animation: "none",
+					}
+					label={t("nfc_mapping_mode")}
+					sx={
+						mappingMode
+							? {
+									"& .MuiFormControlLabel-label": {
+										color: "primary.main",
+										fontWeight: 600,
 									},
-								})),
-						]}
-					>
-						<Box display="flex" flexDirection="column" gap={2}>
-							<Box display="flex" alignItems="center" gap={1}>
-								<Typography>{t("nfc_tag_on_reader")}</Typography>
-								{currentTag ? (
-									<Chip
-										color="primary"
-										label={labels[currentTag] || currentTag}
-									/>
-								) : (
-									<Typography color="text.secondary">
-										{t("nfc_no_tag")}
-									</Typography>
-								)}
-							</Box>
-							{tableFull !== undefined && (
-								<Alert severity="warning">
-									{t("nfc_table_full", { count: tableFull })}
-								</Alert>
+								}
+							: undefined
+					}
+				/>
+			</Tooltip>
+			<Box flex={1} />
+			<MidiDeviceChooser value={outputId} onChange={setOutputId} />
+			<Dialog open={confirmClear} onClose={() => setConfirmClear(false)}>
+				<DialogContent>
+					<DialogContentText>{t("nfc_confirm_delete_all")}</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setConfirmClear(false)}>
+						{t("nfc_cancel")}
+					</Button>
+					<Button color="error" variant="contained" onClick={clearMappings}>
+						{t("delete")}
+					</Button>
+				</DialogActions>
+			</Dialog>
+		</>
+	);
+
+	const body = (
+		<Box display="flex" flexDirection="column" gap={2}>
+			<Typography variant="body2" color="text.secondary">
+				{t("nfc_intro")}
+			</Typography>
+
+			{fileError && (
+				<Alert severity="error" onClose={() => setFileError(null)}>
+					{fileError}
+				</Alert>
+			)}
+
+			{pendingList.length > 0 && (
+				<Alert
+					severity="info"
+					action={
+						<Button color="inherit" size="small" onClick={dismissFile}>
+							{t("browser_warning_dismiss")}
+						</Button>
+					}
+				>
+					{t("nfc_pending", { count: pendingList.length })}
+					<Box component="ul" sx={{ m: 0, mt: 1, pl: 2 }}>
+						{pendingList.map((m) => (
+							<li key={m.uid}>
+								<Box component="span" sx={{ fontFamily: "monospace" }}>
+									{m.uid}
+								</Box>
+								{labels[m.uid] ? ` (${labels[m.uid]})` : ""}:{" "}
+								{describeNfcMapping(m, t)}
+							</li>
+						))}
+					</Box>
+				</Alert>
+			)}
+
+			{sendFailed && (
+				<Alert severity="error" onClose={() => setSendFailed(false)}>
+					{t("nfc_send_failed")}
+				</Alert>
+			)}
+
+			{mappingMode && (
+				<Paper
+					variant="outlined"
+					sx={[
+						{ p: 2 },
+						// Waiting for a tag: highlight and pulse. Once one is
+						// placed, the composer takes over the highlight.
+						!currentTag && activeSx,
+						!currentTag &&
+							((theme: Theme) => ({
+								"--nfc-pulse": alpha(theme.palette.primary.main, 0.35),
+								animation: `${pulse} 1.6s ease-in-out infinite`,
+								"@media (prefers-reduced-motion: reduce)": {
+									animation: "none",
+								},
+							})),
+					]}
+				>
+					<Box display="flex" flexDirection="column" gap={2}>
+						<Box display="flex" alignItems="center" gap={1}>
+							<Typography>{t("nfc_tag_on_reader")}</Typography>
+							{currentTag ? (
+								<Chip
+									color="primary"
+									label={labels[currentTag] || currentTag}
+								/>
+							) : (
+								<Typography color="text.secondary">
+									{t("nfc_no_tag")}
+								</Typography>
 							)}
-							<Typography variant="body2" color="text.secondary">
-								{t("nfc_mapping_hint")}
-							</Typography>
 						</Box>
-					</Paper>
-				)}
-
-				<Paper variant="outlined" sx={[{ p: 2 }, composerActive && activeSx]}>
-					<Typography variant="h6" component="h2">
-						{t("nfc_composer")}
-					</Typography>
-					<Typography variant="body2" color="text.secondary" mb={2}>
-						{composerActive
-							? t("nfc_composer_active", {
-									tag: labels[currentTag] || currentTag,
-								})
-							: t("nfc_composer_inactive")}
-					</Typography>
-					<Composer outputId={outputId} disabled={!composerActive} />
+						{tableFull !== undefined && (
+							<Alert severity="warning">
+								{t("nfc_table_full", { count: tableFull })}
+							</Alert>
+						)}
+						<Typography variant="body2" color="text.secondary">
+							{t("nfc_mapping_hint")}
+						</Typography>
+					</Box>
 				</Paper>
+			)}
 
-				<Box>
-					<Box display="flex" alignItems="center" gap={1}>
-						<Typography variant="h6" component="h2">
-							{t("nfc_mappings")}
-						</Typography>
-						{loading && <CircularProgress size={16} />}
-						<Box flex={1} />
-						<Button
-							size="small"
-							onClick={loadMappings}
-							disabled={!outputConnected || loading}
-						>
-							{t("nfc_reload")}
-						</Button>
-					</Box>
-					{loadTimedOut && (
-						<Alert severity="warning" onClose={() => setLoadTimedOut(false)}>
-							{t("nfc_load_timeout")}
-						</Alert>
-					)}
-					{mappingList.length === 0 ? (
-						<Typography color="text.secondary" mt={1}>
-							{t("nfc_no_mappings")}
-						</Typography>
-					) : (
-						<Table size="small">
-							<TableHead>
-								<TableRow>
-									<TableCell>{t("nfc_tag")}</TableCell>
-									<TableCell>{t("nfc_label")}</TableCell>
-									<TableCell>{t("nfc_message")}</TableCell>
-									<TableCell />
-								</TableRow>
-							</TableHead>
-							<TableBody>
-								{mappingList.map((m) => (
-									<TableRow
-										key={m.uid}
-										selected={m.uid === currentTag}
-										hover
-										sx={{
-											"& .nfc-row-delete": { visibility: "hidden" },
-											// Touch screens can't hover
-											"@media (hover: none)": {
-												"& .nfc-row-delete": { visibility: "visible" },
-											},
-											"&:hover .nfc-row-delete, & .nfc-row-delete:focus-visible":
-												{ visibility: "visible" },
-										}}
-									>
-										<TableCell sx={{ fontFamily: "monospace" }}>
-											{m.uid}
-										</TableCell>
-										<TableCell>
-											<TextField
+			<Paper variant="outlined" sx={[{ p: 2 }, composerActive && activeSx]}>
+				<Typography variant="h6" component="h2">
+					{t("nfc_composer")}
+				</Typography>
+				<Typography variant="body2" color="text.secondary" mb={2}>
+					{composerActive
+						? t("nfc_composer_active", {
+								tag: labels[currentTag] || currentTag,
+							})
+						: t("nfc_composer_inactive")}
+				</Typography>
+				<Composer outputId={outputId} disabled={!composerActive} />
+			</Paper>
+
+			<Box>
+				<Box display="flex" alignItems="center" gap={1}>
+					<Typography variant="h6" component="h2">
+						{t("nfc_mappings")}
+					</Typography>
+					{loading && <CircularProgress size={16} />}
+					<Box flex={1} />
+					<Button
+						size="small"
+						onClick={loadMappings}
+						disabled={!outputConnected || loading}
+					>
+						{t("nfc_reload")}
+					</Button>
+				</Box>
+				{loadTimedOut && (
+					<Alert severity="warning" onClose={() => setLoadTimedOut(false)}>
+						{t("nfc_load_timeout")}
+					</Alert>
+				)}
+				{mappingList.length === 0 ? (
+					<Typography color="text.secondary" mt={1}>
+						{t("nfc_no_mappings")}
+					</Typography>
+				) : (
+					<Table size="small">
+						<TableHead>
+							<TableRow>
+								<TableCell>{t("nfc_tag")}</TableCell>
+								<TableCell>{t("nfc_label")}</TableCell>
+								<TableCell>{t("nfc_message")}</TableCell>
+								<TableCell />
+							</TableRow>
+						</TableHead>
+						<TableBody>
+							{mappingList.map((m) => (
+								<TableRow
+									key={m.uid}
+									selected={m.uid === currentTag}
+									hover
+									sx={{
+										"& .nfc-row-delete": { visibility: "hidden" },
+										// Touch screens can't hover
+										"@media (hover: none)": {
+											"& .nfc-row-delete": { visibility: "visible" },
+										},
+										"&:hover .nfc-row-delete, & .nfc-row-delete:focus-visible":
+											{ visibility: "visible" },
+									}}
+								>
+									<TableCell sx={{ fontFamily: "monospace" }}>
+										{m.uid}
+									</TableCell>
+									<TableCell>
+										<TextField
+											size="small"
+											variant="standard"
+											placeholder={t("nfc_label")}
+											value={labels[m.uid] ?? ""}
+											onChange={(e) => setLabel(m.uid, e.target.value)}
+										/>
+									</TableCell>
+									<TableCell>{describeNfcMapping(m, t)}</TableCell>
+									<TableCell align="right" padding="checkbox">
+										<Tooltip title={t("nfc_delete_mapping")}>
+											<IconButton
+												className="nfc-row-delete"
 												size="small"
-												variant="standard"
-												placeholder={t("nfc_label")}
-												value={labels[m.uid] ?? ""}
-												onChange={(e) => setLabel(m.uid, e.target.value)}
-											/>
-										</TableCell>
-										<TableCell>{describeNfcMapping(m, t)}</TableCell>
-										<TableCell align="right" padding="checkbox">
-											<Tooltip title={t("nfc_delete_mapping")}>
-												<IconButton
-													className="nfc-row-delete"
-													size="small"
-													aria-label={t("nfc_delete_mapping")}
-													disabled={!outputConnected}
-													onClick={() =>
-														sendCommand(
-															NFC_COMMAND.DELETE_MAPPING,
-															encodeUid(m.uid),
-														)
-													}
-												>
-													<DeleteIcon fontSize="small" />
-												</IconButton>
-											</Tooltip>
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					)}
-				</Box>
-
-				<Box>
-					<Box display="flex" alignItems="center">
-						<Typography variant="h6" component="h2">
-							{t("nfc_events")}
-						</Typography>
-						<Box flex={1} />
-						<Button size="small" onClick={clearLog} disabled={log.length === 0}>
-							{t("clear")}
-						</Button>
-					</Box>
-					{log.length === 0 ? (
-						<Typography color="text.secondary">{t("nfc_no_events")}</Typography>
-					) : (
-						<Box component="ul" sx={{ m: 0, pl: 2, fontFamily: "monospace" }}>
-							{log.map((entry) => (
-								<li key={entry.id}>
-									{new Date(entry.timestamp).toLocaleTimeString()}{" "}
-									{describeEvent(entry, t)}
-								</li>
+												aria-label={t("nfc_delete_mapping")}
+												disabled={!outputConnected}
+												onClick={() =>
+													sendCommand(
+														NFC_COMMAND.DELETE_MAPPING,
+														encodeUid(m.uid),
+													)
+												}
+											>
+												<DeleteIcon fontSize="small" />
+											</IconButton>
+										</Tooltip>
+									</TableCell>
+								</TableRow>
 							))}
-						</Box>
-					)}
-				</Box>
+						</TableBody>
+					</Table>
+				)}
 			</Box>
+
+			<Box>
+				<Box display="flex" alignItems="center">
+					<Typography variant="h6" component="h2">
+						{t("nfc_events")}
+					</Typography>
+					<Box flex={1} />
+					<Button size="small" onClick={clearLog} disabled={log.length === 0}>
+						{t("clear")}
+					</Button>
+				</Box>
+				{log.length === 0 ? (
+					<Typography color="text.secondary">{t("nfc_no_events")}</Typography>
+				) : (
+					<Box component="ul" sx={{ m: 0, pl: 2, fontFamily: "monospace" }}>
+						{log.map((entry) => (
+							<li key={entry.id}>
+								{new Date(entry.timestamp).toLocaleTimeString()}{" "}
+								{describeEvent(entry, t)}
+							</li>
+						))}
+					</Box>
+				)}
+			</Box>
+		</Box>
+	);
+
+	if (embedded) {
+		return (
+			<>
+				<Box display="flex" alignItems="center" flexWrap="wrap" gap={2} mb={2}>
+					{toolbar}
+				</Box>
+				{body}
+			</>
+		);
+	}
+
+	return (
+		<PageLayout title="NFC" actions={toolbar}>
+			{body}
 		</PageLayout>
 	);
 };
