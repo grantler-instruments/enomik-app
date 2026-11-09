@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { useMIDIStore } from "./midi";
-import { useNfcStore } from "./nfc";
+import { leavesMappingMode, useNfcStore } from "./nfc";
 
 const mapping = {
 	uid: "04 A2 3B 1C",
@@ -93,5 +93,32 @@ describe("nfc store", () => {
 			composerNoteOrCc: 7,
 			composerVelocityOrValue: 99,
 		});
+	});
+
+	it("leaves mapping mode after a tag got mapped, not after a listed one", () => {
+		const mapped = { kind: "mapped", ...mapping } as const;
+		expect(
+			leavesMappingMode({ mappingMode: true, loading: false }, mapped),
+		).toBe(true);
+		expect(
+			leavesMappingMode({ mappingMode: true, loading: true }, mapped),
+		).toBe(false);
+		expect(
+			leavesMappingMode({ mappingMode: false, loading: false }, mapped),
+		).toBe(false);
+		expect(
+			leavesMappingMode(
+				{ mappingMode: true, loading: false },
+				{ kind: "placed", uid: "AA" },
+			),
+		).toBe(false);
+	});
+
+	it("drops a deleted mapping", () => {
+		const { handleEvent } = useNfcStore.getState();
+		handleEvent({ kind: "mapped", ...mapping });
+		handleEvent({ kind: "mapped", ...mapping, uid: "AA" });
+		handleEvent({ kind: "deleted", uid: mapping.uid });
+		expect(Object.keys(useNfcStore.getState().mappings)).toEqual(["AA"]);
 	});
 });

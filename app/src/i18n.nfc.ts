@@ -16,6 +16,7 @@ const en = {
 	nfc_confirm_delete_all: "Delete all mappings on the board?",
 	nfc_cancel: "Cancel",
 	nfc_delete_all: "Delete all mappings",
+	nfc_delete_mapping: "Delete mapping",
 	nfc_tag_on_reader: "Tag on reader:",
 	nfc_no_tag: "none, place a tag on the reader",
 	nfc_table_full:
@@ -24,7 +25,7 @@ const en = {
 		"Send the message for this tag with the composer below, or send any note, CC or program change from another app or controller.",
 	nfc_composer: "MIDI composer",
 	nfc_composer_active:
-		"Sends to the board: the message gets mapped to {{tag}}.",
+		"Sends to the board: the message gets mapped to {{tag}}, then mapping mode ends.",
 	nfc_composer_inactive:
 		"Turn mapping mode on and place a tag on the reader to map it to a message.",
 	nfc_mappings: "Mappings",
@@ -39,6 +40,7 @@ const en = {
 	nfc_no_events: "Nothing received from the board yet.",
 	nfc_event_placed: "Tag placed: {{uid}}",
 	nfc_event_removed: "Tag removed: {{uid}}",
+	nfc_event_deleted: "Mapping of {{uid}} deleted",
 	nfc_event_mapping_state: "Mapping mode {{state}}",
 	nfc_event_mapped: "Tag {{uid}} mapped to {{mapping}}",
 	nfc_event_count: "Board has {{count}} mapping(s)",
@@ -69,6 +71,7 @@ const de: typeof en = {
 	nfc_confirm_delete_all: "Alle Zuordnungen auf dem Board löschen?",
 	nfc_cancel: "Abbrechen",
 	nfc_delete_all: "Alle Zuordnungen löschen",
+	nfc_delete_mapping: "Zuordnung löschen",
 	nfc_tag_on_reader: "Tag auf dem Lesegerät:",
 	nfc_no_tag: "keiner, leg einen Tag auf das Lesegerät",
 	nfc_table_full:
@@ -77,7 +80,7 @@ const de: typeof en = {
 		"Sende die Nachricht für diesen Tag mit dem Composer unten, oder sende eine beliebige Note, CC oder Program Change aus einer anderen App oder von einem anderen Controller.",
 	nfc_composer: "MIDI-Composer",
 	nfc_composer_active:
-		"Sendet an das Board: Die Nachricht wird {{tag}} zugeordnet.",
+		"Sendet an das Board: Die Nachricht wird {{tag}} zugeordnet, danach endet der Zuordnungsmodus.",
 	nfc_composer_inactive:
 		"Schalte den Zuordnungsmodus ein und leg einen Tag auf das Lesegerät, um ihm eine Nachricht zuzuordnen.",
 	nfc_mappings: "Zuordnungen",
@@ -92,6 +95,7 @@ const de: typeof en = {
 	nfc_no_events: "Noch nichts vom Board empfangen.",
 	nfc_event_placed: "Tag aufgelegt: {{uid}}",
 	nfc_event_removed: "Tag entfernt: {{uid}}",
+	nfc_event_deleted: "Zuordnung von {{uid}} gelöscht",
 	nfc_event_mapping_state: "Zuordnungsmodus {{state}}",
 	nfc_event_mapped: "Tag {{uid}} zugeordnet zu {{mapping}}",
 	nfc_event_count: "Board hat {{count}} Zuordnung(en)",
@@ -121,6 +125,7 @@ const es: typeof en = {
 	nfc_confirm_delete_all: "¿Eliminar todas las asignaciones de la placa?",
 	nfc_cancel: "Cancelar",
 	nfc_delete_all: "Eliminar todas las asignaciones",
+	nfc_delete_mapping: "Eliminar asignación",
 	nfc_tag_on_reader: "Etiqueta en el lector:",
 	nfc_no_tag: "ninguna, coloca una etiqueta en el lector",
 	nfc_table_full:
@@ -128,7 +133,8 @@ const es: typeof en = {
 	nfc_mapping_hint:
 		"Envía el mensaje para esta etiqueta con el compositor de abajo, o envía cualquier nota, CC o cambio de programa desde otra app o controlador.",
 	nfc_composer: "Compositor MIDI",
-	nfc_composer_active: "Envía a la placa: el mensaje se asigna a {{tag}}.",
+	nfc_composer_active:
+		"Envía a la placa: el mensaje se asigna a {{tag}} y luego termina el modo de asignación.",
 	nfc_composer_inactive:
 		"Activa el modo de asignación y coloca una etiqueta en el lector para asignarle un mensaje.",
 	nfc_mappings: "Asignaciones",
@@ -143,6 +149,7 @@ const es: typeof en = {
 	nfc_no_events: "Aún no se ha recibido nada de la placa.",
 	nfc_event_placed: "Etiqueta colocada: {{uid}}",
 	nfc_event_removed: "Etiqueta retirada: {{uid}}",
+	nfc_event_deleted: "Asignación de {{uid}} eliminada",
 	nfc_event_mapping_state: "Modo de asignación {{state}}",
 	nfc_event_mapped: "Etiqueta {{uid}} asignada a {{mapping}}",
 	nfc_event_count: "La placa tiene {{count}} asignación(es)",
@@ -172,13 +179,14 @@ const zh: typeof en = {
 	nfc_confirm_delete_all: "删除板子上的所有映射？",
 	nfc_cancel: "取消",
 	nfc_delete_all: "删除所有映射",
+	nfc_delete_mapping: "删除映射",
 	nfc_tag_on_reader: "读卡器上的标签：",
 	nfc_no_tag: "无，请将标签放在读卡器上",
 	nfc_table_full: "映射表已满（{{count}}）。删除所有映射后才能添加新标签。",
 	nfc_mapping_hint:
 		"用下方的编辑器发送此标签的消息，或从其他应用或控制器发送任意音符、CC 或程序变更。",
 	nfc_composer: "MIDI 编辑器",
-	nfc_composer_active: "发送到板子：该消息将映射到 {{tag}}。",
+	nfc_composer_active: "发送到板子：该消息将映射到 {{tag}}，随后退出映射模式。",
 	nfc_composer_inactive: "打开映射模式并将标签放在读卡器上，即可为其映射消息。",
 	nfc_mappings: "映射",
 	nfc_reload: "重新加载",
@@ -192,6 +200,7 @@ const zh: typeof en = {
 	nfc_no_events: "尚未从板子收到任何内容。",
 	nfc_event_placed: "标签已放置：{{uid}}",
 	nfc_event_removed: "标签已移除：{{uid}}",
+	nfc_event_deleted: "已删除 {{uid}} 的映射",
 	nfc_event_mapping_state: "映射模式 {{state}}",
 	nfc_event_mapped: "标签 {{uid}} 已映射到 {{mapping}}",
 	nfc_event_count: "板子有 {{count}} 个映射",

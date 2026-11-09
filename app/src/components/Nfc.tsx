@@ -1,3 +1,5 @@
+import ClearAllIcon from "@mui/icons-material/ClearAll";
+import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import {
@@ -6,6 +8,10 @@ import {
 	Button,
 	Chip,
 	CircularProgress,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
 	FormControlLabel,
 	IconButton,
 	Paper,
@@ -19,16 +25,19 @@ import {
 	Tooltip,
 	Typography,
 } from "@mui/material";
+import { alpha, keyframes, type Theme } from "@mui/material/styles";
 import type { TFunction } from "i18next";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
 import { deviceInputId, useMIDIStore } from "../store/midi";
-import { type NfcLogEntry, useNfcStore } from "../store/nfc";
+import { leavesMappingMode, type NfcLogEntry, useNfcStore } from "../store/nfc";
 import { MIDI_STATUS } from "../utils/midi";
 import {
+	autoNfcOutputId,
 	buildNfcSysex,
 	describeNfcMapping,
+	encodeUid,
 	NFC_COMMAND,
 	nfcFile,
 	parseNfcFile,
@@ -51,6 +60,8 @@ const describeEvent = (
 			return t("nfc_event_placed", { uid: event.uid });
 		case "removed":
 			return t("nfc_event_removed", { uid: event.uid });
+		case "deleted":
+			return t("nfc_event_deleted", { uid: event.uid });
 		case "mapping_state":
 			return t("nfc_event_mapping_state", {
 				state: t(event.on ? "state_on" : "state_off"),
@@ -73,6 +84,19 @@ const describeEvent = (
  * (ESP-NOW-MIDI/examples/client_nfc). Turns mapping mode on and off, shows
  * the tag on the reader and maps it to a MIDI message.
  */
+/** Mapping mode and the composer, while they wait for the user. */
+const activeSx = {
+	p: 2,
+	borderColor: "primary.main",
+	borderWidth: 2,
+	bgcolor: (theme: Theme) => alpha(theme.palette.primary.main, 0.06),
+};
+
+const pulse = keyframes`
+	0%, 100% { box-shadow: 0 0 0 0 transparent; }
+	50% { box-shadow: 0 0 0 6px var(--nfc-pulse); }
+`;
+
 const Nfc = () => {
 	const { t } = useTranslation();
 	const midiInitialized = useMIDIStore((s) => s.initialized);
@@ -108,26 +132,13 @@ const Nfc = () => {
 		(o) => o.id === outputId && o.state !== "disconnected",
 	);
 
-	// Reports from the client. Listen to the selected port's input when it
-	// pairs, else to every input (the client may answer through a dongle).
+	// After init and when ports change: pick the client, else the dongle,
+	// unless a connected output is already selected.
 	useEffect(() => {
 		if (!midiInitialized) return;
-		const pairedId = outputId ? deviceInputId(outputId) : undefined;
-		const listened = pairedId
-			? inputs.filter((input) => input.id === pairedId)
-			: inputs;
-		const listener = (event: MIDIMessageEvent) => {
-			if (!event.data) return;
-			const nfcEvent = parseNfcSysex(event.data);
-			if (nfcEvent) handleEvent(nfcEvent);
-		};
-		for (const input of listened)
-			input.addEventListener("midimessage", listener);
-		return () => {
-			for (const input of listened)
-				input.removeEventListener("midimessage", listener);
-		};
-	}, [midiInitialized, inputs, outputId, handleEvent]);
+		const id = autoNfcOutputId(outputId, outputs);
+		if (id) setOutputId(id);
+	}, [midiInitialized, outputs, outputId, setOutputId]);
 
 	const send = useCallback(
 		(message: Parameters<typeof sendMessage>[0]) => {
@@ -139,15 +150,40 @@ const Nfc = () => {
 	);
 
 	const sendCommand = useCallback(
-		(command: number) =>
+		(command: number, payload?: number[]) =>
 			send({
 				id: uuidv4(),
 				timestamp: Date.now(),
 				type: MIDI_STATUS.SYSEX_START,
-				data: buildNfcSysex(command),
+				data: buildNfcSysex(command, payload),
 			}),
 		[send],
 	);
+
+	// Reports from the client. Listen to the selected port's input when it
+	// pairs, else to every input (the client may answer through a dongle).
+	useEffect(() => {
+		if (!midiInitialized) return;
+		const pairedId = outputId ? deviceInputId(outputId) : undefined;
+		const listened = pairedId
+			? inputs.filter((input) => input.id === pairedId)
+			: inputs;
+		const listener = (event: MIDIMessageEvent) => {
+			if (!event.data) return;
+			const nfcEvent = parseNfcSysex(event.data);
+			if (!nfcEvent) return;
+			const leave = leavesMappingMode(useNfcStore.getState(), nfcEvent);
+			handleEvent(nfcEvent);
+			// Mapped and stored in flash by the board: done mapping.
+			if (leave) sendCommand(NFC_COMMAND.MAPPING_OFF);
+		};
+		for (const input of listened)
+			input.addEventListener("midimessage", listener);
+		return () => {
+			for (const input of listened)
+				input.removeEventListener("midimessage", listener);
+		};
+	}, [midiInitialized, inputs, outputId, handleEvent, sendCommand]);
 
 	const loadMappings = useCallback(() => {
 		setLoadTimedOut(false);
@@ -249,8 +285,69 @@ const Nfc = () => {
 							<FolderOpenIcon />
 						</IconButton>
 					</Tooltip>
+					<Tooltip title={t("nfc_delete_all")} describeChild>
+						<span>
+							<IconButton
+								color="inherit"
+								aria-label={t("nfc_delete_all")}
+								disabled={!outputConnected}
+								onClick={() => setConfirmClear(true)}
+							>
+								<ClearAllIcon />
+							</IconButton>
+						</span>
+					</Tooltip>
+					<Tooltip
+						title={
+							mappingMode === undefined && outputConnected
+								? t("nfc_state_unknown")
+								: ""
+						}
+					>
+						<FormControlLabel
+							control={
+								<Switch
+									checked={!!mappingMode}
+									disabled={!outputConnected}
+									onChange={(e) =>
+										sendCommand(
+											e.target.checked
+												? NFC_COMMAND.MAPPING_ON
+												: NFC_COMMAND.MAPPING_OFF,
+										)
+									}
+								/>
+							}
+							label={t("nfc_mapping_mode")}
+							sx={
+								mappingMode
+									? {
+											"& .MuiFormControlLabel-label": {
+												color: "primary.main",
+												fontWeight: 600,
+											},
+										}
+									: undefined
+							}
+						/>
+					</Tooltip>
 					<Box flex={1} />
 					<MidiDeviceChooser value={outputId} onChange={setOutputId} />
+					<Dialog open={confirmClear} onClose={() => setConfirmClear(false)}>
+						<DialogContent>
+							<DialogContentText>
+								{t("nfc_confirm_delete_all")}
+							</DialogContentText>
+						</DialogContent>
+						<DialogActions>
+							<Button onClick={() => setConfirmClear(false)}>
+								{t("nfc_cancel")}
+							</Button>
+							<Button color="error" variant="contained" onClick={clearMappings}>
+								{t("delete")}
+							</Button>
+						</DialogActions>
+					</Dialog>
 				</>
 			}
 		>
@@ -295,59 +392,25 @@ const Nfc = () => {
 					</Alert>
 				)}
 
-				<Paper variant="outlined" sx={{ p: 2 }}>
-					<Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-						<FormControlLabel
-							control={
-								<Switch
-									checked={!!mappingMode}
-									disabled={!outputConnected}
-									onChange={(e) =>
-										sendCommand(
-											e.target.checked
-												? NFC_COMMAND.MAPPING_ON
-												: NFC_COMMAND.MAPPING_OFF,
-										)
-									}
-								/>
-							}
-							label={t("nfc_mapping_mode")}
-						/>
-						{mappingMode === undefined && outputConnected && (
-							<Typography variant="body2" color="text.secondary">
-								{t("nfc_state_unknown")}
-							</Typography>
-						)}
-						<Box flex={1} />
-						{confirmClear ? (
-							<>
-								<Typography variant="body2">
-									{t("nfc_confirm_delete_all")}
-								</Typography>
-								<Button
-									color="error"
-									variant="contained"
-									onClick={clearMappings}
-								>
-									{t("delete")}
-								</Button>
-								<Button onClick={() => setConfirmClear(false)}>
-									{t("nfc_cancel")}
-								</Button>
-							</>
-						) : (
-							<Button
-								color="error"
-								disabled={!outputConnected}
-								onClick={() => setConfirmClear(true)}
-							>
-								{t("nfc_delete_all")}
-							</Button>
-						)}
-					</Box>
-
-					{mappingMode && (
-						<Box mt={2} display="flex" flexDirection="column" gap={2}>
+				{mappingMode && (
+					<Paper
+						variant="outlined"
+						sx={[
+							{ p: 2 },
+							// Waiting for a tag: highlight and pulse. Once one is
+							// placed, the composer takes over the highlight.
+							!currentTag && activeSx,
+							!currentTag &&
+								((theme: Theme) => ({
+									"--nfc-pulse": alpha(theme.palette.primary.main, 0.35),
+									animation: `${pulse} 1.6s ease-in-out infinite`,
+									"@media (prefers-reduced-motion: reduce)": {
+										animation: "none",
+									},
+								})),
+						]}
+					>
+						<Box display="flex" flexDirection="column" gap={2}>
 							<Box display="flex" alignItems="center" gap={1}>
 								<Typography>{t("nfc_tag_on_reader")}</Typography>
 								{currentTag ? (
@@ -370,10 +433,10 @@ const Nfc = () => {
 								{t("nfc_mapping_hint")}
 							</Typography>
 						</Box>
-					)}
-				</Paper>
+					</Paper>
+				)}
 
-				<Paper variant="outlined" sx={{ p: 2 }}>
+				<Paper variant="outlined" sx={[{ p: 2 }, composerActive && activeSx]}>
 					<Typography variant="h6" component="h2">
 						{t("nfc_composer")}
 					</Typography>
@@ -418,11 +481,25 @@ const Nfc = () => {
 									<TableCell>{t("nfc_tag")}</TableCell>
 									<TableCell>{t("nfc_label")}</TableCell>
 									<TableCell>{t("nfc_message")}</TableCell>
+									<TableCell />
 								</TableRow>
 							</TableHead>
 							<TableBody>
 								{mappingList.map((m) => (
-									<TableRow key={m.uid} selected={m.uid === currentTag}>
+									<TableRow
+										key={m.uid}
+										selected={m.uid === currentTag}
+										hover
+										sx={{
+											"& .nfc-row-delete": { visibility: "hidden" },
+											// Touch screens can't hover
+											"@media (hover: none)": {
+												"& .nfc-row-delete": { visibility: "visible" },
+											},
+											"&:hover .nfc-row-delete, & .nfc-row-delete:focus-visible":
+												{ visibility: "visible" },
+										}}
+									>
 										<TableCell sx={{ fontFamily: "monospace" }}>
 											{m.uid}
 										</TableCell>
@@ -436,6 +513,24 @@ const Nfc = () => {
 											/>
 										</TableCell>
 										<TableCell>{describeNfcMapping(m, t)}</TableCell>
+										<TableCell align="right" padding="checkbox">
+											<Tooltip title={t("nfc_delete_mapping")}>
+												<IconButton
+													className="nfc-row-delete"
+													size="small"
+													aria-label={t("nfc_delete_mapping")}
+													disabled={!outputConnected}
+													onClick={() =>
+														sendCommand(
+															NFC_COMMAND.DELETE_MAPPING,
+															encodeUid(m.uid),
+														)
+													}
+												>
+													<DeleteIcon fontSize="small" />
+												</IconButton>
+											</Tooltip>
+										</TableCell>
 									</TableRow>
 								))}
 							</TableBody>

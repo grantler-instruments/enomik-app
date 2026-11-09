@@ -15,11 +15,13 @@ export const NFC_COMMAND = {
 	MAPPING_ON: 0x01,
 	CLEAR: 0x02,
 	GET_MAPPINGS: 0x03,
+	DELETE_MAPPING: 0x04,
 	TAG_PLACED: 0x10,
 	TAG_REMOVED: 0x11,
 	MAPPING_STATE: 0x12,
 	TAG_MAPPED: 0x13,
 	MAPPING_COUNT: 0x14,
+	MAPPING_DELETED: 0x15,
 } as const;
 
 /** MIDI status high nibble, as the client stores it. */
@@ -38,13 +40,22 @@ export interface NfcMapping {
 }
 
 export type NfcEvent =
-	| { kind: "placed" | "removed"; uid: string }
+	| { kind: "placed" | "removed" | "deleted"; uid: string }
 	| { kind: "mapping_state"; on: boolean }
 	| ({ kind: "mapped" } & NfcMapping)
 	| { kind: "count"; count: number };
 
-export function buildNfcSysex(command: number): number[] {
-	return [...NFC_SYSEX_HEADER, command & 0x7f, 0xf7];
+export function buildNfcSysex(
+	command: number,
+	payload: number[] = [],
+): number[] {
+	return [...NFC_SYSEX_HEADER, command & 0x7f, ...payload, 0xf7];
+}
+
+/** "04 A2 3B 1C" as <uid>: length, then 2 nibbles per byte, high first. */
+export function encodeUid(uid: string): number[] {
+	const bytes = uid.split(" ").map((b) => Number.parseInt(b, 16));
+	return [bytes.length, ...bytes.flatMap((b) => [b >> 4, b & 0x0f])];
 }
 
 /** <uid> = length n (4 or 7), then 2n nibbles, high nibble first. */
@@ -80,11 +91,17 @@ export function parseNfcSysex(data: ArrayLike<number>): NfcEvent | null {
 
 	switch (command) {
 		case NFC_COMMAND.TAG_PLACED:
-		case NFC_COMMAND.TAG_REMOVED: {
+		case NFC_COMMAND.TAG_REMOVED:
+		case NFC_COMMAND.MAPPING_DELETED: {
 			const tag = decodeUid(data, body);
 			if (!tag || tag.next !== bodyEnd) return null;
 			return {
-				kind: command === NFC_COMMAND.TAG_PLACED ? "placed" : "removed",
+				kind:
+					command === NFC_COMMAND.TAG_PLACED
+						? "placed"
+						: command === NFC_COMMAND.TAG_REMOVED
+							? "removed"
+							: "deleted",
 				uid: tag.uid,
 			};
 		}
@@ -213,4 +230,21 @@ export function parseNfcFile(
 		if (typeof m.label === "string" && m.label) labels[uid] = m.label;
 	}
 	return { mappings, labels };
+}
+
+type Port = { id: string; name?: string | null; state?: string };
+
+/**
+ * Output the page picks by itself: keeps a connected selection, else the
+ * first enomik_client port, else the first enomik_dongle port.
+ */
+export function autoNfcOutputId(
+	selectedId: string,
+	outputs: Port[],
+): string | undefined {
+	const connected = outputs.filter((port) => port.state !== "disconnected");
+	if (connected.some((port) => port.id === selectedId)) return undefined;
+	const named = (pattern: RegExp) =>
+		connected.find((port) => pattern.test(port.name ?? ""))?.id;
+	return named(/enomik[ _-]?client/i) ?? named(/enomik[ _-]?dongle/i);
 }

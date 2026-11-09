@@ -41,6 +41,15 @@ interface NfcState {
 
 const MAX_LOG = 200;
 
+/**
+ * A tag mapped in mapping mode (not one entry of a listed table): the board
+ * stored it, so mapping mode can end.
+ */
+export const leavesMappingMode = (
+	state: Pick<NfcState, "mappingMode" | "loading">,
+	event: NfcEvent,
+) => event.kind === "mapped" && !!state.mappingMode && !state.loading;
+
 /** Puts a mapping's message into the MIDI composer. */
 export function fillComposer(m: NfcMapping) {
 	useMIDIStore.setState({
@@ -97,6 +106,10 @@ export const useNfcStore = create<NfcState>()(
 									currentTag:
 										s.currentTag === event.uid ? undefined : s.currentTag,
 								};
+							case "deleted": {
+								const { [event.uid]: _, ...mappings } = s.mappings;
+								return { log, mappings };
+							}
 							case "mapping_state":
 								return {
 									log,

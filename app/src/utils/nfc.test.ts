@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+	autoNfcOutputId,
 	buildNfcSysex,
 	decodeUid,
 	describeNfcMapping,
+	encodeUid,
 	NFC_COMMAND,
 	nfcFile,
 	parseNfcFile,
@@ -137,5 +139,49 @@ describe("nfc file", () => {
 		expect(sameNfcMapping(m, { ...m })).toBe(true);
 		expect(sameNfcMapping(m, { ...m, data2: 1 })).toBe(false);
 		expect(sameNfcMapping(m, undefined)).toBe(false);
+	});
+});
+
+describe("autoNfcOutputId", () => {
+	const client = { id: "c", name: "enomik_client", state: "connected" };
+	const dongle = { id: "d", name: "enomik_dongle", state: "connected" };
+	const other = { id: "o", name: "IAC Bus 1", state: "connected" };
+
+	it("prefers the client over the dongle", () => {
+		expect(autoNfcOutputId("", [other, dongle, client])).toBe("c");
+		expect(autoNfcOutputId("", [other, dongle])).toBe("d");
+	});
+
+	it("keeps a connected selection", () => {
+		expect(autoNfcOutputId("o", [other, client])).toBeUndefined();
+	});
+
+	it("replaces a disconnected selection, skips disconnected ports", () => {
+		expect(
+			autoNfcOutputId("c", [{ ...client, state: "disconnected" }, dongle]),
+		).toBe("d");
+	});
+
+	it("picks nothing without an enomik port", () => {
+		expect(autoNfcOutputId("", [other])).toBeUndefined();
+	});
+});
+
+describe("delete mapping", () => {
+	it("sends the UID with the delete command", () => {
+		expect(encodeUid("04 A2 3B 1C")).toEqual(UID);
+		expect(
+			buildNfcSysex(NFC_COMMAND.DELETE_MAPPING, encodeUid("04 A2 3B 1C")),
+		).toEqual([...H, 0x04, ...UID, 0xf7]);
+	});
+
+	it("parses the answer", () => {
+		expect(parseNfcSysex([...H, 0x15, ...UID, 0xf7])).toEqual({
+			kind: "deleted",
+			uid: "04 A2 3B 1C",
+		});
+		expect(decodeUid(encodeUid("04 12 34 56 78 9A BC"), 0)?.uid).toBe(
+			"04 12 34 56 78 9A BC",
+		);
 	});
 });
