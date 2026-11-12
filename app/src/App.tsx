@@ -18,6 +18,7 @@ import NotFound from "./components/NotFound";
 import Sidebar from "./components/Sidebar";
 import Tester from "./components/Tester";
 import Tutorial from "./components/Tutorial";
+import Workshop from "./components/Workshop";
 import { darkTheme, lightTheme } from "./muiTheme.ts";
 import { useAppStore } from "./store/app";
 
@@ -65,6 +66,7 @@ function App() {
 							<Route path="/tester" element={<Tester />} />
 							<Route path="/kits" element={<Kits />} />
 							<Route path="/nfc" element={<Nfc />} />
+							<Route path="/workshop" element={<Workshop />} />
 							<Route
 								path="/grantulator"
 								element={

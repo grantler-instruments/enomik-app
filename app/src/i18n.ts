@@ -5,6 +5,7 @@ import { nfcTranslations } from "./i18n.nfc";
 import { patcherTranslations } from "./i18n.patcher";
 import { testerTranslations } from "./i18n.tester";
 import { tutorialTranslations } from "./i18n.tutorial";
+import { workshopTranslations } from "./i18n.workshop";
 
 const LANGUAGE_STORAGE_KEY = "enomik-language";
 
@@ -22,6 +23,7 @@ i18n.use(initReactI18next).init({
 			translation: {
 				...tutorialTranslations.en,
 				...nfcTranslations.en,
+				...workshopTranslations.en,
 				...audioTranslations.en,
 				...testerTranslations.en,
 				...patcherTranslations.en,
@@ -488,6 +490,7 @@ i18n.use(initReactI18next).init({
 			translation: {
 				...tutorialTranslations.de,
 				...nfcTranslations.de,
+				...workshopTranslations.de,
 				...audioTranslations.de,
 				...testerTranslations.de,
 				...patcherTranslations.de,
@@ -963,6 +966,7 @@ i18n.use(initReactI18next).init({
 			translation: {
 				...tutorialTranslations.es,
 				...nfcTranslations.es,
+				...workshopTranslations.es,
 				...audioTranslations.es,
 				...testerTranslations.es,
 				...patcherTranslations.es,
@@ -1435,6 +1439,7 @@ i18n.use(initReactI18next).init({
 			translation: {
 				...tutorialTranslations.zh,
 				...nfcTranslations.zh,
+				...workshopTranslations.zh,
 				...audioTranslations.zh,
 				...testerTranslations.zh,
 				...patcherTranslations.zh,
