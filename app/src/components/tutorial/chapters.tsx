@@ -570,7 +570,7 @@ const Pairing = () => {
 			<Heading>{t("tutorial_pairing_peer_title")}</Heading>
 			<Steps i18nKey="tutorial_pairing_peer" />
 			<LiveDemo>
-				<Configurator embedded />
+				<Configurator embedded defaultTab="wireless" />
 			</LiveDemo>
 			<LinkButtons
 				actions={[{ label: t("configurator"), link: "/configurator" }]}
@@ -590,7 +590,7 @@ const ConfiguratorChapter = () => {
 			<Heading>{t("tutorial_configurator_connect_title")}</Heading>
 			<Steps i18nKey="tutorial_configurator_connect" />
 			<Heading>{t("tutorial_configurator_sections_title")}</Heading>
-			<Steps i18nKey="tutorial_configurator_sections" ordered={false} />
+			<Steps i18nKey="tutorial_configurator_sections" />
 			<Note severity="warning">{t("tutorial_configurator_deploy")}</Note>
 			<Heading>{t("tutorial_configurator_toolbar_title")}</Heading>
 			<Steps i18nKey="tutorial_configurator_toolbar" ordered={false} />

@@ -1,6 +1,6 @@
 import TouchAppIcon from "@mui/icons-material/TouchApp";
 import { Alert, Box, Chip, Popover, Tooltip, useTheme } from "@mui/material";
-import { type SVGProps, useState } from "react";
+import { type SVGProps, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useConflictingPins, useIOStore } from "../../store/io";
 import { configSummary, isConfigurable } from "../../utils/pinout";
@@ -135,12 +135,22 @@ const BoardDiagram = ({
 	board,
 	interactive = false,
 	hint = true,
+	selectedGpio = null,
+	onSelect,
 }: {
 	board: Board;
 	/** Show the configurator's pin configs and edit them on click. */
 	interactive?: boolean;
 	/** Explain how to assign pins; off when the parent shows it once. */
 	hint?: boolean;
+	/** GPIO to mark as selected (e.g. the row being edited next to the board). */
+	selectedGpio?: number | null;
+	/**
+	 * Called with the GPIO of a configured pin when it is clicked, instead of
+	 * opening the editor. Free pins still open it to add a config; once added,
+	 * the editor closes and the new pin is selected.
+	 */
+	onSelect?: (gpio: number) => void;
 }) => {
 	const { t } = useTranslation();
 	const inputs = useIOStore((state) => state.inputs);
@@ -153,6 +163,16 @@ const BoardDiagram = ({
 	const theme = useTheme();
 	const colors = usePinColors();
 	const groupColors = { digital: colors.digital, analog: colors.analog };
+	const editingGpio = editing?.pin.gpio;
+	const editingConfigured =
+		editingGpio !== undefined &&
+		[...inputs, ...outputs].some((config) => config.pin === editingGpio);
+	useEffect(() => {
+		if (onSelect && editingConfigured && editingGpio !== undefined) {
+			setEditing(null);
+			onSelect(editingGpio);
+		}
+	}, [onSelect, editingConfigured, editingGpio]);
 	const usedTypes = PIN_TYPES.filter((type) =>
 		board.pins.some((pin) => pin.type === type),
 	);
@@ -281,8 +301,9 @@ const BoardDiagram = ({
 								]
 							: [];
 					const openEditor = (anchor: Element) => {
-						if (editable && gpio !== undefined)
-							setEditing({ anchor, pin: { ...pin, gpio } });
+						if (!editable || gpio === undefined) return;
+						if (onSelect && configs.length > 0) onSelect(gpio);
+						else setEditing({ anchor, pin: { ...pin, gpio } });
 					};
 					return (
 						<Tooltip
@@ -307,6 +328,11 @@ const BoardDiagram = ({
 								aria-label={description}
 								role="button"
 								aria-disabled={!editable}
+								aria-pressed={
+									onSelect && gpio !== undefined
+										? gpio === selectedGpio
+										: undefined
+								}
 								onClick={(e) => openEditor(e.currentTarget)}
 								onKeyDown={(e) => {
 									if (e.key === "Enter" || e.key === " ") {
@@ -346,6 +372,16 @@ const BoardDiagram = ({
 											strokeDasharray="0.35 0.25"
 										/>
 									)
+								)}
+								{gpio !== undefined && gpio === selectedGpio && (
+									<circle
+										cx={pin.x}
+										cy={pin.y}
+										r={RING_RADIUS + 0.35}
+										fill="none"
+										stroke={theme.palette.primary.main}
+										strokeWidth={0.35}
+									/>
 								)}
 								<circle
 									className="pad"

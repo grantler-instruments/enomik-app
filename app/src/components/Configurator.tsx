@@ -1,17 +1,16 @@
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ClearAllIcon from "@mui/icons-material/ClearAll";
-import DeveloperBoardIcon from "@mui/icons-material/DeveloperBoard";
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import SettingsInputComponentIcon from "@mui/icons-material/SettingsInputComponent";
-import { Box, Button, IconButton, Tooltip } from "@mui/material";
+import { Box, Button, IconButton, Tab, Tabs, Tooltip } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useDevice, useDeviceKind } from "../hooks/useDevice";
 import { useToast } from "../hooks/useToast";
-import { useAccordionOpen } from "../store/app";
 import {
 	type DeviceKind,
 	dongleConfigBlocker,
@@ -44,26 +43,31 @@ import {
 	ENOMIK_ERROR_UNKNOWN_COMMAND,
 } from "../store/midi.config";
 import { useRawStreamStore } from "../store/rawStream";
-import CollapsibleSection from "./common/CollapsibleSection";
-import BoardView from "./configurator/BoardView";
+import DeployPanel from "./configurator/DeployPanel";
+import PinsPanel from "./configurator/PinsPanel";
 import DeviceKindChooser from "./DeviceKindChooser";
 import Globals from "./Globals";
-import Inputs from "./Inputs";
 import PageLayout from "./layout/PageLayout";
 import MidiDeviceChooser from "./MidiDeviceChooser";
-import Outputs from "./Outputs";
 import Peers from "./Peers";
 import SectionHeader from "./SectionHeader";
-import {
-	GlobalIcon,
-	MidiToPinIcon,
-	PinToMidiIcon,
-	WirelessMidiIcon,
-} from "./SectionIcons";
+import { GlobalIcon, WirelessMidiIcon } from "./SectionIcons";
 
-/** `embedded`: without page chrome, toolbar inline (used in the tutorial). */
-const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
+export type ConfiguratorTab = "global" | "pins" | "wireless" | "deploy";
+
+/**
+ * `embedded`: without page chrome, toolbar inline (used in the tutorial).
+ * `defaultTab`: step shown first, e.g. "wireless" in the pairing chapter.
+ */
+const Configurator = ({
+	embedded = false,
+	defaultTab = "global",
+}: {
+	embedded?: boolean;
+	defaultTab?: ConfiguratorTab;
+}) => {
 	const { t } = useTranslation();
+	const [tab, setTab] = useState<ConfiguratorTab>(defaultTab);
 	const selectedOutputId = useMIDIStore(
 		(state) => state.selectedConfiguratorOutputDevice,
 	);
@@ -106,44 +110,6 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 	const { showToast, toast } = useToast();
 	const [deploying, setDeploying] = useState(false);
 	const [loadingFromDevice, setLoadingFromDevice] = useState(false);
-	const [globalOpen, setGlobalOpen] = useAccordionOpen(
-		"configurator_global",
-		() => {
-			const s = useConfig.getState();
-			return s.midiLoopback || s.powerSave || s.name !== "";
-		},
-	);
-	const [boardOpen, setBoardOpen] = useAccordionOpen(
-		"configurator_board",
-		true,
-	);
-	const [inputsOpen, setInputsOpen] = useAccordionOpen(
-		"configurator_inputs",
-		false,
-	);
-	const [outputsOpen, setOutputsOpen] = useAccordionOpen(
-		"configurator_outputs",
-		false,
-	);
-	const [peersOpen, setPeersOpen] = useAccordionOpen(
-		"configurator_peers",
-		() => useConfig.getState().peers.length > 0,
-	);
-
-	const syncSectionOpen = (cfg: {
-		inputsCount: number;
-		outputsCount: number;
-		peersCount: number;
-		midiLoopback: boolean;
-		powerSave: boolean;
-		name: string;
-	}) => {
-		setGlobalOpen(cfg.midiLoopback || cfg.powerSave || cfg.name !== "");
-		setInputsOpen(cfg.inputsCount > 0);
-		setOutputsOpen(cfg.outputsCount > 0);
-		setPeersOpen(cfg.peersCount > 0);
-	};
-
 	const setKind = useDeviceStore((state) => state.setKind);
 	// Picking a kind picks a matching port; picking a port sets the kind (store)
 	const handleKindChange = (kind: DeviceKind) => {
@@ -331,14 +297,6 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 				}
 				const { config } = loaded;
 				loadFromFile(config);
-				syncSectionOpen({
-					inputsCount: config.inputs?.length ?? 0,
-					outputsCount: config.outputs?.length ?? 0,
-					peersCount: config.peers?.length ?? 0,
-					midiLoopback: config.midiLoopback ?? false,
-					powerSave: config.powerSave ?? false,
-					name: config.name ?? "",
-				});
 			} catch (err) {
 				console.error("Failed to load JSON", err);
 			}
@@ -348,14 +306,6 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 
 	const handleClearConfiguration = () => {
 		loadFromFile({});
-		syncSectionOpen({
-			inputsCount: 0,
-			outputsCount: 0,
-			peersCount: 0,
-			midiLoopback: false,
-			powerSave: false,
-			name: "",
-		});
 	};
 
 	const handleLoadFromDevice = async () => {
@@ -414,7 +364,6 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 			}
 			if (isDongle) {
 				loadFromFile({ peers: result.peers });
-				setPeersOpen(result.peers.length > 0);
 				showToast(
 					t("load_from_device_toast_dongle_ok", {
 						peerCount: result.peers.length,
@@ -430,14 +379,6 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 					typeof loadFromFile
 				>[0]["outputs"],
 				peers: result.peers,
-				midiLoopback: result.midiLoopback ?? useConfig.getState().midiLoopback,
-				powerSave: result.powerSave ?? useConfig.getState().powerSave,
-				name: result.name ?? "",
-			});
-			syncSectionOpen({
-				inputsCount: result.inputs.length,
-				outputsCount: result.outputs.length,
-				peersCount: result.peers.length,
 				midiLoopback: result.midiLoopback ?? useConfig.getState().midiLoopback,
 				powerSave: result.powerSave ?? useConfig.getState().powerSave,
 				name: result.name ?? "",
@@ -468,6 +409,7 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 		}
 	};
 
+	const deployDisabled = !initialized || deploying || !hasSelectedOutput;
 	const toolbar = (
 		<>
 			{/* Hidden file input */}
@@ -534,93 +476,151 @@ const Configurator = ({ embedded = false }: { embedded?: boolean }) => {
 				variant="contained"
 				color="primary"
 				onClick={handleDeploy}
-				disabled={!initialized || deploying || !hasSelectedOutput}
+				disabled={deployDisabled}
 			>
 				{t("deploy")}
 			</Button>
 		</>
 	);
+	// The steps in order; a dongle only has peers to deploy.
+	const steps: {
+		value: ConfiguratorTab;
+		label: string;
+		count?: number;
+	}[] = [
+		...(isDongle
+			? []
+			: [
+					{ value: "global" as const, label: t("section_global") },
+					{
+						value: "pins" as const,
+						label: t("configurator_tab_pins"),
+						count: inputs.length + outputs.length,
+					},
+				]),
+		{
+			value: "wireless",
+			label: t("configurator_tab_wireless"),
+			count: peers.length,
+		},
+		{ value: "deploy", label: t("deploy") },
+	];
+	const activeTab = steps.some((step) => step.value === tab) ? tab : "wireless";
+	const activeIndex = steps.findIndex((step) => step.value === activeTab);
+	const nextStep = steps[activeIndex + 1];
+	const stepsRef = useRef<HTMLDivElement | null>(null);
+	const goTo = (value: ConfiguratorTab) => {
+		setTab(value);
+		stepsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+	};
 	const body = (
 		<>
-			{!isDongle && (
-				<>
-					<CollapsibleSection
-						id="global"
-						expanded={globalOpen}
-						onChange={setGlobalOpen}
-						title={
-							<SectionHeader
-								component="span"
-								title={t("section_global")}
-								icon={<GlobalIcon />}
-								tooltipKey="tooltip_global"
-							/>
-						}
-					>
-						<Globals />
-					</CollapsibleSection>
-					<CollapsibleSection
-						id="board"
-						expanded={boardOpen}
-						onChange={setBoardOpen}
-						unmountOnExit
-						title={
-							<SectionHeader
-								component="span"
-								title={t("section_board")}
-								icon={<DeveloperBoardIcon />}
-							/>
-						}
-					>
-						<BoardView />
-					</CollapsibleSection>
-					<CollapsibleSection
-						id="inputs"
-						expanded={inputsOpen}
-						onChange={setInputsOpen}
-						title={
-							<SectionHeader
-								component="span"
-								title={t("section_input_pin_to_midi")}
-								icon={<PinToMidiIcon />}
-								tooltipKey="tooltip_pin_to_midi"
-							/>
-						}
-					>
-						<Inputs></Inputs>
-					</CollapsibleSection>
-					<CollapsibleSection
-						id="outputs"
-						expanded={outputsOpen}
-						onChange={setOutputsOpen}
-						title={
-							<SectionHeader
-								component="span"
-								title={t("section_midi_to_output_pin")}
-								icon={<MidiToPinIcon />}
-								tooltipKey="tooltip_midi_to_pin"
-							/>
-						}
-					>
-						<Outputs></Outputs>
-					</CollapsibleSection>
-				</>
-			)}
-			<CollapsibleSection
-				id="wireless-midi"
-				expanded={isDongle || peersOpen}
-				onChange={setPeersOpen}
-				title={
-					<SectionHeader
-						component="span"
-						title={t("section_wireless_midi")}
-						icon={<WirelessMidiIcon />}
-						tooltipKey="tooltip_wireless_midi"
-					/>
-				}
+			<Tabs
+				ref={stepsRef}
+				value={activeTab}
+				onChange={(_, value: ConfiguratorTab) => setTab(value)}
+				variant="scrollable"
+				allowScrollButtonsMobile
+				aria-label={t("configurator_steps")}
+				sx={{
+					mb: 3,
+					borderBottom: 1,
+					borderColor: "divider",
+					scrollMarginTop: 96,
+				}}
 			>
-				<Peers store={useConfig}></Peers>
-			</CollapsibleSection>
+				{steps.map((step, index) => (
+					<Tab
+						key={step.value}
+						value={step.value}
+						id={`configurator-tab-${step.value}`}
+						aria-controls={`configurator-panel-${step.value}`}
+						iconPosition="start"
+						icon={
+							<Box
+								component="span"
+								aria-hidden
+								sx={{
+									width: 24,
+									height: 24,
+									borderRadius: "50%",
+									display: "inline-flex",
+									alignItems: "center",
+									justifyContent: "center",
+									fontSize: 13,
+									fontWeight: 600,
+									bgcolor:
+										step.value === activeTab
+											? "primary.main"
+											: "action.selected",
+									color:
+										step.value === activeTab
+											? "primary.contrastText"
+											: "text.secondary",
+								}}
+							>
+								{index + 1}
+							</Box>
+						}
+						label={step.count ? `${step.label} (${step.count})` : step.label}
+						sx={{ minHeight: 48 }}
+					/>
+				))}
+			</Tabs>
+			<Box
+				role="tabpanel"
+				id={`configurator-panel-${activeTab}`}
+				aria-labelledby={`configurator-tab-${activeTab}`}
+			>
+				{activeTab === "global" && (
+					<>
+						<SectionHeader
+							title={t("section_global")}
+							icon={<GlobalIcon />}
+							tooltipKey="tooltip_global"
+						/>
+						<Globals />
+					</>
+				)}
+				{activeTab === "pins" && <PinsPanel />}
+				{activeTab === "wireless" && (
+					<>
+						<SectionHeader
+							title={t("section_wireless_midi")}
+							icon={<WirelessMidiIcon />}
+							tooltipKey="tooltip_wireless_midi"
+						/>
+						<Peers store={useConfig} />
+					</>
+				)}
+				{activeTab === "deploy" && (
+					<DeployPanel
+						store={useConfig}
+						isDongle={isDongle}
+						deviceName={
+							hasSelectedOutput
+								? midiOutputs.find((port) => port.id === selectedOutputId)?.name
+								: undefined
+						}
+						canDeploy={!deployDisabled}
+						onDeploy={handleDeploy}
+						onSave={saveToFile}
+					/>
+				)}
+				{nextStep && (
+					<Box mt={4}>
+						<Button
+							variant="outlined"
+							endIcon={<ArrowForwardIcon />}
+							onClick={() => goTo(nextStep.value)}
+						>
+							{t("configurator_next", {
+								step: `${activeIndex + 2}. ${nextStep.label}`,
+							})}
+						</Button>
+					</Box>
+				)}
+			</Box>
 			{toast}
 		</>
 	);

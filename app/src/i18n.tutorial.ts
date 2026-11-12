@@ -354,10 +354,9 @@ const en = {
 	tutorial_configurator_sections_title: "What's on the page",
 	tutorial_configurator_sections: [
 		"Global: settings for the whole board, such as its name and MIDI Loopback.",
-		"Board: a drawing of the board to add pins by clicking.",
-		"Input Pin to MIDI Mapping: inputs such as buttons, knobs and touch pads, and the message each one sends.",
-		"MIDI to Output Pin Mapping: outputs such as LEDs and servos, and the message each one reacts to.",
-		"Wireless MIDI Configuration: the MAC addresses the board sends to. A dongle only shows this section.",
+		"Pins: a drawing of the board next to the pin lists. Input Pin to MIDI Mapping holds inputs such as buttons, knobs and touch pads and the message each one sends; MIDI to Output Pin Mapping holds outputs such as LEDs and servos and the message each one reacts to.",
+		"Wireless MIDI: the MAC addresses the board sends to. A dongle only has this step and Deploy.",
+		"Deploy: a summary of what will be written, problems that block it, and the Deploy button.",
 	],
 	tutorial_configurator_deploy:
 		"Nothing reaches the board until you click Deploy. Deploy writes the whole configuration to the board, which keeps it across reboots and firmware updates.",
@@ -370,10 +369,10 @@ const en = {
 		"Pin modes and board pinouts: opens Kits & Boards to look up which pin can do what.",
 	],
 	tutorial_configurator_tip:
-		"The next two sections explain Global and Board in detail. The examples after this chapter fill in the input and output mappings, and Wireless pairing the last section.",
+		"The next two sections explain Global and Board in detail. The examples after this chapter fill in the input and output mappings, and Wireless pairing the Wireless MIDI tab.",
 	tutorial_cfg_global_title: "Global settings",
 	tutorial_cfg_global_text: [
-		"The Global section holds settings that apply to the whole board rather than to a single pin.",
+		"The Global tab holds settings that apply to the whole board rather than to a single pin.",
 	],
 	tutorial_cfg_global_list: [
 		'Client name: a name to tell your boards apart, e.g. "Drums left". Printable ASCII, up to 16 characters (firmware 0.19+). Leave it empty to keep the firmware\'s default name.',
@@ -389,7 +388,8 @@ const en = {
 	tutorial_cfg_board_steps: [
 		"Pick your board from the list. The choice only changes the drawing, not the configuration.",
 		"Pins with a dashed ring are free: click one and choose Add as input or Add as output.",
-		"The new pin shows up in the input or output list below, where you set its MIDI message. Configured pins are marked on the drawing.",
+		"The new pin shows up in the input or output list next to the drawing (below it on smaller screens), where you set its MIDI message. Configured pins are marked on the drawing.",
+		"Click a configured pin to jump to its row; clicking a row marks its pin on the drawing.",
 		"Faded pins (power, GND, I2C) are fixed and can't be assigned.",
 	],
 	tutorial_examples_code_title: "Via code",
@@ -410,7 +410,7 @@ const en = {
 	tutorial_pairing_peer: [
 		"Connect the client via USB and open the Configurator.",
 		"Click Init MIDI if asked, select the client as MIDI output and set the device type to Client.",
-		"Open Wireless MIDI Configuration, add a row and replace the placeholder FF:FF:FF:FF:FF:FF with the dongle's MAC address.",
+		"Open the Wireless MIDI tab, add a row and replace the placeholder FF:FF:FF:FF:FF:FF with the dongle's MAC address.",
 		"Click Deploy. The configuration is stored on the client.",
 	],
 	tutorial_pairing_test_title: "3. Go wireless",
@@ -1215,10 +1215,9 @@ const de: typeof en = {
 	tutorial_configurator_sections_title: "Was auf der Seite ist",
 	tutorial_configurator_sections: [
 		"Global: Einstellungen für das ganze Board, z. B. sein Name und MIDI Loopback.",
-		"Board: eine Zeichnung des Boards, um Pins per Klick hinzuzufügen.",
-		"Eingangs-Pin-zu-MIDI-Zuordnung: Eingänge wie Taster, Potis und Touch-Pads und die Nachricht, die jeder sendet.",
-		"MIDI-zu-Ausgangs-Pin-Zuordnung: Ausgänge wie LEDs und Servos und die Nachricht, auf die jeder reagiert.",
-		"Drahtlose MIDI-Konfiguration: die MAC-Adressen, an die das Board sendet. Bei einem Dongle gibt es nur diesen Abschnitt.",
+		"Pins: eine Zeichnung des Boards neben den Pin-Listen. Die Eingangs-Pin-zu-MIDI-Zuordnung enthält Eingänge wie Taster, Potis und Touch-Pads und die Nachricht, die jeder sendet; die MIDI-zu-Ausgangs-Pin-Zuordnung Ausgänge wie LEDs und Servos und die Nachricht, auf die jeder reagiert.",
+		"Drahtlos-MIDI: die MAC-Adressen, an die das Board sendet. Ein Dongle hat nur diesen Schritt und Bereitstellen.",
+		"Bereitstellen: eine Übersicht, was geschrieben wird, Probleme, die es verhindern, und der Bereitstellen-Button.",
 	],
 	tutorial_configurator_deploy:
 		"Erst mit Bereitstellen kommt etwas auf dem Board an. Bereitstellen schreibt die ganze Konfiguration auf das Board, das sie über Neustarts und Firmware-Updates hinweg behält.",
@@ -1231,10 +1230,10 @@ const de: typeof en = {
 		"Pin-Modi und Board-Pinouts: öffnet Kits & Boards, um nachzuschlagen, welcher Pin was kann.",
 	],
 	tutorial_configurator_tip:
-		"Die nächsten beiden Abschnitte erklären Global und Board genauer. Die Beispiele nach diesem Kapitel füllen die Ein- und Ausgangszuordnungen aus, Kabellos koppeln den letzten Abschnitt.",
+		"Die nächsten beiden Abschnitte erklären Global und Board genauer. Die Beispiele nach diesem Kapitel füllen die Ein- und Ausgangszuordnungen aus, Kabellos koppeln den Tab Drahtlos-MIDI.",
 	tutorial_cfg_global_title: "Globale Einstellungen",
 	tutorial_cfg_global_text: [
-		"Der Bereich Global enthält Einstellungen, die für das ganze Board gelten und nicht für einen einzelnen Pin.",
+		"Der Tab Global enthält Einstellungen, die für das ganze Board gelten und nicht für einen einzelnen Pin.",
 	],
 	tutorial_cfg_global_list: [
 		'Client-Name: ein Name, um deine Boards auseinanderzuhalten, z. B. "Drums links". Druckbare ASCII-Zeichen, bis zu 16 Zeichen (Firmware 0.19+). Leer lassen, um den Standardnamen der Firmware zu behalten.',
@@ -1250,7 +1249,8 @@ const de: typeof en = {
 	tutorial_cfg_board_steps: [
 		"Wähle dein Board aus der Liste. Die Auswahl ändert nur die Zeichnung, nicht die Konfiguration.",
 		"Pins mit gestricheltem Ring sind frei: Klicke einen an und wähle Als Eingang hinzufügen oder Als Ausgang hinzufügen.",
-		"Der neue Pin erscheint unten in der Eingangs- oder Ausgangsliste, wo du seine MIDI-Nachricht festlegst. Konfigurierte Pins sind in der Zeichnung markiert.",
+		"Der neue Pin erscheint in der Eingangs- oder Ausgangsliste neben der Zeichnung (auf kleineren Bildschirmen darunter), wo du seine MIDI-Nachricht festlegst. Konfigurierte Pins sind in der Zeichnung markiert.",
+		"Ein Klick auf einen konfigurierten Pin springt zu seiner Zeile; ein Klick auf eine Zeile markiert ihren Pin in der Zeichnung.",
 		"Blasse Pins (Strom, GND, I2C) sind fest belegt und können nicht zugewiesen werden.",
 	],
 	tutorial_examples_code_title: "Über Code",
@@ -1271,7 +1271,7 @@ const de: typeof en = {
 	tutorial_pairing_peer: [
 		"Client per USB anschließen und den Konfigurator öffnen.",
 		"Falls nötig auf MIDI initialisieren klicken, den Client als MIDI-Ausgang wählen und den Gerätetyp auf Client stellen.",
-		"Drahtlose MIDI-Konfiguration öffnen, eine Zeile hinzufügen und den Platzhalter FF:FF:FF:FF:FF:FF durch die MAC-Adresse des Dongles ersetzen.",
+		"Den Tab Drahtlos-MIDI öffnen, eine Zeile hinzufügen und den Platzhalter FF:FF:FF:FF:FF:FF durch die MAC-Adresse des Dongles ersetzen.",
 		"Auf Bereitstellen klicken. Die Konfiguration wird auf dem Client gespeichert.",
 	],
 	tutorial_pairing_test_title: "3. Kabellos werden",
@@ -2076,10 +2076,9 @@ const es: typeof en = {
 	tutorial_configurator_sections_title: "Qué hay en la página",
 	tutorial_configurator_sections: [
 		"Global: ajustes para toda la placa, como su nombre y MIDI Loopback.",
-		"Placa: un dibujo de la placa para añadir pines con un clic.",
-		"Asignación de pin de entrada a MIDI: entradas como botones, potenciómetros y pads táctiles, y el mensaje que envía cada una.",
-		"Asignación de MIDI a pin de salida: salidas como LEDs y servos, y el mensaje al que reacciona cada una.",
-		"Configuración de MIDI inalámbrico: las direcciones MAC a las que envía la placa. Un dongle solo muestra esta sección.",
+		"Pines: un dibujo de la placa junto a las listas de pines. La asignación de pin de entrada a MIDI contiene entradas como botones, potenciómetros y pads táctiles y el mensaje que envía cada una; la asignación de MIDI a pin de salida, salidas como LEDs y servos y el mensaje al que reacciona cada una.",
+		"MIDI inalámbrico: las direcciones MAC a las que envía la placa. Un dongle solo tiene este paso y Desplegar.",
+		"Desplegar: un resumen de lo que se va a escribir, los problemas que lo impiden y el botón Desplegar.",
 	],
 	tutorial_configurator_deploy:
 		"Nada llega a la placa hasta que haces clic en Desplegar. Desplegar escribe toda la configuración en la placa, que la conserva tras reinicios y actualizaciones de firmware.",
@@ -2092,10 +2091,10 @@ const es: typeof en = {
 		"Modos de pin y pinouts: abre Kits y placas para consultar qué puede hacer cada pin.",
 	],
 	tutorial_configurator_tip:
-		"Las dos secciones siguientes explican Global y Placa en detalle. Los ejemplos después de este capítulo rellenan las asignaciones de entradas y salidas, y Emparejamiento inalámbrico la última sección.",
+		"Las dos secciones siguientes explican Global y Placa en detalle. Los ejemplos después de este capítulo rellenan las asignaciones de entradas y salidas, y Emparejamiento inalámbrico la pestaña MIDI inalámbrico.",
 	tutorial_cfg_global_title: "Ajustes globales",
 	tutorial_cfg_global_text: [
-		"La sección Global contiene ajustes que se aplican a toda la placa y no a un solo pin.",
+		"La pestaña Global contiene ajustes que se aplican a toda la placa y no a un solo pin.",
 	],
 	tutorial_cfg_global_list: [
 		'Nombre del cliente: un nombre para distinguir tus placas, p. ej. "Batería izquierda". ASCII imprimible, hasta 16 caracteres (firmware 0.19+). Déjalo vacío para conservar el nombre por defecto del firmware.',
@@ -2111,7 +2110,8 @@ const es: typeof en = {
 	tutorial_cfg_board_steps: [
 		"Elige tu placa de la lista. La elección solo cambia el dibujo, no la configuración.",
 		"Los pines con un anillo discontinuo están libres: haz clic en uno y elige Añadir como entrada o Añadir como salida.",
-		"El nuevo pin aparece abajo en la lista de entradas o salidas, donde defines su mensaje MIDI. Los pines configurados se marcan en el dibujo.",
+		"El nuevo pin aparece en la lista de entradas o salidas junto al dibujo (debajo en pantallas pequeñas), donde defines su mensaje MIDI. Los pines configurados se marcan en el dibujo.",
+		"Haz clic en un pin configurado para saltar a su fila; al hacer clic en una fila se marca su pin en el dibujo.",
 		"Los pines atenuados (alimentación, GND, I2C) son fijos y no se pueden asignar.",
 	],
 	tutorial_examples_code_title: "Con código",
@@ -2132,7 +2132,7 @@ const es: typeof en = {
 	tutorial_pairing_peer: [
 		"Conecta el cliente por USB y abre el Configurador.",
 		"Pulsa Iniciar MIDI si se te pide, selecciona el cliente como salida MIDI y ajusta el tipo de dispositivo a Cliente.",
-		"Abre Configuración de MIDI inalámbrico, añade una fila y sustituye FF:FF:FF:FF:FF:FF por la dirección MAC del dongle.",
+		"Abre la pestaña MIDI inalámbrico, añade una fila y sustituye FF:FF:FF:FF:FF:FF por la dirección MAC del dongle.",
 		"Pulsa Desplegar. La configuración se guarda en el cliente.",
 	],
 	tutorial_pairing_test_title: "3. Sin cables",
@@ -2921,10 +2921,9 @@ const zh: typeof en = {
 	tutorial_configurator_sections_title: "页面上有什么",
 	tutorial_configurator_sections: [
 		"全局：适用于整个开发板的设置，例如名称和 MIDI Loopback。",
-		"电路板：开发板示意图，点击即可添加引脚。",
-		"输入引脚到 MIDI 映射：按钮、旋钮和触摸板等输入，以及每个输入发送的消息。",
-		"MIDI 到输出引脚映射：LED 和舵机等输出，以及每个输出响应的消息。",
-		"无线 MIDI 配置：开发板发送到的 MAC 地址。适配器只显示这一部分。",
+		"引脚：开发板示意图与引脚列表并排显示。输入引脚到 MIDI 映射包含按钮、旋钮和触摸板等输入及每个输入发送的消息；MIDI 到输出引脚映射包含 LED 和舵机等输出及每个输出响应的消息。",
+		"无线 MIDI：开发板发送到的 MAC 地址。适配器只有这一步和部署。",
+		"部署：将要写入内容的概览、阻止部署的问题，以及部署按钮。",
 	],
 	tutorial_configurator_deploy:
 		"在点击部署之前，任何更改都不会写入开发板。部署会把整个配置写入开发板，重启和固件更新后依然保留。",
@@ -2937,10 +2936,10 @@ const zh: typeof en = {
 		"引脚模式和开发板引脚图：打开套件与电路板，查看每个引脚能做什么。",
 	],
 	tutorial_configurator_tip:
-		"接下来的两节详细介绍全局和电路板。本章之后的示例会填写输入和输出映射，无线配对则会填写最后一部分。",
+		"接下来的两节详细介绍全局和电路板。本章之后的示例会填写输入和输出映射，无线配对则会填写无线 MIDI 标签页。",
 	tutorial_cfg_global_title: "全局设置",
 	tutorial_cfg_global_text: [
-		"全局部分包含适用于整个开发板、而不是单个引脚的设置。",
+		"全局标签页包含适用于整个开发板、而不是单个引脚的设置。",
 	],
 	tutorial_cfg_global_list: [
 		"客户端名称：用于区分开发板的名称，例如“左侧鼓”。可打印 ASCII 字符，最多 16 个（固件 0.19+）。留空则保留固件的默认名称。",
@@ -2956,7 +2955,8 @@ const zh: typeof en = {
 	tutorial_cfg_board_steps: [
 		"从列表中选择你的开发板。该选择只改变图示，不影响配置。",
 		"带虚线圆环的引脚是空闲的：点击一个，然后选择添加为输入或添加为输出。",
-		"新引脚会出现在下方的输入或输出列表中，你可以在那里设置它的 MIDI 消息。已配置的引脚会在图上标出。",
+		"新引脚会出现在示意图旁边（小屏幕上在下方）的输入或输出列表中，你可以在那里设置它的 MIDI 消息。已配置的引脚会在图上标出。",
+		"点击已配置的引脚可跳转到它的行；点击某一行会在图上标出对应引脚。",
 		"淡色引脚（电源、GND、I2C）是固定的，无法分配。",
 	],
 	tutorial_examples_code_title: "通过代码",
@@ -2977,7 +2977,7 @@ const zh: typeof en = {
 	tutorial_pairing_peer: [
 		"通过 USB 连接客户端，打开配置器。",
 		"如有提示，点击初始化 MIDI，选择客户端作为 MIDI 输出，并将设备类型设为客户端。",
-		"打开无线 MIDI 配置，添加一行，将占位符 FF:FF:FF:FF:FF:FF 替换为适配器的 MAC 地址。",
+		"打开无线 MIDI 标签页，添加一行，将占位符 FF:FF:FF:FF:FF:FF 替换为适配器的 MAC 地址。",
 		"点击部署。配置将保存在客户端上。",
 	],
 	tutorial_pairing_test_title: "3. 无线运行",

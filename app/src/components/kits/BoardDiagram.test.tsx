@@ -205,3 +205,47 @@ describe("PinEditor (from the board)", () => {
 		expect(within(editor()).getByText("Not configured")).toBeInTheDocument();
 	});
 });
+
+describe("BoardDiagram selection (onSelect)", () => {
+	const renderSelectable = (config: ConfigFile, selectedGpio?: number) => {
+		useIOStore.getState().loadFromFile(config);
+		const selected: number[] = [];
+		const result = renderWithProviders(
+			<BoardDiagram
+				board={board}
+				interactive
+				selectedGpio={selectedGpio}
+				onSelect={(gpio) => selected.push(gpio)}
+			/>,
+		);
+		return { user: userEvent.setup(), selected, ...result };
+	};
+
+	it("selects a configured pin instead of opening the editor", async () => {
+		const { user, selected } = renderSelectable({
+			inputs: [{ ...input, pin: 1 }],
+		});
+		await user.click(pad("GPIO 1 · Analog"));
+		expect(selected).toEqual([1]);
+		expect(screen.queryByRole("presentation")).not.toBeInTheDocument();
+	});
+
+	it("opens the editor for a free pin, then selects it once added", async () => {
+		const { user, selected } = renderSelectable({});
+		await user.click(pad("GPIO 1 · Analog"));
+		const add = addInput();
+		expect(add).toBeInTheDocument();
+		if (add) await user.click(add);
+		expect(useIOStore.getState().inputs.map((i) => i.pin)).toEqual([1]);
+		expect(selected).toEqual([1]);
+	});
+
+	it("marks the selected pad as pressed", () => {
+		renderSelectable({ inputs: [{ ...input, pin: 1 }] }, 1);
+		expect(pad("GPIO 1 · Analog")).toHaveAttribute("aria-pressed", "true");
+		expect(pad("GPIO 2 · Capacitive touch")).toHaveAttribute(
+			"aria-pressed",
+			"false",
+		);
+	});
+});

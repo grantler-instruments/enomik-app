@@ -22,8 +22,17 @@ import { controllerForPin } from "../utils/pinout";
 import AddRowButton from "./AddRowButton";
 import { LiveCell, RawStreamToggle } from "./inspector/RawValues";
 import PinRow, { hasTouchInput, PinTableHeader } from "./pinmapping/PinRow";
+import SelectableRow from "./pinmapping/SelectableRow";
 
-const Inputs = () => {
+const Inputs = ({
+	selectedGpio = null,
+	onSelect,
+}: {
+	/** Pin whose rows are marked, e.g. the one picked on the board. */
+	selectedGpio?: number | null;
+	/** Called with a row's pin when the row is clicked or focused. */
+	onSelect?: (gpio: number) => void;
+}) => {
 	const inputs = useIOStore((state) => state.inputs);
 	const addInput = useIOStore((state) => state.addInput);
 	const showHints = useAppStore((state) => state.showHints);
@@ -119,36 +128,43 @@ const Inputs = () => {
 			{inputs.map((input, index) => {
 				const value = deployedValue(input);
 				return (
-					<PinRow
+					<SelectableRow
 						key={input.uuid}
-						config={input}
-						type="input"
-						index={index}
-						showThreshold={showThreshold}
-						thresholdUnit={unit}
-						live={
-							streaming &&
-							!input.muted &&
-							(value ? (
-								<LiveCell
-									value={value}
-									threshold={
-										input.thresholdUnit === unit || !input.threshold
-											? input.threshold
-											: undefined
-									}
-								/>
-							) : (
-								<Typography
-									variant="caption"
-									color="text.secondary"
-									title={t("configurator_raw_stream_not_deployed")}
-								>
-									{t("live_after_deploy")}
-								</Typography>
-							))
-						}
-					/>
+						pin={input.pin}
+						selected={input.pin === selectedGpio}
+						onSelect={onSelect}
+					>
+						<PinRow
+							key={input.uuid}
+							config={input}
+							type="input"
+							index={index}
+							showThreshold={showThreshold}
+							thresholdUnit={unit}
+							live={
+								streaming &&
+								!input.muted &&
+								(value ? (
+									<LiveCell
+										value={value}
+										threshold={
+											input.thresholdUnit === unit || !input.threshold
+												? input.threshold
+												: undefined
+										}
+									/>
+								) : (
+									<Typography
+										variant="caption"
+										color="text.secondary"
+										title={t("configurator_raw_stream_not_deployed")}
+									>
+										{t("live_after_deploy")}
+									</Typography>
+								))
+							}
+						/>
+					</SelectableRow>
 				);
 			})}
 			<Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>

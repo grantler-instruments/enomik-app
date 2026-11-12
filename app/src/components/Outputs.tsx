@@ -7,8 +7,17 @@ import { MIDI_CONTROL_CHANGE, sysexPinModePWMOut } from "../store/midi.config";
 import { controllerForPin } from "../utils/pinout";
 import AddRowButton from "./AddRowButton";
 import PinRow, { hasPwmOutput, PinTableHeader } from "./pinmapping/PinRow";
+import SelectableRow from "./pinmapping/SelectableRow";
 
-const Outputs = () => {
+const Outputs = ({
+	selectedGpio = null,
+	onSelect,
+}: {
+	/** Pin whose rows are marked, e.g. the one picked on the board. */
+	selectedGpio?: number | null;
+	/** Called with a row's pin when the row is clicked or focused. */
+	onSelect?: (gpio: number) => void;
+}) => {
 	const outputs = useIOStore((state) => state.outputs);
 	const addOutput = useIOStore((state) => state.addOutput);
 	const showHints = useAppStore((state) => state.showHints);
@@ -31,13 +40,19 @@ const Outputs = () => {
 				<PinTableHeader type="output" showPwmRange={showPwmRange} />
 			)}
 			{outputs.map((output, index) => (
-				<PinRow
+				<SelectableRow
 					key={output.uuid}
-					config={output}
-					type="output"
-					index={index}
-					showPwmRange={showPwmRange}
-				/>
+					pin={output.pin}
+					selected={output.pin === selectedGpio}
+					onSelect={onSelect}
+				>
+					<PinRow
+						config={output}
+						type="output"
+						index={index}
+						showPwmRange={showPwmRange}
+					/>
+				</SelectableRow>
 			))}
 			<Box display={"flex"} justifyContent={"flex-start"} marginTop={2}>
 				<AddRowButton

@@ -8,9 +8,19 @@ import { BOARD_SETS } from "../kits/boards";
 /** Largest drawing scale of a board diagram. */
 const BOARD_PX_PER_MM = 14;
 
-/** Board picker plus clickable diagram(s) for assigning pins. */
-const BoardView = () => {
+/** Board picker plus clickable diagram(s) for assigning and selecting pins. */
+const BoardView = ({
+	sideBySide = false,
+	selectedGpio = null,
+	onSelect,
+}: {
+	/** Boards of a set in a row (stacked on small screens) instead of a column. */
+	sideBySide?: boolean;
+	selectedGpio?: number | null;
+	onSelect?: (gpio: number) => void;
+}) => {
 	const { t } = useTranslation();
+	const showHints = useAppStore((state) => state.showHints);
 	const boardSetId = useAppStore((state) => state.configuratorBoard);
 	const setBoardSetId = useAppStore((state) => state.setConfiguratorBoard);
 	const boardSet =
@@ -20,10 +30,11 @@ const BoardView = () => {
 			<TextField
 				select
 				size="small"
+				fullWidth
 				label={t("board_select")}
 				value={boardSet.id}
 				onChange={(e) => setBoardSetId(e.target.value)}
-				sx={{ mb: 2, minWidth: 280 }}
+				sx={{ mb: 2, maxWidth: 360 }}
 			>
 				{BOARD_SETS.map((set) => (
 					<MenuItem key={set.id} value={set.id}>
@@ -31,15 +42,21 @@ const BoardView = () => {
 					</MenuItem>
 				))}
 			</TextField>
-			<Alert severity="info" icon={<TouchAppIcon />} sx={{ mb: 2 }}>
-				{t("kits_click_to_configure")}
-			</Alert>
-			{/* Side by side, sized by board width; stacked on small screens */}
-			<Box display="flex" flexDirection={{ xs: "column", lg: "row" }} gap={3}>
+			{showHints && (
+				<Alert severity="info" icon={<TouchAppIcon />} sx={{ mb: 2 }}>
+					{t("kits_click_to_configure")}
+				</Alert>
+			)}
+			<Box
+				display="flex"
+				flexDirection={sideBySide ? { xs: "column", lg: "row" } : "column"}
+				gap={3}
+			>
 				{boardSet.boards.map((board) => (
 					<Box
 						key={board.id}
-						flex={`${board.width} 1 0`}
+						// In a row: sized by board width
+						flex={sideBySide ? `${board.width} 1 0` : undefined}
 						minWidth={0}
 						// Caps the scale so small boards don't fill the page
 						maxWidth={board.width * BOARD_PX_PER_MM}
@@ -52,7 +69,13 @@ const BoardView = () => {
 						>
 							{board.name}
 						</Typography>
-						<BoardDiagram board={board} interactive hint={false} />
+						<BoardDiagram
+							board={board}
+							interactive
+							hint={false}
+							selectedGpio={selectedGpio}
+							onSelect={onSelect}
+						/>
 					</Box>
 				))}
 			</Box>
