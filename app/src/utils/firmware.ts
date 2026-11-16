@@ -9,7 +9,7 @@
  * firmware; the others are grouped under "More firmware" in the uploader,
  * in this order. Each needs a firmwareuploader_category_<name> string.
  */
-export const FIRMWARE_CATEGORIES = ["examples"] as const;
+export const FIRMWARE_CATEGORIES = ["examples", "i2c"] as const;
 
 export const firmwareFileName = (boardId: string, sketch: string) =>
 	`${boardId}_${sketch}_${sketch}.ino.bin`;
