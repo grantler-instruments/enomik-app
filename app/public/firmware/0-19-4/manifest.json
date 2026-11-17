@@ -1,0 +1,89 @@
+{
+  "boards": [
+    {
+      "id": "lolin_s2_mini",
+      "label": "LOLIN S2 Mini",
+      "requiresManualBootloader": true,
+      "resetMode": "no_reset",
+      "hardResetAfterFlash": false
+    },
+    {
+      "id": "esp32s2",
+      "label": "ESP32-S2",
+      "requiresManualBootloader": true,
+      "resetMode": "no_reset",
+      "hardResetAfterFlash": false
+    },
+    {
+      "id": "esp32s3",
+      "label": "ESP32-S3",
+      "requiresManualBootloader": false,
+      "resetMode": "usb_reset",
+      "hardResetAfterFlash": true
+    }
+  ],
+  "roles": [
+    {
+      "label": "Dongle",
+      "sketch": "dongle",
+      "description": "interface to MIDI host"
+    },
+    {
+      "label": "Grantler Dongle",
+      "sketch": "grantler_instruments_dongle",
+      "path": "grantler_instruments/dongle",
+      "description": "interface to MIDI host with display and menu"
+    },
+    {
+      "label": "Client",
+      "sketch": "client",
+      "description": "board to connect sensors and actuators"
+    },
+    {
+      "label": "Print MAC",
+      "sketch": "print_mac",
+      "description": "prints the MAC address to serial (use this if you are not using a dongle with display)",
+      "category": "examples"
+    },
+    {
+      "label": "DMX Client",
+      "sketch": "client_dmx",
+      "description": "MIDI to DMX512 via an RS-485 transceiver: DMX out on GPIO 21 (to DI); GPIO 4 drives DE/RE, only needed if the module does not enable itself (Grove DMX512 does)",
+      "category": "examples"
+    },
+    {
+      "label": "Echo Client",
+      "sketch": "client_echo",
+      "description": "sends every received MIDI message straight back (for testing connections)",
+      "category": "examples"
+    },
+    {
+      "label": "NFC Client",
+      "sketch": "client_nfc",
+      "path": "i2c/client_nfc",
+      "description": "sends a mapped MIDI message per NFC tag (PN532 over I2C)",
+      "category": "i2c"
+    },
+    {
+      "label": "Trill Client",
+      "sketch": "client_bela_trill",
+      "path": "i2c/client_bela_trill",
+      "description": "Bela Trill touch sensor (Bar, Flex, Ring, Square, Hex, Craft; detected automatically): position and touch size as CC 70-72, note 60 on touch; Craft: one note per pad from note 36",
+      "category": "i2c"
+    },
+    {
+      "label": "VL53L0X Client",
+      "sketch": "client_vl53l0x",
+      "path": "i2c/client_vl53l0x",
+      "description": "VL53L0X time-of-flight sensor: distance (30-2000 mm) as CC 60",
+      "category": "i2c"
+    },
+    {
+      "label": "MPU6500 Client",
+      "sketch": "client_mpu6500",
+      "path": "i2c/client_mpu6500",
+      "description": "MPU6500 IMU: total acceleration (x + y + z) as CC 67",
+      "category": "i2c"
+    }
+  ]
+}
