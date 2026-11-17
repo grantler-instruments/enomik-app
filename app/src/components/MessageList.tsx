@@ -28,7 +28,7 @@ import {
 	type MidiMessageWithDirectionAndDevice,
 	useMIDIStore,
 } from "../store/midi";
-import { MIDI_STATUS, typeToLabel } from "../utils/midi";
+import { MIDI_STATUS, messageToBytes, typeToLabel } from "../utils/midi";
 import Filter, { midiTypes } from "./Filter";
 
 // Desktop columns: fixed width for short values, flexible for text.
@@ -99,34 +99,7 @@ function getVelocityOrValue(msg: MidiMessageWithDirectionAndDevice) {
 }
 
 function formatData(msg: MidiMessageWithDirectionAndDevice) {
-	if (msg.type === MIDI_STATUS.SYSEX_START) {
-		return msg.data?.join(", ") || "";
-	}
-
-	const parts: (number | string | undefined)[] = [msg.type];
-
-	if (
-		msg.type === MIDI_STATUS.NOTE_OFF ||
-		msg.type === MIDI_STATUS.NOTE_ON ||
-		msg.type === MIDI_STATUS.POLY_PRESSURE
-	) {
-		if (msg.note !== undefined) parts.push(msg.note);
-		if (msg.velocity !== undefined) parts.push(msg.velocity);
-	}
-
-	if (msg.type === MIDI_STATUS.CONTROL_CHANGE) {
-		if (msg.controller) parts.push(msg.controller);
-		parts.push(msg.value);
-	}
-
-	if (
-		msg.type === MIDI_STATUS.POLY_PRESSURE ||
-		msg.type === MIDI_STATUS.CHANNEL_PRESSURE
-	) {
-		parts.push(msg.value);
-	}
-
-	return parts.join(", ");
+	return messageToBytes(msg).join(", ");
 }
 
 type MobileMessageCardProps = {
@@ -422,7 +395,10 @@ function MessageList({
 			const deviceMatch =
 				activeInputs.includes(msg.deviceId) ||
 				activeOutputs.includes(msg.deviceId);
-			const typeMatch = activeTypes.includes(msg.type);
+			// Types without a filter chip (clock, song position…) always show:
+			// there is no way to turn them back on.
+			const typeMatch =
+				activeTypes.includes(msg.type) || !midiTypes.includes(msg.type);
 			return channelMatch && deviceMatch && typeMatch;
 		});
 	}, [shownMessages, activeChannels, activeInputs, activeOutputs, activeTypes]);

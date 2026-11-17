@@ -4,6 +4,7 @@ import { lazy, type ReactNode, Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import Composer from "./Composer";
+import ErrorBoundary from "./ErrorBoundary";
 import PageLayout from "./layout/PageLayout";
 import MessageList from "./MessageList";
 import SectionHeader from "./SectionHeader";
@@ -150,7 +151,8 @@ const Debugger = () => {
 							</Typography>
 							{item.action}
 						</Box>
-						{item.content}
+						{/* A crashing tab leaves the composer and other tabs usable. */}
+						<ErrorBoundary>{item.content}</ErrorBoundary>
 					</Box>
 				);
 			})}

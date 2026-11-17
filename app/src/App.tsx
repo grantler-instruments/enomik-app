@@ -1,10 +1,11 @@
 import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { lazy, Suspense } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import AutoUpdate from "./components/AutoUpdate";
 import BrowserWarning from "./components/BrowserWarning";
 import Configurator from "./components/Configurator";
 import Debugger from "./components/Debugger";
+import ErrorBoundary from "./components/ErrorBoundary";
 import FirmwareUploader from "./components/FirmwareUploader";
 import Footer from "./components/Footer";
 import GettingStarted from "./components/GettingStarted";
@@ -31,6 +32,7 @@ const Patcher = lazy(() => import("./components/Patcher"));
 function App() {
 	const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
 	const darkMode = useAppStore((state) => state.darkMode);
+	const { pathname } = useLocation();
 	return (
 		<ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
 			<CssBaseline />
@@ -55,44 +57,47 @@ function App() {
 				>
 					{/* Pages keep their height; the footer goes below */}
 					<Box component="main" flex="1 0 auto">
-						<Routes>
-							<Route path="/" element={<Home />} />
-							<Route path="/configurator" element={<Configurator />} />
-							<Route path="/debugger" element={<Debugger />} />
-							<Route path="/inspector" element={<Inspector />} />
-							<Route path="/uploader" element={<FirmwareUploader />} />
-							<Route path="/getting-started" element={<GettingStarted />} />
-							<Route path="/tutorial/*" element={<Tutorial />} />
-							<Route path="/tester" element={<Tester />} />
-							<Route path="/kits" element={<Kits />} />
-							<Route path="/nfc" element={<Nfc />} />
-							<Route path="/workshop" element={<Workshop />} />
-							<Route
-								path="/grantulator"
-								element={
-									<Suspense>
-										<Grantulator />
-									</Suspense>
-								}
-							/>
-							<Route
-								path="/mpc"
-								element={
-									<Suspense>
-										<Mpc />
-									</Suspense>
-								}
-							/>
-							<Route
-								path="/patcher"
-								element={
-									<Suspense>
-										<Patcher />
-									</Suspense>
-								}
-							/>
-							<Route path="*" element={<NotFound />} />
-						</Routes>
+						{/* A crashing page shows an error, not a blank app; navigating away clears it. */}
+						<ErrorBoundary resetKey={pathname}>
+							<Routes>
+								<Route path="/" element={<Home />} />
+								<Route path="/configurator" element={<Configurator />} />
+								<Route path="/debugger" element={<Debugger />} />
+								<Route path="/inspector" element={<Inspector />} />
+								<Route path="/uploader" element={<FirmwareUploader />} />
+								<Route path="/getting-started" element={<GettingStarted />} />
+								<Route path="/tutorial/*" element={<Tutorial />} />
+								<Route path="/tester" element={<Tester />} />
+								<Route path="/kits" element={<Kits />} />
+								<Route path="/nfc" element={<Nfc />} />
+								<Route path="/workshop" element={<Workshop />} />
+								<Route
+									path="/grantulator"
+									element={
+										<Suspense>
+											<Grantulator />
+										</Suspense>
+									}
+								/>
+								<Route
+									path="/mpc"
+									element={
+										<Suspense>
+											<Mpc />
+										</Suspense>
+									}
+								/>
+								<Route
+									path="/patcher"
+									element={
+										<Suspense>
+											<Patcher />
+										</Suspense>
+									}
+								/>
+								<Route path="*" element={<NotFound />} />
+							</Routes>
+						</ErrorBoundary>
 					</Box>
 					<Footer></Footer>
 				</Box>

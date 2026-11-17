@@ -8,6 +8,7 @@ import {
 	isNoteOn,
 	isStatus,
 	MIDI_STATUS,
+	messageToBytes,
 	sysexHexError,
 	typeToLabel,
 } from "./midi";
@@ -81,5 +82,87 @@ describe("sysexHexError", () => {
 	it("flags bytes from 80 up, which are status bytes, not data", () => {
 		expect(sysexHexError("80")).toBe("not_7bit");
 		expect(sysexHexError("01 FF")).toBe("not_7bit");
+	});
+});
+
+describe("messageToBytes", () => {
+	const { NOTE_ON, NOTE_OFF, POLY_PRESSURE, CONTROL_CHANGE, PROGRAM_CHANGE } =
+		MIDI_STATUS;
+
+	it("puts the channel into the status byte", () => {
+		expect(
+			messageToBytes({ type: NOTE_ON, channel: 1, note: 60, velocity: 100 }),
+		).toEqual([0x90, 60, 100]);
+		expect(
+			messageToBytes({ type: NOTE_OFF, channel: 16, note: 61, velocity: 0 }),
+		).toEqual([0x8f, 61, 0]);
+	});
+
+	it("encodes every channel message type", () => {
+		expect(
+			messageToBytes({ type: POLY_PRESSURE, channel: 2, note: 64, value: 30 }),
+		).toEqual([0xa1, 64, 30]);
+		expect(
+			messageToBytes({
+				type: CONTROL_CHANGE,
+				channel: 3,
+				controller: 74,
+				value: 14,
+			}),
+		).toEqual([0xb2, 74, 14]);
+		expect(
+			messageToBytes({ type: PROGRAM_CHANGE, channel: 1, controller: 5 }),
+		).toEqual([0xc0, 5]);
+		expect(
+			messageToBytes({
+				type: MIDI_STATUS.CHANNEL_PRESSURE,
+				channel: 1,
+				value: 90,
+			}),
+		).toEqual([0xd0, 90]);
+	});
+
+	it("keeps controller 0 (bank select)", () => {
+		expect(
+			messageToBytes({
+				type: CONTROL_CHANGE,
+				channel: 1,
+				controller: 0,
+				value: 1,
+			}),
+		).toEqual([0xb0, 0, 1]);
+	});
+
+	it("splits pitch bend into LSB and MSB", () => {
+		expect(
+			messageToBytes({
+				type: MIDI_STATUS.PITCH_BEND,
+				channel: 1,
+				pitchBendValue: 8192,
+			}),
+		).toEqual([0xe0, 0x00, 0x40]);
+		expect(
+			messageToBytes({
+				type: MIDI_STATUS.PITCH_BEND,
+				channel: 1,
+				pitchBendValue: 16383,
+			}),
+		).toEqual([0xe0, 0x7f, 0x7f]);
+		expect(
+			messageToBytes({
+				type: MIDI_STATUS.PITCH_BEND,
+				channel: 1,
+				pitchBendValue: 0,
+			}),
+		).toEqual([0xe0, 0, 0]);
+	});
+
+	it("returns SysEx as received and real-time messages as one byte", () => {
+		const sysex = [0xf0, 0x7d, 1, 2, 0xf7];
+		expect(
+			messageToBytes({ type: MIDI_STATUS.SYSEX_START, data: sysex }),
+		).toEqual(sysex);
+		expect(messageToBytes({ type: MIDI_STATUS.TIMING_CLOCK })).toEqual([0xf8]);
+		expect(messageToBytes({ type: MIDI_STATUS.START })).toEqual([0xfa]);
 	});
 });

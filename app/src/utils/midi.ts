@@ -135,3 +135,50 @@ export function sysexHexError(hex: string): "incomplete" | "not_7bit" | null {
 	if (hexStringToBytes(hex).some((byte) => byte > 0x7f)) return "not_7bit";
 	return null;
 }
+
+/** The fields of a monitored message that end up on the wire. */
+type WireMessage = {
+	type: number;
+	channel?: number;
+	note?: number;
+	velocity?: number;
+	controller?: number;
+	value?: number;
+	/** 14-bit, 0–16383, 8192 = centre. */
+	pitchBendValue?: number;
+	/** Complete SysEx, F0 … F7. */
+	data?: number[];
+};
+
+/**
+ * Raw MIDI bytes of a message, status byte including the channel. Same
+ * layout the store sends; missing fields count as 0.
+ */
+export const messageToBytes = (msg: WireMessage): number[] => {
+	const status =
+		msg.type < MIDI_STATUS.SYSEX_START
+			? msg.type | ((msg.channel ?? 1) - 1)
+			: msg.type;
+	switch (msg.type) {
+		case MIDI_STATUS.NOTE_OFF:
+		case MIDI_STATUS.NOTE_ON:
+			return [status, msg.note ?? 0, msg.velocity ?? 0];
+		case MIDI_STATUS.POLY_PRESSURE:
+			return [status, msg.note ?? 0, msg.value ?? 0];
+		case MIDI_STATUS.CONTROL_CHANGE:
+			return [status, msg.controller ?? 0, msg.value ?? 0];
+		case MIDI_STATUS.PROGRAM_CHANGE:
+			return [status, msg.controller ?? 0];
+		case MIDI_STATUS.CHANNEL_PRESSURE:
+			return [status, msg.value ?? 0];
+		case MIDI_STATUS.PITCH_BEND: {
+			const bend = msg.pitchBendValue ?? 8192;
+			return [status, bend & 0x7f, (bend >> 7) & 0x7f];
+		}
+		case MIDI_STATUS.SYSEX_START:
+			return msg.data ?? [MIDI_STATUS.SYSEX_START, 0xf7];
+		default:
+			// System real-time and common messages: status byte only.
+			return [status];
+	}
+};

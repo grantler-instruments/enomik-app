@@ -99,4 +99,44 @@ describe("MessageList", () => {
 
 		expect(onActiveFiltersChange).toHaveBeenLastCalledWith(1);
 	});
+
+	it("shows pitch bend and types the filter has no chip for", () => {
+		renderWithProviders(<MessageList />);
+		act(() =>
+			useMIDIStore.setState({
+				messages: [
+					{ ...note(), type: MIDI_STATUS.PITCH_BEND, pitchBendValue: 9000 },
+					{ ...note(), type: MIDI_STATUS.TIMING_CLOCK },
+					note(),
+				],
+			}),
+		);
+		expect(screen.getByText("3 messages")).toBeTruthy();
+	});
+
+	it("shows the raw bytes of every message, channel included", () => {
+		renderWithProviders(<MessageList />);
+		act(() =>
+			useMIDIStore.setState({
+				messages: [
+					{
+						...note(),
+						type: MIDI_STATUS.PROGRAM_CHANGE,
+						channel: 2,
+						controller: 5,
+					},
+					{
+						...note(),
+						type: MIDI_STATUS.PITCH_BEND,
+						channel: 1,
+						pitchBendValue: 8192,
+					},
+					{ ...note(), channel: 3 },
+				],
+			}),
+		);
+		expect(screen.getByText("193, 5")).toBeTruthy();
+		expect(screen.getByText("224, 0, 64")).toBeTruthy();
+		expect(screen.getByText("146, 60, 100")).toBeTruthy();
+	});
 });
