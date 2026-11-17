@@ -6,8 +6,8 @@ import {
 	InputLabel,
 	MenuItem,
 	Select,
-	Stack,
 	TextField,
+	Tooltip,
 } from "@mui/material";
 import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -50,6 +50,7 @@ const Composer = ({
 	const setSelectedOutputId = useMIDIStore(
 		(state) => state.setSelectedComposerOutputDevice,
 	);
+	const initialized = useMIDIStore((state) => state.initialized);
 	const hasSelectedOutput = useMIDIStore((state) =>
 		state.outputs.some(
 			(port) => port.id === selectedOutputId && port.state !== "disconnected",
@@ -154,11 +155,17 @@ const Composer = ({
 
 	return (
 		<Box>
-			<Stack
-				direction={{ xs: "column", sm: "row" }}
-				spacing={2}
-				alignItems={{ sm: "center" }}
-				width="100%"
+			{/* Two columns on phones so the composer stays short; one wrapping
+			    row from sm up. */}
+			<Box
+				sx={{
+					display: { xs: "grid", sm: "flex" },
+					gridTemplateColumns: "1fr 1fr",
+					flexWrap: "wrap",
+					gap: { xs: 1.5, sm: 2 },
+					alignItems: { sm: "center" },
+					width: "100%",
+				}}
 			>
 				<FormControl
 					size="small"
@@ -234,7 +241,10 @@ const Composer = ({
 							size="small"
 							error={!!sysexError}
 							helperText={sysexError && t(`composer_sysex_${sysexError}`)}
-							sx={{ width: { xs: "100%", sm: 240 } }}
+							sx={{
+								width: { xs: "100%", sm: 240 },
+								gridColumn: { xs: "1 / -1", sm: "auto" },
+							}}
 						/>
 						<TextField
 							label={t("composer_end_byte")}
@@ -350,63 +360,92 @@ const Composer = ({
 						}
 						inputMode="numeric"
 						size="small"
-						sx={{ width: { xs: "100%", sm: 220 } }}
+						sx={{
+							width: { xs: "100%", sm: 220 },
+							gridColumn: { xs: "1 / -1", sm: "auto" },
+						}}
 					/>
 				)}
 
-				<Box sx={{ flexGrow: { sm: 1 } }} />
+				<Box sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }} />
 
 				{outputId === undefined && (
-					<MidiDeviceChooser
-						value={selectedOutputId || ""}
-						onChange={setSelectedOutputId}
-					/>
+					<Box sx={{ gridColumn: { xs: "1 / -1", sm: "auto" } }}>
+						<MidiDeviceChooser
+							value={selectedOutputId || ""}
+							onChange={setSelectedOutputId}
+							sx={{ width: { xs: "100%", sm: "auto" } }}
+						/>
+					</Box>
 				)}
 
-				<Button
-					variant="contained"
-					startIcon={<Send />}
-					sx={{ width: { xs: "100%", sm: "auto" } }}
-					disabled={disabled || (!hasSelectedOutput && !onSend) || sysexInvalid}
-					onClick={() => {
-						const msg: MidiMessage = {
-							id: uuidv4(),
-							type,
-							timestamp: Date.now(),
-							channel,
-							note: type !== 240 ? noteOrCc : undefined,
-							controller: type !== 240 ? noteOrCc : undefined,
-							value:
-								type === MIDI_STATUS.CONTROL_CHANGE ||
-								type === MIDI_STATUS.NOTE_ON ||
-								type === MIDI_STATUS.NOTE_OFF ||
-								type === MIDI_STATUS.CHANNEL_PRESSURE ||
-								type === MIDI_STATUS.POLY_PRESSURE
-									? velocityOrValue
-									: undefined,
-							pitchBendValue:
-								type === MIDI_STATUS.PITCH_BEND
-									? pitchBendValue + 8192
-									: undefined,
-							velocity: type !== 240 ? velocityOrValue : undefined,
-							data:
-								type === MIDI_STATUS.SYSEX_START
-									? [
-											0xf0,
-											...hexStringToBytes(manufacturerId),
-											...hexStringToBytes(sysexData),
-											0xf7,
-										]
-									: undefined,
-						};
+				{/* Until MIDI is up the chooser shows Init MIDI in this spot,
+				    so a disabled Send next to it would only add noise. */}
+				{(initialized || outputId !== undefined || onSend) && (
+					<Tooltip
+						title={
+							!disabled && !hasSelectedOutput && !onSend
+								? t("composer_choose_output")
+								: ""
+						}
+					>
+						<Box
+							component="span"
+							sx={{
+								display: "inline-flex",
+								width: { xs: "100%", sm: "auto" },
+								gridColumn: { xs: "1 / -1", sm: "auto" },
+							}}
+						>
+							<Button
+								variant="contained"
+								startIcon={<Send />}
+								sx={{ width: { xs: "100%", sm: "auto" } }}
+								disabled={
+									disabled || (!hasSelectedOutput && !onSend) || sysexInvalid
+								}
+								onClick={() => {
+									const msg: MidiMessage = {
+										id: uuidv4(),
+										type,
+										timestamp: Date.now(),
+										channel,
+										note: type !== 240 ? noteOrCc : undefined,
+										controller: type !== 240 ? noteOrCc : undefined,
+										value:
+											type === MIDI_STATUS.CONTROL_CHANGE ||
+											type === MIDI_STATUS.NOTE_ON ||
+											type === MIDI_STATUS.NOTE_OFF ||
+											type === MIDI_STATUS.CHANNEL_PRESSURE ||
+											type === MIDI_STATUS.POLY_PRESSURE
+												? velocityOrValue
+												: undefined,
+										pitchBendValue:
+											type === MIDI_STATUS.PITCH_BEND
+												? pitchBendValue + 8192
+												: undefined,
+										velocity: type !== 240 ? velocityOrValue : undefined,
+										data:
+											type === MIDI_STATUS.SYSEX_START
+												? [
+														0xf0,
+														...hexStringToBytes(manufacturerId),
+														...hexStringToBytes(sysexData),
+														0xf7,
+													]
+												: undefined,
+									};
 
-						if (hasSelectedOutput) sendMessage(msg, selectedOutputId);
-						onSend?.(msg);
-					}}
-				>
-					{t("composer_send_midi")}
-				</Button>
-			</Stack>
+									if (hasSelectedOutput) sendMessage(msg, selectedOutputId);
+									onSend?.(msg);
+								}}
+							>
+								{t("composer_send_midi")}
+							</Button>
+						</Box>
+					</Tooltip>
+				)}
+			</Box>
 		</Box>
 	);
 };

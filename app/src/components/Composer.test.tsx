@@ -45,6 +45,12 @@ const send = (user: ReturnType<typeof userEvent.setup>) =>
 const field = (name: string) => screen.getByRole("textbox", { name });
 
 describe("Composer send", () => {
+	it("hides Send until MIDI is started", () => {
+		renderComposer({ initialized: false });
+		expect(screen.queryByRole("button", { name: "Send MIDI" })).toBeNull();
+		expect(screen.getByRole("button", { name: "Init MIDI" })).toBeTruthy();
+	});
+
 	it("sends a note with channel, note and velocity to the selected output", async () => {
 		const { user } = renderComposer({
 			composerChannel: 3,
