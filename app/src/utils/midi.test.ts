@@ -35,6 +35,16 @@ describe("MIDI utilities", () => {
 		expect(typeToLabel(MIDI_STATUS.CONTROL_CHANGE)).toBe("Control Change");
 		expect(typeToLabel(0x00)).toBe("Unknown");
 	});
+
+	it("names the system messages", () => {
+		expect(typeToLabel(MIDI_STATUS.TIMING_CLOCK)).toBe("Clock");
+		expect(typeToLabel(MIDI_STATUS.ACTIVE_SENSING)).toBe("Active Sensing");
+		expect(typeToLabel(MIDI_STATUS.RESET)).toBe("Reset");
+		expect(typeToLabel(MIDI_STATUS.TUNE_REQUEST)).toBe("Tune Request");
+		expect(typeToLabel(MIDI_STATUS.SONG_POSITION)).toBe("Song Position");
+		expect(typeToLabel(MIDI_STATUS.SONG_SELECT)).toBe("Song Select");
+		expect(typeToLabel(MIDI_STATUS.MTC_QUARTER)).toBe("MTC Quarter Frame");
+	});
 });
 
 describe("hexStringToBytes", () => {

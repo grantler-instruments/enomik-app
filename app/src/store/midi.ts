@@ -458,19 +458,28 @@ function matchesPendingDevice(inputId: string): boolean {
 	return !!pendingConfigLoad && pendingConfigLoad.inputId === inputId;
 }
 
+/**
+ * Wall-clock ms of a MIDI event. event.timeStamp counts from page load
+ * (performance.timeOrigin), not from 1970; 0 means the browser gave none.
+ */
+export const eventTime = (timeStamp: number) =>
+	timeStamp > 0 ? performance.timeOrigin + timeStamp : Date.now();
+
 const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 	input.onmidimessage = (event) => {
 		if (!event.data || event.data.length === 0) return;
 
 		const [status, data1, data2] = event.data;
-		const channel = (status & 0x0f) + 1; // Convert to 1-indexed
-		const messageType = status & 0xf0;
+		// System messages (F0–FF) have no channel: the low nibble is part of
+		// the type (F8 clock, FA start…), not a channel.
+		const isSystem = status >= 0xf0;
+		const messageType = isSystem ? status : status & 0xf0;
 
 		const message = {
 			id: uuidv4(),
-			timestamp: event.timeStamp,
+			timestamp: eventTime(event.timeStamp),
 			type: messageType,
-			channel,
+			channel: isSystem ? undefined : (status & 0x0f) + 1,
 		};
 
 		switch (messageType) {
@@ -534,6 +543,9 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 			case MIDI_STATUS.STOP:
 			case MIDI_STATUS.CONTINUE:
 			case MIDI_STATUS.TIMING_CLOCK:
+			case MIDI_STATUS.ACTIVE_SENSING:
+			case MIDI_STATUS.TUNE_REQUEST:
+			case MIDI_STATUS.RESET:
 				get().addIncomingMessage(
 					{
 						...message,

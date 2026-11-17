@@ -927,3 +927,55 @@ describe("picking client or dongle picks a port", () => {
 		expect(devices.guessDeviceKind(outputs[1].name)).toBe("dongle");
 	});
 });
+
+describe("monitor", () => {
+	const monitored = (data: number[], timeStamp = 0) => {
+		// Flush the per-frame batch right away.
+		vi.stubGlobal("requestAnimationFrame", (callback: () => void) => {
+			callback();
+			return 1;
+		});
+		inputs[0].onmidimessage?.({ data: new Uint8Array(data), timeStamp });
+		return midi.useMIDIStore.getState().messages[0];
+	};
+
+	it("stamps incoming messages with wall-clock time, not time since page load", () => {
+		vi.setSystemTime(new Date("2026-11-17T15:00:00Z"));
+		const message = monitored([0x90, 60, 100], 1234.5);
+		expect(message.timestamp).toBeCloseTo(performance.timeOrigin + 1234.5);
+		expect(new Date(message.timestamp).getFullYear()).toBeGreaterThan(2000);
+	});
+
+	it("falls back to the current time when the browser gives no timestamp", () => {
+		vi.setSystemTime(new Date("2026-11-17T15:00:00Z"));
+		expect(monitored([0x90, 60, 100], 0).timestamp).toBe(Date.now());
+	});
+
+	it.each([
+		[0xf8, "clock"],
+		[0xfa, "start"],
+		[0xfb, "continue"],
+		[0xfc, "stop"],
+		[0xfe, "active sensing"],
+		[0xff, "reset"],
+		[0xf6, "tune request"],
+	])(
+		"keeps real-time message %i (%s) as its own type, without a channel",
+		(status) => {
+			expect(monitored([status])).toMatchObject({
+				type: status,
+				channel: undefined,
+				incoming: true,
+			});
+		},
+	);
+
+	it("still splits channel messages into type and channel", () => {
+		expect(monitored([0x93, 64, 1])).toMatchObject({
+			type: 0x90,
+			channel: 4,
+			note: 64,
+			velocity: 1,
+		});
+	});
+});

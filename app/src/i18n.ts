@@ -351,6 +351,8 @@ i18n.use(initReactI18next).init({
 				monitor_pause: "Pause",
 				monitor_resume: "Resume",
 				monitor_new: "{{count}} new",
+				monitor_timing_hidden_one: "{{count}} clock/sensing message hidden",
+				monitor_timing_hidden_other: "{{count}} clock/sensing messages hidden",
 				monitor_count_filtered: "{{shown}} of {{count}} messages shown",
 				monitor_empty_no_midi:
 					"MIDI isn't started yet. Click {{button}} to see incoming and outgoing messages.",
@@ -844,6 +846,10 @@ i18n.use(initReactI18next).init({
 				monitor_pause: "Pausieren",
 				monitor_resume: "Fortsetzen",
 				monitor_new: "{{count}} neu",
+				monitor_timing_hidden_one:
+					"{{count}} Clock/Sensing-Nachricht ausgeblendet",
+				monitor_timing_hidden_other:
+					"{{count}} Clock/Sensing-Nachrichten ausgeblendet",
 				monitor_count_filtered: "{{shown}} von {{count}} Nachrichten angezeigt",
 				monitor_empty_no_midi:
 					"MIDI ist noch nicht gestartet. Klicke auf {{button}}, um ein- und ausgehende Nachrichten zu sehen.",
@@ -1337,6 +1343,9 @@ i18n.use(initReactI18next).init({
 				monitor_pause: "Pausar",
 				monitor_resume: "Reanudar",
 				monitor_new: "{{count}} nuevos",
+				monitor_timing_hidden_one: "{{count}} mensaje de reloj/sensing oculto",
+				monitor_timing_hidden_other:
+					"{{count}} mensajes de reloj/sensing ocultos",
 				monitor_count_filtered: "{{shown}} de {{count}} mensajes mostrados",
 				monitor_empty_no_midi:
 					"MIDI aún no está iniciado. Pulsa {{button}} para ver los mensajes entrantes y salientes.",
@@ -1813,6 +1822,8 @@ i18n.use(initReactI18next).init({
 				monitor_pause: "暂停",
 				monitor_resume: "继续",
 				monitor_new: "{{count}} 条新消息",
+				monitor_timing_hidden_one: "已隐藏 {{count}} 条时钟/感应消息",
+				monitor_timing_hidden_other: "已隐藏 {{count}} 条时钟/感应消息",
 				monitor_count_filtered: "显示 {{shown}} / {{count}} 条消息",
 				monitor_empty_no_midi:
 					"MIDI 尚未启动。点击「{{button}}」即可查看收发的消息。",

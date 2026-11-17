@@ -22,6 +22,20 @@ const typeToLabel = (type: number) => {
 			return "Aftertouch";
 		case MIDI_STATUS.POLY_PRESSURE:
 			return "Polyphonic Aftertouch";
+		case MIDI_STATUS.TIMING_CLOCK:
+			return "Clock";
+		case MIDI_STATUS.ACTIVE_SENSING:
+			return "Active Sensing";
+		case MIDI_STATUS.RESET:
+			return "Reset";
+		case MIDI_STATUS.TUNE_REQUEST:
+			return "Tune Request";
+		case MIDI_STATUS.SONG_POSITION:
+			return "Song Position";
+		case MIDI_STATUS.SONG_SELECT:
+			return "Song Select";
+		case MIDI_STATUS.MTC_QUARTER:
+			return "MTC Quarter Frame";
 
 		default:
 			return "Unknown";

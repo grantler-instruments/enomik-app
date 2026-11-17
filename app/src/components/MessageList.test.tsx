@@ -8,7 +8,7 @@ import {
 } from "../store/midi";
 import { renderWithProviders } from "../test/render";
 import { MIDI_STATUS } from "../utils/midi";
-import MessageList from "./MessageList";
+import MessageList, { formatTime } from "./MessageList";
 
 const INPUT = "in-1";
 let originalState: ReturnType<typeof useMIDIStore.getState>;
@@ -100,13 +100,13 @@ describe("MessageList", () => {
 		expect(onActiveFiltersChange).toHaveBeenLastCalledWith(1);
 	});
 
-	it("shows pitch bend and types the filter has no chip for", () => {
+	it("shows pitch bend and types the filter has no chip for (tune request)", () => {
 		renderWithProviders(<MessageList />);
 		act(() =>
 			useMIDIStore.setState({
 				messages: [
 					{ ...note(), type: MIDI_STATUS.PITCH_BEND, pitchBendValue: 9000 },
-					{ ...note(), type: MIDI_STATUS.TIMING_CLOCK },
+					{ ...note(), type: MIDI_STATUS.TUNE_REQUEST },
 					note(),
 				],
 			}),
@@ -138,5 +138,41 @@ describe("MessageList", () => {
 		expect(screen.getByText("193, 5")).toBeTruthy();
 		expect(screen.getByText("224, 0, 64")).toBeTruthy();
 		expect(screen.getByText("146, 60, 100")).toBeTruthy();
+	});
+
+	it("shows times to the millisecond", () => {
+		const time = new Date(2026, 10, 17, 15, 4, 5, 67).getTime();
+		expect(formatTime(time)).toMatch(/15.04.05.067/);
+	});
+
+	it("hides clock and active sensing by default and says so", async () => {
+		const user = userEvent.setup();
+		const onActiveFiltersChange = vi.fn();
+		renderWithProviders(
+			<MessageList onActiveFiltersChange={onActiveFiltersChange} />,
+		);
+		act(() =>
+			useMIDIStore.setState({
+				messages: [
+					{ ...note(), type: MIDI_STATUS.TIMING_CLOCK, channel: undefined },
+					{ ...note(), type: MIDI_STATUS.TIMING_CLOCK, channel: undefined },
+					{ ...note(), type: MIDI_STATUS.ACTIVE_SENSING, channel: undefined },
+					note(),
+				],
+			}),
+		);
+
+		expect(
+			screen.getByText("1 message · 3 clock/sensing messages hidden"),
+		).toBeTruthy();
+		// The default selection doesn't count as an active filter.
+		expect(onActiveFiltersChange).toHaveBeenLastCalledWith(0);
+
+		await user.click(screen.getByRole("button", { name: /Filter/ }));
+		await user.click(screen.getByRole("button", { name: "Clock" }));
+
+		expect(screen.getAllByText("Clock").length).toBeGreaterThan(1);
+		expect(screen.getByText("3 of 4 messages shown")).toBeTruthy();
+		expect(onActiveFiltersChange).toHaveBeenLastCalledWith(1);
 	});
 });

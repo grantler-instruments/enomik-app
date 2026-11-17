@@ -17,9 +17,21 @@ const midiTypes = [
 	MIDI_STATUS.STOP,
 	MIDI_STATUS.CONTINUE,
 	MIDI_STATUS.SYSEX_START,
+	MIDI_STATUS.TIMING_CLOCK,
+	MIDI_STATUS.ACTIVE_SENSING,
 ];
 
-export { midiTypes };
+/**
+ * Types shown until the user changes the filter: everything except clock
+ * and active sensing, which arrive many times a second and would bury the
+ * rest.
+ */
+const defaultMidiTypes = midiTypes.filter(
+	(type) =>
+		type !== MIDI_STATUS.TIMING_CLOCK && type !== MIDI_STATUS.ACTIVE_SENSING,
+);
+
+export { defaultMidiTypes, midiTypes };
 
 const Filter = ({
 	onActiveInputsChange,
@@ -37,7 +49,9 @@ const Filter = ({
 	const outputs = useMIDIStore((state) => state.outputs);
 	const [activeInputs, setActiveInputs] = useState<string[]>([]);
 	const [activeOutputs, setActiveOutputs] = useState<string[]>([]);
-	const [activeTypes, setActiveTypes] = useState<number[]>([...midiTypes]);
+	const [activeTypes, setActiveTypes] = useState<number[]>([
+		...defaultMidiTypes,
+	]);
 	const [activeChannels, setActiveChannels] = useState(
 		Array.from({ length: 16 }).map((_, i) => i + 1),
 	);

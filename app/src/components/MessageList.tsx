@@ -29,11 +29,11 @@ import {
 	useMIDIStore,
 } from "../store/midi";
 import { MIDI_STATUS, messageToBytes, typeToLabel } from "../utils/midi";
-import Filter, { midiTypes } from "./Filter";
+import Filter, { defaultMidiTypes, midiTypes } from "./Filter";
 
 // Desktop columns: fixed width for short values, flexible for text.
 const desktopColumns =
-	"32px 96px minmax(120px, 1.5fr) 64px minmax(110px, 1fr) 96px 80px minmax(140px, 2fr)";
+	"32px 104px minmax(120px, 1.5fr) 64px minmax(110px, 1fr) 96px 80px minmax(140px, 2fr)";
 
 const desktopRowSx = {
 	display: "grid",
@@ -52,6 +52,17 @@ const ellipsis = {
 	textOverflow: "ellipsis",
 	whiteSpace: "nowrap",
 } as const;
+
+/** 24-hour time with milliseconds: timing problems need sub-second detail. */
+export function formatTime(timestamp: number) {
+	return new Date(timestamp).toLocaleTimeString([], {
+		hour12: false,
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+		fractionalSecondDigits: 3,
+	});
+}
 
 function getDeviceName(
 	msg: MidiMessageWithDirectionAndDevice,
@@ -159,7 +170,7 @@ const MobileMessageCard = memo(function MobileMessageCard({
 						color="text.secondary"
 						sx={{ fontSize: "0.7rem" }}
 					>
-						{new Date(msg.timestamp).toLocaleTimeString()}
+						{formatTime(msg.timestamp)}
 					</Typography>
 				</Box>
 
@@ -295,7 +306,7 @@ const DesktopMessageRow = memo(function DesktopMessageRow({
 					/>
 				)}
 			</Box>
-			<Box>{new Date(msg.timestamp).toLocaleTimeString()}</Box>
+			<Box>{formatTime(msg.timestamp)}</Box>
 			<Box sx={ellipsis} title={deviceName}>
 				{deviceName}
 			</Box>
@@ -330,7 +341,9 @@ function MessageList({
 
 	const [activeInputs, setActiveInputs] = useState<string[]>([]);
 	const [activeOutputs, setActiveOutputs] = useState<string[]>([]);
-	const [activeTypes, setActiveTypes] = useState<number[]>([...midiTypes]);
+	const [activeTypes, setActiveTypes] = useState<number[]>([
+		...defaultMidiTypes,
+	]);
 	const [activeChannels, setActiveChannels] = useState(() =>
 		Array.from({ length: 16 }, (_, i) => i + 1),
 	);
@@ -339,7 +352,9 @@ function MessageList({
 	const activeFilters = [
 		activeInputs.length < inputs.length,
 		activeOutputs.length < outputs.length,
-		activeTypes.length < midiTypes.length,
+		// Differs from the default selection (clock and sensing start hidden).
+		activeTypes.length !== defaultMidiTypes.length ||
+			!defaultMidiTypes.every((type) => activeTypes.includes(type)),
 		activeChannels.length < 16,
 	].filter(Boolean).length;
 
@@ -402,6 +417,20 @@ function MessageList({
 			return channelMatch && deviceMatch && typeMatch;
 		});
 	}, [shownMessages, activeChannels, activeInputs, activeOutputs, activeTypes]);
+
+	// With the default filter only clock/sensing are hidden: say so instead
+	// of "50 of 60 shown" next to a filter that reports nothing active.
+	const hiddenTiming =
+		activeFilters === 0 ? shownMessages.length - filteredMessages.length : 0;
+	const countLabel =
+		activeFilters === 0
+			? hiddenTiming > 0
+				? `${t("monitor_count", { count: filteredMessages.length })} · ${t("monitor_timing_hidden", { count: hiddenTiming })}`
+				: t("monitor_count", { count: filteredMessages.length })
+			: t("monitor_count_filtered", {
+					shown: filteredMessages.length,
+					count: shownMessages.length,
+				});
 
 	return (
 		<Box>
@@ -517,12 +546,7 @@ function MessageList({
 						color="text.secondary"
 						aria-live="polite"
 					>
-						{filteredMessages.length === shownMessages.length
-							? t("monitor_count", { count: shownMessages.length })
-							: t("monitor_count_filtered", {
-									shown: filteredMessages.length,
-									count: shownMessages.length,
-								})}
+						{countLabel}
 					</Typography>
 				)}
 
