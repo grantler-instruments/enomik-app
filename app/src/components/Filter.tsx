@@ -5,7 +5,7 @@ import { useMIDIStore } from "../store/midi";
 import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 import AllNone from "./AllNone";
 
-const midiTypes = [
+const midiTypes: number[] = [
 	MIDI_STATUS.NOTE_OFF,
 	MIDI_STATUS.NOTE_ON,
 	MIDI_STATUS.CONTROL_CHANGE,
