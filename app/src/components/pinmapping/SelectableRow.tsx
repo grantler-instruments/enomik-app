@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 
 /**
  * Wraps a pin row so it can be linked to the board: marks the row while its
- * pin is selected and reports clicks/focus. `data-pin-row` lets the board
- * scroll to it.
+ * pin is selected and reports clicks/focus. `data-pin-row` identifies the
+ * row (tests, styling).
  */
 const SelectableRow = ({
 	pin,

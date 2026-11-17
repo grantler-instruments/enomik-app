@@ -1,5 +1,9 @@
 // @vitest-environment jsdom
-import { screen, within } from "@testing-library/react";
+import {
+	screen,
+	waitForElementToBeRemoved,
+	within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { lightTheme } from "../../muiTheme";
@@ -55,7 +59,7 @@ const renderBoard = (config: ConfigFile = {}, interactive = true) => {
 };
 
 const pad = (name: string) => screen.getByRole("button", { name });
-const editor = () => screen.getByRole("presentation");
+const editor = () => screen.getByRole("dialog");
 const addInput = () => screen.queryByRole("button", { name: "Add as input" });
 const addOutput = () => screen.queryByRole("button", { name: "Add as output" });
 
@@ -75,13 +79,13 @@ describe("BoardDiagram pads", () => {
 	it("opens nothing for a fixed pin", async () => {
 		const { user } = renderBoard();
 		await user.click(pad("GND · GND"));
-		expect(screen.queryByRole("presentation")).not.toBeInTheDocument();
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 	});
 
 	it("opens nothing when not interactive", async () => {
 		const { user } = renderBoard({}, false);
 		await user.click(pad("GPIO 1 · Analog"));
-		expect(screen.queryByRole("presentation")).not.toBeInTheDocument();
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 	});
 
 	it("opens the editor with the keyboard", async () => {
@@ -206,6 +210,52 @@ describe("PinEditor (from the board)", () => {
 	});
 });
 
+describe("pin dialog actions", () => {
+	it("doesn't put focus back on a clicked pad when the dialog closes", async () => {
+		const { user } = renderBoard({ inputs: [{ ...input, pin: 1 }] });
+		await user.click(pad("GPIO 1 · Analog"));
+		await user.click(within(editor()).getByRole("button", { name: "Close" }));
+		await waitForElementToBeRemoved(() => screen.queryByRole("dialog"));
+		expect(pad("GPIO 1 · Analog")).not.toHaveFocus();
+	});
+
+	it("puts focus back on the pad for keyboard users", async () => {
+		const { user } = renderBoard({ inputs: [{ ...input, pin: 1 }] });
+		pad("GPIO 1 · Analog").focus();
+		await user.keyboard("{Enter}");
+		await user.keyboard("{Escape}");
+		await waitForElementToBeRemoved(() => screen.queryByRole("dialog"));
+		expect(pad("GPIO 1 · Analog")).toHaveFocus();
+	});
+
+	it("shows mute and delete together in the config's header, not in the row", async () => {
+		const { user } = renderBoard({ inputs: [{ ...input, pin: 1 }] });
+		await user.click(pad("GPIO 1 · Analog"));
+
+		const mute = within(editor()).getAllByRole("button", { name: /^Mute/ });
+		expect(mute).toHaveLength(1);
+		const del = within(editor()).getByRole("button", { name: "Delete" });
+		// Same header line: siblings in one group.
+		expect(mute[0].parentElement).toBe(del.parentElement);
+		expect(
+			within(editor()).queryByRole("button", { name: "more options" }),
+		).not.toBeInTheDocument();
+	});
+
+	it("mutes and unmutes the pin's config from the dialog", async () => {
+		const { user } = renderBoard({
+			outputs: [{ ...input, pin: 1, mode: sysexPinModeDigitalOut }],
+		});
+		await user.click(pad("GPIO 1 · Analog"));
+
+		await user.click(within(editor()).getByRole("button", { name: /^Mute/ }));
+		expect(useIOStore.getState().outputs[0].muted).toBe(true);
+
+		await user.click(within(editor()).getByRole("button", { name: /^Unmute/ }));
+		expect(useIOStore.getState().outputs[0].muted).toBe(false);
+	});
+});
+
 describe("BoardDiagram selection (onSelect)", () => {
 	const renderSelectable = (config: ConfigFile, selectedGpio?: number) => {
 		useIOStore.getState().loadFromFile(config);
@@ -221,23 +271,40 @@ describe("BoardDiagram selection (onSelect)", () => {
 		return { user: userEvent.setup(), selected, ...result };
 	};
 
-	it("selects a configured pin instead of opening the editor", async () => {
+	it("opens the config dialog for a configured pin and selects it", async () => {
 		const { user, selected } = renderSelectable({
 			inputs: [{ ...input, pin: 1 }],
 		});
 		await user.click(pad("GPIO 1 · Analog"));
 		expect(selected).toEqual([1]);
-		expect(screen.queryByRole("presentation")).not.toBeInTheDocument();
+		expect(
+			screen.getByRole("dialog", { name: "GPIO 1 · Analog" }),
+		).toBeInTheDocument();
+		expect(within(editor()).getByText("Input")).toBeInTheDocument();
 	});
 
-	it("opens the editor for a free pin, then selects it once added", async () => {
+	it("opens the dialog for a free pin, keeps it open after adding, selects on close", async () => {
 		const { user, selected } = renderSelectable({});
 		await user.click(pad("GPIO 1 · Analog"));
+		expect(selected).toEqual([]);
 		const add = addInput();
 		expect(add).toBeInTheDocument();
 		if (add) await user.click(add);
 		expect(useIOStore.getState().inputs.map((i) => i.pin)).toEqual([1]);
+		// The new config is right there to edit.
+		expect(within(editor()).getByText("Input")).toBeInTheDocument();
+		expect(selected).toEqual([]);
+
+		await user.click(within(editor()).getByRole("button", { name: "Close" }));
 		expect(selected).toEqual([1]);
+		await waitForElementToBeRemoved(() => screen.queryByRole("dialog"));
+	});
+
+	it("selects nothing when the dialog closes on a pin still free", async () => {
+		const { user, selected } = renderSelectable({});
+		await user.click(pad("GPIO 1 · Analog"));
+		await user.keyboard("{Escape}");
+		expect(selected).toEqual([]);
 	});
 
 	it("marks the selected pad as pressed", () => {

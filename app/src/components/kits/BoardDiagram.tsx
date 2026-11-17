@@ -1,6 +1,16 @@
 import TouchAppIcon from "@mui/icons-material/TouchApp";
-import { Alert, Box, Chip, Popover, Tooltip, useTheme } from "@mui/material";
-import { type SVGProps, useEffect, useState } from "react";
+import {
+	Alert,
+	Box,
+	Button,
+	Chip,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	Tooltip,
+	useTheme,
+} from "@mui/material";
+import { type SVGProps, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useConflictingPins, useIOStore } from "../../store/io";
 import { configSummary, isConfigurable } from "../../utils/pinout";
@@ -146,9 +156,9 @@ const BoardDiagram = ({
 	/** GPIO to mark as selected (e.g. the row being edited next to the board). */
 	selectedGpio?: number | null;
 	/**
-	 * Called with the GPIO of a configured pin when it is clicked, instead of
-	 * opening the editor. Free pins still open it to add a config; once added,
-	 * the editor closes and the new pin is selected.
+	 * Called with the GPIO of a configured pin when it is clicked (the
+	 * editor dialog opens as well), and when the dialog closes on a pin
+	 * that has a config by then, so lists next to the board can mark it.
 	 */
 	onSelect?: (gpio: number) => void;
 }) => {
@@ -157,22 +167,27 @@ const BoardDiagram = ({
 	const outputs = useIOStore((state) => state.outputs);
 	const conflictingPins = useConflictingPins();
 	const [editing, setEditing] = useState<{
-		anchor: Element;
 		pin: BoardPin & { gpio: number };
 	} | null>(null);
 	const theme = useTheme();
 	const colors = usePinColors();
 	const groupColors = { digital: colors.digital, analog: colors.analog };
-	const editingGpio = editing?.pin.gpio;
-	const editingConfigured =
-		editingGpio !== undefined &&
-		[...inputs, ...outputs].some((config) => config.pin === editingGpio);
-	useEffect(() => {
-		if (onSelect && editingConfigured && editingGpio !== undefined) {
-			setEditing(null);
-			onSelect(editingGpio);
-		}
-	}, [onSelect, editingConfigured, editingGpio]);
+	const editorTitleId = useId();
+	// Focus goes back to the pad on close only for keyboard users: after a
+	// click, the restored focus would light up the pad's focus ring, which
+	// looks like a selection.
+	const [restoreFocus, setRestoreFocus] = useState(false);
+	// Closing the dialog marks the pin in the lists, if it has a config now.
+	const closeEditor = () => {
+		const gpio = editing?.pin.gpio;
+		if (
+			onSelect &&
+			gpio !== undefined &&
+			[...inputs, ...outputs].some((config) => config.pin === gpio)
+		)
+			onSelect(gpio);
+		setEditing(null);
+	};
 	const usedTypes = PIN_TYPES.filter((type) =>
 		board.pins.some((pin) => pin.type === type),
 	);
@@ -300,10 +315,11 @@ const BoardDiagram = ({
 									...outputs.filter((output) => output.pin === gpio),
 								]
 							: [];
-					const openEditor = (anchor: Element) => {
+					const openEditor = (fromKeyboard: boolean) => {
 						if (!editable || gpio === undefined) return;
+						setRestoreFocus(fromKeyboard);
 						if (onSelect && configs.length > 0) onSelect(gpio);
-						else setEditing({ anchor, pin: { ...pin, gpio } });
+						setEditing({ pin: { ...pin, gpio } });
 					};
 					return (
 						<Tooltip
@@ -333,11 +349,11 @@ const BoardDiagram = ({
 										? gpio === selectedGpio
 										: undefined
 								}
-								onClick={(e) => openEditor(e.currentTarget)}
+								onClick={() => openEditor(false)}
 								onKeyDown={(e) => {
 									if (e.key === "Enter" || e.key === " ") {
 										e.preventDefault();
-										openEditor(e.currentTarget);
+										openEditor(true);
 									}
 								}}
 								data-editable={editable || undefined}
@@ -470,15 +486,21 @@ const BoardDiagram = ({
 				)}
 			</Box>
 
-			<Popover
+			<Dialog
 				open={editing !== null}
-				anchorEl={editing?.anchor}
-				onClose={() => setEditing(null)}
-				anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-				transformOrigin={{ vertical: "top", horizontal: "center" }}
+				onClose={closeEditor}
+				maxWidth="md"
+				fullWidth
+				aria-labelledby={editorTitleId}
+				disableRestoreFocus={!restoreFocus}
 			>
-				{editing && <PinEditor pin={editing.pin} />}
-			</Popover>
+				<DialogContent>
+					{editing && <PinEditor pin={editing.pin} titleId={editorTitleId} />}
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={closeEditor}>{t("close")}</Button>
+				</DialogActions>
+			</Dialog>
 		</Box>
 	);
 };

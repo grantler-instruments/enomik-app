@@ -168,7 +168,10 @@ interface PinRowProps {
 	readOnly?: boolean;
 	/** Narrow container (e.g. a popover): always the wrapping mobile layout. */
 	compact?: boolean;
-	/** Hide the row menu (duplicate/delete), e.g. when the parent offers its own delete. */
+	/**
+	 * Hide the row's actions (mute toggle and duplicate/delete menu), when the
+	 * parent shows its own, e.g. the pin dialog's header.
+	 */
 	hideMenu?: boolean;
 	thresholdUnit?: ThresholdUnit;
 	/** Live value shown on a full-width line below the row (inputs only). */
@@ -178,6 +181,43 @@ interface PinRowProps {
 	/** Table has PWM min/max columns (see hasPwmOutput). */
 	showPwmRange?: boolean;
 }
+
+/** Speaker toggle: a muted row stays in the list but isn't deployed. */
+export const MuteToggle = ({
+	muted,
+	onToggle,
+	faint = true,
+}: {
+	muted: boolean;
+	onToggle: () => void;
+	/** Dimmed until hovered, as in the dense pin lists. */
+	faint?: boolean;
+}) => {
+	const { t } = useTranslation();
+	const label = t(muted ? "pin_row_unmute" : "pin_row_mute");
+	return (
+		<Tooltip title={label} arrow>
+			<IconButton
+				onClick={onToggle}
+				aria-label={label}
+				aria-pressed={muted}
+				size="small"
+				color={muted ? "warning" : "default"}
+				sx={
+					faint
+						? { opacity: muted ? 1 : 0.4, "&:hover": { opacity: 1 } }
+						: undefined
+				}
+			>
+				{muted ? (
+					<VolumeOffIcon fontSize="small" />
+				) : (
+					<VolumeUpIcon fontSize="small" />
+				)}
+			</IconButton>
+		</Tooltip>
+	);
+};
 
 const PinRow = ({
 	config,
@@ -482,22 +522,7 @@ const PinRow = ({
 	const showMenu = !readOnly && !hideMenu;
 	const muted = !!config.muted;
 	const muteButton = readOnly ? null : (
-		<Tooltip title={t(muted ? "pin_row_unmute" : "pin_row_mute")} arrow>
-			<IconButton
-				onClick={() => onChange("muted", !muted)}
-				aria-label={t(muted ? "pin_row_unmute" : "pin_row_mute")}
-				aria-pressed={muted}
-				size="small"
-				color={muted ? "warning" : "default"}
-				sx={{ opacity: muted ? 1 : 0.4, "&:hover": { opacity: 1 } }}
-			>
-				{muted ? (
-					<VolumeOffIcon fontSize="small" />
-				) : (
-					<VolumeUpIcon fontSize="small" />
-				)}
-			</IconButton>
-		</Tooltip>
+		<MuteToggle muted={muted} onToggle={() => onChange("muted", !muted)} />
 	);
 	const menuCell = (
 		<Box className="pin-row-actions" display="flex" justifyContent="flex-end">
@@ -565,7 +590,7 @@ const PinRow = ({
 					{(wide ? showThreshold : isTouch) && thresholdCell}
 					{arrowCell}
 					{midiCells}
-					{menuCell}
+					{!hideMenu && menuCell}
 					{liveLine}
 				</>
 			) : (
@@ -574,7 +599,7 @@ const PinRow = ({
 					{arrowCell}
 					{pinCells}
 					{(wide ? showPwmRange : isPwm) && pwmRangeCells}
-					{menuCell}
+					{!hideMenu && menuCell}
 				</>
 			)}
 			{showMenu && (

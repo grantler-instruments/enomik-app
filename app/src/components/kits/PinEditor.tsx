@@ -16,14 +16,18 @@ import {
 	defaultOutput,
 	type GpioPin,
 } from "../../utils/pinout";
-import PinRow from "../pinmapping/PinRow";
+import PinRow, { MuteToggle } from "../pinmapping/PinRow";
 
-/** Caption above a config, with a button that deletes it. */
+/** Caption above a config, with its mute toggle and delete button. */
 const ConfigHeader = ({
 	label,
+	muted,
+	onToggleMute,
 	onDelete,
 }: {
 	label: string;
+	muted: boolean;
+	onToggleMute: () => void;
 	onDelete: () => void;
 }) => {
 	const { t } = useTranslation();
@@ -32,17 +36,27 @@ const ConfigHeader = ({
 			<Typography variant="caption" color="text.secondary">
 				{label}
 			</Typography>
-			<Tooltip title={t("delete")}>
-				<IconButton size="small" aria-label={t("delete")} onClick={onDelete}>
-					<DeleteIcon fontSize="small" />
-				</IconButton>
-			</Tooltip>
+			<Stack direction="row" alignItems="center">
+				<MuteToggle muted={muted} onToggle={onToggleMute} faint={false} />
+				<Tooltip title={t("delete")}>
+					<IconButton size="small" aria-label={t("delete")} onClick={onDelete}>
+						<DeleteIcon fontSize="small" />
+					</IconButton>
+				</Tooltip>
+			</Stack>
 		</Stack>
 	);
 };
 
 /** Every config of one GPIO, plus buttons to add or delete one. */
-const PinEditor = ({ pin }: { pin: GpioPin }) => {
+const PinEditor = ({
+	pin,
+	titleId,
+}: {
+	pin: GpioPin;
+	/** id for the heading, so a dialog can be labelled by it. */
+	titleId?: string;
+}) => {
 	const { t } = useTranslation();
 	const inputs = useIOStore((state) => state.inputs);
 	const outputs = useIOStore((state) => state.outputs);
@@ -50,13 +64,20 @@ const PinEditor = ({ pin }: { pin: GpioPin }) => {
 	const addOutput = useIOStore((state) => state.addOutput);
 	const removeInput = useIOStore((state) => state.removeInput);
 	const removeOutput = useIOStore((state) => state.removeOutput);
+	const updateInput = useIOStore((state) => state.updateInput);
+	const updateOutput = useIOStore((state) => state.updateOutput);
 	const pinInputs = inputs.filter((input) => input.pin === pin.gpio);
 	const pinOutputs = outputs.filter((output) => output.pin === pin.gpio);
 	const configured = pinInputs.length + pinOutputs.length > 0;
 
 	return (
-		<Box sx={{ p: 2, width: 760, maxWidth: "calc(100vw - 32px)" }}>
-			<Typography variant="subtitle1" fontWeight={600}>
+		<Box>
+			<Typography
+				id={titleId}
+				variant="subtitle1"
+				component="h2"
+				fontWeight={600}
+			>
 				GPIO {pin.gpio} · {t(`kits_pin_${pin.type}`)}
 			</Typography>
 			{!configured && (
@@ -69,6 +90,10 @@ const PinEditor = ({ pin }: { pin: GpioPin }) => {
 					<Box key={input.uuid}>
 						<ConfigHeader
 							label={t("kits_input")}
+							muted={!!input.muted}
+							onToggleMute={() =>
+								updateInput(input.uuid, { muted: !input.muted })
+							}
 							onDelete={() => removeInput(input.uuid)}
 						/>
 						<PinRow
@@ -84,6 +109,10 @@ const PinEditor = ({ pin }: { pin: GpioPin }) => {
 					<Box key={output.uuid}>
 						<ConfigHeader
 							label={t("kits_output")}
+							muted={!!output.muted}
+							onToggleMute={() =>
+								updateOutput(output.uuid, { muted: !output.muted })
+							}
 							onDelete={() => removeOutput(output.uuid)}
 						/>
 						<PinRow

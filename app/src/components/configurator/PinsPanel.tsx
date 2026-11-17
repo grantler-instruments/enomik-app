@@ -24,7 +24,17 @@ type Filter = "all" | "input" | "output";
  */
 const PinsPanel = () => {
 	const { t } = useTranslation();
-	const [selectedGpio, setSelectedGpio] = useState<number | null>(null);
+	const [pickedGpio, setSelectedGpio] = useState<number | null>(null);
+	// A selection only lasts while its pin has a config: deleting the last
+	// one (in the dialog or a list) clears the ring on the board.
+	const selectedGpio = useIOStore((state) =>
+		pickedGpio !== null &&
+		[...state.inputs, ...state.outputs].some(
+			(config) => config.pin === pickedGpio,
+		)
+			? pickedGpio
+			: null,
+	);
 	const [filter, setFilter] = useState<Filter>("all");
 	const boardSetId = useAppStore((state) => state.configuratorBoard);
 	// Several boards (e.g. client + extender) sit side by side above the
@@ -35,7 +45,8 @@ const PinsPanel = () => {
 	const inputCount = useIOStore((state) => state.inputs.length);
 	const outputCount = useIOStore((state) => state.outputs.length);
 
-	// From the board: show the pin's row, even if the filter hid it.
+	// From the board: mark the pin's row, even if the filter hid it. No
+	// scrolling: the pin is edited in a dialog, the page stays where it is.
 	const selectFromBoard = useCallback((gpio: number) => {
 		setSelectedGpio(gpio);
 		const { inputs, outputs } = useIOStore.getState();
@@ -45,12 +56,6 @@ const PinsPanel = () => {
 			(current === "input" && !isInput) || (current === "output" && !isOutput)
 				? "all"
 				: current,
-		);
-		// After the filter change has rendered
-		requestAnimationFrame(() =>
-			document
-				.querySelector(`[data-pin-row="${gpio}"]`)
-				?.scrollIntoView({ behavior: "smooth", block: "nearest" }),
 		);
 	}, []);
 
