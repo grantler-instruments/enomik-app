@@ -33,7 +33,18 @@ export const useAppStore = create<AppState>()(
 					set((state) => ({
 						accordions: { ...state.accordions, [key]: open },
 					})),
-				setShowHints: (show) => set({ showHints: show }),
+				setShowHints: (show) =>
+					set((state) => ({
+						showHints: show,
+						// Turning hints on brings back the ones closed per page.
+						accordions: show
+							? Object.fromEntries(
+									Object.entries(state.accordions).filter(
+										([key]) => !key.startsWith("hint-dismissed:"),
+									),
+								)
+							: state.accordions,
+					})),
 				setShowSettingsModal: (show) => set({ showSettingsModal: show }),
 				toggleSidebar: () =>
 					set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),

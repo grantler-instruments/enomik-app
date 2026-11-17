@@ -242,8 +242,6 @@ i18n.use(initReactI18next).init({
 				tooltip_pin_modes: "Pin modes and board pinouts",
 				tooltip_midi_monitor:
 					"View incoming and outgoing MIDI messages for debugging purposes",
-				tooltip_tools:
-					"Further pages: test a board, or play the Grantulator synth",
 				tooltip_serial_monitor:
 					"View serial output from the connected microcontroller for debugging purposes",
 				tooltip_midi_composer:
@@ -340,12 +338,17 @@ i18n.use(initReactI18next).init({
 				filters_active: "{{count}} active",
 				monitor_count_one: "{{count}} message",
 				monitor_count_other: "{{count}} messages",
+				tab_monitor: "Monitor",
+				tab_patcher: "Patcher",
+				tab_serial: "Serial",
+				more_tools: "More tools:",
+				patcher_open_full: "Open full screen",
 				monitor_pause: "Pause",
 				monitor_resume: "Resume",
 				monitor_new: "{{count}} new",
 				monitor_count_filtered: "{{shown}} of {{count}} messages shown",
 				monitor_empty_no_midi:
-					"MIDI isn't started yet. Start it to see incoming and outgoing messages.",
+					"MIDI isn't started yet. Click {{button}} to see incoming and outgoing messages.",
 				monitor_empty_waiting: "Waiting for MIDI messages…",
 				monitor_empty_filtered: "All messages are hidden by the filter.",
 				composer_choose_output: "Choose a MIDI output first",
@@ -725,8 +728,6 @@ i18n.use(initReactI18next).init({
 				tooltip_pin_modes: "Pin-Modi und Pinbelegungen",
 				tooltip_midi_monitor:
 					"Eingehende und ausgehende MIDI-Nachrichten zu Debugging-Zwecken anzeigen",
-				tooltip_tools:
-					"Weitere Seiten: ein Board testen oder den Grantulator-Synth spielen",
 				tooltip_serial_monitor:
 					"Serielle Ausgabe des verbundenen Mikrocontrollers zu Debugging-Zwecken anzeigen",
 				tooltip_midi_composer:
@@ -825,12 +826,17 @@ i18n.use(initReactI18next).init({
 				filters_active: "{{count}} aktiv",
 				monitor_count_one: "{{count}} Nachricht",
 				monitor_count_other: "{{count}} Nachrichten",
+				tab_monitor: "Monitor",
+				tab_patcher: "Patcher",
+				tab_serial: "Seriell",
+				more_tools: "Weitere Werkzeuge:",
+				patcher_open_full: "Im Vollbild öffnen",
 				monitor_pause: "Pausieren",
 				monitor_resume: "Fortsetzen",
 				monitor_new: "{{count}} neu",
 				monitor_count_filtered: "{{shown}} von {{count}} Nachrichten angezeigt",
 				monitor_empty_no_midi:
-					"MIDI ist noch nicht gestartet. Starte es, um ein- und ausgehende Nachrichten zu sehen.",
+					"MIDI ist noch nicht gestartet. Klicke auf {{button}}, um ein- und ausgehende Nachrichten zu sehen.",
 				monitor_empty_waiting: "Warte auf MIDI-Nachrichten…",
 				monitor_empty_filtered:
 					"Alle Nachrichten sind durch den Filter ausgeblendet.",
@@ -1210,8 +1216,6 @@ i18n.use(initReactI18next).init({
 				tooltip_pin_modes: "Modos de pin y pinouts de placas",
 				tooltip_midi_monitor:
 					"Ver mensajes MIDI entrantes y salientes para fines de depuración",
-				tooltip_tools:
-					"Más páginas: probar una placa o tocar el sintetizador Grantulator",
 				tooltip_serial_monitor:
 					"Ver la salida serial del microcontrolador conectado para fines de depuración",
 				tooltip_midi_composer:
@@ -1310,12 +1314,17 @@ i18n.use(initReactI18next).init({
 				filters_active: "{{count}} activos",
 				monitor_count_one: "{{count}} mensaje",
 				monitor_count_other: "{{count}} mensajes",
+				tab_monitor: "Monitor",
+				tab_patcher: "Patcher",
+				tab_serial: "Serial",
+				more_tools: "Más herramientas:",
+				patcher_open_full: "Abrir a pantalla completa",
 				monitor_pause: "Pausar",
 				monitor_resume: "Reanudar",
 				monitor_new: "{{count}} nuevos",
 				monitor_count_filtered: "{{shown}} de {{count}} mensajes mostrados",
 				monitor_empty_no_midi:
-					"MIDI aún no está iniciado. Inícialo para ver los mensajes entrantes y salientes.",
+					"MIDI aún no está iniciado. Pulsa {{button}} para ver los mensajes entrantes y salientes.",
 				monitor_empty_waiting: "Esperando mensajes MIDI…",
 				monitor_empty_filtered: "El filtro oculta todos los mensajes.",
 				composer_choose_output: "Elige primero una salida MIDI",
@@ -1682,7 +1691,6 @@ i18n.use(initReactI18next).init({
 				tooltip_load_configuration_from_device: "从设备加载配置",
 				tooltip_pin_modes: "引脚模式和电路板引脚图",
 				tooltip_midi_monitor: "查看传入和传出的 MIDI 消息以进行调试",
-				tooltip_tools: "更多页面：测试开发板，或演奏 Grantulator 合成器",
 				tooltip_serial_monitor: "查看已连接微控制器的串行输出以进行调试",
 				tooltip_midi_composer: "编写并向已连接设备发送自定义 MIDI 消息",
 				configurator_info:
@@ -1777,11 +1785,17 @@ i18n.use(initReactI18next).init({
 				filters_active: "{{count}} 个生效",
 				monitor_count_one: "{{count}} 条消息",
 				monitor_count_other: "{{count}} 条消息",
+				tab_monitor: "监视器",
+				tab_patcher: "Patcher",
+				tab_serial: "串口",
+				more_tools: "更多工具：",
+				patcher_open_full: "全屏打开",
 				monitor_pause: "暂停",
 				monitor_resume: "继续",
 				monitor_new: "{{count}} 条新消息",
 				monitor_count_filtered: "显示 {{shown}} / {{count}} 条消息",
-				monitor_empty_no_midi: "MIDI 尚未启动。启动后即可查看收发的消息。",
+				monitor_empty_no_midi:
+					"MIDI 尚未启动。点击「{{button}}」即可查看收发的消息。",
 				monitor_empty_waiting: "正在等待 MIDI 消息…",
 				monitor_empty_filtered: "所有消息都被过滤器隐藏了。",
 				composer_choose_output: "请先选择 MIDI 输出",

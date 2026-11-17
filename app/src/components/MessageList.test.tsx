@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	type MidiMessageWithDirectionAndDevice,
 	useMIDIStore,
@@ -84,5 +84,19 @@ describe("MessageList", () => {
 			"disabled",
 			true,
 		);
+	});
+
+	it("reports how many filter groups hide something", async () => {
+		const user = userEvent.setup();
+		const onActiveFiltersChange = vi.fn();
+		renderWithProviders(
+			<MessageList onActiveFiltersChange={onActiveFiltersChange} />,
+		);
+		expect(onActiveFiltersChange).toHaveBeenLastCalledWith(0);
+
+		await user.click(screen.getByRole("button", { name: /Filter/ }));
+		await user.click(screen.getByRole("button", { name: "Note On" }));
+
+		expect(onActiveFiltersChange).toHaveBeenLastCalledWith(1);
 	});
 });

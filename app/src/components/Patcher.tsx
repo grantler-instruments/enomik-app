@@ -1105,7 +1105,13 @@ const Workspace = ({ height }: { height: number | string }) => (
 	</Box>
 );
 
-const PatcherPage = ({ embedded }: { embedded: boolean }) => {
+const PatcherPage = ({
+	embedded,
+	hideInitMidi,
+}: {
+	embedded: boolean;
+	hideInitMidi: boolean;
+}) => {
 	const { t } = useTranslation();
 	const patch = usePatch();
 
@@ -1114,7 +1120,7 @@ const PatcherPage = ({ embedded }: { embedded: boolean }) => {
 	if (embedded)
 		return (
 			<Box>
-				<Box mb={1.5}>{toolbar}</Box>
+				{!hideInitMidi && <Box mb={1.5}>{toolbar}</Box>}
 				<PatchContext value={patch}>
 					<Workspace height={500} />
 				</PatchContext>
@@ -1142,10 +1148,17 @@ const PatcherPage = ({ embedded }: { embedded: boolean }) => {
  * as "notein", "+ 12" and "noteout" are typed into boxes and connected;
  * MIDI from the chosen inputs flows through them to the chosen outputs.
  * `embedded`: without page chrome, toolbar inline (used in the Debugger).
+ * `hideInitMidi`: when the host page already shows an Init MIDI button.
  */
-const Patcher = ({ embedded = false }: { embedded?: boolean }) => (
+const Patcher = ({
+	embedded = false,
+	hideInitMidi = false,
+}: {
+	embedded?: boolean;
+	hideInitMidi?: boolean;
+}) => (
 	<ReactFlowProvider>
-		<PatcherPage embedded={embedded} />
+		<PatcherPage embedded={embedded} hideInitMidi={hideInitMidi} />
 	</ReactFlowProvider>
 );
 

@@ -21,7 +21,7 @@ import {
 	useMediaQuery,
 	useTheme,
 } from "@mui/material";
-import { memo, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -30,7 +30,6 @@ import {
 } from "../store/midi";
 import { MIDI_STATUS, typeToLabel } from "../utils/midi";
 import Filter, { midiTypes } from "./Filter";
-import InitMidi from "./InitMidi";
 
 // Desktop columns: fixed width for short values, flexible for text.
 const desktopColumns =
@@ -338,7 +337,12 @@ const DesktopMessageRow = memo(function DesktopMessageRow({
 	);
 });
 
-function MessageList() {
+function MessageList({
+	onActiveFiltersChange,
+}: {
+	/** Called with the number of filter groups that hide something. */
+	onActiveFiltersChange?: (count: number) => void;
+} = {}) {
 	const messages = useMIDIStore((state) => state.messages);
 	const sendMessage = useMIDIStore((state) => state.sendMessage);
 	const inputs = useMIDIStore((state) => state.inputs);
@@ -365,6 +369,13 @@ function MessageList() {
 		activeTypes.length < midiTypes.length,
 		activeChannels.length < 16,
 	].filter(Boolean).length;
+
+	// Latest callback without re-running the effect when it changes.
+	const onFiltersRef = useRef(onActiveFiltersChange);
+	onFiltersRef.current = onActiveFiltersChange;
+	useEffect(() => {
+		onFiltersRef.current?.(activeFilters);
+	}, [activeFilters]);
 
 	// Frozen snapshot of the list: set while paused, or while the user is
 	// scrolled away from the newest messages so rows don't move under them.
@@ -557,12 +568,11 @@ function MessageList() {
 					>
 						<Typography color="text.secondary">
 							{!initialized
-								? t("monitor_empty_no_midi")
+								? t("monitor_empty_no_midi", { button: t("init_midi") })
 								: messages.length > 0
 									? t("monitor_empty_filtered")
 									: t("monitor_empty_waiting")}
 						</Typography>
-						<InitMidi />
 					</Box>
 				) : isMobile ? (
 					<Box

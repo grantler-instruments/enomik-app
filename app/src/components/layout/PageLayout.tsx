@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { type ReactNode, type Ref, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAppStore } from "../../store/app";
+import { useAccordionOpen, useAppStore } from "../../store/app";
 
 /** How long the page hint stays open before folding into the info icon. */
 const HINT_AUTO_COLLAPSE_MS = 20_000;
@@ -44,7 +44,13 @@ const PageLayout = ({
 }: PageLayoutProps) => {
 	const { t } = useTranslation();
 	const showHints = useAppStore((state) => state.showHints);
-	const [infoOpen, setInfoOpen] = useState(showHints);
+	// Closing the hint with its X is remembered per page (the hash route);
+	// the info icon still reopens it. Turning hints back on resets this.
+	const [dismissed, setDismissed] = useAccordionOpen(
+		`hint-dismissed:${window.location.hash}`,
+		false,
+	);
+	const [infoOpen, setInfoOpen] = useState(showHints && !dismissed);
 	const [hovered, setHovered] = useState(false);
 
 	// Fold the hint away after a while, but not while the user is reading it.
@@ -107,7 +113,10 @@ const PageLayout = ({
 							severity="info"
 							sx={{ mb: 2 }}
 							action={infoAction}
-							onClose={() => setInfoOpen(false)}
+							onClose={() => {
+								setInfoOpen(false);
+								setDismissed(true);
+							}}
 							onMouseEnter={() => setHovered(true)}
 							onMouseLeave={() => setHovered(false)}
 						>
