@@ -1,6 +1,7 @@
 import { Close } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CallReceivedIcon from "@mui/icons-material/CallReceived";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import SendIcon from "@mui/icons-material/Send";
 import {
 	Accordion,
@@ -377,38 +378,45 @@ function MessageList() {
 
 	return (
 		<Box mt={isMobile ? 2 : 4} px={isMobile ? 1 : 0}>
-			<Box display="flex" flexDirection="column" mb={2}>
-				<Accordion>
-					<AccordionSummary
-						expandIcon={<ArrowDropDownIcon />}
-						aria-controls="inputs-content"
-					>
-						<Box display="flex" gap={1} alignItems="center">
-							{/* Plain text: the summary is a button; the Accordion's own
-							    h3 is the heading. */}
-							<Typography variant={isMobile ? "h6" : "h3"} component="span">
-								{t("filter")}
-							</Typography>
-							{activeFilters > 0 && (
-								<Typography
-									variant="body2"
-									fontSize={isMobile ? "9px" : "10px"}
-								>
-									{t("filters_active", { count: activeFilters })}
-								</Typography>
-							)}
-						</Box>
-					</AccordionSummary>
-					<AccordionDetails>
-						<Filter
-							onActiveChannelsChange={setActiveChannels}
-							onActiveInputsChange={setActiveInputs}
-							onActiveOutputsChange={setActiveOutputs}
-							onActiveTypesChange={setActiveTypes}
-						/>
-					</AccordionDetails>
-				</Accordion>
-			</Box>
+			<Accordion
+				disableGutters
+				variant="outlined"
+				sx={{ mb: 2, "&::before": { display: "none" } }}
+			>
+				<AccordionSummary
+					expandIcon={<ArrowDropDownIcon />}
+					aria-controls="message-filter-content"
+					sx={{
+						minHeight: 40,
+						"& .MuiAccordionSummary-content": { my: 0.75 },
+					}}
+				>
+					<Box display="flex" gap={1} alignItems="center">
+						<FilterListIcon fontSize="small" sx={{ color: "text.secondary" }} />
+						{/* Plain text: the summary is a button; the Accordion's own
+						    h3 is the heading. */}
+						<Typography variant="subtitle2" component="span">
+							{t("filter")}
+						</Typography>
+						{activeFilters > 0 && (
+							<Chip
+								size="small"
+								color="primary"
+								label={t("filters_active", { count: activeFilters })}
+								sx={{ height: 20, fontSize: 11 }}
+							/>
+						)}
+					</Box>
+				</AccordionSummary>
+				<AccordionDetails id="message-filter-content" sx={{ pt: 0, pb: 1.5 }}>
+					<Filter
+						onActiveChannelsChange={setActiveChannels}
+						onActiveInputsChange={setActiveInputs}
+						onActiveOutputsChange={setActiveOutputs}
+						onActiveTypesChange={setActiveTypes}
+					/>
+				</AccordionDetails>
+			</Accordion>
 
 			<Box display="flex" flexDirection="column" gap={2}>
 				<Box

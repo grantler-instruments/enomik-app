@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Button, ButtonGroup } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 const AllNone = ({
@@ -10,14 +10,14 @@ const AllNone = ({
 }) => {
 	const { t } = useTranslation();
 	return (
-		<Box display={"flex"} gap={1}>
-			<Box onClick={onAll} color="secondary" sx={{ cursor: "pointer" }}>
-				<Typography variant="body2">{t("all")}</Typography>
-			</Box>
-			<Box onClick={onNone} color="secondary" sx={{ cursor: "pointer" }}>
-				<Typography variant="body2">{t("none")}</Typography>
-			</Box>
-		</Box>
+		<ButtonGroup
+			variant="text"
+			size="small"
+			sx={{ "& .MuiButton-root": { minWidth: 0, px: 0.75, py: 0 } }}
+		>
+			<Button onClick={onAll}>{t("all")}</Button>
+			<Button onClick={onNone}>{t("none")}</Button>
+		</ButtonGroup>
 	);
 };
 

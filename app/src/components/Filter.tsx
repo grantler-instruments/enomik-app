@@ -1,10 +1,4 @@
-import {
-	Box,
-	Checkbox,
-	FormControlLabel,
-	Grid,
-	Typography,
-} from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMIDIStore } from "../store/midi";
@@ -65,157 +59,157 @@ const Filter = ({
 		onOutputs.current(newActiveOutputs);
 	}, [outputs]);
 
-	const toggleInput = (id: string) => {
-		const newInputs = activeInputs.includes(id)
-			? activeInputs.filter((inputId) => inputId !== id)
-			: [...activeInputs, id];
-		setActiveInputs(newInputs);
-		onActiveInputsChange(newInputs);
-	};
-	const toggleOutput = (id: string) => {
-		const newOutputs = activeOutputs.includes(id)
-			? activeOutputs.filter((outputId) => outputId !== id)
-			: [...activeOutputs, id];
-		setActiveOutputs(newOutputs);
-		onActiveOutputsChange(newOutputs);
-	};
-	const toggleType = (type: number) => {
-		const newActiveTypes = activeTypes.includes(type)
-			? activeTypes.filter((t) => t !== type)
-			: [...activeTypes, type];
-		setActiveTypes(newActiveTypes);
-		onActiveTypesChange(newActiveTypes);
-	};
+	const allChannels = Array.from({ length: 16 }, (_, i) => i + 1);
 
-	const toggleChannel = (channel: number) => {
-		const newActiveChannels = activeChannels.includes(channel)
-			? activeChannels.filter((c) => c !== channel)
-			: [...activeChannels, channel];
-		setActiveChannels(newActiveChannels);
-		onActiveChannelsChange(newActiveChannels);
+	const setInputs = (ids: string[]) => {
+		setActiveInputs(ids);
+		onActiveInputsChange(ids);
+	};
+	const setOutputs = (ids: string[]) => {
+		setActiveOutputs(ids);
+		onActiveOutputsChange(ids);
+	};
+	const setTypes = (types: number[]) => {
+		setActiveTypes(types);
+		onActiveTypesChange(types);
+	};
+	const setChannels = (channels: number[]) => {
+		setActiveChannels(channels);
+		onActiveChannelsChange(channels);
 	};
 
 	return (
-		<Box display={"flex"} flexDirection={"column"} gap={2}>
-			<Grid container spacing={2} marginTop={1} marginBottom={2}>
-				<Grid size={{ xs: 12, sm: 6 }}>
-					{/* Input filter options can be added here */}
-					<Box display={"flex"} flexDirection={"row"} gap={2}>
-						<Typography variant="h4">{t("inputs")}</Typography>
-						<AllNone
-							onAll={() => {
-								setActiveInputs(inputs.map((input) => input.id));
-								onActiveInputsChange(inputs.map((input) => input.id));
-							}}
-							onNone={() => {
-								setActiveInputs([]);
-								onActiveInputsChange([]);
-							}}
-						/>
-					</Box>
-					{inputs.map((input) => (
-						<FormControlLabel
-							key={input.id}
-							control={
-								<Checkbox
-									checked={activeInputs.includes(input.id)}
-									onChange={() => toggleInput(input.id)}
-								/>
-							}
-							label={input.name}
-						/>
-					))}
-				</Grid>
-				<Grid size={{ xs: 12, sm: 6 }}>
-					{/* Output filter options can be added here */}
-					<Box display={"flex"} flexDirection={"row"} gap={2}>
-						<Typography variant="h4">{t("outputs")}</Typography>
-						<AllNone
-							onAll={() => {
-								setActiveOutputs(outputs.map((output) => output.id));
-								onActiveOutputsChange(outputs.map((output) => output.id));
-							}}
-							onNone={() => {
-								setActiveOutputs([]);
-								onActiveOutputsChange([]);
-							}}
-						/>
-					</Box>
-					{outputs.map((output) => (
-						<FormControlLabel
-							key={output.id}
-							control={
-								<Checkbox
-									checked={activeOutputs.includes(output.id)}
-									onChange={() => toggleOutput(output.id)}
-								/>
-							}
-							label={output.name}
-						/>
-					))}
-				</Grid>
-			</Grid>
-			<Box display={"flex"} gap={2} flexDirection={"column"}>
-				<Box display={"flex"} gap={2}>
-					<Typography variant="h4">{t("channels")}</Typography>
-					<AllNone
-						onAll={() => {
-							const newActiveChannels = Array.from(
-								{ length: 16 },
-								(_, i) => i + 1,
-							);
-							setActiveChannels(newActiveChannels);
-							onActiveChannelsChange(newActiveChannels);
-						}}
-						onNone={() => {
-							setActiveChannels([]);
-							onActiveChannelsChange([]);
-						}}
-					/>
-				</Box>
-				<Box display={"flex"} flexDirection={"row"} gap={2}>
-					{Array.from({ length: 16 }, (_, i) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: fixed 16 channels
-						<Box key={i}>
-							<FormControlLabel
-								control={
-									<Checkbox
-										checked={activeChannels.includes(i + 1)}
-										onChange={() => toggleChannel(i + 1)}
-									/>
-								}
-								label={`${i + 1}`}
-							/>
-						</Box>
-					))}
-				</Box>
-			</Box>
-			<Box display={"flex"} gap={2} flexDirection={"column"}>
-				<Box display={"flex"} gap={2}>
-					<Typography variant="h4">{t("types")}</Typography>
-					<AllNone
-						onAll={() => setActiveTypes(midiTypes)}
-						onNone={() => setActiveTypes([])}
-					/>
-				</Box>
-				<Box display={"flex"} flexDirection={"row"} gap={2}>
-					{midiTypes.map((type, i) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: static type list
-						<Box key={i}>
-							<FormControlLabel
-								control={
-									<Checkbox
-										checked={activeTypes.includes(midiTypes[i])}
-										onChange={() => toggleType(type)}
-									/>
-								}
-								label={typeToLabel(type)}
-							/>
-						</Box>
-					))}
-				</Box>
-			</Box>
+		<Box
+			sx={{
+				display: "grid",
+				gridTemplateColumns: { xs: "1fr", sm: "auto 1fr" },
+				columnGap: 2,
+				rowGap: { xs: 0.5, sm: 1.25 },
+				alignItems: "start",
+			}}
+		>
+			<FilterRow
+				label={t("inputs")}
+				items={inputs.map((input) => ({ value: input.id, label: input.name }))}
+				active={activeInputs}
+				onChange={setInputs}
+			/>
+			<FilterRow
+				label={t("outputs")}
+				items={outputs.map((output) => ({
+					value: output.id,
+					label: output.name,
+				}))}
+				active={activeOutputs}
+				onChange={setOutputs}
+			/>
+			<FilterRow
+				label={t("channels")}
+				items={allChannels.map((channel) => ({
+					value: channel,
+					label: String(channel),
+				}))}
+				active={activeChannels}
+				onChange={setChannels}
+				narrow
+			/>
+			<FilterRow
+				label={t("types")}
+				items={midiTypes.map((type) => ({
+					value: type,
+					label: typeToLabel(type),
+				}))}
+				active={activeTypes}
+				onChange={setTypes}
+			/>
 		</Box>
 	);
 };
+
+/** One label + a wrapping row of toggle chips, with All/None at the end. */
+function FilterRow<T extends string | number>({
+	label,
+	items,
+	active,
+	onChange,
+	narrow = false,
+}: {
+	label: string;
+	items: { value: T; label: string }[];
+	active: T[];
+	onChange: (next: T[]) => void;
+	/** Fixed-width chips, for short labels like channel numbers. */
+	narrow?: boolean;
+}) {
+	const { t } = useTranslation();
+	const toggle = (value: T) =>
+		onChange(
+			active.includes(value)
+				? active.filter((v) => v !== value)
+				: [...active, value],
+		);
+	return (
+		<>
+			<Typography
+				variant="caption"
+				component="div"
+				sx={{
+					color: "text.secondary",
+					fontWeight: 600,
+					textTransform: "uppercase",
+					letterSpacing: 0.5,
+					lineHeight: "24px",
+					mt: { xs: 1, sm: 0 },
+				}}
+			>
+				{label}
+			</Typography>
+			<Box
+				role="group"
+				aria-label={label}
+				sx={{
+					display: "flex",
+					flexWrap: "wrap",
+					gap: 0.5,
+					alignItems: "center",
+				}}
+			>
+				{items.length === 0 && (
+					<Typography
+						variant="body2"
+						sx={{ color: "text.disabled", lineHeight: "24px", mr: 1 }}
+					>
+						{t("none")}
+					</Typography>
+				)}
+				{items.map((item) => {
+					const on = active.includes(item.value);
+					return (
+						<Chip
+							key={item.value}
+							size="small"
+							label={item.label}
+							color={on ? "primary" : "default"}
+							variant={on ? "filled" : "outlined"}
+							onClick={() => toggle(item.value)}
+							aria-pressed={on}
+							sx={
+								narrow
+									? { width: 32, "& .MuiChip-label": { px: 0 } }
+									: undefined
+							}
+						/>
+					);
+				})}
+				{items.length > 1 && (
+					<AllNone
+						onAll={() => onChange(items.map((item) => item.value))}
+						onNone={() => onChange([])}
+					/>
+				)}
+			</Box>
+		</>
+	);
+}
+
 export default Filter;
