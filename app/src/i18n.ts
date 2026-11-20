@@ -3,6 +3,7 @@ import { initReactI18next } from "react-i18next";
 import { audioTranslations } from "./i18n.audio";
 import { nfcTranslations } from "./i18n.nfc";
 import { patcherTranslations } from "./i18n.patcher";
+import { pdTranslations } from "./i18n.pd";
 import { testerTranslations } from "./i18n.tester";
 import { tutorialTranslations } from "./i18n.tutorial";
 import { workshopTranslations } from "./i18n.workshop";
@@ -23,6 +24,7 @@ i18n.use(initReactI18next).init({
 			translation: {
 				...tutorialTranslations.en,
 				...nfcTranslations.en,
+				...pdTranslations.en,
 				...workshopTranslations.en,
 				...audioTranslations.en,
 				...testerTranslations.en,
@@ -512,6 +514,7 @@ i18n.use(initReactI18next).init({
 			translation: {
 				...tutorialTranslations.de,
 				...nfcTranslations.de,
+				...pdTranslations.de,
 				...workshopTranslations.de,
 				...audioTranslations.de,
 				...testerTranslations.de,
@@ -1013,6 +1016,7 @@ i18n.use(initReactI18next).init({
 			translation: {
 				...tutorialTranslations.es,
 				...nfcTranslations.es,
+				...pdTranslations.es,
 				...workshopTranslations.es,
 				...audioTranslations.es,
 				...testerTranslations.es,
@@ -1509,6 +1513,7 @@ i18n.use(initReactI18next).init({
 			translation: {
 				...tutorialTranslations.zh,
 				...nfcTranslations.zh,
+				...pdTranslations.zh,
 				...workshopTranslations.zh,
 				...audioTranslations.zh,
 				...testerTranslations.zh,

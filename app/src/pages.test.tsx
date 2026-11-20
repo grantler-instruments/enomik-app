@@ -46,6 +46,7 @@ const ROUTES = [
 	"/tester",
 	"/kits",
 	"/nfc",
+	"/pd",
 	"/workshop",
 	"/grantulator",
 	"/mpc",

@@ -16,6 +16,7 @@ import Kits from "./components/Kits";
 import Modals from "./components/Modals";
 import Nfc from "./components/Nfc";
 import NotFound from "./components/NotFound";
+import Pd from "./components/Pd";
 import Sidebar from "./components/Sidebar";
 import Tester from "./components/Tester";
 import Tutorial from "./components/Tutorial";
@@ -70,6 +71,7 @@ function App() {
 								<Route path="/tester" element={<Tester />} />
 								<Route path="/kits" element={<Kits />} />
 								<Route path="/nfc" element={<Nfc />} />
+								<Route path="/pd" element={<Pd />} />
 								<Route path="/workshop" element={<Workshop />} />
 								<Route
 									path="/grantulator"
