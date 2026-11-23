@@ -21,12 +21,14 @@ import {
 } from "./midi";
 import {
 	buildEnomikSysex,
+	buildFeatureConfig,
 	ENOMIK_COMMAND_ADD_PEER,
 	ENOMIK_COMMAND_RESET,
 	ENOMIK_COMMAND_SET_MIDI_LOOPBACK,
 	ENOMIK_COMMAND_SET_NAME,
 	ENOMIK_COMMAND_SET_PIN_CONFIG,
 	ENOMIK_COMMAND_SET_POWER_SAVE,
+	type FeatureConfig,
 	MIDI_CONTROL_CHANGE,
 	type MIDI_NOTE_OFF,
 	type MIDI_NOTE_ON,
@@ -106,6 +108,7 @@ interface IOState {
 	inputs: InputPinConfig[];
 	outputs: OutputPinConfig[];
 	peers: PeerConfig[];
+	moduleConfigs: FeatureConfig[];
 	midiLoopback: boolean;
 	powerSave: boolean;
 	/** Client name override; empty = keep the name the firmware sets. */
@@ -128,6 +131,8 @@ interface IOState {
 	setMidiLoopback: (enabled: boolean) => void;
 	setPowerSave: (enabled: boolean) => void;
 	setName: (name: string) => void;
+	setModuleConfig: (config: FeatureConfig) => void;
+	setModuleConfigs: (configs: FeatureConfig[]) => void;
 
 	saveToFile: () => void;
 	loadFromFile: (json: {
@@ -136,6 +141,7 @@ interface IOState {
 		inputs?: Array<Omit<InputPinConfig, "uuid"> & { uuid?: string }>;
 		outputs?: Array<Omit<OutputPinConfig, "uuid"> & { uuid?: string }>;
 		peers?: Array<Omit<PeerConfig, "uuid"> & { uuid?: string }>;
+		modules?: FeatureConfig[];
 		midiLoopback?: boolean;
 		powerSave?: boolean;
 		name?: string;
@@ -248,6 +254,7 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 					inputs: [],
 					outputs: [],
 					peers: [],
+					moduleConfigs: [],
 					midiLoopback: false,
 					powerSave: false,
 					name: "",
@@ -342,6 +349,7 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 											inputs: state.inputs,
 											outputs: state.outputs,
 											peers: state.peers,
+											modules: state.moduleConfigs,
 											midiLoopback: state.midiLoopback,
 											powerSave: state.powerSave,
 											name: state.name,
@@ -381,6 +389,7 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 							inputs,
 							outputs,
 							peers,
+							moduleConfigs: json.modules ?? [],
 							midiLoopback: json.midiLoopback ?? false,
 							powerSave: json.powerSave ?? false,
 							name: sanitizeClientName(json.name ?? ""),
@@ -412,6 +421,17 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 
 					setName: (name: string) =>
 						set(() => ({ name: sanitizeClientName(name) })),
+
+					setModuleConfig: (config) =>
+						set((state) => ({
+							moduleConfigs: [
+								...state.moduleConfigs.filter(
+									(item) => item.featureId !== config.featureId,
+								),
+								config,
+							],
+						})),
+					setModuleConfigs: (moduleConfigs) => set(() => ({ moduleConfigs })),
 
 					deploy: async (deviceId: string, kind: DeviceKind = "client") => {
 						const isDongle = kind === "dongle";
@@ -509,6 +529,18 @@ const createIOStore = (name: string, kind: DeviceKind) =>
 										? mapPitchBendTo7Bit(output.midiMax)
 										: output.midiMax,
 								]),
+							};
+							useMIDIStore.getState().sendMessage(msg, outputId);
+						});
+
+						// Feature mappings are reset with the device, so send their staged
+						// configs alongside pin mappings as part of this deploy.
+						(isDongle ? [] : get().moduleConfigs).forEach((config) => {
+							const msg: MidiMessage = {
+								id: uuidv4(),
+								timestamp: Date.now(),
+								type: 240,
+								data: buildFeatureConfig(config),
 							};
 							useMIDIStore.getState().sendMessage(msg, outputId);
 						});

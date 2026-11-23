@@ -44,6 +44,7 @@ import {
 	nibblesToMacString,
 	sysexManufacturerId,
 } from "./midi.config";
+import { receiveFeatureSysEx } from "./modules";
 import { useRawStreamStore } from "./rawStream";
 
 export interface MidiMessage {
@@ -646,6 +647,8 @@ const setupInputHandler = (input: MIDIInput, get: () => MonitorState) => {
 						);
 						break;
 					}
+					if (outputId)
+						receiveFeatureSysEx(outputId, input.id, command, payload);
 
 					// Peer entry: GET_ALL_PEERS / GET_PEER / GET_CONFIG stream (index + 12 nibbles)
 					// Empty 0x48 is the GET_ALL_PEERS stream-end marker: ends a peers-only load.

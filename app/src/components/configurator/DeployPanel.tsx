@@ -25,11 +25,14 @@ import {
 	type OutputPinConfig,
 	type useIOStore,
 } from "../../store/io";
+import { useMIDIStore } from "../../store/midi";
 import {
 	MIDI_CONTROL_CHANGE,
 	MIDI_NOTE_ON,
+	MIDI_PITCH_BEND,
 	MIDI_TYPE_LABELS,
 } from "../../store/midi.config";
+import { useModulesStore } from "../../store/modules";
 import SectionCard from "../common/SectionCard";
 import { INPUT_MODES, OUTPUT_MODES } from "../pinmapping/modes";
 import { GlobalIcon, WirelessMidiIcon } from "../SectionIcons";
@@ -89,6 +92,13 @@ const DeployPanel = ({
 	const name = useConfig((state) => state.name);
 	const midiLoopback = useConfig((state) => state.midiLoopback);
 	const powerSave = useConfig((state) => state.powerSave);
+	const moduleConfigs = useConfig((state) => state.moduleConfigs);
+	const selectedDeviceId = useMIDIStore(
+		(state) => state.selectedConfiguratorOutputDevice,
+	);
+	const moduleFeatures = useModulesStore(
+		(state) => state.devices[selectedDeviceId ?? "-1"]?.features,
+	);
 
 	const duplicatePins = isDongle
 		? []
@@ -217,6 +227,38 @@ const DeployPanel = ({
 						</SectionCard>
 						{peersCard}
 					</Box>
+					<SectionCard
+						title={`${t("configurator_tab_modules")} (${moduleConfigs.length})`}
+					>
+						{moduleConfigs.length === 0 ? (
+							<Empty />
+						) : (
+							<Stack spacing={1}>
+								{moduleConfigs.map((config) => {
+									const feature = moduleFeatures?.find(
+										(item) => item.descriptor.id === config.featureId,
+									);
+									const label = feature
+										? `${feature.descriptor.moduleName}: ${feature.descriptor.name}`
+										: `Feature ${config.featureId}`;
+									const midiTarget =
+										config.midiType === MIDI_PITCH_BEND
+											? t("module_midi_pitch_bend")
+											: `${config.midiType === MIDI_NOTE_ON ? t("module_midi_note") : t("module_midi_cc")} ${config.midiNumber}`;
+									return (
+										<Box key={config.featureId}>
+											<Typography fontWeight={600}>{label}</Typography>
+											<Typography variant="body2" color="text.secondary">
+												{config.enabled ? t("state_on") : t("state_off")} ·{" "}
+												{midiTarget} · {t("module_channel")}{" "}
+												{config.midiChannel}
+											</Typography>
+										</Box>
+									);
+								})}
+							</Stack>
+						)}
+					</SectionCard>
 					<SectionCard
 						icon={<DeveloperBoardIcon />}
 						title={`${t("configurator_tab_pins")} (${pins.length})`}

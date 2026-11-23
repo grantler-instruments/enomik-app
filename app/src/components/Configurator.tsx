@@ -28,6 +28,7 @@ import {
 } from "../store/io";
 import {
 	beginWaitForConfigLoad,
+	deviceInputId,
 	isEnomikPortName,
 	kindChange,
 	type MidiMessage,
@@ -37,13 +38,17 @@ import {
 	buildEnomikSysex,
 	ENOMIK_COMMAND_GET_ALL_PEERS,
 	ENOMIK_COMMAND_GET_CONFIG,
+	ENOMIK_COMMAND_GET_FEATURES,
+	ENOMIK_COMMAND_SET_FEATURE_CONFIG,
 	ENOMIK_COMMAND_SET_MIDI_LOOPBACK,
 	ENOMIK_COMMAND_SET_NAME,
 	ENOMIK_COMMAND_SET_POWER_SAVE,
 	ENOMIK_ERROR_UNKNOWN_COMMAND,
 } from "../store/midi.config";
+import { waitForFeatureList } from "../store/modules";
 import { useRawStreamStore } from "../store/rawStream";
 import DeployPanel from "./configurator/DeployPanel";
+import ModulesPanel from "./configurator/ModulesPanel";
 import PinsPanel from "./configurator/PinsPanel";
 import DeviceKindChooser from "./DeviceKindChooser";
 import Globals from "./Globals";
@@ -53,7 +58,12 @@ import Peers from "./Peers";
 import SectionHeader from "./SectionHeader";
 import { GlobalIcon, WirelessMidiIcon } from "./SectionIcons";
 
-export type ConfiguratorTab = "global" | "pins" | "wireless" | "deploy";
+export type ConfiguratorTab =
+	| "global"
+	| "pins"
+	| "modules"
+	| "wireless"
+	| "deploy";
 
 /**
  * `embedded`: without page chrome, toolbar inline (used in the tutorial).
@@ -61,7 +71,7 @@ export type ConfiguratorTab = "global" | "pins" | "wireless" | "deploy";
  */
 const Configurator = ({
 	embedded = false,
-	defaultTab = "global",
+	defaultTab = "pins",
 }: {
 	embedded?: boolean;
 	defaultTab?: ConfiguratorTab;
@@ -211,6 +221,9 @@ const Configurator = ({
 					err.errorCode === ENOMIK_ERROR_UNKNOWN_COMMAND &&
 					err.failedRequest === ENOMIK_COMMAND_SET_NAME,
 			);
+			const moduleConfigRejected = sysexErrors.some(
+				(err) => err.failedRequest === ENOMIK_COMMAND_SET_FEATURE_CONFIG,
+			);
 
 			if (globalsSkipped) {
 				toastGlobals.midiLoopback = t("compat_unavailable");
@@ -238,6 +251,8 @@ const Configurator = ({
 					})}`,
 					"warning",
 				);
+			} else if (moduleConfigRejected) {
+				showToast(`${summary} ${t("deploy_toast_module_rejected")}`, "warning");
 			} else if (nameSkipped || globalsSkipped) {
 				showToast(
 					[
@@ -372,6 +387,30 @@ const Configurator = ({
 				);
 				return;
 			}
+			let moduleConfigs = useConfig.getState().moduleConfigs;
+			const inputId = deviceInputId(rawOut);
+			if (inputId) {
+				const featureWait = waitForFeatureList(rawOut, inputId, 3000);
+				sendMessage(
+					{
+						id: uuidv4(),
+						timestamp: Date.now(),
+						type: 240,
+						data: buildEnomikSysex(ENOMIK_COMMAND_GET_FEATURES),
+					},
+					rawOut,
+				);
+				const featureInfos = await featureWait;
+				if (featureInfos)
+					moduleConfigs = featureInfos
+						.filter((feature) => feature.hasConfig)
+						.map((feature) => feature.config);
+			}
+			if (
+				useMIDIStore.getState().selectedConfiguratorOutputDevice !== rawOut ||
+				!mountedRef.current
+			)
+				return;
 
 			loadFromFile({
 				inputs: result.inputs as Parameters<typeof loadFromFile>[0]["inputs"],
@@ -382,6 +421,7 @@ const Configurator = ({
 				midiLoopback: result.midiLoopback ?? useConfig.getState().midiLoopback,
 				powerSave: result.powerSave ?? useConfig.getState().powerSave,
 				name: result.name ?? "",
+				modules: moduleConfigs,
 			});
 			showToast(
 				t("load_from_device_toast_ok", {
@@ -482,7 +522,7 @@ const Configurator = ({
 			</Button>
 		</>
 	);
-	// The steps in order; a dongle only has peers to deploy.
+	// Pin configuration comes first. Globals are an advanced step at the end.
 	const steps: {
 		value: ConfiguratorTab;
 		label: string;
@@ -491,18 +531,21 @@ const Configurator = ({
 		...(isDongle
 			? []
 			: [
-					{ value: "global" as const, label: t("section_global") },
 					{
 						value: "pins" as const,
 						label: t("configurator_tab_pins"),
 						count: inputs.length + outputs.length,
 					},
+					{ value: "modules" as const, label: t("configurator_tab_modules") },
 				]),
 		{
 			value: "wireless",
 			label: t("configurator_tab_wireless"),
 			count: peers.length,
 		},
+		...(!isDongle
+			? [{ value: "global" as const, label: t("section_global") }]
+			: []),
 		{ value: "deploy", label: t("deploy") },
 	];
 	const activeTab = steps.some((step) => step.value === tab) ? tab : "wireless";
@@ -583,6 +626,7 @@ const Configurator = ({
 					</>
 				)}
 				{activeTab === "pins" && <PinsPanel />}
+				{activeTab === "modules" && <ModulesPanel />}
 				{activeTab === "wireless" && (
 					<>
 						<SectionHeader

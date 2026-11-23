@@ -20,19 +20,41 @@ import {
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
+import InstagramEmbed from "./common/InstagramEmbed";
 import SectionCard from "./common/SectionCard";
 import PageLayout from "./layout/PageLayout";
 import WIPBanner from "./WorkInProgress";
 
 const MAX_PARTICIPANTS = 15;
 
-const USE_CASES: { key: string; image: string }[] = [
-	{ key: "touch", image: "tutorial/button.jpg" },
-	{ key: "motion", image: "tutorial/motion.jpg" },
-	{ key: "installation", image: "tutorial/nfc.jpg" },
-	{ key: "light", image: "tutorial/neopixels.jpg" },
-	{ key: "kinetic", image: "tutorial/servo.jpg" },
-	{ key: "controller", image: "tutorial/potentiometer.jpg" },
+type UseCase = { key: string; image: string };
+
+// The two kinds of device built in the workshop: ones that send MIDI and
+// ones that act on it.
+const USE_CASE_GROUPS: { key: "controllers" | "reactive"; cases: UseCase[] }[] =
+	[
+		{
+			key: "controllers",
+			cases: [
+				{ key: "touch", image: "tutorial/button.jpg" },
+				{ key: "motion", image: "tutorial/motion.jpg" },
+				{ key: "controller", image: "tutorial/potentiometer.jpg" },
+			],
+		},
+		{
+			key: "reactive",
+			cases: [
+				{ key: "light", image: "tutorial/neopixels.jpg" },
+				{ key: "kinetic", image: "tutorial/servo.jpg" },
+				{ key: "installation", image: "tutorial/nfc.jpg" },
+			],
+		},
+	];
+
+// Instagram posts about past workshops, newest first.
+const WORKSHOP_POSTS: { url: string; author: string }[] = [
+	// UdK Berlin, DIY Performative Systems, workshop 2
+	{ url: "https://www.instagram.com/p/DfNd3Z6uDaG/", author: "lili.lihe" },
 ];
 
 // Newest first. Proper names, not translated.
@@ -143,76 +165,106 @@ const Workshop = () => {
 
 			<Stack spacing={3} sx={{ mt: { xs: 6, md: 8 } }}>
 				<Typography variant="h2">{t("workshop_use_cases_title")}</Typography>
-				<Grid container spacing={3}>
-					{USE_CASES.map(({ key, image }) => (
-						<Grid key={key} size={{ xs: 12, sm: 6, md: 4 }}>
-							<Box
-								component="section"
-								sx={{
-									height: "100%",
-									border: 1,
-									borderColor: "divider",
-									borderRadius: 2,
-									overflow: "hidden",
-								}}
-							>
-								<Box
-									component="img"
-									src={`${import.meta.env.BASE_URL}/${image}`}
-									alt=""
-									loading="lazy"
-									sx={{
-										width: "100%",
-										aspectRatio: "4 / 3",
-										objectFit: "cover",
-										display: "block",
-									}}
-								/>
-								<Box p={2}>
-									<Typography
-										variant="h6"
-										component="h3"
-										fontWeight={600}
-										gutterBottom
+				{USE_CASE_GROUPS.map((group) => (
+					<Box key={group.key} component="section">
+						<Typography variant="h3" sx={{ mb: 0.5, fontWeight: 600 }}>
+							{t(`workshop_${group.key}_title`)}
+						</Typography>
+						<Typography
+							variant="body2"
+							sx={{ opacity: 0.9, maxWidth: 800, mb: 2 }}
+						>
+							{t(`workshop_${group.key}_desc`)}
+						</Typography>
+						<Grid container spacing={3}>
+							{group.cases.map(({ key, image }) => (
+								<Grid key={key} size={{ xs: 12, sm: 6, md: 4 }}>
+									<Box
+										component="section"
+										sx={{
+											height: "100%",
+											border: 1,
+											borderColor: "divider",
+											borderRadius: 2,
+											overflow: "hidden",
+										}}
 									>
-										{t(`workshop_use_case_${key}`)}
-									</Typography>
-									<Typography variant="body2" sx={{ opacity: 0.9 }}>
-										{t(`workshop_use_case_${key}_desc`)}
-									</Typography>
-								</Box>
-							</Box>
+										<Box
+											component="img"
+											src={`${import.meta.env.BASE_URL}/${image}`}
+											alt=""
+											loading="lazy"
+											sx={{
+												width: "100%",
+												aspectRatio: "4 / 3",
+												objectFit: "cover",
+												display: "block",
+											}}
+										/>
+										<Box p={2}>
+											<Typography
+												variant="h6"
+												component="h4"
+												fontWeight={600}
+												gutterBottom
+											>
+												{t(`workshop_use_case_${key}`)}
+											</Typography>
+											<Typography variant="body2" sx={{ opacity: 0.9 }}>
+												{t(`workshop_use_case_${key}_desc`)}
+											</Typography>
+										</Box>
+									</Box>
+								</Grid>
+							))}
 						</Grid>
-					))}
-				</Grid>
+					</Box>
+				))}
 			</Stack>
 
 			<Stack spacing={2} sx={{ mt: { xs: 6, md: 8 } }}>
 				<Typography variant="h2">{t("workshop_past_title")}</Typography>
-				<List>
-					{PAST_WORKSHOPS.map((w) => (
-						<ListItem key={w.url} disablePadding>
-							<ListItemButton
-								component="a"
-								href={w.url}
-								target="_blank"
-								rel="noopener"
-								sx={{ borderRadius: 1 }}
-							>
-								<ListItemIcon>
-									<PlaceIcon color="secondary" />
-								</ListItemIcon>
-								<ListItemText
-									primary={w.name}
-									secondary={[w.host, w.place, w.date]
-										.filter(Boolean)
-										.join(" · ")}
+				<Grid container spacing={4} alignItems="flex-start">
+					<Grid size={{ xs: 12, md: 7 }}>
+						<List>
+							{PAST_WORKSHOPS.map((w) => (
+								<ListItem key={w.url} disablePadding>
+									<ListItemButton
+										component="a"
+										href={w.url}
+										target="_blank"
+										rel="noopener"
+										sx={{ borderRadius: 1 }}
+									>
+										<ListItemIcon>
+											<PlaceIcon color="secondary" />
+										</ListItemIcon>
+										<ListItemText
+											primary={w.name}
+											secondary={[w.host, w.place, w.date]
+												.filter(Boolean)
+												.join(" · ")}
+										/>
+										<OpenInNewIcon fontSize="small" color="action" />
+									</ListItemButton>
+								</ListItem>
+							))}
+						</List>
+					</Grid>
+					{/* Impressions from the workshops, loaded only on request */}
+					<Grid size={{ xs: 12, md: 5 }}>
+						<Stack spacing={2}>
+							{WORKSHOP_POSTS.map((post) => (
+								<InstagramEmbed
+									key={post.url}
+									url={post.url}
+									author={post.author}
+									title={t("workshop_post_title", { author: post.author })}
 								/>
-								<OpenInNewIcon fontSize="small" color="action" />
-							</ListItemButton>
-						</ListItem>
-					))}
-				</List>
+							))}
+						</Stack>
+					</Grid>
+				</Grid>
 			</Stack>
 
 			<Box sx={{ mt: { xs: 6, md: 8 } }}>

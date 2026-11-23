@@ -258,6 +258,8 @@ i18n.use(initReactI18next).init({
 					"Reset confirmation not received (timed out). Sent {{pinConfigs}} pin configs, {{peerCount}} wireless MIDI addresses, MIDI loopback {{midiLoopback}}, and safe power mode {{powerSave}}. If this error persists, please update the client firmware to the latest version.",
 				deploy_toast_globals_unsupported:
 					"Global settings require firmware 0.14+ (device reported {{version}}).",
+				deploy_toast_module_rejected:
+					"One or more module configurations were rejected. Check that the device firmware supports registered modules.",
 				load_from_device_toast_ok:
 					"Loaded {{pinConfigs}} pin configs, {{peerCount}} wireless MIDI addresses, MIDI loopback {{midiLoopback}}, and safe power mode {{powerSave}} from device.",
 				load_from_file_kind_mismatch:
@@ -454,7 +456,43 @@ i18n.use(initReactI18next).init({
 				section_midi_to_output_pin: "MIDI to Output Pin Mapping",
 				section_wireless_midi: "Wireless MIDI Configuration",
 				configurator_tab_pins: "Pins",
+				configurator_tab_modules: "Modules",
 				configurator_tab_wireless: "Wireless MIDI",
+				module_discovering: "Reading registered modules from the device…",
+				module_none: "This device has no registered modules.",
+				module_error_unpaired:
+					"Connect and select the client device to read its modules.",
+				module_error_disconnected:
+					"The device disconnected before the request completed.",
+				module_error_timeout:
+					"The device did not respond to module discovery. Update its firmware if it supports registered modules.",
+				module_error_unsupported:
+					"This firmware does not support module discovery.",
+				module_error_settings:
+					"Could not read the settings for a registered feature.",
+				module_input: "Input feature",
+				module_output: "Output feature",
+				module_range: "Range",
+				module_enabled: "Enabled",
+				module_mapping_mode: "Mapping mode",
+				module_mode_linear: "Linear",
+				module_mode_above: "Note gate above threshold",
+				module_mode_below: "Note gate below threshold",
+				module_midi_type: "MIDI message",
+				module_midi_note: "Note",
+				module_midi_cc: "Control Change",
+				module_midi_pitch_bend: "Pitch Bend",
+				module_channel: "MIDI channel",
+				module_note: "MIDI note",
+				module_cc_number: "MIDI CC number",
+				module_midi_min: "MIDI minimum",
+				module_midi_max: "MIDI maximum",
+				module_threshold: "Threshold",
+				module_hysteresis: "Hysteresis",
+				module_settings: "Module settings",
+				module_saved: "Deployed to device",
+				module_unsaved_changes: "Changes pending Deploy",
+				module_not_saved: "Will be sent on Deploy",
 				pins_filter_all: "All",
 				configurator_steps: "Configuration steps",
 				configurator_next: "Next: {{step}}",
@@ -752,6 +790,8 @@ i18n.use(initReactI18next).init({
 					"Keine Reset-Bestätigung (Zeitüberschreitung). {{pinConfigs}} Pin-Konfigurationen, {{peerCount}} drahtlose MIDI-Adressen, MIDI-Loopback {{midiLoopback}} und Energiesparmodus {{powerSave}} gesendet. Wenn dieser Fehler weiterhin auftritt, aktualisiere bitte die Client-Firmware auf die neueste Version.",
 				deploy_toast_globals_unsupported:
 					"Globale Einstellungen erfordern Firmware 0.14+ (Gerät meldete {{version}}).",
+				deploy_toast_module_rejected:
+					"Eine oder mehrere Modulkonfigurationen wurden abgelehnt. Prüfe, ob die Gerätefirmware registrierte Module unterstützt.",
 				load_from_device_toast_ok:
 					"{{pinConfigs}} Pin-Konfigurationen, {{peerCount}} drahtlose MIDI-Adressen, MIDI-Loopback {{midiLoopback}} und Energiesparmodus {{powerSave}} vom Gerät geladen.",
 				load_from_file_kind_mismatch:
@@ -956,7 +996,43 @@ i18n.use(initReactI18next).init({
 				section_midi_to_output_pin: "MIDI-zu-Ausgangs-Pin-Zuordnung",
 				section_wireless_midi: "Drahtlose MIDI-Konfiguration",
 				configurator_tab_pins: "Pins",
+				configurator_tab_modules: "Module",
 				configurator_tab_wireless: "Drahtlos-MIDI",
+				module_discovering: "Registrierte Module werden vom Gerät gelesen …",
+				module_none: "Auf diesem Gerät sind keine Module registriert.",
+				module_error_unpaired:
+					"Verbinde und wähle das Client-Gerät aus, um seine Module auszulesen.",
+				module_error_disconnected:
+					"Das Gerät wurde getrennt, bevor die Anfrage abgeschlossen war.",
+				module_error_timeout:
+					"Das Gerät hat auf die Modulerkennung nicht geantwortet. Aktualisiere die Firmware, falls sie registrierte Module unterstützt.",
+				module_error_unsupported:
+					"Diese Firmware unterstützt keine Modulerkennung.",
+				module_error_settings:
+					"Die Einstellungen eines registrierten Features konnten nicht gelesen werden.",
+				module_input: "Eingangs-Feature",
+				module_output: "Ausgangs-Feature",
+				module_range: "Bereich",
+				module_enabled: "Aktiviert",
+				module_mapping_mode: "Mapping-Modus",
+				module_mode_linear: "Linear",
+				module_mode_above: "Noten-Gate oberhalb des Schwellwerts",
+				module_mode_below: "Noten-Gate unterhalb des Schwellwerts",
+				module_midi_type: "MIDI-Nachricht",
+				module_midi_note: "Note",
+				module_midi_cc: "Control Change",
+				module_midi_pitch_bend: "Pitch Bend",
+				module_channel: "MIDI-Kanal",
+				module_note: "MIDI-Note",
+				module_cc_number: "MIDI-CC-Nummer",
+				module_midi_min: "MIDI-Minimum",
+				module_midi_max: "MIDI-Maximum",
+				module_threshold: "Schwellwert",
+				module_hysteresis: "Hysterese",
+				module_settings: "Moduleinstellungen",
+				module_saved: "Auf das Gerät übertragen",
+				module_unsaved_changes: "Änderungen warten auf Deploy",
+				module_not_saved: "Wird mit Deploy übertragen",
 				pins_filter_all: "Alle",
 				configurator_steps: "Konfigurationsschritte",
 				configurator_next: "Weiter: {{step}}",
@@ -1250,6 +1326,8 @@ i18n.use(initReactI18next).init({
 					"No se recibió confirmación de reinicio (tiempo agotado). Enviadas {{pinConfigs}} configuraciones de pin, {{peerCount}} direcciones MIDI inalámbricas, MIDI loopback {{midiLoopback}} y modo de ahorro de energía {{powerSave}}. Si este error persiste, actualiza el firmware del cliente a la última versión.",
 				deploy_toast_globals_unsupported:
 					"Los ajustes globales requieren firmware 0.14+ (el dispositivo informó {{version}}).",
+				deploy_toast_module_rejected:
+					"Se rechazó una o más configuraciones de módulo. Comprueba que el firmware admita módulos registrados.",
 				load_from_device_toast_ok:
 					"Se cargaron {{pinConfigs}} configuraciones de pin, {{peerCount}} direcciones MIDI inalámbricas, MIDI loopback {{midiLoopback}} y modo de ahorro de energía {{powerSave}} desde el dispositivo.",
 				load_from_file_kind_mismatch:
@@ -1453,7 +1531,44 @@ i18n.use(initReactI18next).init({
 				section_midi_to_output_pin: "Asignación de MIDI a pin de salida",
 				section_wireless_midi: "Configuración de MIDI inalámbrico",
 				configurator_tab_pins: "Pines",
+				configurator_tab_modules: "Módulos",
 				configurator_tab_wireless: "MIDI inalámbrico",
+				module_discovering:
+					"Leyendo los módulos registrados en el dispositivo…",
+				module_none: "Este dispositivo no tiene módulos registrados.",
+				module_error_unpaired:
+					"Conecta y selecciona el dispositivo cliente para leer sus módulos.",
+				module_error_disconnected:
+					"El dispositivo se desconectó antes de completar la solicitud.",
+				module_error_timeout:
+					"El dispositivo no respondió al descubrir módulos. Actualiza el firmware si admite módulos registrados.",
+				module_error_unsupported:
+					"Este firmware no admite la detección de módulos.",
+				module_error_settings:
+					"No se pudieron leer los ajustes de una función registrada.",
+				module_input: "Función de entrada",
+				module_output: "Función de salida",
+				module_range: "Rango",
+				module_enabled: "Activado",
+				module_mapping_mode: "Modo de asignación",
+				module_mode_linear: "Lineal",
+				module_mode_above: "Puerta de nota por encima del umbral",
+				module_mode_below: "Puerta de nota por debajo del umbral",
+				module_midi_type: "Mensaje MIDI",
+				module_midi_note: "Nota",
+				module_midi_cc: "Control Change",
+				module_midi_pitch_bend: "Pitch Bend",
+				module_channel: "Canal MIDI",
+				module_note: "Nota MIDI",
+				module_cc_number: "Número de CC MIDI",
+				module_midi_min: "Mínimo MIDI",
+				module_midi_max: "Máximo MIDI",
+				module_threshold: "Umbral",
+				module_hysteresis: "Histéresis",
+				module_settings: "Ajustes del módulo",
+				module_saved: "Enviado al dispositivo",
+				module_unsaved_changes: "Cambios pendientes de Deploy",
+				module_not_saved: "Se enviará con Deploy",
 				pins_filter_all: "Todos",
 				configurator_steps: "Pasos de configuración",
 				configurator_next: "Siguiente: {{step}}",
@@ -1732,6 +1847,8 @@ i18n.use(initReactI18next).init({
 					"未收到重置确认（超时）。已发送 {{pinConfigs}} 个引脚配置、{{peerCount}} 个无线 MIDI 地址、MIDI 回环 {{midiLoopback}} 和安全省电模式 {{powerSave}}。如果此错误持续存在，请将客户端固件更新到最新版本。",
 				deploy_toast_globals_unsupported:
 					"全局设置需要固件 0.14+（设备报告为 {{version}}）。",
+				deploy_toast_module_rejected:
+					"一个或多个模块配置被拒绝。请确认设备固件支持已注册模块。",
 				load_from_device_toast_ok:
 					"已从设备加载 {{pinConfigs}} 个引脚配置、{{peerCount}} 个无线 MIDI 地址、MIDI 回环 {{midiLoopback}} 和安全省电模式 {{powerSave}}。",
 				load_from_file_kind_mismatch:
@@ -1925,7 +2042,39 @@ i18n.use(initReactI18next).init({
 				section_midi_to_output_pin: "MIDI 到输出引脚映射",
 				section_wireless_midi: "无线 MIDI 配置",
 				configurator_tab_pins: "引脚",
+				configurator_tab_modules: "模块",
 				configurator_tab_wireless: "无线 MIDI",
+				module_discovering: "正在读取设备上注册的模块…",
+				module_none: "此设备没有注册模块。",
+				module_error_unpaired: "连接并选择客户端设备以读取其模块。",
+				module_error_disconnected: "请求完成前设备已断开连接。",
+				module_error_timeout:
+					"设备未响应模块发现请求。如果固件支持模块注册，请更新固件。",
+				module_error_unsupported: "此固件不支持模块发现。",
+				module_error_settings: "无法读取已注册功能的设置。",
+				module_input: "输入功能",
+				module_output: "输出功能",
+				module_range: "范围",
+				module_enabled: "启用",
+				module_mapping_mode: "映射模式",
+				module_mode_linear: "线性",
+				module_mode_above: "高于阈值时触发音符",
+				module_mode_below: "低于阈值时触发音符",
+				module_midi_type: "MIDI 消息",
+				module_midi_note: "音符",
+				module_midi_cc: "控制变化",
+				module_midi_pitch_bend: "弯音",
+				module_channel: "MIDI 通道",
+				module_note: "MIDI 音符",
+				module_cc_number: "MIDI CC 编号",
+				module_midi_min: "MIDI 最小值",
+				module_midi_max: "MIDI 最大值",
+				module_threshold: "阈值",
+				module_hysteresis: "回差",
+				module_settings: "模块设置",
+				module_saved: "已部署到设备",
+				module_unsaved_changes: "更改等待部署",
+				module_not_saved: "将在部署时发送",
 				pins_filter_all: "全部",
 				configurator_steps: "配置步骤",
 				configurator_next: "下一步：{{step}}",
